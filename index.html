@@ -696,9 +696,21 @@ const getSettings  = () => DB.get('settings')  || {
 };
 const getItems     = () => DB.get('items')     || [];
 const getParties   = () => DB.get('parties')   || [];
-const getInvoices  = () => DB.get('invoices')  || [];
+const getInvoices  = () => ((DB.get('invoices') || []).map(inv => normalizeInvoiceFinancials({...inv})));
 const getPurchases = () => DB.get('purchases') || [];
 const getRetail    = () => DB.get('retail')    || [];
+
+function sumPayments(payments){
+  return (payments||[]).reduce((a,p)=>a+(parseFloat(p?.amt)||0),0);
+}
+function normalizeInvoiceFinancials(inv){
+  if(!Array.isArray(inv.payments)) inv.payments = [];
+  const paymentTotal = sumPayments(inv.payments);
+  const paid = paymentTotal>0 ? paymentTotal : (parseFloat(inv.paid)||0);
+  inv.paid = paid;
+  inv.balance = Math.max(0,(parseFloat(inv.total)||0)-paid);
+  return inv;
+}
 
 const genId   = () => Date.now().toString(36) + Math.random().toString(36).slice(2,5);
 const today   = () => new Date().toISOString().slice(0,10);
@@ -1051,14 +1063,16 @@ function saveSaleInvoice(andPrint) {
       date, due, partyId, partyName:partyName||existing.partyName,
       items:validItems, subtotal:t.sub, discount:t.disc,
       taxPct:t.tPct, taxAmt:t.tax, total:t.total,
-      paid:t.paid, balance:t.bal, notes, paymentType:payType,
+      notes, paymentType:payType,
       dispatchStatus:dispStat, customFieldValues:cfVals,
-      updatedAt:new Date().toISOString()
+      updatedAt:new Date().toISOString(),
+      payments:Array.isArray(existing.payments)?[...existing.payments]:[]
     };
-    // Adjust payments if paid amount changed
-    if(t.paid > 0 && !existing.payments?.length) {
-      invs[idx].payments = [{date,amt:t.paid,mode:payType,note:''}];
+    // Legacy compatibility: old invoices without payment history.
+    if(t.paid > 0 && invs[idx].payments.length===0) {
+      invs[idx].payments = [{date,amt:t.paid,mode:payType,note:'Opening payment'}];
     }
+    normalizeInvoiceFinancials(invs[idx]);
     DB.set('invoices', invs);
     editingInvId = null;
     toast(`Invoice ${existing.invoiceNo} updated! ✓`);
@@ -1070,12 +1084,13 @@ function saveSaleInvoice(andPrint) {
       id:genId(), invoiceNo:(s.prefix||'INV-')+(s.invNo||1001),
       date, due, partyId, partyName:partyName||'Cash', items:validItems,
       subtotal:t.sub, discount:t.disc, taxPct:t.tPct, taxAmt:t.tax,
-      total:t.total, paid:t.paid, balance:t.bal, notes,
+      total:t.total, notes,
       paymentType:payType, dispatchStatus:dispStat,
       customFieldValues:cfVals,
       payments:[], createdAt:new Date().toISOString()
     };
-    if(t.paid>0) inv.payments.push({date,amt:t.paid,mode:payType,note:''});
+    if(t.paid>0) inv.payments.push({date,amt:t.paid,mode:payType,note:'Opening payment'});
+    normalizeInvoiceFinancials(inv);
     const invs = getInvoices(); invs.push(inv); DB.set('invoices',invs);
     const ns=getSettings(); ns.invNo=(ns.invNo||1001)+1; DB.set('settings',ns);
     toast(`Invoice ${inv.invoiceNo} saved! ✓`);
@@ -1350,7 +1365,7 @@ function savePayment(){
   const invs=getInvoices(); const inv=invs.find(i=>i.id===invId); if(!inv) return;
   if(!inv.payments) inv.payments=[];
   inv.payments.push({date:today(),amt,mode,note});
-  inv.paid=(inv.paid||0)+amt; inv.balance=Math.max(0,(inv.total||0)-inv.paid);
+  normalizeInvoiceFinancials(inv);
   DB.set('invoices',invs);
   closeModal('pay-modal');
   toast(`${fc(amt)} payment saved! Balance: ${fc(inv.balance)} ✓`);
@@ -2060,12 +2075,37 @@ function runMigrations() {
         if (!it.packType) it.packType = '';
         if (!it.packCount && it.packCount !== 0) it.packCount = '';
       });
+      const prevPaid = parseFloat(inv.paid)||0;
+      const prevBal = parseFloat(inv.balance)||0;
+      normalizeInvoiceFinancials(inv);
+      if (inv.paid !== prevPaid || inv.balance !== prevBal) changed = true;
     });
     if (changed) DB.set('invoices', invs);
   } catch(e) {}
 
   localStorage.setItem('shop4_app_version', APP_VERSION);
   console.log('Migrated to v' + APP_VERSION);
+}
+
+function migrateInvoiceFinancialsOnce(){
+  const key='shop4_fin_migrated_v1';
+  if(localStorage.getItem(key)==='1') return;
+  const invs = DB.get('invoices') || [];
+  let changed=false;
+  const next=invs.map(inv=>{
+    const n={...inv};
+    if(!Array.isArray(n.payments)) n.payments=[];
+    if(n.payments.length===0 && (parseFloat(n.paid)||0)>0){
+      n.payments=[{date:n.date||today(),amt:parseFloat(n.paid)||0,mode:n.paymentType||'Cash',note:'Migrated opening payment'}];
+      changed=true;
+    }
+    const prevPaid=parseFloat(n.paid)||0, prevBal=parseFloat(n.balance)||0;
+    normalizeInvoiceFinancials(n);
+    if(n.paid!==prevPaid || n.balance!==prevBal) changed=true;
+    return n;
+  });
+  if(changed) DB.set('invoices',next);
+  localStorage.setItem(key,'1');
 }
 
 // ═══════════════════════════════════════════════════════
@@ -2633,6 +2673,7 @@ document.addEventListener('DOMContentLoaded', () => {}, false);
 
   // 8. Run migrations
   runMigrations();
+  migrateInvoiceFinancialsOnce();
 
 })();
 </script>
