@@ -54,6 +54,12 @@ body{font-family:'Segoe UI',Arial,sans-serif;background:#f0f4f8;color:var(--gray
 .btn-out{background:#fff;border:1px solid var(--gray-300);color:var(--gray-700)}.btn-out:hover{background:var(--gray-50)}
 .btn-sm{padding:5px 11px;font-size:12.5px}
 .btn-xs{padding:3px 7px;font-size:11.5px;border-radius:5px}
+.row-menu{position:relative;display:inline-block}
+.row-menu summary{list-style:none;cursor:pointer;border:1px solid var(--gray-300);border-radius:7px;padding:1px 8px;background:#fff;font-weight:700}
+.row-menu[open] summary{background:var(--gray-50)}
+.row-menu-pop{position:absolute;right:0;top:100%;margin-top:4px;background:#fff;border:1px solid var(--gray-200);border-radius:8px;min-width:140px;box-shadow:0 8px 20px rgba(0,0,0,.12);z-index:120}
+.row-menu-pop button{display:block;width:100%;text-align:left;background:none;border:none;padding:8px 10px;font-size:12.5px;cursor:pointer}
+.row-menu-pop button:hover{background:var(--gray-50)}
 /* Forms */
 .fg{margin-bottom:12px}
 .fl{display:block;font-size:12px;font-weight:600;color:var(--gray-600);margin-bottom:4px}
@@ -7687,6 +7693,10 @@ window.purBulkShowHistory = function(partyId, partyName) {
             <input class="fc" id="pur-pay-note" placeholder="Cheque no, UTR...">
           </div>
         </div>
+        <div class="fg">
+          <label class="fl">Discount (₹)</label>
+          <input type="number" class="fc" id="pur-pay-discount" placeholder="0.00" min="0">
+        </div>
         <div id="pur-pay-history" style="margin-top:10px"></div>
       </div>
       <div class="mf">
@@ -7698,6 +7708,36 @@ window.purBulkShowHistory = function(partyId, partyName) {
   modal.addEventListener('click', e=>{ if(e.target===modal) modal.classList.remove('show'); });
 })();
 
+window.recalcPurchaseFinancials = function(p){
+  if (!p) return p;
+  p.payments = Array.isArray(p.payments) ? p.payments : [];
+  p.discounts = Array.isArray(p.discounts) ? p.discounts : (p.discount ? [{date:p.date||today(), amt:+p.discount||0, note:'Opening discount'}] : []);
+  const total = +p.total || 0;
+  const paid = p.payments.reduce((a,x)=>a+(+x.amt||0),0);
+  const discount = p.discounts.reduce((a,x)=>a+(+x.amt||0),0);
+  p.paid = paid;
+  p.discount = discount;
+  p.balance = Math.max(0, total - paid - discount);
+  return p;
+};
+window.runPurchaseMigrationV15 = function(){
+  const key = 'migration_purchase_v15_done';
+  if (localStorage.getItem(key)==='1') return;
+  const purs = getPurchases();
+  let changed = false;
+  purs.forEach(p=>{
+    const before = JSON.stringify({paid:p.paid,balance:p.balance,discount:p.discount,payments:p.payments,discounts:p.discounts});
+    recalcPurchaseFinancials(p);
+    if (before !== JSON.stringify({paid:p.paid,balance:p.balance,discount:p.discount,payments:p.payments,discounts:p.discounts})) changed = true;
+  });
+  if (changed) DB.set('purchases', purs);
+  localStorage.setItem(key,'1');
+};
+window.rowActionMenu = function(items){
+  return `<details class="row-menu"><summary>⋮</summary><div class="row-menu-pop">${items.join('')}</div></details>`;
+};
+runPurchaseMigrationV15();
+
 window.openPurPayModal = function(purId) {
   const purs = getPurchases();
   const pur  = purs.find(p=>p.id===purId); if (!pur) return;
@@ -7707,6 +7747,7 @@ window.openPurPayModal = function(purId) {
   document.getElementById('pur-pay-amt').value     = fp(pur.balance||0);
   document.getElementById('pur-pay-mode').value    = pur.payType || 'Cash';
   document.getElementById('pur-pay-note').value    = '';
+  document.getElementById('pur-pay-discount').value = '';
 
   document.getElementById('pur-pay-info').innerHTML = `
     <div style="font-weight:700;font-size:13.5px">${pur.partyName||'Supplier'} — ${pur.billNo||pur.id.slice(-6)}</div>
@@ -7734,8 +7775,10 @@ window.openPurPayModal = function(purId) {
           </div>
           <div style="display:flex;align-items:center;gap:8px">
             <strong style="color:var(--b)">${fc(p.amt)}</strong>
-            <button onclick="delPurPayEntry('${purId}',${i})"
-              style="background:none;border:none;cursor:pointer;color:var(--r);font-size:13px;padding:0 2px">✕</button>
+            ${rowActionMenu([
+              `<button onclick="editPurPayEntry('${purId}',${i})">Edit Payment</button>`,
+              `<button onclick="delPurPayEntry('${purId}',${i})" style="color:var(--r)">Delete Payment</button>`
+            ])}
           </div>
         </div>`).join('')}
     </div>` : '';
@@ -7747,23 +7790,25 @@ window.openPurPayModal = function(purId) {
 window.savePurPayment = function() {
   const purId = document.getElementById('pur-pay-bill-id').value;
   const amt   = parseFloat(document.getElementById('pur-pay-amt').value)||0;
+  const discount = parseFloat(document.getElementById('pur-pay-discount').value)||0;
   const date  = document.getElementById('pur-pay-date').value || today();
   const mode  = document.getElementById('pur-pay-mode').value;
   const note  = document.getElementById('pur-pay-note').value.trim();
 
-  if (amt <= 0) { toast('Enter payment amount!'); return; }
+  if (amt <= 0 && discount <= 0) { toast('Enter payment or discount amount!'); return; }
 
   const purs = getPurchases();
   const pur  = purs.find(p=>p.id===purId); if (!pur) return;
 
   if (!pur.payments) pur.payments = [];
-  pur.payments.push({ date, amt, mode, note });
-  pur.paid    = (pur.paid||0) + amt;
-  pur.balance = Math.max(0, (pur.total||0) - pur.paid);
+  if (!pur.discounts) pur.discounts = [];
+  if (amt > 0) pur.payments.push({ date, amt, mode, note });
+  if (discount > 0) pur.discounts.push({ date, amt: discount, note: note || 'Discount' });
+  recalcPurchaseFinancials(pur);
   DB.set('purchases', purs);
 
   closeModal('pur-pay-modal');
-  toast(`${fc(amt)} payment recorded! Balance: ${fc(pur.balance)} ✓`);
+  toast(`Saved. Paid: ${fc(amt)} Discount: ${fc(discount)} Balance: ${fc(pur.balance)} ✓`);
 
   // Refresh whichever page is visible
   if (typeof renderPurchaseList==='function') renderPurchaseList();
@@ -7778,11 +7823,22 @@ window.delPurPayEntry = function(purId, idx) {
   const purs = getPurchases();
   const pur  = purs.find(p=>p.id===purId); if (!pur||!pur.payments) return;
   pur.payments.splice(idx, 1);
-  pur.paid    = pur.payments.reduce((a,p)=>a+(p.amt||0), 0);
-  pur.balance = Math.max(0, (pur.total||0) - pur.paid);
+  recalcPurchaseFinancials(pur);
   DB.set('purchases', purs);
   toast('Payment deleted ✓');
   openPurPayModal(purId); // re-open to refresh
+};
+window.editPurPayEntry = function(purId, idx){
+  const purs = getPurchases();
+  const pur = purs.find(p=>p.id===purId); if(!pur?.payments?.[idx]) return;
+  const pay = pur.payments[idx];
+  const nAmt = parseFloat(prompt('Edit payment amount', pay.amt)) || 0;
+  if (nAmt <= 0) return;
+  pay.amt = nAmt;
+  pay.note = prompt('Edit payment note', pay.note||'') ?? pay.note;
+  recalcPurchaseFinancials(pur);
+  DB.set('purchases', purs);
+  openPurPayModal(purId);
 };
 
 // ════════════════════════════════════════════════════════
@@ -7852,11 +7908,7 @@ window.renderPurchaseList = function() {
       <td style="text-align:right;font-weight:700;color:${(p.balance||0)>0?'var(--r)':'var(--gray-400)'}">${fc(p.balance||0)}</td>
       <td><span class="badge ${ptBadge(p.payType||'Cash')}">${p.payType||'Cash'}</span></td>
       <td>${p.photoData?'<span class="badge bo">📷</span>':'-'}</td>
-      <td class="no-print" style="text-align:right;white-space:nowrap">
-        <button class="btn btn-b btn-xs" onclick="viewPurchase('${p.id}')">View</button>
-        ${(p.balance||0)>0?`<button class="btn btn-g btn-xs" onclick="openPurPayModal('${p.id}')">Pay</button>`:''}
-        <button class="btn btn-r btn-xs" onclick="delPurchase('${p.id}')">Del</button>
-      </td>
+      <td class="no-print" style="text-align:right;white-space:nowrap">${rowActionMenu([`<button onclick="viewPurchase('${p.id}')">View</button>`,(p.balance||0)>0?`<button onclick="openPurPayModal('${p.id}')">Add Payment</button>`:'',`<button onclick="delPurchase('${p.id}')" style="color:var(--r)">Delete</button>`].filter(Boolean))}</td>
     </tr>`).join('')}</tbody>
     <tfoot><tr>
       <td colspan="4">Total (${f.length})</td>
@@ -7936,7 +7988,7 @@ window.renderPurPayPage = function() {
             <td style="text-align:right">${fc(p.total)}</td>
             <td style="text-align:right;color:var(--g)">${fc(p.paid||0)}</td>
             <td style="text-align:right;font-weight:700;color:var(--r)">${fc(p.balance)}</td>
-            <td><button class="btn btn-g btn-xs" onclick="openPurPayModal('${p.id}')">💳 Pay Now</button></td>
+            <td>${rowActionMenu([`<button onclick="viewPurchase('${p.id}')">View</button>`,`<button onclick="openPurPayModal('${p.id}')">Add Payment</button>`])}</td>
           </tr>`).join('')}</tbody>
           <tfoot><tr>
             <td colspan="3">Total</td>
@@ -7965,10 +8017,7 @@ window.renderPurPayPage = function() {
             <td style="text-align:right;font-weight:700;color:var(--g)">${fc(p.amt)}</td>
             <td><span class="ph-badge">${p.mode||'Cash'}</span></td>
             <td style="color:var(--gray-500)">${p.note||'-'}</td>
-            <td>
-              <button class="btn btn-b btn-xs" onclick="viewPurchase('${p._purId}')">Bill</button>
-              <button class="btn btn-r btn-xs" onclick="delPurPayEntry('${p._purId}',${p._idx});renderPurPayPage()">Del</button>
-            </td>
+            <td>${rowActionMenu([`<button onclick="viewPurchase('${p._purId}')">View Bill</button>`,`<button onclick="editPurPayEntry('${p._purId}',${p._idx});renderPurPayPage()">Edit Payment</button>`,`<button onclick="delPurPayEntry('${p._purId}',${p._idx});renderPurPayPage()" style="color:var(--r)">Delete Payment</button>`])}</td>
           </tr>`).join('')}</tbody>
           <tfoot><tr>
             <td colspan="3">Total</td>
