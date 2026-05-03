@@ -3606,15 +3606,15 @@ window.<span class="fn">saveSaleInvoice</span> = <span class="kw">function</span
 <span class="cm">// Variables go inside ${"{"}...{"}"}</span>
 
 <span class="kw">function</span> <span class="fn">renderTable</span>(<span class="nm">items</span>) {
-  <span class="kw">return</span> <span class="st">\`
+  <span class="kw">return</span> <span class="st">`
     &lt;table&gt;
-      \${</span><span class="nm">items</span>.<span class="fn">map</span>(<span class="nm">item</span> => <span class="st">\`
+      \${</span><span class="nm">items</span>.<span class="fn">map</span>(<span class="nm">item</span> => <span class="st">`
         &lt;tr&gt;
           &lt;td&gt;\${</span><span class="nm">item</span>.name<span class="st">}&lt;/td&gt;
           &lt;td&gt;\${</span><span class="fn">fc</span>(<span class="nm">item</span>.price)<span class="st">}&lt;/td&gt;
-        &lt;/tr&gt;\`
+        &lt;/tr&gt;`
       </span>).<span class="fn">join</span>(<span class="st">''</span>)<span class="st">}
-    &lt;/table&gt;\`</span>;
+    &lt;/table&gt;`</span>;
 }
 
 <span class="cm">// Inject into page:</span>
@@ -3660,8 +3660,8 @@ window.<span class="fn">nav</span> = <span class="kw">function</span>(<span clas
 
 <span class="cm">// 4. Write render function</span>
 <span class="kw">function</span> <span class="fn">renderMyPage</span>() {
-  document.<span class="fn">getElementById</span>(<span class="st">'page-mypage'</span>).innerHTML = <span class="st">\`
-    &lt;div&gt;Hello World!&lt;/div&gt;\`</span>;
+  document.<span class="fn">getElementById</span>(<span class="st">'page-mypage'</span>).innerHTML = <span class="st">`
+    &lt;div&gt;Hello World!&lt;/div&gt;`</span>;
 }</div>
       </div>
 
@@ -3693,7 +3693,7 @@ window.<span class="fn">nav</span> = <span class="kw">function</span>(<span clas
             ['parseFloat(str) || 0', 'String to number safely'],
             ['Math.max(0, total - paid)', 'Never go below 0'],
             ['JSON.parse / JSON.stringify', 'Object ↔ String'],
-            ['template \`Hello \${name}\`', 'String with variables'],
+            ['template `Hello \${name}`', 'String with variables'],
           ].map(([code,desc])=>`
             <div style="padding:8px;background:var(--gray-50);border-radius:6px">
               <code style="color:var(--b);display:block;margin-bottom:3px">${code}</code>
@@ -6237,7 +6237,7 @@ window.setSaleItem = function(id, itemId, name, rate, unit){
   const badge = document.getElementById('item-last-party-info-' + id);
   if(badge){
     if(lastSale){
-      badge.innerHTML = \`<span style="background:var(--gray-100);padding:1px 4px;border-radius:3px;border:1px solid var(--gray-200);color:var(--g)">Last: \${fc(lastSale.rate)} (Inv: \${lastSale.invoiceNo}, \${fmtDate(lastSale.date)})</span>\`;
+      badge.innerHTML = `<span style="background:var(--gray-100);padding:1px 4px;border-radius:3px;border:1px solid var(--gray-200);color:var(--g)">Last: \${fc(lastSale.rate)} (Inv: \${lastSale.invoiceNo}, \${fmtDate(lastSale.date)})</span>`;
     } else {
       badge.innerHTML = '';
     }
@@ -6252,7 +6252,6 @@ if(document.getElementById('page-new-sale')?.style.display !== 'none'){
 console.log('v12 fix applied ✓ — Qty before Pack, grid aligned, last party rate badge');
 })();
 </script>
-cat >> /home/claude/v9base.html << 'PATCH_END'
 <!-- ═══════════════════════════════════════════════════════════
      V13 MEGA PATCH — Cancel Invoice | PDF Naming | Pagination(20) |
      Payment History Modal | Status Fixes | Double-click Detail |
@@ -7137,5 +7136,984 @@ console.log('v13 applied ✓ — Cancel Invoice | PDF Naming | Pagination(20) | 
 
 })(); // end v13
 </script>
-PATCH_END
+
+cat >> /home/claude/v9base.html << 'V14_END'
+<!-- ═══════════════════════════════════════════════════════════
+     V14 PATCH — Purchase Upgrade
+     1. Party-wise Bulk Purchase Entry (Old Bills)
+     2. Purchase Payment System (per-bill payments, balance tracking)
+     3. Purchase List: balance/due column, pay button
+     4. Supplier Ledger in Reports
+     ═══════════════════════════════════════════════════════════ -->
+<style>
+/* ── V14 Purchase styles ─────────────────────────────── */
+.pur-bulk-table { width:100%; border-collapse:collapse; font-size:12.5px; min-width:780px; }
+.pur-bulk-table th { background:var(--gray-50); padding:7px 8px; font-size:11px; font-weight:700;
+  color:var(--gray-500); border-bottom:2px solid var(--gray-200); white-space:nowrap; }
+.pur-bulk-table td { padding:3px 4px; border-bottom:1px solid var(--gray-100); vertical-align:middle; }
+.pur-bulk-table tr:hover td { background:#f0fdf4; }
+.pur-bulk-table input, .pur-bulk-table select { font-size:12.5px; padding:5px 7px; }
+.pur-bal-cell { font-weight:700; text-align:right; padding:5px 8px; min-width:80px; }
+.pur-due { color:var(--r); }
+.pur-paid-full { color:var(--g); }
+
+/* Purchase payment history */
+.pur-pay-row { display:flex; justify-content:space-between; align-items:center;
+  padding:5px 0; border-bottom:1px solid var(--gray-100); font-size:12.5px; }
+.pur-pay-row:last-child { border-bottom:none; }
+
+/* Supplier search dropdown in bulk entry */
+.supp-chip { display:inline-flex; align-items:center; gap:6px; padding:5px 12px;
+  border:1.5px solid var(--gray-300); border-radius:20px; cursor:pointer; font-size:12.5px;
+  font-weight:500; color:var(--gray-700); background:#fff; transition:.15s; }
+.supp-chip:hover, .supp-chip.active { border-color:var(--b); color:var(--b); background:var(--bl); }
+.supp-chip.active { font-weight:700; }
+</style>
+<script>
+(function v14(){
+'use strict';
+
+// ════════════════════════════════════════════════════════
+// DATA MIGRATION — add payments[] and balance to old purchases
+// ════════════════════════════════════════════════════════
+(function migratePurchasesV14(){
+  const purs = getPurchases();
+  let changed = false;
+  purs.forEach(p => {
+    if (!p.payments) { p.payments = []; changed = true; }
+    if (p.balance === undefined || p.balance === null) {
+      p.balance = Math.max(0, (p.total||0) - (p.paid||0));
+      changed = true;
+    }
+    if (!p.partyId) p.partyId = '';
+  });
+  if (changed) { DB.set('purchases', purs); console.log('v14 purchase migration done'); }
+})();
+
+// ════════════════════════════════════════════════════════
+// HELPERS
+// ════════════════════════════════════════════════════════
+// Bulk entry state
+let purBulkRows   = [];
+let purBulkPartyId   = '';
+let purBulkPartyName = '';
+
+function purBulkNewRow() {
+  return {
+    id:      genId(),
+    date:    today(),
+    billNo:  '',
+    total:   '',
+    paid:    '',
+    notes:   ''
+  };
+}
+
+function purBulkCalcBal(r) {
+  return Math.max(0, parseFloat(r.total||0) - parseFloat(r.paid||0));
+}
+
+// ════════════════════════════════════════════════════════
+// 1. INJECT "Bulk Entry" page link into nav
+// ════════════════════════════════════════════════════════
+(function injectPurNav(){
+  // Add page-pur-bulk to DOM
+  if (!document.getElementById('page-pur-bulk')) {
+    const pg = document.createElement('div');
+    pg.id = 'page-pur-bulk'; pg.className = 'page'; pg.style.display = 'none';
+    document.querySelector('main').appendChild(pg);
+  }
+  // Add page-pur-pay to DOM (payment ledger)
+  if (!document.getElementById('page-pur-pay')) {
+    const pg = document.createElement('div');
+    pg.id = 'page-pur-pay'; pg.className = 'page'; pg.style.display = 'none';
+    document.querySelector('main').appendChild(pg);
+  }
+  // Nav links
+  const navSec = document.querySelector('.nav-sec');
+  if (navSec) {
+    const purLabel = navSec.querySelector('.nav-lbl');
+    // Find purchase section — insert after "Purchase List" link
+    const plLink = document.querySelector('[data-pg="purchase-list"]');
+    if (plLink && !document.querySelector('[data-pg="pur-bulk"]')) {
+      const blk = document.createElement('a');
+      blk.className = 'nl'; blk.setAttribute('data-pg','pur-bulk');
+      blk.setAttribute('onclick',"nav('pur-bulk')");
+      blk.innerHTML = '<span class="nl-ic">📥</span>Bulk Purchase';
+      plLink.parentNode.insertBefore(blk, plLink.nextSibling);
+
+      const payLink = document.createElement('a');
+      payLink.className = 'nl'; payLink.setAttribute('data-pg','pur-pay');
+      payLink.setAttribute('onclick',"nav('pur-pay')");
+      payLink.innerHTML = '<span class="nl-ic">💳</span>Purchase Payments';
+      blk.parentNode.insertBefore(payLink, blk.nextSibling);
+    }
+  }
+})();
+
+// ════════════════════════════════════════════════════════
+// 2. NAV OVERRIDE — handle new pages
+// ════════════════════════════════════════════════════════
+const _origNavV14 = window.nav;
+window.nav = function(pg) {
+  _origNavV14(pg);
+  if (pg === 'pur-bulk') renderPurBulkPage();
+  if (pg === 'pur-pay')  renderPurPayPage();
+};
+
+// ════════════════════════════════════════════════════════
+// 3. BULK PURCHASE ENTRY PAGE
+// ════════════════════════════════════════════════════════
+window.renderPurBulkPage = function() {
+  const el = document.getElementById('page-pur-bulk'); if (!el) return;
+
+  el.innerHTML = `
+    <div class="ph" style="position:sticky;top:0;z-index:50;background:#fff;border-bottom:1px solid var(--gray-200);
+      padding:12px 22px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px">
+      <h1>📥 Bulk Purchase Entry</h1>
+      <div style="display:flex;gap:8px;flex-wrap:wrap">
+        <button class="btn btn-out btn-sm" onclick="nav('new-purchase')">✍️ Single Entry</button>
+        <button class="btn btn-out btn-sm" onclick="nav('purchase-list')">← Purchase List</button>
+      </div>
+    </div>
+
+    <div class="pb" style="padding:18px 22px">
+
+      <!-- INFO -->
+      <div class="card" style="border-left:4px solid var(--b);padding:12px 16px;margin-bottom:14px">
+        <div style="font-weight:700;font-size:13.5px;color:var(--b);margin-bottom:4px">
+          💡 Fastest way to import old purchase bills
+        </div>
+        <div style="font-size:13px;color:var(--gray-600);line-height:1.7">
+          Select a supplier → Enter all their bills in the table → Save all at once.<br>
+          Press <kbd style="background:var(--gray-100);padding:1px 5px;border-radius:3px;font-size:11px">Tab</kbd> to move between fields.
+          Press <kbd style="background:var(--gray-100);padding:1px 5px;border-radius:3px;font-size:11px">Enter</kbd> in last field to add next row.
+        </div>
+      </div>
+
+      <!-- STEP 1: SUPPLIER -->
+      <div class="card">
+        <div style="font-weight:700;font-size:13.5px;color:var(--g);margin-bottom:12px">Step 1 — Select Supplier</div>
+
+        <!-- Quick supplier chips -->
+        <div id="pur-supp-chips" style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px">
+          ${getParties().filter(p=>p.type==='supplier'||p.type==='both').slice(0,8).map(p=>`
+            <div class="supp-chip" onclick="purBulkSelectParty('${p.id}','${esc(p.name)}')"
+              data-sid="${p.id}">${p.name}${p.area?` <span style="font-size:10.5px;color:var(--gray-400)">· ${p.area}</span>`:''}</div>
+          `).join('')}
+        </div>
+
+        <div style="display:flex;gap:10px;align-items:flex-end;flex-wrap:wrap">
+          <div style="flex:1;min-width:200px">
+            <label class="fl">Supplier Name *</label>
+            <div class="ac-wrap">
+              <input class="fc" id="purb-party" placeholder="Type to search supplier..."
+                oninput="purbPartyAC(this.value)" autocomplete="off">
+              <input type="hidden" id="purb-party-id">
+              <div class="ac-list" id="ac-purb-party"></div>
+            </div>
+          </div>
+          <div>
+            <label class="fl">Default Pay Type</label>
+            <select class="fc" id="purb-paytype" style="min-width:140px">
+              <option value="Cash">💵 Cash</option>
+              <option value="Credit">📋 Credit</option>
+              <option value="Cheque">🏦 Cheque</option>
+              <option value="NEFT">🔗 NEFT/RTGS</option>
+              <option value="UPI">📱 UPI</option>
+            </select>
+          </div>
+          <button class="btn btn-g btn-sm" onclick="purBulkAddRow()">+ Add Row</button>
+        </div>
+        <div id="purb-party-info" style="margin-top:8px;font-size:12px;color:var(--g);font-weight:600"></div>
+      </div>
+
+      <!-- STEP 2: TABLE -->
+      <div class="card" style="padding:0;overflow:hidden">
+        <div style="background:var(--gray-50);padding:10px 14px;border-bottom:1px solid var(--gray-200);
+          display:flex;align-items:center;justify-content:space-between">
+          <div style="font-weight:700;font-size:13.5px;color:var(--g)">Step 2 — Enter Bills</div>
+          <div style="display:flex;gap:8px">
+            <button class="btn btn-out btn-sm" onclick="purBulkAddRow()">+ Add Row</button>
+            <button class="btn btn-out btn-sm" onclick="purBulkClear()">🗑 Clear</button>
+          </div>
+        </div>
+        <div style="overflow-x:auto">
+          <table class="pur-bulk-table">
+            <thead>
+              <tr>
+                <th style="width:28px">#</th>
+                <th style="width:110px">Date *</th>
+                <th style="width:110px">Bill No</th>
+                <th style="width:105px">Total (₹) *</th>
+                <th style="width:105px">Paid (₹)</th>
+                <th style="width:90px">Balance</th>
+                <th style="width:110px">Pay Type</th>
+                <th>Notes</th>
+                <th style="width:26px"></th>
+              </tr>
+            </thead>
+            <tbody id="purb-rows"></tbody>
+            <tfoot>
+              <tr style="background:var(--gray-50);font-weight:700">
+                <td colspan="3" style="padding:8px 10px;font-size:13px">Total</td>
+                <td style="padding:8px;text-align:right;color:var(--b)" id="purb-total-sum">₹0.00</td>
+                <td style="padding:8px;text-align:right;color:var(--g)" id="purb-paid-sum">₹0.00</td>
+                <td style="padding:8px;text-align:right;color:var(--r)" id="purb-bal-sum">₹0.00</td>
+                <td colspan="3"></td>
+              </tr>
+            </tfoot>
+          </table>
+        </div>
+      </div>
+
+      <!-- STEP 3: SAVE -->
+      <div class="card" style="background:linear-gradient(135deg,#f0fdf4,#fff);display:flex;
+        align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px">
+        <div>
+          <div style="font-weight:700;font-size:13.5px;color:var(--g)">Step 3 — Save All</div>
+          <div id="purb-save-info" style="font-size:12.5px;color:var(--gray-500)">Fill supplier and at least one bill.</div>
+        </div>
+        <button class="btn btn-g" onclick="purBulkSaveAll()" style="font-size:14px;padding:9px 20px">
+          💾 Save All Bills
+        </button>
+      </div>
+
+      <!-- EXISTING BILLS FOR THIS SUPPLIER -->
+      <div id="purb-history"></div>
+
+    </div>`;
+
+  // Init 5 empty rows
+  purBulkRows = [];
+  for (let i = 0; i < 5; i++) purBulkRows.push(purBulkNewRow());
+  purBulkRenderRows();
+};
+
+// ── Supplier Autocomplete ────────────────────────────────
+window.purbPartyAC = function(val) {
+  const list = document.getElementById('ac-purb-party');
+  document.getElementById('purb-party-id').value = '';
+  purBulkPartyId = ''; purBulkPartyName = val;
+  document.getElementById('purb-party-info').textContent = '';
+  if (!val) { list.style.display = 'none'; return; }
+  const q = val.toLowerCase();
+  const res = getParties().filter(p =>
+    (p.name||'').toLowerCase().includes(q) || (p.area||'').toLowerCase().includes(q)
+  ).slice(0, 8);
+  list.innerHTML = res.map(p => `
+    <div class="ac-item" onclick="purBulkSelectParty('${p.id}','${esc(p.name)}')">
+      <div style="font-weight:600">${p.name}${p.area?` <span style="color:var(--gray-400);font-size:10.5px">· ${p.area}</span>`:''}</div>
+      <div class="ac-sub">${p.phone||''}</div>
+    </div>`).join('') +
+    `<div class="ac-item" onclick="purBulkQuickAdd('${esc(val)}')" style="color:var(--g)">
+      <strong>+ Add "${val}" as new supplier</strong>
+    </div>`;
+  list.style.display = 'block';
+};
+
+window.purBulkSelectParty = function(id, name) {
+  purBulkPartyId   = id;
+  purBulkPartyName = name;
+  const inp = document.getElementById('purb-party');
+  const hid = document.getElementById('purb-party-id');
+  if (inp) inp.value = name;
+  if (hid) hid.value = id;
+  document.getElementById('ac-purb-party').style.display = 'none';
+
+  // Highlight chip
+  document.querySelectorAll('#pur-supp-chips .supp-chip').forEach(c => {
+    c.classList.toggle('active', c.dataset.sid === id);
+  });
+
+  // Show existing bills for this supplier
+  const purs = getPurchases().filter(p => p.partyId === id || p.partyName === name);
+  const total = purs.reduce((a,p)=>a+(p.total||0),0);
+  const bal   = purs.reduce((a,p)=>a+(p.balance||0),0);
+  const info  = document.getElementById('purb-party-info');
+  if (info) info.innerHTML = purs.length
+    ? `✓ ${purs.length} existing bills | Total: ${fc(total)} | Outstanding: <span style="color:${bal>0?'var(--r)':'var(--g)'}">${fc(bal)}</span>`
+    : '✓ New supplier — no existing bills';
+
+  purBulkShowHistory(id, name);
+};
+
+window.purBulkQuickAdd = function(name) {
+  const p = { id:genId(), name, phone:'', address:'', area:'', type:'supplier', openingBal:0, createdAt:today() };
+  const parties = getParties(); parties.push(p); DB.set('parties', parties);
+  purBulkSelectParty(p.id, name);
+  toast(`Supplier "${name}" added!`);
+};
+
+// ── Bulk Row Render ───────────────────────────────────────
+window.purBulkRenderRows = function() {
+  const tbody = document.getElementById('purb-rows'); if (!tbody) return;
+  tbody.innerHTML = purBulkRows.map((r, i) => `
+    <tr id="purbt-${r.id}" style="border-bottom:1px solid var(--gray-100)">
+      <td style="padding:5px 8px;color:var(--gray-400);font-size:11px;text-align:center">${i+1}</td>
+      <td style="padding:3px 4px">
+        <input type="date" class="fc fc-sm" id="purbd-${r.id}" value="${r.date}"
+          onchange="purBulkUpdate('${r.id}','date',this.value)" style="min-width:100px">
+      </td>
+      <td style="padding:3px 4px">
+        <input class="fc fc-sm" id="purbb-${r.id}" value="${esc(r.billNo)}" placeholder="Bill no..."
+          onchange="purBulkUpdate('${r.id}','billNo',this.value)" style="min-width:90px">
+      </td>
+      <td style="padding:3px 4px">
+        <input type="number" class="fc fc-sm" id="purbt2-${r.id}" value="${r.total}" placeholder="0.00" min="0"
+          onchange="purBulkUpdate('${r.id}','total',this.value)"
+          oninput="purBulkCalcRowDOM('${r.id}')"
+          style="text-align:right;min-width:90px">
+      </td>
+      <td style="padding:3px 4px">
+        <input type="number" class="fc fc-sm" id="purbp-${r.id}" value="${r.paid}" placeholder="0.00" min="0"
+          onchange="purBulkUpdate('${r.id}','paid',this.value)"
+          oninput="purBulkCalcRowDOM('${r.id}')"
+          style="text-align:right;min-width:90px">
+      </td>
+      <td class="pur-bal-cell ${purBulkCalcBal(r)>0?'pur-due':'pur-paid-full'}" id="purba-${r.id}">
+        ${r.total ? fc(purBulkCalcBal(r)) : '—'}
+      </td>
+      <td style="padding:3px 4px">
+        <select class="fc fc-sm" id="purbpt-${r.id}" style="min-width:90px;font-size:12px"
+          onchange="purBulkUpdate('${r.id}','payType',this.value)">
+          <option value="Cash"   ${(r.payType||'Cash')==='Cash'  ?'selected':''}>Cash</option>
+          <option value="Credit" ${(r.payType||'')==='Credit'?'selected':''}>Credit</option>
+          <option value="Cheque" ${(r.payType||'')==='Cheque'?'selected':''}>Cheque</option>
+          <option value="NEFT"   ${(r.payType||'')==='NEFT'  ?'selected':''}>NEFT</option>
+          <option value="UPI"    ${(r.payType||'')==='UPI'   ?'selected':''}>UPI</option>
+        </select>
+      </td>
+      <td style="padding:3px 4px">
+        <input class="fc fc-sm" id="purbn-${r.id}" value="${esc(r.notes)}" placeholder="Notes..."
+          onchange="purBulkUpdate('${r.id}','notes',this.value)"
+          onkeydown="purBulkNotesKey(event,'${r.id}')"
+          style="min-width:110px">
+      </td>
+      <td style="padding:3px 5px;text-align:center">
+        <button onclick="purBulkDelRow('${r.id}')" tabindex="-1"
+          style="background:none;border:none;cursor:pointer;color:var(--r);font-size:16px;line-height:1">✕</button>
+      </td>
+    </tr>`).join('');
+  purBulkUpdateTotals();
+};
+
+window.purBulkUpdate = function(id, field, val) {
+  const r = purBulkRows.find(r=>r.id===id); if (r) r[field] = val;
+};
+
+window.purBulkCalcRowDOM = function(id) {
+  const r = purBulkRows.find(r=>r.id===id); if (!r) return;
+  const t = document.getElementById('purbt2-'+id);
+  const p = document.getElementById('purbp-'+id);
+  const b = document.getElementById('purba-'+id);
+  r.total = t?.value || '';
+  r.paid  = p?.value || '';
+  const bal = purBulkCalcBal(r);
+  if (b) {
+    b.textContent = r.total ? fc(bal) : '—';
+    b.className = `pur-bal-cell ${bal>0?'pur-due':'pur-paid-full'}`;
+  }
+  purBulkUpdateTotals();
+};
+
+window.purBulkUpdateTotals = function() {
+  const tT = purBulkRows.reduce((a,r)=>a+parseFloat(r.total||0),0);
+  const tP = purBulkRows.reduce((a,r)=>a+parseFloat(r.paid||0),0);
+  const tB = purBulkRows.reduce((a,r)=>a+purBulkCalcBal(r),0);
+  const s = document.getElementById('purb-total-sum');
+  const p = document.getElementById('purb-paid-sum');
+  const b = document.getElementById('purb-bal-sum');
+  if (s) s.textContent = fc(tT);
+  if (p) p.textContent = fc(tP);
+  if (b) b.textContent = fc(tB);
+  const filled = purBulkRows.filter(r=>r.total && parseFloat(r.total)>0).length;
+  const info = document.getElementById('purb-save-info');
+  if (info) info.textContent = filled
+    ? `${filled} bill(s) ready | Total: ${fc(tT)} | Paid: ${fc(tP)} | Balance: ${fc(tB)}`
+    : 'Fill supplier and at least one bill with amount.';
+};
+
+window.purBulkAddRow = function() {
+  const defPay = document.getElementById('purb-paytype')?.value || 'Cash';
+  purBulkRows.push({ ...purBulkNewRow(), payType: defPay });
+  purBulkRenderRows();
+  setTimeout(() => {
+    const dates = document.querySelectorAll('[id^="purbd-"]');
+    if (dates.length) dates[dates.length-1].focus();
+  }, 50);
+};
+
+window.purBulkDelRow = function(id) {
+  purBulkRows = purBulkRows.filter(r=>r.id!==id);
+  if (!purBulkRows.length) purBulkRows.push(purBulkNewRow());
+  purBulkRenderRows();
+};
+
+window.purBulkClear = function() {
+  if (purBulkRows.filter(r=>r.total).length > 0)
+    if (!confirm('Clear all rows?')) return;
+  purBulkRows = [];
+  for (let i=0; i<5; i++) purBulkRows.push(purBulkNewRow());
+  purBulkRenderRows();
+};
+
+// Enter on Notes → add new row
+window.purBulkNotesKey = function(e, id) {
+  if (e.key !== 'Enter') return;
+  e.preventDefault();
+  purBulkUpdate(id, 'notes', e.target.value);
+  purBulkAddRow();
+};
+
+// ── Save All ─────────────────────────────────────────────
+window.purBulkSaveAll = function() {
+  const pName = document.getElementById('purb-party')?.value?.trim();
+  const pId   = document.getElementById('purb-party-id')?.value || '';
+  if (!pName) { toast('Select a supplier first!'); return; }
+
+  const valid = purBulkRows.filter(r => r.total && parseFloat(r.total) > 0);
+  if (!valid.length) { toast('Enter at least one bill with amount!'); return; }
+
+  const purs = getPurchases();
+  let count = 0;
+  valid.forEach((r, i) => {
+    const total = parseFloat(r.total)||0;
+    const paid  = parseFloat(r.paid||0);
+    const bal   = Math.max(0, total-paid);
+    purs.push({
+      id:        genId(),
+      date:      r.date || today(),
+      partyId:   pId,
+      partyName: pName,
+      billNo:    r.billNo || `PB-${pName.slice(0,3).toUpperCase()}-${(i+1).toString().padStart(3,'0')}`,
+      mode:      'amount',
+      total, paid, balance: bal,
+      payType:   r.payType || 'Cash',
+      payments:  paid > 0 ? [{ date: r.date||today(), amt: paid, mode: r.payType||'Cash', note: 'Opening' }] : [],
+      items:     [], notes: (r.notes||'') + (pName ? '' : ''),
+      createdAt: new Date().toISOString()
+    });
+    count++;
+  });
+  DB.set('purchases', purs);
+  toast(`✓ ${count} purchase bills saved for "${pName}"!`, 3000);
+  // Reset rows, keep supplier
+  purBulkRows = [];
+  for (let i=0; i<5; i++) purBulkRows.push(purBulkNewRow());
+  purBulkRenderRows();
+  purBulkShowHistory(pId, pName);
+};
+
+// ── Supplier History below bulk entry ────────────────────
+window.purBulkShowHistory = function(partyId, partyName) {
+  const el = document.getElementById('purb-history'); if (!el) return;
+  const bills = getPurchases()
+    .filter(p => p.partyId === partyId || p.partyName === partyName)
+    .slice().reverse().slice(0, 20);
+  if (!bills.length) { el.innerHTML = ''; return; }
+
+  const tT = bills.reduce((a,b)=>a+(b.total||0),0);
+  const tB = bills.reduce((a,b)=>a+(b.balance||0),0);
+
+  el.innerHTML = `
+    <div class="card" style="margin-top:10px">
+      <div style="font-weight:700;font-size:13.5px;margin-bottom:10px;display:flex;justify-content:space-between;flex-wrap:wrap;gap:6px">
+        <span>Existing Bills — ${partyName}</span>
+        <span style="font-size:13px;font-weight:400">
+          Total: <strong style="color:var(--b)">${fc(tT)}</strong> &nbsp;|&nbsp;
+          Outstanding: <strong style="color:${tB>0?'var(--r)':'var(--g)'}">${fc(tB)}</strong>
+        </span>
+      </div>
+      <div class="tw"><table>
+        <thead><tr><th>Date</th><th>Bill No</th><th>Total</th><th>Paid</th><th>Balance</th><th>Pay Type</th><th>Actions</th></tr></thead>
+        <tbody>${bills.map(b=>`<tr>
+          <td>${fmtDate(b.date)}</td>
+          <td style="font-weight:600">${b.billNo||'-'}</td>
+          <td style="font-weight:600">${fc(b.total)}</td>
+          <td style="color:var(--g)">${fc(b.paid||0)}</td>
+          <td style="color:${(b.balance||0)>0?'var(--r)':'var(--g)'};font-weight:700">${fc(b.balance||0)}</td>
+          <td><span class="badge ${ptBadge(b.payType||b.mode||'Cash')}">${b.payType||'Cash'}</span></td>
+          <td style="display:flex;gap:4px;white-space:nowrap">
+            <button class="btn btn-b btn-xs" onclick="viewPurchase('${b.id}')">View</button>
+            ${(b.balance||0)>0?`<button class="btn btn-g btn-xs" onclick="openPurPayModal('${b.id}')">Pay</button>`:''}
+            <button class="btn btn-r btn-xs" onclick="delPurchase('${b.id}');purBulkShowHistory('${partyId}','${esc(partyName)}')">Del</button>
+          </td>
+        </tr>`).join('')}</tbody>
+      </table></div>
+    </div>`;
+};
+
+// ════════════════════════════════════════════════════════
+// 2. PURCHASE PAYMENT SYSTEM
+// ════════════════════════════════════════════════════════
+
+// ── Payment Modal ─────────────────────────────────────────
+(function injectPurPayModal(){
+  if (document.getElementById('pur-pay-modal')) return;
+  const modal = document.createElement('div');
+  modal.className = 'mo'; modal.id = 'pur-pay-modal';
+  modal.innerHTML = `
+    <div class="md md-sm">
+      <div class="mh">
+        <span class="mh-t">💳 Purchase Payment</span>
+        <button class="mc" onclick="closeModal('pur-pay-modal')">✕</button>
+      </div>
+      <div class="mb">
+        <input type="hidden" id="pur-pay-bill-id">
+        <div id="pur-pay-info" style="background:var(--gray-50);border-radius:8px;padding:10px 12px;
+          margin-bottom:12px;font-size:13px"></div>
+        <div class="fr2">
+          <div class="fg">
+            <label class="fl">Amount Paid (₹) *</label>
+            <input type="number" class="fc" id="pur-pay-amt" placeholder="0.00" min="0">
+          </div>
+          <div class="fg">
+            <label class="fl">Payment Date</label>
+            <input type="date" class="fc" id="pur-pay-date">
+          </div>
+        </div>
+        <div class="fr2">
+          <div class="fg">
+            <label class="fl">Payment Mode</label>
+            <select class="fc" id="pur-pay-mode">
+              <option>Cash</option><option>Cheque</option>
+              <option>NEFT</option><option>UPI</option>
+              <option>Card</option>
+            </select>
+          </div>
+          <div class="fg">
+            <label class="fl">Reference / Note</label>
+            <input class="fc" id="pur-pay-note" placeholder="Cheque no, UTR...">
+          </div>
+        </div>
+        <div id="pur-pay-history" style="margin-top:10px"></div>
+      </div>
+      <div class="mf">
+        <button class="btn btn-out" onclick="closeModal('pur-pay-modal')">Cancel</button>
+        <button class="btn btn-g" onclick="savePurPayment()">✓ Save Payment</button>
+      </div>
+    </div>`;
+  document.body.appendChild(modal);
+  modal.addEventListener('click', e=>{ if(e.target===modal) modal.classList.remove('show'); });
+})();
+
+window.openPurPayModal = function(purId) {
+  const purs = getPurchases();
+  const pur  = purs.find(p=>p.id===purId); if (!pur) return;
+
+  document.getElementById('pur-pay-bill-id').value = purId;
+  document.getElementById('pur-pay-date').value    = today();
+  document.getElementById('pur-pay-amt').value     = fp(pur.balance||0);
+  document.getElementById('pur-pay-mode').value    = pur.payType || 'Cash';
+  document.getElementById('pur-pay-note').value    = '';
+
+  document.getElementById('pur-pay-info').innerHTML = `
+    <div style="font-weight:700;font-size:13.5px">${pur.partyName||'Supplier'} — ${pur.billNo||pur.id.slice(-6)}</div>
+    <div style="margin-top:5px;display:flex;gap:12px;flex-wrap:wrap;font-size:12.5px">
+      <span>Bill Date: <strong>${fmtDate(pur.date)}</strong></span>
+      <span>Total: <strong>${fc(pur.total)}</strong></span>
+      <span>Paid: <strong style="color:var(--g)">${fc(pur.paid||0)}</strong></span>
+      <span>Balance: <strong style="color:${(pur.balance||0)>0?'var(--r)':'var(--g)'}">${fc(pur.balance||0)}</strong></span>
+    </div>`;
+
+  // Payment history
+  const payments = pur.payments || [];
+  const histEl = document.getElementById('pur-pay-history');
+  histEl.innerHTML = payments.length ? `
+    <div style="border-top:1px solid var(--gray-100);padding-top:10px">
+      <div style="font-size:12px;font-weight:700;color:var(--gray-500);margin-bottom:6px">
+        Payment History (${payments.length})
+      </div>
+      ${payments.map((p,i)=>`
+        <div class="pur-pay-row">
+          <div>
+            <strong>${fmtDate(p.date)}</strong>
+            <span class="ph-badge" style="margin-left:5px">${p.mode||'Cash'}</span>
+            ${p.note?`<span style="color:var(--gray-400);margin-left:4px;font-size:11px">· ${p.note}</span>`:''}
+          </div>
+          <div style="display:flex;align-items:center;gap:8px">
+            <strong style="color:var(--b)">${fc(p.amt)}</strong>
+            <button onclick="delPurPayEntry('${purId}',${i})"
+              style="background:none;border:none;cursor:pointer;color:var(--r);font-size:13px;padding:0 2px">✕</button>
+          </div>
+        </div>`).join('')}
+    </div>` : '';
+
+  document.getElementById('pur-pay-modal').classList.add('show');
+  setTimeout(()=>document.getElementById('pur-pay-amt').focus(), 100);
+};
+
+window.savePurPayment = function() {
+  const purId = document.getElementById('pur-pay-bill-id').value;
+  const amt   = parseFloat(document.getElementById('pur-pay-amt').value)||0;
+  const date  = document.getElementById('pur-pay-date').value || today();
+  const mode  = document.getElementById('pur-pay-mode').value;
+  const note  = document.getElementById('pur-pay-note').value.trim();
+
+  if (amt <= 0) { toast('Enter payment amount!'); return; }
+
+  const purs = getPurchases();
+  const pur  = purs.find(p=>p.id===purId); if (!pur) return;
+
+  if (!pur.payments) pur.payments = [];
+  pur.payments.push({ date, amt, mode, note });
+  pur.paid    = (pur.paid||0) + amt;
+  pur.balance = Math.max(0, (pur.total||0) - pur.paid);
+  DB.set('purchases', purs);
+
+  closeModal('pur-pay-modal');
+  toast(`${fc(amt)} payment recorded! Balance: ${fc(pur.balance)} ✓`);
+
+  // Refresh whichever page is visible
+  if (typeof renderPurchaseList==='function') renderPurchaseList();
+  if (typeof renderPurPayPage==='function' && document.getElementById('page-pur-pay')?.style.display!=='none') renderPurPayPage();
+  if (document.getElementById('purb-history')?.innerHTML) {
+    purBulkShowHistory(pur.partyId||'', pur.partyName||'');
+  }
+};
+
+window.delPurPayEntry = function(purId, idx) {
+  if (!confirm('Delete this payment?')) return;
+  const purs = getPurchases();
+  const pur  = purs.find(p=>p.id===purId); if (!pur||!pur.payments) return;
+  pur.payments.splice(idx, 1);
+  pur.paid    = pur.payments.reduce((a,p)=>a+(p.amt||0), 0);
+  pur.balance = Math.max(0, (pur.total||0) - pur.paid);
+  DB.set('purchases', purs);
+  toast('Payment deleted ✓');
+  openPurPayModal(purId); // re-open to refresh
+};
+
+// ════════════════════════════════════════════════════════
+// 3. PURCHASE LIST — add balance, pay button, due filter
+// ════════════════════════════════════════════════════════
+window.renderPurchaseList = function() {
+  const purs = getPurchases();
+  const from = document.getElementById('pl-from')?.value || '';
+  const to   = document.getElementById('pl-to')?.value || '';
+  const srch = (document.getElementById('pl-srch')?.value||'').toLowerCase();
+  const due  = document.getElementById('pl-due-only')?.checked;
+
+  let f = [...purs];
+  if (from) f = f.filter(p=>p.date>=from);
+  if (to)   f = f.filter(p=>p.date<=to);
+  if (srch) f = f.filter(p=>(p.partyName+(p.billNo||'')).toLowerCase().includes(srch));
+  if (due)  f = f.filter(p=>(p.balance||0)>0);
+  f.reverse();
+
+  const tT = f.reduce((a,p)=>a+(p.total||0),0);
+  const tP = f.reduce((a,p)=>a+(p.paid||0),0);
+  const tB = f.reduce((a,p)=>a+(p.balance||0),0);
+  const dueCnt = f.filter(p=>(p.balance||0)>0).length;
+
+  document.getElementById('pl-summary').innerHTML=`
+    <div class="sg" style="grid-template-columns:repeat(auto-fit,minmax(130px,1fr));margin-bottom:8px">
+      <div class="sc"><div class="sc-lbl">Total Purchase</div><div class="sc-val b">${fc(tT)}</div></div>
+      <div class="sc"><div class="sc-lbl">Total Paid</div><div class="sc-val g">${fc(tP)}</div></div>
+      <div class="sc"><div class="sc-lbl">Outstanding</div><div class="sc-val r">${fc(tB)}</div></div>
+      <div class="sc"><div class="sc-lbl">Bills Due</div><div class="sc-val" style="color:${dueCnt>0?'var(--r)':'var(--g)'}">${dueCnt}</div></div>
+    </div>
+    <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;font-size:13px">
+      <label style="display:flex;align-items:center;gap:5px;cursor:pointer;font-weight:500">
+        <input type="checkbox" id="pl-due-only" ${due?'checked':''} onchange="renderPurchaseList()" style="width:15px;height:15px">
+        Show only unpaid bills
+      </label>
+      ${tB>0?`<span style="color:var(--r);font-size:12px">⚠️ ${dueCnt} bill(s) pending payment</span>`:''}
+    </div>`;
+
+  const c = document.getElementById('purchase-table');
+  if (!f.length) { c.innerHTML=`<div class="empty"><div class="ic">🛒</div>No purchases found</div>`; return; }
+
+  const { pgState, PAGE_SIZE, renderPageBtns } = window;
+  const pageState = pgState || {};
+  const pgSize = PAGE_SIZE || 20;
+  const pg = pageState.purchases || 1;
+  const totalPages = Math.ceil(f.length/pgSize);
+  const pageRows = f.slice((pg-1)*pgSize, pg*pgSize);
+
+  c.innerHTML = `<div class="tw"><table>
+    <thead><tr>
+      <th>#</th><th>Date</th><th>Supplier</th><th>Bill No</th>
+      <th style="text-align:right">Total</th>
+      <th style="text-align:right">Paid</th>
+      <th style="text-align:right">Balance</th>
+      <th>Pay Type</th><th>Photo</th>
+      <th class="no-print" style="text-align:right">Actions</th>
+    </tr></thead>
+    <tbody>${pageRows.map((p,i)=>`<tr ondblclick="viewPurchase('${p.id}')"
+      ${(p.balance||0)>0?'style="background:#fff9f9"':''}>
+      <td style="color:var(--gray-400);font-size:11px">${(pg-1)*pgSize+i+1}</td>
+      <td style="white-space:nowrap">${fmtDate(p.date)}</td>
+      <td style="font-weight:500">${p.partyName||'Cash'}</td>
+      <td>${p.billNo||'-'}</td>
+      <td style="font-weight:600;text-align:right">${fc(p.total)}</td>
+      <td style="text-align:right;color:var(--g)">${fc(p.paid||0)}</td>
+      <td style="text-align:right;font-weight:700;color:${(p.balance||0)>0?'var(--r)':'var(--gray-400)'}">${fc(p.balance||0)}</td>
+      <td><span class="badge ${ptBadge(p.payType||'Cash')}">${p.payType||'Cash'}</span></td>
+      <td>${p.photoData?'<span class="badge bo">📷</span>':'-'}</td>
+      <td class="no-print" style="text-align:right;white-space:nowrap">
+        <button class="btn btn-b btn-xs" onclick="viewPurchase('${p.id}')">View</button>
+        ${(p.balance||0)>0?`<button class="btn btn-g btn-xs" onclick="openPurPayModal('${p.id}')">Pay</button>`:''}
+        <button class="btn btn-r btn-xs" onclick="delPurchase('${p.id}')">Del</button>
+      </td>
+    </tr>`).join('')}</tbody>
+    <tfoot><tr>
+      <td colspan="4">Total (${f.length})</td>
+      <td style="text-align:right;color:var(--b)">${fc(tT)}</td>
+      <td style="text-align:right;color:var(--g)">${fc(tP)}</td>
+      <td style="text-align:right;color:var(--r)">${fc(tB)}</td>
+      <td colspan="3"></td>
+    </tr></tfoot>
+  </table></div>
+  ${f.length>pgSize && typeof renderPageBtns==='function' ? renderPageBtns(f.length, pg, 'plNavPage', 'purchase-table') : ''}`;
+};
+
+// ════════════════════════════════════════════════════════
+// 4. PURCHASE PAYMENT LEDGER PAGE (all purchase payments)
+// ════════════════════════════════════════════════════════
+window.renderPurPayPage = function() {
+  const el = document.getElementById('page-pur-pay'); if (!el) return;
+  const purs = getPurchases();
+
+  // Collect all payments
+  const allPays = [];
+  purs.forEach(pur => {
+    (pur.payments||[]).forEach((p,i) => {
+      allPays.push({
+        ...p,
+        _purId:    pur.id,
+        _billNo:   pur.billNo || pur.id.slice(-6),
+        _party:    pur.partyName||'',
+        _purTotal: pur.total||0,
+        _purBal:   pur.balance||0,
+        _idx:      i
+      });
+    });
+  });
+  allPays.sort((a,b)=>(b.date||'').localeCompare(a.date||''));
+
+  const tPaid = allPays.reduce((a,p)=>a+p.amt,0);
+  const totalDue = purs.reduce((a,p)=>a+(p.balance||0),0);
+
+  // Also list all bills with balance
+  const dueBills = purs.filter(p=>(p.balance||0)>0).slice().reverse();
+
+  el.innerHTML = `
+    <div class="ph" style="position:sticky;top:0;z-index:50;background:#fff;border-bottom:1px solid var(--gray-200);
+      padding:12px 22px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px">
+      <h1>💳 Purchase Payments</h1>
+      <button class="btn btn-out btn-sm" onclick="nav('purchase-list')">← Purchase List</button>
+    </div>
+    <div class="pb" style="padding:18px 22px">
+
+      <!-- Summary -->
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px;margin-bottom:16px">
+        <div class="sc"><div class="sc-lbl">Total Paid (Purchases)</div><div class="sc-val g">${fc(tPaid)}</div></div>
+        <div class="sc"><div class="sc-lbl">Still Outstanding</div><div class="sc-val r">${fc(totalDue)}</div></div>
+        <div class="sc"><div class="sc-lbl">Payment Entries</div><div class="sc-val b">${allPays.length}</div></div>
+        <div class="sc"><div class="sc-lbl">Bills Pending</div><div class="sc-val" style="color:${dueBills.length>0?'var(--r)':'var(--g)'}">${dueBills.length}</div></div>
+      </div>
+
+      <!-- Unpaid Bills section -->
+      ${dueBills.length>0?`
+      <div class="card" style="border-left:4px solid var(--r)">
+        <div style="font-weight:700;font-size:14px;margin-bottom:10px;color:var(--r)">
+          ⚠️ Unpaid Purchase Bills (${dueBills.length})
+        </div>
+        <div class="tw"><table>
+          <thead><tr>
+            <th>Date</th><th>Supplier</th><th>Bill No</th>
+            <th style="text-align:right">Total</th>
+            <th style="text-align:right">Paid</th>
+            <th style="text-align:right">Balance</th>
+            <th>Actions</th>
+          </tr></thead>
+          <tbody>${dueBills.slice(0,20).map(p=>`<tr>
+            <td>${fmtDate(p.date)}</td>
+            <td style="font-weight:600">${p.partyName||'-'}</td>
+            <td>${p.billNo||'-'}</td>
+            <td style="text-align:right">${fc(p.total)}</td>
+            <td style="text-align:right;color:var(--g)">${fc(p.paid||0)}</td>
+            <td style="text-align:right;font-weight:700;color:var(--r)">${fc(p.balance)}</td>
+            <td><button class="btn btn-g btn-xs" onclick="openPurPayModal('${p.id}')">💳 Pay Now</button></td>
+          </tr>`).join('')}</tbody>
+          <tfoot><tr>
+            <td colspan="3">Total</td>
+            <td style="text-align:right">${fc(dueBills.reduce((a,p)=>a+(p.total||0),0))}</td>
+            <td style="text-align:right;color:var(--g)">${fc(dueBills.reduce((a,p)=>a+(p.paid||0),0))}</td>
+            <td style="text-align:right;color:var(--r)">${fc(totalDue)}</td>
+            <td></td>
+          </tr></tfoot>
+        </table></div>
+      </div>`:''}
+
+      <!-- Payment History -->
+      <div class="card">
+        <div style="font-weight:700;font-size:14px;margin-bottom:12px">📋 All Payment Entries</div>
+        ${allPays.length===0?`<div class="empty"><div class="ic">💳</div>No purchase payments recorded yet.</div>`:`
+        <div class="tw"><table>
+          <thead><tr>
+            <th>Date</th><th>Supplier</th><th>Bill No</th>
+            <th style="text-align:right">Amount</th>
+            <th>Mode</th><th>Note</th><th>Actions</th>
+          </tr></thead>
+          <tbody>${allPays.slice(0,50).map(p=>`<tr>
+            <td>${fmtDate(p.date)}</td>
+            <td style="font-weight:500">${p._party}</td>
+            <td style="color:var(--b);font-weight:600">${p._billNo}</td>
+            <td style="text-align:right;font-weight:700;color:var(--g)">${fc(p.amt)}</td>
+            <td><span class="ph-badge">${p.mode||'Cash'}</span></td>
+            <td style="color:var(--gray-500)">${p.note||'-'}</td>
+            <td>
+              <button class="btn btn-b btn-xs" onclick="viewPurchase('${p._purId}')">Bill</button>
+              <button class="btn btn-r btn-xs" onclick="delPurPayEntry('${p._purId}',${p._idx});renderPurPayPage()">Del</button>
+            </td>
+          </tr>`).join('')}</tbody>
+          <tfoot><tr>
+            <td colspan="3">Total</td>
+            <td style="text-align:right;color:var(--g)">${fc(tPaid)}</td>
+            <td colspan="3"></td>
+          </tr></tfoot>
+        </table></div>`}
+      </div>
+    </div>`;
+};
+
+// ════════════════════════════════════════════════════════
+// 5. VIEW PURCHASE — upgrade to show pay button + history
+// ════════════════════════════════════════════════════════
+window.viewPurchase = function(id) {
+  const p = getPurchases().find(x=>x.id===id); if (!p) return;
+
+  document.getElementById('pur-view-body').innerHTML = `
+    <div class="fr2" style="margin-bottom:14px">
+      <div>
+        <div class="info-row"><span class="lbl">Date:</span><strong>${fmtDate(p.date)}</strong></div>
+        <div class="info-row"><span class="lbl">Supplier:</span><strong>${p.partyName||'Cash'}</strong></div>
+        <div class="info-row"><span class="lbl">Bill No:</span><span>${p.billNo||'-'}</span></div>
+        <div class="info-row"><span class="lbl">Pay Type:</span><span class="badge ${ptBadge(p.payType||'Cash')}">${p.payType||'Cash'}</span></div>
+        ${p.notes?`<div class="info-row"><span class="lbl">Notes:</span><span>${p.notes}</span></div>`:''}
+      </div>
+      <div>
+        <div class="totbox">
+          <div class="tot-row"><span>Bill Total</span><span style="font-weight:700;color:var(--b)">${fc(p.total)}</span></div>
+          <div class="tot-row"><span>Paid</span><span style="color:var(--g)">${fc(p.paid||0)}</span></div>
+          <div class="tot-row grand"><span>Balance</span>
+            <span style="color:${(p.balance||0)>0?'var(--r)':'var(--g)'}">${fc(p.balance||0)}</span>
+          </div>
+        </div>
+        ${(p.balance||0)>0?`<button class="btn btn-g" style="width:100%;margin-top:10px" onclick="openPurPayModal('${p.id}')">💳 Record Payment</button>`:'<div style="margin-top:10px;padding:10px;background:var(--gl);border-radius:8px;text-align:center;color:var(--gd);font-weight:700">✅ Fully Paid</div>'}
+      </div>
+    </div>
+    ${p.mode==='items'&&p.items?.length?`
+    <div class="tw" style="margin-bottom:14px"><table>
+      <thead><tr><th>#</th><th>Item</th><th>Qty</th><th>Rate</th><th>Amount</th></tr></thead>
+      <tbody>${p.items.map((it,i)=>`<tr>
+        <td>${i+1}</td><td>${it.name}</td><td>${it.qty}</td>
+        <td>${fc(it.rate)}</td><td style="font-weight:600">${fc(it.amt)}</td>
+      </tr>`).join('')}</tbody>
+    </table></div>`:''
+    }
+    ${(p.payments||[]).length?`
+    <div style="margin-bottom:14px">
+      <div style="font-size:12px;font-weight:700;color:var(--gray-600);margin-bottom:8px">
+        💳 Payment History (${p.payments.length} entries)
+      </div>
+      ${(p.payments||[]).map((pay,i)=>`
+        <div class="pur-pay-row">
+          <div>
+            <strong>${fmtDate(pay.date)}</strong>
+            <span class="ph-badge" style="margin-left:5px">${pay.mode||'Cash'}</span>
+            ${pay.note?`<span style="color:var(--gray-400);margin-left:4px;font-size:11px">· ${pay.note}</span>`:''}
+          </div>
+          <strong style="color:var(--b)">${fc(pay.amt)}</strong>
+        </div>`).join('')}
+    </div>`:''
+    }
+    ${p.photoData?`<img src="${p.photoData}" style="max-width:100%;border-radius:8px;border:1px solid var(--gray-200)">`:''
+    }`;
+
+  // Update modal header
+  const mh = document.querySelector('#pur-view-modal .mh');
+  if (mh) {
+    let payBtn = mh.querySelector('.pur-pay-header-btn');
+    if (!payBtn) {
+      payBtn = document.createElement('button');
+      payBtn.className = 'btn btn-g btn-sm pur-pay-header-btn';
+      payBtn.innerHTML = '💳 Pay';
+      payBtn.style.marginRight = '6px';
+      mh.querySelector('.mc').before(payBtn);
+    }
+    payBtn.style.display = (p.balance||0)>0 ? '' : 'none';
+    payBtn.onclick = () => openPurPayModal(p.id);
+  }
+
+  document.getElementById('pur-view-modal').classList.add('show');
+};
+
+// ════════════════════════════════════════════════════════
+// 6. savePurchase — ensure payments[] and balance saved
+// ════════════════════════════════════════════════════════
+const _origSavePurchaseV14 = window.savePurchase;
+window.savePurchase = function() {
+  // We override to ensure balance and payments are set
+  const partyId   = document.getElementById('pur-party-id').value;
+  const partyName = document.getElementById('pur-party').value.trim();
+  const date      = document.getElementById('pur-date').value;
+  const billNo    = document.getElementById('pur-billno').value.trim();
+  const notes     = document.getElementById('pur-notes').value.trim();
+  const payType   = document.getElementById('pur-paytype')?.value || 'Cash';
+  if (!date) { toast('Enter date!'); return; }
+
+  let total, paid, bal, items = [];
+  if (purMode === 'amount') {
+    total = parseFloat(document.getElementById('pur-amount').value)||0;
+    paid  = parseFloat(document.getElementById('pur-paid-amt').value)||0;
+    if (!total) { toast('Enter amount!'); return; }
+    bal = Math.max(0, total - paid);
+  } else {
+    const t = calcPurTotal();
+    const valid = purItems.filter(i=>i.name&&i.qty>0);
+    if (!valid.length) { toast('Add at least one item!'); return; }
+    total=t.total; paid=t.paid; bal=t.bal; items=valid;
+  }
+
+  const pur = {
+    id: genId(), date, partyId, partyName: partyName||'Cash',
+    billNo, mode: purMode, total, paid, balance: bal,
+    payType, items, notes,
+    payments: paid>0 ? [{ date, amt: paid, mode: payType, note: 'Initial payment' }] : [],
+    photoData: purPhotoData||null,
+    createdAt: new Date().toISOString()
+  };
+  const purs = getPurchases(); purs.push(pur); DB.set('purchases', purs);
+  toast('Purchase saved! ✓'); nav('purchase-list');
+};
+
+// ════════════════════════════════════════════════════════
+// 7. Add Pay Type field to new-purchase form
+// ════════════════════════════════════════════════════════
+(function addPayTypeToForm(){
+  const billnoEl = document.getElementById('pur-billno');
+  if (billnoEl && !document.getElementById('pur-paytype')) {
+    const fg = document.createElement('div');
+    fg.className = 'fg';
+    fg.innerHTML = `<label class="fl">Pay Type</label>
+      <select class="fc" id="pur-paytype">
+        <option value="Cash">💵 Cash</option>
+        <option value="Credit">📋 Credit (Pay Later)</option>
+        <option value="Cheque">🏦 Cheque</option>
+        <option value="NEFT">🔗 NEFT/RTGS</option>
+        <option value="UPI">📱 UPI</option>
+      </select>`;
+    billnoEl.closest('.fr3').appendChild(fg);
+  }
+})();
+
+console.log('v14 applied ✓ — Bulk Purchase | Purchase Payments | Balance Tracking | Supplier Ledger');
+
+})(); // end v14
+</script>
+V14_END
 echo "Done. Lines: $(wc -l < /home/claude/v9base.html)"
