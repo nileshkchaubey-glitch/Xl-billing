@@ -298,7 +298,7 @@ input[type=number]::-webkit-inner-spin-button,input[type=number]::-webkit-outer-
         <div style="text-align:center">Packs</div>
         <div style="text-align:center">Qty</div>
         <div style="text-align:right">Rate (₹)</div>
-        <div style="text-align:right">Amt (₹)</div>
+        <div style="text-align:right">Amount (₹)</div>
         <div></div>
       </div>
       <div id="sale-items-body"></div>
@@ -4859,3 +4859,2283 @@ if(localStorage.getItem('v8_compact')==='1') document.querySelector('.main')?.cl
 
 })(); // end v8
 </script>
+<!-- ═══════════════════════════════════════════════════════════
+     V9 PATCH — Sticky Headers | A5 Print | Sr No | Item Brand
+     Item Last 5 Rates | Row Reorder | Item Notes
+     ═══════════════════════════════════════════════════════════ -->
+<style>
+/* FIX 1: Sticky table headers everywhere */
+.tw { position:relative; }
+.tw table thead th,
+#sales-table table thead th,
+#purchase-table table thead th,
+#items-table table thead th,
+#parties-table table thead th,
+#retail-table table thead th,
+#prev-bills-table table thead th {
+  position:sticky; top:0; z-index:10;
+  background:var(--gray-50)!important;
+  box-shadow:0 1px 0 var(--gray-200);
+}
+
+/* Item brand field */
+.item-colour{width:80px;padding:4px 6px;border:1px solid var(--gray-300);border-radius:5px;font-size:12px;background:#fff}
+.item-colour:focus{outline:none;border-color:var(--g)}
+
+/* Item last-5 mini popup */
+.i5-wrap{position:relative}
+.i5-pop{position:absolute;top:calc(100% + 2px);left:0;min-width:240px;background:#fff;border:1px solid var(--gray-200);border-radius:8px;box-shadow:0 8px 24px rgba(0,0,0,.14);z-index:350;display:none;padding:8px 10px;font-size:12px}
+.i5-pop.open{display:block}
+.i5-row{display:flex;justify-content:space-between;padding:3px 0;border-bottom:1px solid var(--gray-100);gap:8px}
+.i5-row:last-child{border-bottom:none}
+
+/* Row reorder buttons */
+.row-move{display:flex;flex-direction:column;gap:1px}
+.row-move button{background:none;border:1px solid var(--gray-200);border-radius:3px;cursor:pointer;font-size:10px;padding:1px 3px;line-height:1;color:var(--gray-500)}
+.row-move button:hover{background:var(--gray-100)}
+
+/* Print A5 styles */
+@media print {
+  .print-a5-page { page-break-after: always; }
+}
+
+/* Sr no in item rows */
+.sr-cell{color:var(--gray-400);font-size:11px;text-align:center;width:22px;flex-shrink:0;padding-top:7px}
+</style>
+
+<script>
+(function v9patch(){
+'use strict';
+
+// ═══════════════════════════════════════════════════════════
+// HELPER: Get last 5 rates for a specific item + party combo
+// ═══════════════════════════════════════════════════════════
+function getItemRates(itemName, partyId){
+  if(!itemName) return [];
+  const invs = getInvoices();
+  const rates = [];
+  // Search all invoices - newest first
+  for(let i=invs.length-1; i>=0; i--){
+    const inv = invs[i];
+    if(partyId && inv.partyId !== partyId) continue; // filter by party if given
+    (inv.items||[]).forEach(it=>{
+      if(it.name && it.name.toLowerCase()===itemName.toLowerCase() && it.rate>0){
+        rates.push({
+          date: inv.date,
+          invoiceNo: inv.invoiceNo,
+          party: inv.partyName||'',
+          rate: it.rate,
+          qty: it.qty
+        });
+      }
+    });
+    if(rates.length>=5) break;
+  }
+  return rates.slice(0,5);
+}
+
+// ═══════════════════════════════════════════════════════════
+// FIX 2 & 3: Override renderSaleItems to add Sr No + Brand + Item Last5 + Reorder
+// ═══════════════════════════════════════════════════════════
+const _origRenderSaleItems = window.renderSaleItems;
+window.renderSaleItems = function(){
+  const s = getSettings();
+  const showPack = s.modules?.packing !== false;
+  const c = document.getElementById('sale-items-body');
+  c.innerHTML = saleItems.map((it, idx) => `
+    <div class="it-row" id="sr-${it.id}" style="grid-template-columns:22px 2fr ${showPack?'88px 54px':''} 58px 88px 88px 60px 28px 28px;gap:3px;align-items:start;margin-bottom:6px">
+      <!-- Sr No -->
+      <div class="sr-cell">${idx+1}</div>
+      <!-- Item Name + Brand -->
+      <div style="display:flex;flex-direction:column;gap:3px">
+        <div class="ac-wrap i5-wrap">
+          <input class="fc fc-sm" id="sn-${it.id}" value="${esc(it.name)}" placeholder="Item name..." autocomplete="off"
+            oninput="siName('${it.id}',this.value)"
+            onfocus="siShowRates('${it.id}')">
+          <div class="ac-list" id="ac-sn-${it.id}"></div>
+          <div class="i5-pop" id="i5-${it.id}"></div>
+        </div>
+        <input class="item-colour" id="scol-${it.id}" value="${esc(it.colour||'')}"
+          placeholder="Brand..." title="Brand (shows in print)"
+          onchange="siField('${it.id}','colour',this.value)">
+      </div>
+      <!-- Packing Type -->
+      ${showPack?`<select class="fc fc-sm" id="spt-${it.id}" onchange="siPack('${it.id}',this.value)" title="Packing type">
+        <option value="">—Open—</option>
+        <option value="Box"    ${it.packType==='Box'   ?'selected':''}>Box</option>
+        <option value="Bag"    ${it.packType==='Bag'   ?'selected':''}>Bag</option>
+        <option value="Parcel" ${it.packType==='Parcel'?'selected':''}>Parcel</option>
+        <option value="Packet" ${it.packType==='Packet'?'selected':''}>Packet</option>
+        <option value="Carton" ${it.packType==='Carton'?'selected':''}>Carton</option>
+      </select>`:''}
+      <!-- Pack Count -->
+      ${showPack?`<input type="number" class="fc fc-sm" id="spc-${it.id}" value="${it.packCount||''}" min="1" step="1"
+        placeholder="-" style="text-align:center"
+        ${!it.packType?'disabled':''}
+        onchange="siPackCnt('${it.id}',this.value)">`:''}
+      <!-- Qty -->
+      <input type="number" class="fc fc-sm" id="sqt-${it.id}" value="${it.qty}" min="0.001" step="any"
+        style="text-align:center" onchange="siNum('${it.id}','qty',this.value)">
+      <!-- Rate -->
+      <div class="i5-wrap">
+        <input type="number" class="fc fc-sm" id="srt-${it.id}" value="${it.rate}" min="0" step="any"
+          style="text-align:right" onchange="siNum('${it.id}','rate',this.value)"
+          onfocus="siShowRates('${it.id}')">
+      </div>
+      <!-- Amount -->
+      <input class="fc fc-sm fc-ro" id="samt-${it.id}" value="${fp(it.amt)}" readonly tabindex="-1"
+        style="text-align:right;font-weight:600">
+      <!-- Brand display (small) -->
+      <div style="font-size:10px;color:var(--gray-400);text-align:center;padding-top:7px;max-width:60px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${esc(it.colour||'')}">
+        ${it.colour?`<span style="color:var(--gray-600)">${esc(it.colour)}</span>`:''}
+      </div>
+      <!-- Reorder buttons -->
+      <div class="row-move">
+        <button onclick="siMoveUp('${it.id}')" title="Move up" tabindex="-1">▲</button>
+        <button onclick="siMoveDown('${it.id}')" title="Move down" tabindex="-1">▼</button>
+      </div>
+      <!-- Delete -->
+      <button class="del-btn" onclick="removeSI('${it.id}')" tabindex="-1">✕</button>
+    </div>`).join('');
+  calcSaleTotal();
+};
+
+// Keep new-sale initialization compatible with the final item-row renderer.
+const origInitNewSaleV9 = window.initNewSale;
+window.initNewSale = function(){
+  if(typeof origInitNewSaleV9==='function') origInitNewSaleV9();
+  if(typeof renderSaleItems === 'function') renderSaleItems();
+};
+
+// ─── siField: generic field update ───
+window.siField = function(id, field, val){
+  const it = saleItems.find(i=>i.id===id); if(it) it[field]=val;
+};
+
+// ─── siMoveUp / siMoveDown ───
+window.siMoveUp = function(id){
+  const idx = saleItems.findIndex(i=>i.id===id); if(idx<=0) return;
+  [saleItems[idx-1],saleItems[idx]] = [saleItems[idx],saleItems[idx-1]];
+  renderSaleItems();
+};
+window.siMoveDown = function(id){
+  const idx = saleItems.findIndex(i=>i.id===id); if(idx<0||idx>=saleItems.length-1) return;
+  [saleItems[idx],saleItems[idx+1]] = [saleItems[idx+1],saleItems[idx]];
+  renderSaleItems();
+};
+
+// ─── Show last 5 rates for item when focused ───
+window.siShowRates = function(id){
+  const it = saleItems.find(i=>i.id===id); if(!it||!it.name) return;
+  const partyId = document.getElementById('inv-party-id')?.value||'';
+  const rates = getItemRates(it.name, partyId);
+  if(!rates.length) { // try without party filter
+    const ratesAll = getItemRates(it.name, '');
+    if(!ratesAll.length) return;
+    showI5Pop(id, ratesAll);
+    return;
+  }
+  showI5Pop(id, rates);
+};
+
+function showI5Pop(rowId, rates){
+  const pop = document.getElementById('i5-'+rowId); if(!pop) return;
+  pop.innerHTML = `
+    <div style="font-weight:700;color:var(--gd);margin-bottom:5px;font-size:11px">📊 Last ${rates.length} Price(s)</div>
+    ${rates.map(r=>`
+    <div class="i5-row">
+      <div style="color:var(--gray-500)">${fmtDate(r.date)} <span style="color:var(--gray-400);font-size:10px">${r.party?'· '+r.party.slice(0,15):''}</span></div>
+      <div>
+        <span style="color:var(--gray-500);font-size:10.5px">×${r.qty}</span>
+        <strong style="color:var(--b);margin-left:4px">${fc(r.rate)}</strong>
+        <button onclick="siApplyRate('${rowId}',${r.rate})" class="btn btn-g btn-xs" style="margin-left:5px;padding:1px 5px">Use</button>
+      </div>
+    </div>`).join('')}`;
+  pop.classList.add('open');
+  // Close on outside click
+  setTimeout(()=>{
+    document.addEventListener('click', function closeI5(e){
+      if(!e.target.closest('.i5-wrap')) { pop.classList.remove('open'); }
+      document.removeEventListener('click', closeI5);
+    });
+  }, 50);
+}
+
+window.siApplyRate = function(rowId, rate){
+  const it = saleItems.find(i=>i.id===rowId); if(!it) return;
+  it.rate = rate; it.amt = it.qty * rate;
+  const re = document.getElementById('srt-'+rowId); if(re) re.value = fp(rate);
+  const ae = document.getElementById('samt-'+rowId); if(ae) ae.value = fp(it.amt);
+  document.getElementById('i5-'+rowId)?.classList.remove('open');
+  calcSaleTotal();
+};
+
+// Also trigger on item name change (after item selected)
+const _origSetSaleItem = window.setSaleItem;
+window.setSaleItem = function(id, itemId, name, rate, unit){
+  if(typeof _origSetSaleItem==='function') _origSetSaleItem(id, itemId, name, rate, unit);
+  setTimeout(()=>siShowRates(id), 100);
+};
+
+// ═══════════════════════════════════════════════════════════
+// FIX: Save brand field in invoice items
+// ═══════════════════════════════════════════════════════════
+// saleItems stores brand in the existing colour field for old invoice compatibility.
+// Just ensure addSaleItem includes the compatible field.
+const _origAddSaleItem = window.addSaleItem;
+window.addSaleItem = function(){
+  saleItems.push({id:genId(),itemId:'',name:'',packType:'',packCount:'',qty:1,rate:0,amt:0,unit:'Pcs',colour:''});
+  renderSaleItems();
+  setTimeout(()=>{
+    const ins=document.querySelectorAll('[id^="sn-"]');
+    if(ins.length) ins[ins.length-1].focus();
+  }, 60);
+};
+
+// ═══════════════════════════════════════════════════════════
+// FIX: viewInvoice - show Sr No + Brand in print
+// ═══════════════════════════════════════════════════════════
+const _origViewInvoice = window.viewInvoice;
+window.viewInvoice = function(id){
+  _origViewInvoice(id);
+  // After render, patch the items table to add Sr No and Brand columns
+  setTimeout(()=>{
+    const inv = getInvoices().find(i=>i.id===id); if(!inv) return;
+    const s = getSettings();
+    const showPack = s.modules?.packing !== false;
+    const hasColour = (inv.items||[]).some(it=>it.colour);
+    // Find the items table in the modal and patch headers + rows
+    const tables = document.querySelectorAll('#inv-view-body table');
+    if(!tables.length) return;
+    const t = tables[0];
+    const thead = t.querySelector('thead tr');
+    const tbody = t.querySelector('tbody');
+    if(!thead||!tbody) return;
+    // Add Sr No header if not present
+    if(!thead.querySelector('.srno-th')){
+      const th0 = document.createElement('th');
+      th0.className='srno-th'; th0.style.cssText='width:28px;text-align:center';
+      th0.textContent='#';
+      thead.insertBefore(th0, thead.firstChild);
+    }
+    // Add Brand header if needed
+    if(hasColour && !thead.querySelector('.col-th')){
+      const thc = document.createElement('th');
+      thc.className='col-th'; thc.textContent='Brand';
+      // Insert after Item Description
+      const itemTh = thead.children[1];
+      if(itemTh) thead.insertBefore(thc, itemTh.nextSibling);
+    }
+    // Patch rows
+    Array.from(tbody.querySelectorAll('tr')).forEach((tr,i)=>{
+      if(!tr.querySelector('.srno-td')){
+        const td0 = document.createElement('td');
+        td0.className='srno-td'; td0.style.cssText='text-align:center;color:#9ca3af;font-size:12px';
+        td0.textContent = i+1;
+        tr.insertBefore(td0, tr.firstChild);
+      }
+      if(hasColour && !tr.querySelector('.col-td')){
+        const item = (inv.items||[])[i];
+        const tdc = document.createElement('td');
+        tdc.className='col-td'; tdc.style.cssText='font-size:12px;color:#374151';
+        tdc.textContent = item?.colour||'';
+        // Insert after item name cell
+        const nameCell = tr.children[1];
+        if(nameCell) tr.insertBefore(tdc, nameCell.nextSibling);
+      }
+    });
+  }, 80);
+};
+
+// ═══════════════════════════════════════════════════════════
+// A5 PRINT: 2 invoices per A4 page
+// ═══════════════════════════════════════════════════════════
+window.printInvoiceA5 = function(){
+  const inv = getInvoices().find(i=>i.id===currentViewInvId); if(!inv) return;
+  const s = getSettings();
+  const el = document.getElementById('printable-inv'); if(!el) return;
+  const content = el.innerHTML;
+
+  const w = window.open('','_blank');
+  w.document.write(`<!DOCTYPE html><html><head><title>${s.shopName||'Invoice'}</title><meta charset="UTF-8">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+@page { size: A4 portrait; margin: 0; }
+body { font-family:'Segoe UI',Arial,sans-serif; font-size:11px; color:#1f2937; }
+.a4-wrap { width:210mm; min-height:297mm; display:flex; flex-direction:column; }
+.a5-half {
+  width:210mm; height:148.5mm;
+  padding:8mm 10mm;
+  box-sizing:border-box;
+  border-bottom:1px dashed #d1d5db;
+  overflow:hidden;
+  page-break-inside:avoid;
+}
+.a5-half:last-child{ border-bottom:none; }
+table{width:100%;border-collapse:collapse}
+th{background:#f3f4f6;padding:5px 7px;text-align:left;font-size:9.5px;font-weight:700;color:#6b7280;border-bottom:1px solid #e5e7eb}
+td{padding:5px 7px;border-bottom:1px solid #f3f4f6;font-size:10px}
+tr:last-child td{border-bottom:none}
+.tot-row{display:flex;justify-content:space-between;padding:2px 0;color:#4b5563;font-size:10.5px}
+.tot-row.grand{font-size:12px;font-weight:700;color:#1f2937;border-top:1px solid #d1d5db;padding-top:5px;margin-top:3px}
+.no-print{display:none}
+.cut-line{text-align:center;color:#9ca3af;font-size:9px;letter-spacing:2px;padding:2px 0}
+</style></head><body>
+<div class="a4-wrap">
+  <div class="a5-half">${content}</div>
+  <div class="cut-line">✂ ─────────────────────────────────── ✂</div>
+  <div class="a5-half">${content}</div>
+</div>
+</body></html>`);
+  w.document.close(); w.focus();
+  setTimeout(()=>w.print(), 300);
+};
+
+// Add A5 button to invoice view modal
+const _origViewInv2 = window.viewInvoice;
+window.viewInvoice = function(id){
+  _origViewInv2(id);
+  setTimeout(()=>{
+    const mh = document.querySelector('#inv-view-modal .mh > div');
+    if(mh && !document.getElementById('a5-print-btn')){
+      const a5Btn = document.createElement('button');
+      a5Btn.id = 'a5-print-btn';
+      a5Btn.className = 'btn btn-out btn-sm';
+      a5Btn.innerHTML = '📄 A5 (2/page)';
+      a5Btn.onclick = printInvoiceA5;
+      // Insert before print button
+      const printBtn = mh.querySelector('.btn-b');
+      if(printBtn) mh.insertBefore(a5Btn, printBtn);
+      else mh.prepend(a5Btn);
+    }
+  }, 50);
+};
+
+// ═══════════════════════════════════════════════════════════
+// SR NO in sale list table
+// ═══════════════════════════════════════════════════════════
+const _origRenderSalesListV9 = window.renderSalesList;
+window.renderSalesList = function(){
+  _origRenderSalesListV9();
+  // Add Sr No column after render
+  setTimeout(()=>{
+    const t = document.querySelector('#sales-table table');
+    if(!t) return;
+    const ths = t.querySelectorAll('thead tr th');
+    if(ths.length && !t.querySelector('.srno-th')){
+      const th = document.createElement('th');
+      th.className='srno-th'; th.style.cssText='width:32px;text-align:center';
+      th.textContent='#';
+      t.querySelector('thead tr').insertBefore(th, ths[0]);
+    }
+    const rows = t.querySelectorAll('tbody tr');
+    rows.forEach((tr,i)=>{
+      if(!tr.querySelector('.srno-td')){
+        const td = document.createElement('td');
+        td.className='srno-td'; td.style.cssText='text-align:center;color:#9ca3af;font-size:12px;font-weight:600';
+        td.textContent = i+1;
+        tr.insertBefore(td, tr.firstChild);
+      }
+    });
+  }, 50);
+};
+
+// ═══════════════════════════════════════════════════════════
+// SR NO in sale item rows label update on re-render
+// ═══════════════════════════════════════════════════════════
+// Already handled above in renderSaleItems override
+
+console.log('v9 patch applied ✓ — Sticky headers, A5 print, Sr No, Item brand, Last5 rates, Row reorder');
+})();
+</script>
+<!-- ═══════════════════════════════════════════════════════════
+     V10 PATCH — Complete Fixes + Print Settings + GitHub Guide
+     ═══════════════════════════════════════════════════════════ -->
+<style>
+/* Item row layout: inline brand field */
+.it-row-v10 {
+  display:grid;
+  gap:3px;
+  align-items:center;
+  margin-bottom:5px;
+}
+/* Last 5 rate popup - below rate field */
+.rate-popup {
+  position:absolute;
+  top:calc(100% + 3px);
+  left:0; right:0;
+  background:#fff;
+  border:1px solid var(--gray-200);
+  border-radius:8px;
+  box-shadow:0 6px 20px rgba(0,0,0,.13);
+  z-index:500;
+  padding:8px 10px;
+  display:none;
+  min-width:230px;
+}
+.rate-popup.show { display:block; }
+.rate-pop-row {
+  display:flex;justify-content:space-between;align-items:center;
+  padding:4px 0;border-bottom:1px solid var(--gray-100);font-size:12px;
+}
+.rate-pop-row:last-child{border-bottom:none}
+/* Print settings toggle rows */
+.ps-row{display:flex;align-items:center;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--gray-100)}
+.ps-row:last-child{border-bottom:none}
+.ps-lbl{font-size:13px;font-weight:500}
+.ps-desc{font-size:11.5px;color:var(--gray-500)}
+/* GitHub guide */
+.gh-step{background:var(--gray-50);border-radius:8px;padding:10px 14px;margin-bottom:8px;border-left:3px solid var(--b)}
+.gh-step .num{background:var(--b);color:#fff;border-radius:50%;width:22px;height:22px;display:inline-flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;margin-right:8px;flex-shrink:0}
+code.inline{background:var(--gray-100);padding:2px 6px;border-radius:4px;font-family:'Courier New',monospace;font-size:12px}
+</style>
+
+<script>
+(function v10(){
+'use strict';
+
+// ═══════════════════════════════════════════════════════════
+// PRINT SETTINGS — default values
+// ═══════════════════════════════════════════════════════════
+function getPrintSettings(){
+  const def = {
+    showSrNo:      true,
+    showPacking:   true,
+    showColour:    true,
+    showQty:       true,
+    showRate:      true,
+    showAmount:    true,
+    showDiscount:  true,
+    showTax:       true,
+    showBalance:   true,
+    showBankDetails: true,
+    showTerms:     true,
+    showSignature: true,
+    showPackSummary: true,
+    invoiceSize:   'a4',   // 'a4' or 'a5x2'
+    fontSize:      '13'    // in px
+  };
+  try {
+    const s = getSettings();
+    return { ...def, ...(s.printSettings||{}) };
+  } catch { return def; }
+}
+function savePrintSettings(ps){
+  const s = getSettings();
+  s.printSettings = ps;
+  DB.set('settings', s);
+}
+
+// ═══════════════════════════════════════════════════════════
+// FIX 1: REMOVE A5 button (override previous v9 injection)
+// ═══════════════════════════════════════════════════════════
+// We remove the a5 print btn if it exists and override viewInvoice chain
+// by simply not adding it
+
+// ═══════════════════════════════════════════════════════════
+// FIX 2 & 3: NEW renderSaleItems — brand INLINE (same row),
+//            rate popup shows BELOW rate field on focus,
+//            hides on blur
+// ═══════════════════════════════════════════════════════════
+window.renderSaleItems = function(){
+  const s  = getSettings();
+  const ps = getPrintSettings();
+  const showPack   = s.modules?.packing !== false;
+  const showColour = ps.showColour !== false;
+  // cols: Sr | Name | [Brand] | [Pack] | [PkCnt] | Qty | Rate+popup | Amt | ▲▼ | ✕
+  const colDef = `20px ${showColour?'1.6fr 70px':'2fr'} ${showPack?'82px 50px':''} 54px 90px 86px 26px 22px`;
+
+  const c = document.getElementById('sale-items-body');
+  c.innerHTML = saleItems.map((it, idx) => `
+    <div class="it-row-v10" id="sr-${it.id}" style="grid-template-columns:${colDef};margin-bottom:5px">
+
+      <!-- Sr No -->
+      <div style="color:var(--gray-400);font-size:11px;text-align:center;padding-top:7px">${idx+1}</div>
+
+      <!-- Item Name autocomplete -->
+      <div class="ac-wrap" style="position:relative">
+        <input class="fc fc-sm" id="sn-${it.id}" value="${esc(it.name)}" placeholder="Item..." autocomplete="off"
+          oninput="siName('${it.id}',this.value)"
+          onfocus="siRatePopup('${it.id}')">
+        <div class="ac-list" id="ac-sn-${it.id}"></div>
+      </div>
+
+      <!-- Brand (inline, same row) -->
+      ${showColour?`<input class="fc fc-sm" id="scol-${it.id}" value="${esc(it.colour||'')}"
+        placeholder="Brand..." title="Brand — shows in print"
+        style="font-size:12px"
+        onchange="siField('${it.id}','colour',this.value)">`:''}
+
+      <!-- Packing Type -->
+      ${showPack?`<select class="fc fc-sm" id="spt-${it.id}" onchange="siPack('${it.id}',this.value)">
+        <option value="">—</option>
+        <option value="Box"    ${it.packType==='Box'   ?'selected':''}>Box</option>
+        <option value="Bag"    ${it.packType==='Bag'   ?'selected':''}>Bag</option>
+        <option value="Parcel" ${it.packType==='Parcel'?'selected':''}>Parcel</option>
+        <option value="Packet" ${it.packType==='Packet'?'selected':''}>Packet</option>
+        <option value="Carton" ${it.packType==='Carton'?'selected':''}>Carton</option>
+      </select>`:''}
+      ${showPack?`<input type="number" class="fc fc-sm" id="spc-${it.id}" value="${it.packCount||''}" min="1"
+        placeholder="-" style="text-align:center" ${!it.packType?'disabled':''}
+        onchange="siPackCnt('${it.id}',this.value)">`:''}
+
+      <!-- Qty -->
+      <input type="number" class="fc fc-sm" id="sqt-${it.id}" value="${it.qty}" min="0.001" step="any"
+        style="text-align:center" onchange="siNum('${it.id}','qty',this.value)">
+
+      <!-- Rate + last-5 popup below -->
+      <div style="position:relative">
+        <input type="number" class="fc fc-sm" id="srt-${it.id}" value="${it.rate}" min="0" step="any"
+          style="text-align:right"
+          onchange="siNum('${it.id}','rate',this.value)"
+          onfocus="siRatePopup('${it.id}')"
+          onblur="siHidePopup('${it.id}')">
+        <div class="rate-popup" id="rp-${it.id}"></div>
+      </div>
+
+      <!-- Amount readonly -->
+      <input class="fc fc-sm fc-ro" id="samt-${it.id}" value="${fp(it.amt)}" readonly tabindex="-1"
+        style="text-align:right;font-weight:600">
+
+      <!-- Move up/down -->
+      <div style="display:flex;flex-direction:column;gap:1px">
+        <button onclick="siMoveUp('${it.id}')" tabindex="-1"
+          style="background:none;border:1px solid var(--gray-200);border-radius:3px;cursor:pointer;font-size:9px;padding:1px 3px;line-height:1;color:var(--gray-500)">▲</button>
+        <button onclick="siMoveDown('${it.id}')" tabindex="-1"
+          style="background:none;border:1px solid var(--gray-200);border-radius:3px;cursor:pointer;font-size:9px;padding:1px 3px;line-height:1;color:var(--gray-500)">▼</button>
+      </div>
+
+      <!-- Delete -->
+      <button class="del-btn" onclick="removeSI('${it.id}')" tabindex="-1">✕</button>
+    </div>`).join('');
+
+  // Update header to match
+  const hdr = document.querySelector('.it-hdr');
+  if(hdr){
+    hdr.style.gridTemplateColumns = colDef;
+    hdr.innerHTML = `<div></div><div>Item</div>${showColour?'<div>Brand</div>':''}${showPack?'<div style="text-align:center">Pack</div><div style="text-align:center">Cnt</div>':''}<div style="text-align:center">Qty</div><div style="text-align:right">Rate(₹)</div><div style="text-align:right">Amount(₹)</div><div></div><div></div>`;
+  }
+  calcSaleTotal();
+};
+
+// Show rate popup below rate field (or name field)
+window.siRatePopup = function(id){
+  const it = saleItems.find(i=>i.id===id); if(!it) return;
+  const name = it.name || document.getElementById('sn-'+id)?.value?.trim();
+  if(!name){ closeAllRatePopups(); return; }
+  const partyId = document.getElementById('inv-party-id')?.value||'';
+  // collect last 5
+  const invs = getInvoices();
+  const rates = [];
+  for(let i=invs.length-1; i>=0&&rates.length<5; i--){
+    const inv = invs[i];
+    (inv.items||[]).forEach(item=>{
+      if(item.name&&item.name.toLowerCase()===name.toLowerCase()&&item.rate>0){
+        rates.push({date:inv.date,inv:inv.invoiceNo,party:inv.partyName||'',rate:item.rate,qty:item.qty||1});
+      }
+    });
+  }
+  const pop = document.getElementById('rp-'+id); if(!pop) return;
+  if(!rates.length){ pop.classList.remove('show'); return; }
+  pop.innerHTML = `
+    <div style="font-weight:700;color:var(--gd);font-size:11px;margin-bottom:5px">📊 Last ${rates.length} Price(s) for "${name}"</div>
+    ${rates.map(r=>`<div class="rate-pop-row">
+      <div>
+        <span style="color:var(--gray-500)">${fmtDate(r.date)}</span>
+        <span style="color:var(--gray-400);font-size:10.5px;margin-left:4px">· ${r.party.slice(0,14)}</span>
+      </div>
+      <div style="display:flex;align-items:center;gap:5px">
+        <span style="color:var(--gray-500);font-size:10.5px">×${r.qty}</span>
+        <strong style="color:var(--b)">${fc(r.rate)}</strong>
+        <button onmousedown="siApplyRate('${id}',${r.rate})"
+          style="background:var(--g);color:#fff;border:none;border-radius:4px;padding:2px 6px;font-size:10.5px;cursor:pointer">Use</button>
+      </div>
+    </div>`).join('')}`;
+  closeAllRatePopups();
+  pop.classList.add('show');
+};
+
+window.siHidePopup = function(id){
+  // Delay so "Use" button mousedown fires before blur hides popup
+  setTimeout(()=>{
+    const pop = document.getElementById('rp-'+id);
+    if(pop) pop.classList.remove('show');
+  }, 200);
+};
+
+function closeAllRatePopups(){
+  document.querySelectorAll('.rate-popup.show').forEach(p=>p.classList.remove('show'));
+}
+
+// Close popups when clicking outside
+document.addEventListener('click', e=>{
+  if(!e.target.closest('.rate-popup') && !e.target.closest('[id^="srt-"]') && !e.target.closest('[id^="sn-"]')){
+    closeAllRatePopups();
+  }
+});
+
+// ═══════════════════════════════════════════════════════════
+// PRINT SETTINGS PAGE in Settings
+// ═══════════════════════════════════════════════════════════
+(function addPrintSettings(){
+  const settingsPage = document.getElementById('page-settings');
+  if(!settingsPage) return;
+  const pb = settingsPage.querySelector('.pb');
+  if(!pb) return;
+
+  const card = document.createElement('div');
+  card.className='card'; card.id='print-settings-card';
+  card.innerHTML=`
+    <div style="font-weight:700;font-size:14px;margin-bottom:12px;color:var(--b)">🖨️ Print & Display Settings</div>
+    <div style="font-weight:600;font-size:12.5px;color:var(--gray-500);margin-bottom:8px;text-transform:uppercase;letter-spacing:.5px">Invoice Print — Show / Hide</div>
+    <div id="ps-toggles"></div>
+    <div style="display:flex;gap:8px;margin-top:14px;flex-wrap:wrap;align-items:center">
+      <div class="fg" style="margin:0">
+        <label class="fl">Font Size (px)</label>
+        <select class="fc fc-sm" id="ps-fontsize" style="width:100px">
+          <option value="11">11px (Small)</option>
+          <option value="12">12px</option>
+          <option value="13" selected>13px (Default)</option>
+          <option value="14">14px (Large)</option>
+        </select>
+      </div>
+    </div>
+    <button class="btn btn-b btn-sm" onclick="savePrintSettingsUI()" style="margin-top:12px">💾 Save Print Settings</button>`;
+
+  const saveBtn = pb.querySelector('button.btn-g:last-child');
+  if(saveBtn) pb.insertBefore(card, saveBtn);
+  else pb.appendChild(card);
+
+  renderPrintSettingsUI();
+})();
+
+const PRINT_TOGGLES = [
+  {key:'showSrNo',     label:'Sr. No. column',          desc:'Show row number in invoice table'},
+  {key:'showPacking',  label:'Packing column',           desc:'Show packing type & count'},
+  {key:'showColour',   label:'Brand column',             desc:'Show brand field'},
+  {key:'showQty',      label:'Qty column',               desc:'Show quantity in invoice'},
+  {key:'showRate',     label:'Rate column',              desc:'Show rate per unit'},
+  {key:'showAmount',   label:'Amount column',            desc:'Show row amount'},
+  {key:'showDiscount', label:'Discount row',             desc:'Show discount in totals'},
+  {key:'showTax',      label:'Tax / GST row',            desc:'Show tax in totals'},
+  {key:'showBalance',  label:'Balance Due row',          desc:'Show pending balance in print'},
+  {key:'showBankDetails',label:'Bank Details',           desc:'Show bank info at bottom'},
+  {key:'showTerms',    label:'Terms & Conditions',       desc:'Show terms at bottom'},
+  {key:'showSignature',label:'Signature line',           desc:'Show authorized signature line'},
+  {key:'showPackSummary',label:'Packing Summary box',   desc:'Show packing count summary'},
+];
+
+function renderPrintSettingsUI(){
+  const el = document.getElementById('ps-toggles'); if(!el) return;
+  const ps = getPrintSettings();
+  el.innerHTML = PRINT_TOGGLES.map(t=>`
+    <div class="ps-row">
+      <div>
+        <div class="ps-lbl">${t.label}</div>
+        <div class="ps-desc">${t.desc}</div>
+      </div>
+      <label style="display:flex;align-items:center;gap:8px;cursor:pointer;flex-shrink:0">
+        <input type="checkbox" id="pst-${t.key}" ${ps[t.key]!==false?'checked':''} style="width:16px;height:16px;cursor:pointer">
+        <span style="font-size:12px;color:var(--gray-500);min-width:28px">${ps[t.key]!==false?'ON':'OFF'}</span>
+      </label>
+    </div>`).join('');
+  // Font size
+  const fs = document.getElementById('ps-fontsize');
+  if(fs) fs.value = ps.fontSize||'13';
+}
+
+window.savePrintSettingsUI = function(){
+  const ps = getPrintSettings();
+  PRINT_TOGGLES.forEach(t=>{
+    const el=document.getElementById('pst-'+t.key);
+    if(el) ps[t.key]=el.checked;
+  });
+  const fs=document.getElementById('ps-fontsize');
+  if(fs) ps.fontSize=fs.value;
+  savePrintSettings(ps);
+  // Re-render items to reflect changes
+  if(typeof renderSaleItems==='function') renderSaleItems();
+  toast('Print settings saved! ✓');
+};
+
+// Also load print settings when settings page opens
+const _origLoadSettingsV10 = window.loadSettings;
+window.loadSettings = function(){
+  if(typeof _origLoadSettingsV10==='function') _origLoadSettingsV10();
+  renderPrintSettingsUI();
+};
+
+// ═══════════════════════════════════════════════════════════
+// OVERRIDE printInvoice to use print settings
+// ═══════════════════════════════════════════════════════════
+window.printInvoice = function(){
+  const el = document.getElementById('printable-inv'); if(!el) return;
+  const s  = getSettings();
+  const ps = getPrintSettings();
+  const fs = ps.fontSize||'13';
+
+  // Build custom print CSS based on settings
+  const hideCols = [];
+  if(!ps.showSrNo)       hideCols.push('td.srno-td,th.srno-th');
+  if(!ps.showPacking)    hideCols.push('td.pack-td,th.pack-th,td.packcnt-td,th.packcnt-th');
+  if(!ps.showColour)     hideCols.push('td.col-td,th.col-th');
+  if(!ps.showRate)       hideCols.push('td.rate-td,th.rate-th');
+  if(!ps.showAmount)     hideCols.push('td.amt-td,th.amt-th');
+  if(!ps.showBalance)    hideCols.push('.print-balance');
+  if(!ps.showDiscount)   hideCols.push('.print-discount');
+  if(!ps.showTax)        hideCols.push('.print-tax');
+  if(!ps.showBankDetails)hideCols.push('.print-bank');
+  if(!ps.showTerms)      hideCols.push('.print-terms');
+  if(!ps.showSignature)  hideCols.push('.print-sig');
+  if(!ps.showPackSummary)hideCols.push('.print-pack-summary');
+
+  const w = window.open('','_blank');
+  w.document.write(`<!DOCTYPE html><html><head><title>${s.shopName||'Invoice'}</title><meta charset="UTF-8">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Segoe UI',Arial,sans-serif;font-size:${fs}px;color:#1f2937;padding:20px;max-width:760px;margin:0 auto}
+table{width:100%;border-collapse:collapse}
+th{background:#f3f4f6;padding:7px 9px;text-align:left;font-size:11px;font-weight:700;color:#6b7280;border-bottom:1px solid #e5e7eb}
+td{padding:7px 9px;border-bottom:1px solid #f3f4f6;font-size:${Math.max(10,+fs-1)}px}
+tr:last-child td{border-bottom:none}
+.tot-row{display:flex;justify-content:space-between;padding:3px 0;color:#4b5563;font-size:${fs}px}
+.tot-row.grand{font-size:${+fs+2}px;font-weight:700;color:#1f2937;border-top:1px solid #d1d5db;padding-top:6px;margin-top:4px}
+.no-print{display:none}
+${hideCols.length ? hideCols.join(',') + '{display:none!important}' : ''}
+</style></head><body>${el.innerHTML}</body></html>`);
+  w.document.close(); w.focus();
+  setTimeout(()=>w.print(), 300);
+};
+
+// ═══════════════════════════════════════════════════════════
+// GITHUB LIVE HOSTING — Guide page
+// ═══════════════════════════════════════════════════════════
+const _origNavV10 = window.nav;
+window.nav = function(pg){
+  _origNavV10(pg);
+  if(pg==='github-guide') renderGitHubGuide();
+};
+
+window.renderGitHubGuide = function(){
+  const el=document.getElementById('page-github-guide'); if(!el) return;
+  el.innerHTML=`
+    <div class="ph" style="position:sticky;top:0;background:#fff;z-index:50;border-bottom:1px solid var(--gray-200);padding:12px 22px;display:flex;align-items:center;justify-content:space-between">
+      <h1>🐙 GitHub Pages — Live Hosting (Free)</h1>
+      <button class="btn btn-out btn-sm" onclick="nav('settings')">← Back</button>
+    </div>
+    <div class="pb" style="padding:18px 22px">
+
+      <div class="card" style="border-left:4px solid #7c3aed;background:linear-gradient(135deg,#f5f3ff,#fff)">
+        <div style="font-weight:700;font-size:14px;margin-bottom:6px;color:#7c3aed">💡 Kya milega?</div>
+        <p style="font-size:13px;color:var(--gray-600);line-height:1.8">
+          Aapki billing file <strong>https://yourusername.github.io/myshop/</strong> pe live ho jaayegi.<br>
+          PC, Mobile, Tablet — kisi bhi device se open karo. <strong>Bilkul Free.</strong><br>
+          ⚠️ Data abhi bhi browser localStorage mein rahega — Cloud Sync (JSONBin) se mobile-PC sync karo.
+        </p>
+      </div>
+
+      <!-- Step by step -->
+      <div class="card">
+        <div style="font-weight:700;font-size:14px;margin-bottom:14px">📋 Step-by-Step Setup</div>
+
+        <div class="gh-step">
+          <span class="num">1</span>
+          <strong>GitHub account banao</strong> (free) —
+          <a href="https://github.com/signup" target="_blank" style="color:var(--b)">github.com/signup</a>
+        </div>
+
+        <div class="gh-step">
+          <span class="num">2</span>
+          <strong>New Repository banao</strong> —
+          <a href="https://github.com/new" target="_blank" style="color:var(--b)">github.com/new</a><br>
+          <div style="margin-top:6px;font-size:12.5px;color:var(--gray-600)">
+            • Repository name: <code class="inline">myshop</code><br>
+            • Visibility: <code class="inline">Public</code> (GitHub Pages ke liye zaroori)<br>
+            • ✅ Add a README file checkbox tick karo<br>
+            • Click <strong>Create repository</strong>
+          </div>
+        </div>
+
+        <div class="gh-step">
+          <span class="num">3</span>
+          <strong>HTML file upload karo</strong><br>
+          <div style="margin-top:6px;font-size:12.5px;color:var(--gray-600)">
+            • Repository mein jaake <strong>"Add file" → "Upload files"</strong> click karo<br>
+            • Apni <code class="inline">myshop-billing-v8.html</code> file drag karo<br>
+            • File ka naam change karo: <code class="inline">index.html</code><br>
+            • <strong>"Commit changes"</strong> click karo
+          </div>
+        </div>
+
+        <div class="gh-step">
+          <span class="num">4</span>
+          <strong>GitHub Pages enable karo</strong><br>
+          <div style="margin-top:6px;font-size:12.5px;color:var(--gray-600)">
+            • Repository → <strong>Settings</strong> → left sidebar mein <strong>Pages</strong><br>
+            • Source: <code class="inline">Deploy from a branch</code><br>
+            • Branch: <code class="inline">main</code> → folder: <code class="inline">/ (root)</code><br>
+            • <strong>Save</strong> click karo
+          </div>
+        </div>
+
+        <div class="gh-step" style="border-left-color:var(--g)">
+          <span class="num" style="background:var(--g)">5</span>
+          <strong style="color:var(--g)">Done! 2-3 minutes mein live ho jaayega</strong><br>
+          <div style="margin-top:6px;font-size:12.5px;color:var(--gray-600)">
+            URL hoga: <code class="inline">https://YourUsername.github.io/myshop/</code><br>
+            Is URL ko mobile pe open karo — ek dum app jaisa!<br>
+            Home screen pe add karo (Android: Chrome → ⋮ → "Add to Home screen")
+          </div>
+        </div>
+      </div>
+
+      <!-- Update karna -->
+      <div class="card">
+        <div style="font-weight:700;font-size:14px;margin-bottom:10px;color:var(--o)">🔄 Update kaise kare?</div>
+        <div style="font-size:13px;color:var(--gray-600);line-height:1.9">
+          1. Naya updated HTML file download karo<br>
+          2. GitHub → repository → <strong>index.html</strong> pe click karo<br>
+          3. Pencil (✏️) edit icon → "Upload" → naya file select karo<br>
+          4. Commit → 2 minutes mein automatically update ho jaayega
+        </div>
+      </div>
+
+      <!-- Data sync -->
+      <div class="card" style="border-left:4px solid var(--c)">
+        <div style="font-weight:700;font-size:14px;margin-bottom:8px;color:var(--c)">☁️ Mobile ↔ PC Data Sync</div>
+        <div style="font-size:13px;color:var(--gray-600);line-height:1.9">
+          GitHub Pages pe sirf file host hoti hai — data alag device pe share nahi hota.<br>
+          <strong>Solution:</strong> Settings → Cloud Sync (JSONBin.io) setup karo → Push/Pull se data sync karo.<br>
+          <br>
+          <strong>Best workflow:</strong><br>
+          🖥️ PC pe kaam karo → "Push ↑" karo → 📱 Mobile pe "Pull ↓" karo
+        </div>
+      </div>
+
+      <!-- Quick links -->
+      <div style="display:flex;gap:10px;flex-wrap:wrap">
+        <a href="https://github.com/signup" target="_blank" class="btn btn-b btn-sm">🐙 GitHub Signup</a>
+        <a href="https://github.com/new" target="_blank" class="btn btn-out btn-sm">➕ New Repository</a>
+        <a href="https://pages.github.com" target="_blank" class="btn btn-out btn-sm">📄 GitHub Pages Docs</a>
+      </div>
+    </div>`;
+};
+
+// ═══════════════════════════════════════════════════════════
+// DOM INJECTION
+// ═══════════════════════════════════════════════════════════
+(function injectV10(){
+  // 1. GitHub Guide page
+  const ghPage = document.createElement('div');
+  ghPage.id='page-github-guide'; ghPage.className='page'; ghPage.style.display='none';
+  document.querySelector('main')?.appendChild(ghPage);
+
+  // 2. Nav link for GitHub Guide
+  const navSec = document.querySelector('.nav-sec');
+  if(navSec){
+    const ghLink = document.createElement('a');
+    ghLink.className='nl';
+    ghLink.setAttribute('onclick',"nav('github-guide')");
+    ghLink.setAttribute('data-pg','github-guide');
+    ghLink.innerHTML='<span class="nl-ic">🐙</span>GitHub Live Hosting';
+    navSec.appendChild(ghLink);
+  }
+
+  // 3. Remove A5 button if exists
+  const a5btn = document.getElementById('a5-print-btn');
+  if(a5btn) a5btn.remove();
+
+  // 4. Reload print settings UI on settings page if already open
+  setTimeout(()=>{
+    renderPrintSettingsUI?.();
+  }, 300);
+
+  console.log('v10 patch applied ✓ — Print Settings, Brand inline, Rate popup, GitHub Guide');
+})();
+
+})(); // end v10
+</script>
+<!-- ═══════════════════════════════════════════════════════════
+     V11 PATCH — Keyboard Navigation + Smart Item Info + Party-wise Rates
+     ═══════════════════════════════════════════════════════════
+
+  KAISE UPDATE KARTE HAIN — SEEKHNE KE LIYE:
+  ─────────────────────────────────────────────
+  Har naya feature ek script block mein add hota hai file ke end mein.
+  Purana code kabhi delete nahi hota — sirf override hota hai.
+  
+  Override pattern:
+    const _orig = window.functionName;   // Step 1: purana save karo
+    window.functionName = function(){    // Step 2: naya version banao
+      // nayi cheez karo
+      _orig();                           // Step 3: purana bhi chalao
+    };
+  
+  Is patch mein:
+  - Autocomplete mein keyboard navigation (↑↓ Enter)
+  - Item select ke baad info panel (last party, purchase rate)
+  - Rate popup sirf selected party ka rate dikhayega
+  ═══════════════════════════════════════════════════════════ -->
+<script>
+(function v11(){
+'use strict';
+
+// ══════════════════════════════════════════════════════════
+// UTIL: Keyboard-navigable Autocomplete
+// ══════════════════════════════════════════════════════════
+// State: track which item is highlighted in each list
+const acState = {}; // { listId: { idx: number } }
+
+function acSetup(inputEl, listEl){
+  // Kaise kaam karta hai:
+  // - inputEl = text input
+  // - listEl  = .ac-list div
+  // - keydown event sunao, ArrowDown/Up/Enter handle karo
+
+  inputEl.addEventListener('keydown', function(e){
+    const items = Array.from(listEl.querySelectorAll('.ac-item'));
+    if(!items.length || listEl.style.display==='none') return;
+
+    const lid = listEl.id;
+    if(!acState[lid]) acState[lid] = { idx: -1 };
+
+    if(e.key === 'ArrowDown'){
+      e.preventDefault();
+      acState[lid].idx = Math.min(acState[lid].idx + 1, items.length - 1);
+      acHighlight(items, acState[lid].idx);
+    } else if(e.key === 'ArrowUp'){
+      e.preventDefault();
+      acState[lid].idx = Math.max(acState[lid].idx - 1, 0);
+      acHighlight(items, acState[lid].idx);
+    } else if(e.key === 'Enter'){
+      e.preventDefault();
+      const highlighted = items[acState[lid].idx];
+      if(highlighted) highlighted.click();
+      else if(items.length === 1) items[0].click(); // single result = auto select
+    } else if(e.key === 'Escape'){
+      listEl.style.display = 'none';
+      acState[lid] = { idx: -1 };
+    } else {
+      // Koi aur key dabaya — reset highlight
+      acState[lid] = { idx: -1 };
+    }
+  });
+}
+
+function acHighlight(items, idx){
+  items.forEach((el, i) => {
+    // Highlighted item ko green background
+    el.style.background = i === idx ? 'var(--gl)' : '';
+    el.style.color      = i === idx ? 'var(--gd)' : '';
+    if(i === idx) el.scrollIntoView({ block:'nearest' });
+  });
+}
+
+// ══════════════════════════════════════════════════════════
+// FIX 1: Party Autocomplete — keyboard support
+// ══════════════════════════════════════════════════════════
+// Kaise: partyAC function override karte hain
+// Pehle list render hoti hai, uske baad acSetup chalate hain
+
+const _origPartyAC_v11 = window.partyAC;
+window.partyAC = function(inputId, hiddenId, val){
+  // Purana function chalao (list render karta hai)
+  _origPartyAC_v11(inputId, hiddenId, val);
+
+  // Keyboard setup attach karo
+  const inputEl = document.getElementById(inputId);
+  const listEl  = document.getElementById('ac-' + inputId);
+  if(inputEl && listEl && !inputEl._v11kb){
+    inputEl._v11kb = true; // ek baar hi setup karo (flag)
+    acSetup(inputEl, listEl);
+  }
+};
+
+// ══════════════════════════════════════════════════════════
+// FIX 1b: Item Autocomplete — keyboard support
+// ══════════════════════════════════════════════════════════
+// showSaleItemAC override karte hain — yahi item list banata hai
+
+const _origShowSaleItemAC_v11 = window.showSaleItemAC;
+window.showSaleItemAC = function(id, val){
+  _origShowSaleItemAC_v11(id, val);
+
+  const inputEl = document.getElementById('sn-' + id);
+  const listEl  = document.getElementById('ac-sn-' + id);
+  if(inputEl && listEl && !inputEl._v11kb){
+    inputEl._v11kb = true;
+    acSetup(inputEl, listEl);
+  }
+};
+
+// ══════════════════════════════════════════════════════════
+// FIX 2: Item Info Panel — last party + purchase rate
+// Tab dabane par chhup jaata hai
+// ══════════════════════════════════════════════════════════
+// Kaise kaam karta hai:
+// - setSaleItem mein item select hone ke baad ek info panel dikhate hain
+// - Rate field ke neeche, compact format mein
+// - Tab press hone par panel chhup jaata hai
+
+function getItemInfo(itemName, itemId){
+  // 1. Items master se purchase rate nikalo
+  const masterItem = getItems().find(i =>
+    i.id === itemId || (i.name && i.name.toLowerCase() === itemName.toLowerCase())
+  );
+  const purchaseRate = masterItem?.purchaseRate || 0;
+
+  // 2. Invoices se last sale info nikalo (kisi bhi party ko)
+  const invs = getInvoices();
+  let lastSale = null;
+  for(let i = invs.length - 1; i >= 0; i--){
+    const inv = invs[i];
+    const found = (inv.items||[]).find(it =>
+      it.name && it.name.toLowerCase() === itemName.toLowerCase() && it.rate > 0
+    );
+    if(found){
+      lastSale = {
+        party:    inv.partyName || 'Cash',
+        date:     inv.date,
+        rate:     found.rate,
+        qty:      found.qty || 1,
+        invoiceNo:inv.invoiceNo
+      };
+      break;
+    }
+  }
+
+  return { purchaseRate, lastSale };
+}
+
+function showItemInfoPanel(rowId, itemName, itemId){
+  // Info panel ki ID
+  const panelId = 'iip-' + rowId;
+  let panel = document.getElementById(panelId);
+
+  // Agar panel nahi hai to banao rate field ke neeche
+  if(!panel){
+    const rateWrap = document.getElementById('srt-' + rowId)?.parentElement;
+    if(!rateWrap) return;
+    panel = document.createElement('div');
+    panel.id = panelId;
+    panel.style.cssText = `
+      position:absolute; top:calc(100% + 2px); left:0; right:0;
+      background:#fff; border:1px solid var(--gray-200); border-radius:7px;
+      box-shadow:0 5px 16px rgba(0,0,0,.12); z-index:600;
+      padding:7px 10px; font-size:11.5px; display:none; min-width:230px;
+    `;
+    rateWrap.style.position = 'relative';
+    rateWrap.appendChild(panel);
+  }
+
+  const { purchaseRate, lastSale } = getItemInfo(itemName, itemId);
+  if(!lastSale && !purchaseRate){ panel.style.display='none'; return; }
+
+  panel.innerHTML = `
+    ${purchaseRate > 0 ? `
+    <div style="display:flex;justify-content:space-between;padding:3px 0;border-bottom:1px solid var(--gray-100)">
+      <span style="color:var(--gray-500)">🛒 Purchase Rate</span>
+      <strong style="color:var(--b)">${fc(purchaseRate)}</strong>
+    </div>` : ''}
+    ${lastSale ? `
+    <div style="padding:4px 0;margin-top:3px">
+      <div style="color:var(--gray-500);font-size:10.5px;margin-bottom:2px">📋 Last Sale To:</div>
+      <div style="display:flex;justify-content:space-between;align-items:center">
+        <div>
+          <span style="font-weight:600;color:var(--gray-700)">${lastSale.party}</span>
+          <span style="color:var(--gray-400);font-size:10.5px;margin-left:5px">${fmtDate(lastSale.date)}</span>
+        </div>
+        <div style="display:flex;align-items:center;gap:5px">
+          <span style="color:var(--gray-500);font-size:10.5px">×${lastSale.qty}</span>
+          <strong style="color:var(--g)">${fc(lastSale.rate)}</strong>
+          <button onmousedown="siApplyRate('${rowId}',${lastSale.rate})"
+            style="background:var(--g);color:#fff;border:none;border-radius:4px;padding:2px 6px;font-size:10.5px;cursor:pointer">Use</button>
+        </div>
+      </div>
+    </div>` : ''}`;
+
+  panel.style.display = 'block';
+
+  // Tab ya bahar jaane par chhupao
+  const hidePanel = () => setTimeout(()=>{ panel.style.display='none'; }, 200);
+  const rateInput = document.getElementById('srt-' + rowId);
+  if(rateInput && !rateInput._iipSetup){
+    rateInput._iipSetup = true;
+    rateInput.addEventListener('blur', hidePanel);
+    rateInput.addEventListener('keydown', e=>{
+      if(e.key==='Tab') panel.style.display='none';
+    });
+  }
+}
+
+// Override setSaleItem — item select hone ke baad info panel dikhao
+const _origSetSaleItem_v11 = window.setSaleItem;
+window.setSaleItem = function(id, itemId, name, rate, unit){
+  _origSetSaleItem_v11(id, itemId, name, rate, unit);
+
+  // Item ki jaankari store karo saleItems mein
+  const it = saleItems.find(i=>i.id===id);
+  if(it){ it.itemId = itemId; it.name = name; }
+
+  // Info panel dikhao
+  setTimeout(()=> showItemInfoPanel(id, name, itemId), 80);
+};
+
+// ══════════════════════════════════════════════════════════
+// FIX 3: Rate Popup — sirf SELECTED PARTY ka rate dikhao
+// ══════════════════════════════════════════════════════════
+// Kaise kaam karta hai:
+// - siRatePopup override karte hain
+// - Pehle party ID lete hain jo invoice mein select hai
+// - Filter karte hain: sirf us party ke invoices
+// - Agar koi rate nahi mila to sabke rates dikhao (fallback)
+
+window.siRatePopup = function(id){
+  const it = saleItems.find(i=>i.id===id); if(!it) return;
+  const name = it.name || document.getElementById('sn-'+id)?.value?.trim();
+  if(!name){ closeAllRatePopups(); return; }
+
+  // Selected party ID — invoice form se
+  const partyId = document.getElementById('inv-party-id')?.value || '';
+
+  // Invoices filter — pehle party se, fallback all
+  const invs = getInvoices();
+  const partyRates = [], allRates = [];
+
+  for(let i = invs.length-1; i>=0; i--){
+    const inv = invs[i];
+    const found = (inv.items||[]).find(item =>
+      item.name && item.name.toLowerCase()===name.toLowerCase() && item.rate>0
+    );
+    if(!found) continue;
+
+    const entry = {
+      date:     inv.date,
+      inv:      inv.invoiceNo,
+      party:    inv.partyName||'',
+      partyId:  inv.partyId||'',
+      rate:     found.rate,
+      qty:      found.qty||1
+    };
+
+    if(allRates.length < 5) allRates.push(entry);
+    if(partyId && inv.partyId === partyId && partyRates.length < 5)
+      partyRates.push(entry);
+  }
+
+  // Use party rates if available, else all
+  const rates = (partyId && partyRates.length) ? partyRates : allRates;
+  const isPartyFiltered = partyId && partyRates.length > 0;
+
+  const pop = document.getElementById('rp-'+id); if(!pop) return;
+  if(!rates.length){ pop.classList.remove('show'); return; }
+
+  pop.innerHTML = `
+    <div style="font-weight:700;color:var(--gd);font-size:11px;margin-bottom:5px">
+      📊 ${isPartyFiltered ? '🎯 This Party\'s Prices' : 'Last Prices (All Parties)'}
+      <span style="font-weight:400;color:var(--gray-400);font-size:10px">— "${name}"</span>
+    </div>
+    ${rates.map(r=>`
+    <div class="rate-pop-row">
+      <div>
+        <span style="color:var(--gray-500)">${fmtDate(r.date)}</span>
+        ${!isPartyFiltered ? `<span style="color:var(--gray-400);font-size:10.5px;margin-left:4px">· ${r.party.slice(0,14)}</span>` : ''}
+      </div>
+      <div style="display:flex;align-items:center;gap:5px">
+        <span style="color:var(--gray-500);font-size:10.5px">×${r.qty}</span>
+        <strong style="color:var(--b)">${fc(r.rate)}</strong>
+        <button onmousedown="siApplyRate('${id}',${r.rate})"
+          style="background:var(--g);color:#fff;border:none;border-radius:4px;padding:2px 6px;font-size:10.5px;cursor:pointer">Use</button>
+      </div>
+    </div>`).join('')}`;
+
+  closeAllRatePopups();
+  pop.classList.add('show');
+};
+
+// ══════════════════════════════════════════════════════════
+// CLEANUP: Close popups on Tab / outside click
+// ══════════════════════════════════════════════════════════
+// Tab press par sabhi popups chhupao
+document.addEventListener('keydown', e=>{
+  if(e.key==='Tab') closeAllRatePopups();
+});
+
+console.log('v11 applied ✓ — Keyboard AC | Item Info Panel | Party-filtered Rates');
+
+// ══════════════════════════════════════════════════════════
+// SEEKHNE KE LIYE — Yahan summarize kiya gaya hai
+// ══════════════════════════════════════════════════════════
+/*
+  IS PATCH MEIN KYA SIKHA:
+
+  1. EVENT LISTENER kya hota hai:
+     element.addEventListener('keydown', function(e){ ... })
+     → Jab user key dabaye to yeh function chale
+
+  2. e.key values:
+     'ArrowDown', 'ArrowUp', 'Enter', 'Tab', 'Escape'
+
+  3. e.preventDefault():
+     → Browser ka default kaam rokna (jaise ArrowDown se scroll)
+
+  4. Array.from():
+     → NodeList (querySelectorAll result) ko real Array banao
+     → Taki .forEach, .find etc. kaam kare
+
+  5. element.scrollIntoView({ block:'nearest' }): // Element visible range mein scroll karo
+     → Element visible range mein scroll karo
+
+  6. Function chaining with override:
+     const _orig = window.fn;
+     window.fn = function(){ _orig(); newCode(); }
+
+  7. setTimeout(fn, 200):
+     → 200ms baad fn chalaao — blur se pehle click complete ho sake
+
+  8. Closures — function ke andar variable yaad rahta hai:
+     function setup(id){
+       return function(){ console.log(id); } // id yaad raha
+     }
+*/
+
+})(); // end v11
+</script>
+<!-- V12 FIX — Item | Brand | Packing | Packs | Qty | Rate | Amount -->
+<script>
+(function v12fix(){
+'use strict';
+
+// Active row order: Sr | Item | Brand | Packing | Packs | Qty | Rate | Amount | Move | Del
+
+window.renderSaleItems = function(){
+  const s   = getSettings();
+  const showPack   = s.modules?.packing !== false;
+
+  const colDef = [
+    '20px',                          // Sr No
+    '1fr',                           // Name
+    '86px',                           // Brand
+    showPack   ? '84px 50px' : '',   // Pack pehle, Cnt baad mein
+    '52px',                          // Qty
+    '88px',                          // Rate
+    '82px',                          // Amt
+    '26px',                          // ▲▼
+    '22px',                          // Del
+  ].filter(Boolean).join(' ');
+
+  const c = document.getElementById('sale-items-body');
+  c.innerHTML = saleItems.map((it, idx) => `
+    <div id="sr-${it.id}" style="display:grid;grid-template-columns:${colDef};gap:3px;align-items:center;margin-bottom:5px">
+
+      <!-- 1. Sr No -->
+      <div style="color:var(--gray-400);font-size:11px;text-align:center">${idx+1}</div>
+
+      <!-- 2. Item Name -->
+      <div class="ac-wrap" style="position:relative">
+        <input class="fc fc-sm" id="sn-${it.id}" value="${esc(it.name)}" placeholder="Item name..." autocomplete="off"
+          oninput="siName('${it.id}',this.value)"
+          onfocus="siRatePopup('${it.id}')">
+        <div class="ac-list" id="ac-sn-${it.id}"></div>
+        <div id="item-last-party-info-${it.id}" style="font-size:9.5px;color:var(--gray-500);position:absolute;top:calc(100% + 1px);left:2px;z-index:5;pointer-events:none;">
+          ${it.lastPartySale ? `<span style="background:var(--gray-100);padding:1px 4px;border-radius:3px;border:1px solid var(--gray-200);color:var(--g)">Last: ${fc(it.lastPartySale.rate)} (Inv: ${it.lastPartySale.invoiceNo}, ${fmtDate(it.lastPartySale.date)})</span>` : ''}
+        </div>
+      </div>
+
+      <!-- 3. Brand -->
+      <input class="fc fc-sm" id="scol-${it.id}" value="${esc(it.colour||'')}"
+        placeholder="Brand" title="Brand"
+        style="font-size:12px"
+        onchange="siField('${it.id}','colour',this.value)">
+
+      <!-- 4. Pack Type (Packing) -->
+      ${showPack ? `<select class="fc fc-sm" id="spt-${it.id}" onchange="siPack('${it.id}',this.value)">
+        <option value="">—</option>
+        <option value="Box"    ${it.packType==='Box'   ?'selected':''}>Box</option>
+        <option value="Bag"    ${it.packType==='Bag'   ?'selected':''}>Bag</option>
+        <option value="Parcel" ${it.packType==='Parcel'?'selected':''}>Parcel</option>
+        <option value="Packet" ${it.packType==='Packet'?'selected':''}>Packet</option>
+        <option value="Carton" ${it.packType==='Carton'?'selected':''}>Carton</option>
+      </select>` : ''}
+
+      <!-- 5. Pack Count (Packs) -->
+      ${showPack ? `<input type="number" class="fc fc-sm" id="spc-${it.id}" value="${it.packCount||''}" min="1"
+        placeholder="-" style="text-align:center" ${!it.packType ? 'disabled' : ''}
+        onchange="siPackCnt('${it.id}',this.value)">` : ''}
+
+      <!-- 6. Qty -->
+      <input type="number" class="fc fc-sm" id="sqt-${it.id}" value="${it.qty}" min="0.001" step="any"
+        style="text-align:center" onchange="siNum('${it.id}','qty',this.value)">
+
+      <!-- 7. Rate + last-5 popup -->
+      <div style="position:relative">
+        <input type="number" class="fc fc-sm" id="srt-${it.id}" value="${it.rate}" min="0" step="any"
+          style="text-align:right"
+          onchange="siNum('${it.id}','rate',this.value)"
+          onfocus="siRatePopup('${it.id}')"
+          onblur="siHidePopup('${it.id}')">
+        <div class="rate-popup" id="rp-${it.id}"></div>
+      </div>
+
+      <!-- 8. Amount readonly -->
+      <input class="fc fc-sm fc-ro" id="samt-${it.id}" value="${fp(it.amt)}" readonly tabindex="-1"
+        style="text-align:right;font-weight:600">
+
+      <!-- 8. Move up/down -->
+      <div style="display:flex;flex-direction:column;gap:1px">
+        <button onclick="siMoveUp('${it.id}')" tabindex="-1"
+          style="background:none;border:1px solid var(--gray-200);border-radius:3px;cursor:pointer;font-size:9px;padding:1px 3px;line-height:1;color:var(--gray-500)">▲</button>
+        <button onclick="siMoveDown('${it.id}')" tabindex="-1"
+          style="background:none;border:1px solid var(--gray-200);border-radius:3px;cursor:pointer;font-size:9px;padding:1px 3px;line-height:1;color:var(--gray-500)">▼</button>
+      </div>
+
+      <!-- 9. Delete -->
+      <button class="del-btn" onclick="removeSI('${it.id}')" tabindex="-1">✕</button>
+    </div>`).join('');
+
+  // Header — same column order
+  const hdr = document.querySelector('.it-hdr');
+  if(hdr){
+    hdr.style.cssText = `display:grid;grid-template-columns:${colDef};gap:3px;padding:5px 0;font-size:11px;font-weight:700;color:var(--gray-500);border-bottom:1px solid var(--gray-200);margin-bottom:5px`;
+    hdr.innerHTML = `
+      <div></div>
+      <div>Item Description</div>
+      <div>Brand</div>
+      ${showPack ? '<div style="text-align:center">Packing</div><div style="text-align:center">Packs</div>' : ''}
+      <div style="text-align:center">Qty</div>
+      <div style="text-align:right">Rate</div>
+      <div style="text-align:right">Amount</div>
+      <div></div>
+      <div></div>`;
+  }
+
+  calcSaleTotal();
+};
+
+const _origSetSaleItem_v12 = window.setSaleItem;
+window.setSaleItem = function(id, itemId, name, rate, unit){
+  if(typeof _origSetSaleItem_v12 === 'function') _origSetSaleItem_v12(id, itemId, name, rate, unit);
+  
+  const partyId = document.getElementById('inv-party-id')?.value || '';
+  if(!partyId) return;
+
+  const invs = getInvoices();
+  let lastSale = null;
+  for(let i=invs.length-1; i>=0; i--){
+    const inv = invs[i];
+    if(inv.partyId !== partyId) continue;
+    const found = (inv.items||[]).find(it => it.name && it.name.toLowerCase() === name.toLowerCase() && it.rate > 0);
+    if(found){
+      lastSale = { date: inv.date, rate: found.rate, invoiceNo: inv.invoiceNo };
+      break;
+    }
+  }
+
+  const it = saleItems.find(i => i.id === id);
+  if(it) it.lastPartySale = lastSale;
+
+  const badge = document.getElementById('item-last-party-info-' + id);
+  if(badge){
+    if(lastSale){
+      badge.innerHTML = \`<span style="background:var(--gray-100);padding:1px 4px;border-radius:3px;border:1px solid var(--gray-200);color:var(--g)">Last: \${fc(lastSale.rate)} (Inv: \${lastSale.invoiceNo}, \${fmtDate(lastSale.date)})</span>\`;
+    } else {
+      badge.innerHTML = '';
+    }
+  }
+};
+
+// Also re-render immediately if we are on new-sale page
+if(document.getElementById('page-new-sale')?.style.display !== 'none'){
+  if(typeof saleItems !== 'undefined' && saleItems.length) renderSaleItems();
+}
+
+console.log('v12 fix applied ✓ — Qty before Pack, grid aligned, last party rate badge');
+})();
+</script>
+cat >> /home/claude/v9base.html << 'PATCH_END'
+<!-- ═══════════════════════════════════════════════════════════
+     V13 MEGA PATCH — Cancel Invoice | PDF Naming | Pagination(20) |
+     Payment History Modal | Status Fixes | Double-click Detail |
+     Dashboard Fix | Party Detail | Better Reports | Phone Capture
+     ═══════════════════════════════════════════════════════════ -->
+<style>
+/* ── V13 Base Styles ─────────────────────────────────── */
+.inv-cancelled { opacity:.55; text-decoration:line-through; }
+.badge-cancelled { background:#f3f4f6; color:#6b7280; }
+.status-cancelled { background:#fee2e2; color:#991b1b; font-size:11px; padding:2px 8px; border-radius:20px; font-weight:600; }
+.status-paid     { background:#d1fae5; color:#065f46; font-size:11px; padding:2px 8px; border-radius:20px; font-weight:600; }
+.status-cashdue  { background:#dbeafe; color:#1e40af; font-size:11px; padding:2px 8px; border-radius:20px; font-weight:600; }
+.status-creditdue{ background:#fef3c7; color:#92400e; font-size:11px; padding:2px 8px; border-radius:20px; font-weight:600; }
+
+/* ── Payment History in Modal ─────────────────────────── */
+.ph-entry { display:flex; justify-content:space-between; padding:6px 0; border-bottom:1px solid var(--gray-100); font-size:12.5px; }
+.ph-entry:last-child { border-bottom:none; }
+.ph-badge { padding:1px 7px; border-radius:12px; font-size:10.5px; font-weight:600; background:var(--gl); color:var(--gd); }
+
+/* ── Party Detail Modal ─────────────────────────────── */
+.pd-stat { background:var(--gray-50); border-radius:8px; padding:10px 14px; text-align:center; }
+.pd-stat-val { font-size:18px; font-weight:800; }
+.pd-stat-lbl { font-size:11px; color:var(--gray-500); margin-top:2px; }
+
+/* ── Pagination ───────────────────────────────────────── */
+.pgn { display:flex; align-items:center; justify-content:space-between; padding:10px 12px; background:var(--gray-50); border-top:1px solid var(--gray-200); font-size:12.5px; }
+.pgn-btns { display:flex; gap:4px; }
+.pgn-btn { padding:4px 10px; border:1px solid var(--gray-300); border-radius:6px; background:#fff; cursor:pointer; font-size:12px; color:var(--gray-700); }
+.pgn-btn:hover { background:var(--gray-50); }
+.pgn-btn.active { background:var(--g); color:#fff; border-color:var(--g); font-weight:600; }
+.pgn-btn:disabled { opacity:.4; cursor:not-allowed; }
+.pgn-info { color:var(--gray-500); }
+
+/* ── Compact invoice row ─────────────────────────────── */
+table tr.inv-row:hover td { background:#f0fdf4; cursor:pointer; }
+table tr.cancelled-row td { background:#fef2f2 !important; }
+
+/* ── Phone required highlight ─────────────────────────── */
+.phone-missing { border-color:#f59e0b !important; background:#fffbeb !important; }
+.phone-missing-badge { background:#fef3c7; color:#92400e; font-size:11px; padding:2px 6px; border-radius:4px; font-weight:600; }
+</style>
+
+<script>
+(function v13(){
+'use strict';
+
+// ════════════════════════════════════════════════════════
+// CONSTANTS
+// ════════════════════════════════════════════════════════
+const PAGE_SIZE = 20;
+
+// Page state for each list
+const pgState = { sales:1, purchases:1, items:1, parties:1 };
+
+// ════════════════════════════════════════════════════════
+// HELPERS
+// ════════════════════════════════════════════════════════
+function isCancelled(inv) { return inv.status === 'cancelled' || inv.dispatchStatus === 'cancelled'; }
+
+function getInvoiceStatus(inv) {
+  if (isCancelled(inv)) return 'cancelled';
+  if ((inv.balance||0) <= 0 && inv.total > 0) return 'paid';
+  if (inv.paymentType === 'Cash' && (inv.balance||0) > 0) return 'cashdue';
+  if (inv.paymentType === 'Credit' && (inv.balance||0) > 0) return 'creditdue';
+  return inv.dispatchStatus || 'pending';
+}
+
+function statusBadge(inv) {
+  const st = getInvoiceStatus(inv);
+  const map = {
+    cancelled: '<span class="status-cancelled">✕ Cancelled</span>',
+    paid:      '<span class="status-paid">✓ Paid</span>',
+    cashdue:   '<span class="status-cashdue">💵 Cash Due</span>',
+    creditdue: '<span class="status-creditdue">📋 Credit Due</span>',
+    dispatched:'<span class="badge disp-done">🚚 Dispatched</span>',
+    pending:   '<span class="badge disp-pending">📦 Pending</span>',
+    draft:     '<span class="badge disp-draft">📝 Draft</span>',
+  };
+  return map[st] || map['pending'];
+}
+
+function sanitizeFilename(str) {
+  return (str||'').toUpperCase()
+    .replace(/[^A-Z0-9]/g, '-')
+    .replace(/-+/g, '-')
+    .replace(/^-|-$/g, '')
+    .slice(0, 25);
+}
+
+function renderPageBtns(totalItems, currentPage, onNav, containerId) {
+  const totalPages = Math.max(1, Math.ceil(totalItems / PAGE_SIZE));
+  const from = (currentPage-1)*PAGE_SIZE + 1;
+  const to = Math.min(currentPage*PAGE_SIZE, totalItems);
+  return `
+    <div class="pgn">
+      <span class="pgn-info">${from}–${to} of ${totalItems}</span>
+      <div class="pgn-btns">
+        <button class="pgn-btn" ${currentPage<=1?'disabled':''} onclick="${onNav}(${currentPage-1})">← Prev</button>
+        ${Array.from({length:Math.min(totalPages,7)},(_,i)=>{
+          let p = i+1;
+          if(totalPages>7){
+            const half=3;
+            if(currentPage<=half+1) p=i+1;
+            else if(currentPage>=totalPages-half) p=totalPages-6+i;
+            else p=currentPage-half+i;
+          }
+          return `<button class="pgn-btn ${p===currentPage?'active':''}" onclick="${onNav}(${p})">${p}</button>`;
+        }).join('')}
+        <button class="pgn-btn" ${currentPage>=totalPages?'disabled':''} onclick="${onNav}(${currentPage+1})">Next →</button>
+      </div>
+    </div>`;
+}
+
+// ════════════════════════════════════════════════════════
+// 1. CANCEL INVOICE
+// ════════════════════════════════════════════════════════
+window.cancelInvoice = function(id) {
+  const invs = getInvoices();
+  const inv = invs.find(i=>i.id===id);
+  if(!inv) return;
+  if(!confirm(`Cancel invoice ${inv.invoiceNo}? This will mark it as CANCELLED. You can view it but it won't count in totals.`)) return;
+  inv.status = 'cancelled';
+  inv.cancelledAt = new Date().toISOString();
+  inv.dispatchStatus = 'cancelled';
+  DB.set('invoices', invs);
+  closeModal('inv-view-modal');
+  toast(`Invoice ${inv.invoiceNo} cancelled ✓`);
+  if (typeof renderSalesList === 'function') renderSalesList();
+  if (typeof renderDashboard === 'function') renderDashboard();
+};
+
+window.restoreInvoice = function(id) {
+  const invs = getInvoices();
+  const inv = invs.find(i=>i.id===id);
+  if(!inv) return;
+  delete inv.status;
+  delete inv.cancelledAt;
+  inv.dispatchStatus = 'pending';
+  DB.set('invoices', invs);
+  toast(`Invoice ${inv.invoiceNo} restored ✓`);
+  if (typeof renderSalesList === 'function') renderSalesList();
+  viewInvoice(id);
+};
+
+// ════════════════════════════════════════════════════════
+// 2. PDF NAMING FIX
+// ════════════════════════════════════════════════════════
+window.printInvoice = function() {
+  const el = document.getElementById('printable-inv'); if(!el) return;
+  const s = getSettings();
+  const ps = typeof getPrintSettings === 'function' ? getPrintSettings() : {};
+  const fs = ps.fontSize || '13';
+  const inv = getInvoices().find(i=>i.id===currentViewInvId);
+  const pdfName = inv
+    ? `${sanitizeFilename(inv.invoiceNo)}_${sanitizeFilename(inv.partyName||'CASH')}.pdf`
+    : 'invoice.pdf';
+
+  const w = window.open('','_blank');
+  w.document.write(`<!DOCTYPE html><html><head>
+<title>${pdfName.replace('.pdf','')}</title><meta charset="UTF-8">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Segoe UI',Arial,sans-serif;font-size:${fs}px;color:#1f2937;padding:20px;max-width:760px;margin:0 auto}
+table{width:100%;border-collapse:collapse}
+th{background:#f3f4f6;padding:7px 9px;text-align:left;font-size:11px;font-weight:700;color:#6b7280;border-bottom:1px solid #e5e7eb}
+td{padding:7px 9px;border-bottom:1px solid #f3f4f6;font-size:${Math.max(10,+fs-1)}px}
+tr:last-child td{border-bottom:none}
+.tot-row{display:flex;justify-content:space-between;padding:3px 0;color:#4b5563;font-size:${fs}px}
+.tot-row.grand{font-size:${+fs+2}px;font-weight:700;color:#1f2937;border-top:1px solid #d1d5db;padding-top:6px;margin-top:4px}
+.no-print{display:none}
+</style></head><body>${el.innerHTML}
+<script>document.title="${pdfName.replace('.pdf','')}";setTimeout(()=>window.print(),300);<\/script>
+</body></html>`);
+  w.document.close();
+};
+
+// ════════════════════════════════════════════════════════
+// 3. SALES LIST — pagination 20, cancel button, status fix, dblclick
+// ════════════════════════════════════════════════════════
+window.slNavPage = function(p) { pgState.sales = p; renderSalesList(); };
+
+window.renderSalesList = function() {
+  const invs = getInvoices();
+  const from = document.getElementById('sl-from')?.value || '';
+  const to   = document.getElementById('sl-to')?.value || '';
+  const srch = (document.getElementById('sl-srch')?.value||'').toLowerCase();
+  const pill = window.slPill || 'all';
+
+  let f = [...invs];
+  if (from) f = f.filter(i=>i.date>=from);
+  if (to)   f = f.filter(i=>i.date<=to);
+  if (srch) f = f.filter(i=>(i.partyName+i.invoiceNo+(i.notes||'')).toLowerCase().includes(srch));
+
+  // Status filters — all accurate
+  switch(pill) {
+    case 'cash-due':         f = f.filter(i=>!isCancelled(i) && i.paymentType==='Cash'    && (i.balance||0)>0); break;
+    case 'credit-due':       f = f.filter(i=>!isCancelled(i) && i.paymentType==='Credit'  && (i.balance||0)>0); break;
+    case 'pending-dispatch': f = f.filter(i=>!isCancelled(i) && i.dispatchStatus==='pending'); break;
+    case 'dispatched':       f = f.filter(i=>!isCancelled(i) && i.dispatchStatus==='dispatched'); break;
+    case 'draft':            f = f.filter(i=>!isCancelled(i) && i.dispatchStatus==='draft'); break;
+    case 'paid':             f = f.filter(i=>!isCancelled(i) && (i.balance||0)<=0 && i.total>0); break;
+    case 'cancelled':        f = f.filter(i=>isCancelled(i)); break;
+    case 'all':
+    default:                 /* show everything */ break;
+  }
+
+  f = f.slice().reverse(); // newest first
+
+  // Summary (exclude cancelled from totals)
+  const active = f.filter(i=>!isCancelled(i));
+  const tT = active.reduce((a,i)=>a+(i.total||0),0);
+  const tP = active.reduce((a,i)=>a+(i.paid||0),0);
+  const tB = active.reduce((a,i)=>a+(i.balance||0),0);
+
+  document.getElementById('sl-summary').innerHTML=`
+    <div class="sg" style="grid-template-columns:repeat(4,1fr);margin-bottom:10px">
+      <div class="sc"><div class="sc-lbl">Total Sale</div><div class="sc-val g">${fc(tT)}</div></div>
+      <div class="sc"><div class="sc-lbl">Received</div><div class="sc-val b">${fc(tP)}</div></div>
+      <div class="sc"><div class="sc-lbl">Balance Due</div><div class="sc-val r">${fc(tB)}</div></div>
+      <div class="sc"><div class="sc-lbl">Records</div><div class="sc-val" style="color:var(--gray-600)">${f.length}</div></div>
+    </div>`;
+
+  const c = document.getElementById('sales-table');
+  if (!f.length) { c.innerHTML=`<div class="empty"><div class="ic">📄</div>No invoices found</div>`; return; }
+
+  // Paginate
+  const totalPages = Math.ceil(f.length / PAGE_SIZE);
+  if (pgState.sales > totalPages) pgState.sales = 1;
+  const pageRows = f.slice((pgState.sales-1)*PAGE_SIZE, pgState.sales*PAGE_SIZE);
+
+  c.innerHTML = `<table>
+    <thead><tr>
+      <th>#</th><th>Invoice</th><th>Date</th><th>Party</th>
+      <th>Total</th><th>Balance</th><th>Pay Type</th><th>Status</th>
+      <th class="no-print" style="text-align:right">Actions</th>
+    </tr></thead>
+    <tbody>${pageRows.map((i,idx)=>{
+      const cancelled = isCancelled(i);
+      const rowNum = (pgState.sales-1)*PAGE_SIZE + idx + 1;
+      return `<tr class="${cancelled?'cancelled-row':''}" ondblclick="viewInvoice('${i.id}')">
+        <td style="color:var(--gray-400);font-size:11px">${rowNum}</td>
+        <td style="font-weight:700;color:var(--b);cursor:pointer;${cancelled?'text-decoration:line-through;opacity:.6':''}" onclick="viewInvoice('${i.id}')">${i.invoiceNo}</td>
+        <td style="white-space:nowrap">${fmtDate(i.date)}</td>
+        <td style="font-weight:500;max-width:140px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${i.partyName||'Cash'}</td>
+        <td style="font-weight:600;text-align:right">${fc(i.total)}</td>
+        <td style="text-align:right;color:${(i.balance||0)>0?'var(--r)':'var(--gray-400)'}"><strong>${fc(i.balance||0)}</strong></td>
+        <td><span class="badge ${ptBadge(i.paymentType)}">${i.paymentType||'Cash'}</span></td>
+        <td>${statusBadge(i)}</td>
+        <td class="no-print" style="text-align:right;white-space:nowrap">
+          ${cancelled ? `
+            <button class="btn btn-out btn-xs" onclick="viewInvoice('${i.id}')">View</button>
+            <button class="btn btn-g btn-xs" onclick="restoreInvoice('${i.id}')">Restore</button>
+          ` : `
+            <button class="btn btn-b btn-xs" onclick="viewInvoice('${i.id}')">View</button>
+            ${(i.balance||0)>0?`<button class="btn btn-g btn-xs" onclick="openPayModal('${i.id}')">Pay</button>`:''}
+            <button class="btn btn-o btn-xs" onclick="editInvoiceFromList('${i.id}')">Edit</button>
+            ${i.dispatchStatus!=='dispatched'?`<button class="btn btn-c btn-xs" onclick="quickDispatch('${i.id}')">🚚</button>`:''}
+            <button class="btn btn-r btn-xs" onclick="cancelInvoice('${i.id}')">✕</button>
+          `}
+        </td>
+      </tr>`;
+    }).join('')}</tbody>
+    <tfoot><tr>
+      <td colspan="4">Total ${f.length} invoices${f.filter(i=>isCancelled(i)).length?' ('+f.filter(i=>isCancelled(i)).length+' cancelled)':''}</td>
+      <td style="text-align:right">${fc(tT)}</td>
+      <td style="color:var(--r);text-align:right">${fc(tB)}</td>
+      <td colspan="3"></td>
+    </tr></tfoot>
+  </table>
+  ${f.length > PAGE_SIZE ? renderPageBtns(f.length, pgState.sales, 'slNavPage', 'sales-table') : ''}`;
+};
+
+// ════════════════════════════════════════════════════════
+// 4. ADD CANCELLED PILL to sale list
+// ════════════════════════════════════════════════════════
+(function addCancelledPill(){
+  const pillRow = document.querySelector('.pill-row');
+  if (pillRow && !pillRow.querySelector('[data-slpill="cancelled"]')) {
+    const p = document.createElement('div');
+    p.className = 'pill';
+    p.setAttribute('data-slpill','cancelled');
+    p.setAttribute('onclick',"setSLPill('cancelled')");
+    p.textContent = '✕ Cancelled';
+    pillRow.appendChild(p);
+  }
+})();
+
+// ════════════════════════════════════════════════════════
+// 5. VIEW INVOICE — add Cancel button, better payment history
+// ════════════════════════════════════════════════════════
+const _origViewInvV13 = window.viewInvoice;
+window.viewInvoice = function(id) {
+  _origViewInvV13(id);
+  // After render, patch the modal header with cancel/restore button
+  setTimeout(() => {
+    const mh = document.querySelector('#inv-view-modal .mh > div');
+    if (!mh) return;
+    const inv = getInvoices().find(i=>i.id===id); if(!inv) return;
+
+    // Remove old v13 buttons if any
+    mh.querySelectorAll('.v13-btn').forEach(b=>b.remove());
+
+    if (isCancelled(inv)) {
+      const rb = document.createElement('button');
+      rb.className = 'btn btn-g btn-sm v13-btn';
+      rb.innerHTML = '↩️ Restore';
+      rb.onclick = () => restoreInvoice(id);
+      mh.prepend(rb);
+    } else {
+      const cb = document.createElement('button');
+      cb.className = 'btn btn-r btn-sm v13-btn';
+      cb.innerHTML = '✕ Cancel Invoice';
+      cb.onclick = () => cancelInvoice(id);
+      mh.appendChild(cb);
+    }
+  }, 60);
+};
+
+// ════════════════════════════════════════════════════════
+// 6. PAYMENT MODAL — show full payment history
+// ════════════════════════════════════════════════════════
+const _origOpenPayModal = window.openPayModal;
+window.openPayModal = function(invId) {
+  const inv = getInvoices().find(i=>i.id===invId); if(!inv) return;
+  if (isCancelled(inv)) { toast('This invoice is cancelled.'); return; }
+  _origOpenPayModal(invId);
+
+  // Inject payment history below the modal info
+  setTimeout(() => {
+    const mb = document.querySelector('#pay-modal .mb');
+    if (!mb) return;
+    const old = mb.querySelector('.pay-hist-section');
+    if (old) old.remove();
+
+    const payments = inv.payments || [];
+    if (!payments.length) return;
+
+    const sec = document.createElement('div');
+    sec.className = 'pay-hist-section';
+    sec.style.cssText = 'margin-top:12px;border-top:1px solid var(--gray-100);padding-top:10px';
+    sec.innerHTML = `
+      <div style="font-size:12px;font-weight:700;color:var(--gray-600);margin-bottom:8px">
+        💳 Payment History (${payments.length} entries)
+      </div>
+      ${payments.map((p,i)=>`
+        <div class="ph-entry">
+          <div>
+            <span style="font-weight:600">${fmtDate(p.date)}</span>
+            <span class="ph-badge" style="margin-left:6px">${p.mode||'Cash'}</span>
+            ${p.note?`<span style="color:var(--gray-400);margin-left:4px;font-size:11px">· ${p.note}</span>`:''}
+          </div>
+          <div style="display:flex;align-items:center;gap:8px">
+            <strong style="color:var(--g)">${fc(p.amt)}</strong>
+            <button onclick="deletePaymentEntry('${invId}',${i})" style="background:none;border:none;cursor:pointer;color:var(--r);font-size:13px;padding:0 2px" title="Delete this payment">✕</button>
+          </div>
+        </div>`).join('')}
+    `;
+    mb.appendChild(sec);
+  }, 60);
+};
+
+// Delete individual payment entry
+window.deletePaymentEntry = function(invId, payIdx) {
+  if (!confirm('Delete this payment entry?')) return;
+  const invs = getInvoices();
+  const inv = invs.find(i=>i.id===invId); if(!inv||!inv.payments) return;
+  inv.payments.splice(payIdx, 1);
+  inv.paid = inv.payments.reduce((a,p)=>a+(p.amt||0), 0);
+  inv.balance = Math.max(0, (inv.total||0) - inv.paid);
+  DB.set('invoices', invs);
+  toast('Payment deleted ✓');
+  closeModal('pay-modal');
+  if (typeof renderSalesList==='function') renderSalesList();
+  if (typeof renderDashboard==='function') renderDashboard();
+};
+
+// ════════════════════════════════════════════════════════
+// 7. PURCHASE LIST — pagination 20
+// ════════════════════════════════════════════════════════
+window.plNavPage = function(p) { pgState.purchases = p; renderPurchaseList(); };
+
+const _origRenderPurchaseList = window.renderPurchaseList;
+window.renderPurchaseList = function() {
+  const purs = getPurchases();
+  const from = document.getElementById('pl-from')?.value;
+  const to   = document.getElementById('pl-to')?.value;
+  const srch = (document.getElementById('pl-srch')?.value||'').toLowerCase();
+  let f = [...purs];
+  if (from) f = f.filter(p=>p.date>=from);
+  if (to)   f = f.filter(p=>p.date<=to);
+  if (srch) f = f.filter(p=>(p.partyName+(p.billNo||'')).toLowerCase().includes(srch));
+  f.reverse();
+
+  const tT = f.reduce((a,p)=>a+(p.total||0),0);
+  document.getElementById('pl-summary').innerHTML=`
+    <div class="sg" style="grid-template-columns:repeat(3,1fr)">
+      <div class="sc"><div class="sc-lbl">Total Purchase</div><div class="sc-val b">${fc(tT)}</div></div>
+      <div class="sc"><div class="sc-lbl">Entries</div><div class="sc-val o">${f.length}</div></div>
+      <div class="sc"><div class="sc-lbl">Suppliers</div><div class="sc-val" style="color:var(--gray-600)">${[...new Set(f.map(p=>p.partyName))].length}</div></div>
+    </div>`;
+
+  const c = document.getElementById('purchase-table');
+  if (!f.length) { c.innerHTML=`<div class="empty"><div class="ic">🛒</div>No purchases found</div>`; return; }
+
+  const totalPages = Math.ceil(f.length/PAGE_SIZE);
+  if (pgState.purchases > totalPages) pgState.purchases = 1;
+  const pageRows = f.slice((pgState.purchases-1)*PAGE_SIZE, pgState.purchases*PAGE_SIZE);
+
+  c.innerHTML = `<table>
+    <thead><tr><th>#</th><th>Date</th><th>Party</th><th>Bill No</th><th>Mode</th><th>Total</th><th>Photo</th><th class="no-print">Actions</th></tr></thead>
+    <tbody>${pageRows.map((p,i)=>`<tr ondblclick="viewPurchase('${p.id}')">
+      <td style="color:var(--gray-400);font-size:11px">${(pgState.purchases-1)*PAGE_SIZE+i+1}</td>
+      <td>${fmtDate(p.date)}</td>
+      <td style="font-weight:500">${p.partyName||'Cash'}</td>
+      <td>${p.billNo||'-'}</td>
+      <td>${p.mode==='items'?'<span class="badge bb">Item-wise</span>':'<span class="badge bg">Amount</span>'}</td>
+      <td style="font-weight:700;color:var(--b)">${fc(p.total)}</td>
+      <td>${p.photoData?'<span class="badge bo">📷</span>':'-'}</td>
+      <td class="no-print" style="text-align:right">
+        <button class="btn btn-b btn-xs" onclick="viewPurchase('${p.id}')">View</button>
+        <button class="btn btn-r btn-xs" onclick="delPurchase('${p.id}')">Del</button>
+      </td>
+    </tr>`).join('')}</tbody>
+    <tfoot><tr><td colspan="5">Total (${f.length})</td><td style="color:var(--b)">${fc(tT)}</td><td colspan="2"></td></tr></tfoot>
+  </table>
+  ${f.length > PAGE_SIZE ? renderPageBtns(f.length, pgState.purchases, 'plNavPage', 'purchase-table') : ''}`;
+};
+
+// ════════════════════════════════════════════════════════
+// 8. ITEMS LIST — pagination 20
+// ════════════════════════════════════════════════════════
+window.itemNavPage = function(p) { pgState.items = p; renderItems(); };
+
+const _origRenderItems = window.renderItems;
+window.renderItems = function() {
+  const srch = (document.getElementById('item-srch')?.value||'').toLowerCase();
+  const items = srch ? getItems().filter(i=>i.name.toLowerCase().includes(srch)) : getItems();
+  const c = document.getElementById('items-table');
+  if (!items.length) { c.innerHTML=`<div class="empty"><div class="ic">📦</div>No items yet.</div>`; return; }
+
+  const totalPages = Math.ceil(items.length/PAGE_SIZE);
+  if (pgState.items > totalPages) pgState.items = 1;
+  const pageRows = items.slice((pgState.items-1)*PAGE_SIZE, pgState.items*PAGE_SIZE);
+
+  c.innerHTML=`<table>
+    <thead><tr><th>#</th><th>Name</th><th>Unit</th><th>Sale Rate</th><th>Purchase Rate</th><th>GST%</th><th>HSN</th><th class="no-print">Actions</th></tr></thead>
+    <tbody>${pageRows.map((it,i)=>`<tr ondblclick="openItemModal('${it.id}')">
+      <td style="color:var(--gray-400);font-size:11px">${(pgState.items-1)*PAGE_SIZE+i+1}</td>
+      <td style="font-weight:600">${it.name}</td>
+      <td>${it.unit||'Pcs'}</td>
+      <td style="color:var(--g);font-weight:600">${fc(it.saleRate||0)}</td>
+      <td style="color:var(--b)">${fc(it.purchaseRate||0)}</td>
+      <td>${it.gst||0}%</td><td>${it.hsn||'-'}</td>
+      <td class="no-print" style="text-align:right">
+        <button class="btn btn-out btn-xs" onclick="openItemModal('${it.id}')">Edit</button>
+        <button class="btn btn-r btn-xs" onclick="delItem('${it.id}')">Del</button>
+      </td>
+    </tr>`).join('')}</tbody>
+    <tfoot><tr><td colspan="8">Total ${items.length} items</td></tr></tfoot>
+  </table>
+  ${items.length > PAGE_SIZE ? renderPageBtns(items.length, pgState.items, 'itemNavPage', 'items-table') : ''}`;
+};
+
+// ════════════════════════════════════════════════════════
+// 9. PARTIES LIST — pagination 20 + double-click detail
+// ════════════════════════════════════════════════════════
+window.partyNavPage = function(p) { pgState.parties = p; renderParties(); };
+
+window.renderParties = function() {
+  const srch = (document.getElementById('party-srch')?.value||'').toLowerCase();
+  const all = getParties();
+  const parties = srch ? all.filter(p=>(p.name+(p.phone||'')+(p.area||'')).toLowerCase().includes(srch)) : all;
+  const invs = getInvoices();
+  const c = document.getElementById('parties-table');
+  if (!parties.length) { c.innerHTML=`<div class="empty"><div class="ic">👥</div>No parties yet.</div>`; return; }
+
+  const totalPages = Math.ceil(parties.length/PAGE_SIZE);
+  if (pgState.parties > totalPages) pgState.parties = 1;
+  const pageRows = parties.slice((pgState.parties-1)*PAGE_SIZE, pgState.parties*PAGE_SIZE);
+
+  c.innerHTML=`<table>
+    <thead><tr>
+      <th>#</th><th>Name</th><th>Phone</th><th>Area</th><th>Type</th>
+      <th>Total Sale</th><th>Outstanding</th><th>Last Invoice</th>
+      <th class="no-print">Actions</th>
+    </tr></thead>
+    <tbody>${pageRows.map((p,idx)=>{
+      const pI = invs.filter(i=>i.partyId===p.id && !isCancelled(i));
+      const tS = pI.reduce((a,i)=>a+(i.total||0),0);
+      const tB = pI.reduce((a,i)=>a+(i.balance||0),0);
+      const last = [...pI].reverse()[0];
+      return `<tr style="cursor:pointer" ondblclick="openPartyDetail('${p.id}')">
+        <td style="color:var(--gray-400);font-size:11px">${(pgState.parties-1)*PAGE_SIZE+idx+1}</td>
+        <td style="font-weight:700">${p.name}${!p.phone?`<span class="phone-missing-badge" style="margin-left:4px">No Phone</span>`:''}</td>
+        <td>${p.phone||'<span style="color:var(--gray-400)">—</span>'}</td>
+        <td>${p.area||'-'}</td>
+        <td>${{customer:'<span class="badge bg">Customer</span>',supplier:'<span class="badge bb">Supplier</span>',both:'<span class="badge bo">Both</span>'}[p.type]||'-'}</td>
+        <td style="color:var(--g);font-weight:600">${fc(tS)}</td>
+        <td style="${tB>0?'color:var(--r);':'color:var(--gray-400);'}font-weight:600">${fc(tB)}</td>
+        <td style="font-size:12px">${last?`${fmtDate(last.date)} · ${fc(last.total)}`:'-'}</td>
+        <td class="no-print" style="text-align:right">
+          <button class="btn btn-b btn-xs" onclick="openPartyDetail('${p.id}')">Detail</button>
+          <button class="btn btn-out btn-xs" onclick="openPartyModal('${p.id}')">Edit</button>
+          <button class="btn btn-r btn-xs" onclick="delParty('${p.id}')">Del</button>
+        </td>
+      </tr>`;
+    }).join('')}</tbody>
+    <tfoot><tr><td colspan="9">Total ${parties.length} parties</td></tr></tfoot>
+  </table>
+  ${parties.length > PAGE_SIZE ? renderPageBtns(parties.length, pgState.parties, 'partyNavPage', 'parties-table') : ''}`;
+};
+
+// ════════════════════════════════════════════════════════
+// 10. PARTY DETAIL MODAL (double-click)
+// ════════════════════════════════════════════════════════
+window.openPartyDetail = function(partyId) {
+  const p = getParties().find(x=>x.id===partyId); if(!p) return;
+  const invs = getInvoices().filter(i=>i.partyId===partyId);
+  const active = invs.filter(i=>!isCancelled(i));
+  const tSale = active.reduce((a,i)=>a+(i.total||0),0);
+  const tBal  = active.reduce((a,i)=>a+(i.balance||0),0);
+  const tPaid = active.reduce((a,i)=>a+(i.paid||0),0);
+  const recent = [...invs].reverse().slice(0,8);
+
+  // Collect all payments
+  const allPayments = [];
+  invs.forEach(inv=>(inv.payments||[]).forEach(pay=>allPayments.push({...pay, invNo:inv.invoiceNo})));
+  allPayments.sort((a,b)=>(b.date||'').localeCompare(a.date||''));
+
+  let modal = document.getElementById('party-detail-modal');
+  if (!modal) {
+    modal = document.createElement('div');
+    modal.className = 'mo'; modal.id = 'party-detail-modal';
+    document.body.appendChild(modal);
+    modal.addEventListener('click', e=>{ if(e.target===modal) modal.classList.remove('show'); });
+  }
+
+  modal.innerHTML = `
+    <div class="md md-lg" style="max-width:860px">
+      <div class="mh">
+        <div>
+          <span class="mh-t">👤 ${p.name}</span>
+          ${p.area?`<span style="font-size:12px;color:var(--gray-400);margin-left:8px">📍 ${p.area}</span>`:''}
+        </div>
+        <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap">
+          <button class="btn btn-g btn-sm" onclick="nav('new-sale');closeModal('party-detail-modal');setTimeout(()=>{document.getElementById('inv-party').value='${p.name}';document.getElementById('inv-party-id').value='${p.id}';showLastRate('${p.id}');},200)">+ New Invoice</button>
+          <button class="btn btn-out btn-sm" onclick="openPartyModal('${p.id}');closeModal('party-detail-modal')">Edit Party</button>
+          <button class="mc" onclick="closeModal('party-detail-modal')">✕</button>
+        </div>
+      </div>
+      <div class="mb" style="padding:14px">
+        <!-- Stats row -->
+        <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:16px">
+          <div class="pd-stat"><div class="pd-stat-val" style="color:var(--g)">${fc(tSale)}</div><div class="pd-stat-lbl">Total Sale</div></div>
+          <div class="pd-stat"><div class="pd-stat-val" style="color:var(--b)">${fc(tPaid)}</div><div class="pd-stat-lbl">Total Paid</div></div>
+          <div class="pd-stat"><div class="pd-stat-val" style="color:${tBal>0?'var(--r)':'var(--g)'}">${fc(tBal)}</div><div class="pd-stat-lbl">Outstanding</div></div>
+          <div class="pd-stat"><div class="pd-stat-val" style="color:var(--gray-600)">${invs.length}</div><div class="pd-stat-lbl">Invoices</div></div>
+        </div>
+
+        <!-- Contact Info -->
+        <div style="display:flex;gap:14px;margin-bottom:14px;flex-wrap:wrap;font-size:13px">
+          ${p.phone?`<div>📞 <strong>${p.phone}</strong></div>`:'<div style="color:var(--o)">⚠️ No phone number</div>'}
+          ${p.address?`<div>🏠 ${p.address}</div>`:''}
+          ${p.gstin?`<div>📋 GSTIN: ${p.gstin}</div>`:''}
+          ${p.description||p.desc?`<div>📝 ${p.description||p.desc}</div>`:''}
+        </div>
+
+        <!-- Tabs -->
+        <div style="display:flex;gap:0;border-bottom:2px solid var(--gray-200);margin-bottom:12px">
+          <div id="pdt-inv" style="padding:6px 14px;cursor:pointer;font-size:13px;font-weight:600;color:var(--g);border-bottom:2px solid var(--g);margin-bottom:-2px" onclick="pdShowTab('inv')">📋 Invoices (${invs.length})</div>
+          <div id="pdt-pay" style="padding:6px 14px;cursor:pointer;font-size:13px;color:var(--gray-500)" onclick="pdShowTab('pay')">💳 Payments (${allPayments.length})</div>
+        </div>
+
+        <!-- Invoice tab -->
+        <div id="pd-tab-inv">
+          ${recent.length===0?'<div class="empty">No invoices</div>':`
+          <div class="tw"><table>
+            <thead><tr><th>Invoice</th><th>Date</th><th>Total</th><th>Paid</th><th>Balance</th><th>Status</th><th>Actions</th></tr></thead>
+            <tbody>${recent.map(i=>`<tr>
+              <td style="font-weight:700;color:var(--b)">${i.invoiceNo}</td>
+              <td>${fmtDate(i.date)}</td>
+              <td>${fc(i.total)}</td>
+              <td style="color:var(--g)">${fc(i.paid||0)}</td>
+              <td style="color:${(i.balance||0)>0?'var(--r)':'var(--gray-400)'};font-weight:600">${fc(i.balance||0)}</td>
+              <td>${statusBadge(i)}</td>
+              <td><button class="btn btn-b btn-xs" onclick="closeModal('party-detail-modal');viewInvoice('${i.id}')">View</button>
+              ${!isCancelled(i)&&(i.balance||0)>0?`<button class="btn btn-g btn-xs" onclick="closeModal('party-detail-modal');openPayModal('${i.id}')">Pay</button>`:''}</td>
+            </tr>`).join('')}</tbody>
+          </table></div>`}
+          ${invs.length>8?`<div style="text-align:center;margin-top:8px;font-size:12.5px;color:var(--b);cursor:pointer" onclick="closeModal('party-detail-modal');nav('sales-list');setTimeout(()=>{document.getElementById('sl-srch').value='${p.name}';renderSalesList();},200)">View all ${invs.length} invoices →</div>`:''}
+        </div>
+
+        <!-- Payments tab -->
+        <div id="pd-tab-pay" style="display:none">
+          ${allPayments.length===0?'<div class="empty">No payments recorded</div>':`
+          <div class="tw"><table>
+            <thead><tr><th>Date</th><th>Invoice</th><th>Amount</th><th>Mode</th><th>Note</th></tr></thead>
+            <tbody>${allPayments.slice(0,20).map(pay=>`<tr>
+              <td>${fmtDate(pay.date)}</td>
+              <td style="color:var(--b);font-weight:600">${pay.invNo||'-'}</td>
+              <td style="color:var(--g);font-weight:700">${fc(pay.amt)}</td>
+              <td><span class="ph-badge">${pay.mode||'Cash'}</span></td>
+              <td style="color:var(--gray-500)">${pay.note||'-'}</td>
+            </tr>`).join('')}</tbody>
+            <tfoot><tr><td colspan="2">Total</td><td style="color:var(--g)">${fc(allPayments.reduce((a,p)=>a+p.amt,0))}</td><td colspan="2"></td></tr></tfoot>
+          </table></div>`}
+        </div>
+      </div>
+    </div>`;
+
+  modal.classList.add('show');
+};
+
+window.pdShowTab = function(tab) {
+  ['inv','pay'].forEach(t=>{
+    const d = document.getElementById('pd-tab-'+t);
+    const h = document.getElementById('pdt-'+t);
+    if (d) d.style.display = t===tab?'block':'none';
+    if (h) {
+      h.style.color = t===tab?'var(--g)':'var(--gray-500)';
+      h.style.borderBottom = t===tab?'2px solid var(--g)':'none';
+      h.style.marginBottom = t===tab?'-2px':'0';
+      h.style.fontWeight = t===tab?'600':'400';
+    }
+  });
+};
+
+// ════════════════════════════════════════════════════════
+// 11. DASHBOARD — fix totals, exclude cancelled, add stats
+// ════════════════════════════════════════════════════════
+window.renderDashboard = function() {
+  const s = getSettings(), invs = getInvoices(), purs = getPurchases(), retail = getRetail();
+  document.getElementById('sb-shop').textContent = s.shopName||'My Shop';
+  document.getElementById('sb-loc').textContent  = s.state||'Billing';
+
+  const ym = new Date().toISOString().slice(0,7);
+  const activeInvs = invs.filter(i=>!isCancelled(i));
+  const mI = activeInvs.filter(i=>(i.date||'').startsWith(ym));
+  const mP = purs.filter(p=>(p.date||'').startsWith(ym));
+  const mR = retail.filter(r=>(r.date||'').startsWith(ym));
+
+  const mWholesale = mI.reduce((a,i)=>a+(i.total||0),0);
+  const mRetail    = mR.reduce((a,r)=>a+(r.amount||0),0);
+  const mTotal     = mWholesale + mRetail;
+  const mPur       = mP.reduce((a,p)=>a+(p.total||0),0);
+  const cashDue    = activeInvs.filter(i=>i.paymentType==='Cash'&&(i.balance||0)>0).reduce((a,i)=>a+(i.balance||0),0);
+  const creditDue  = activeInvs.filter(i=>i.paymentType==='Credit'&&(i.balance||0)>0).reduce((a,i)=>a+(i.balance||0),0);
+  const pendDisp   = activeInvs.filter(i=>i.dispatchStatus==='pending').length;
+  const cancelled  = invs.filter(i=>isCancelled(i)).length;
+  const rI = [...activeInvs].reverse().slice(0,7);
+
+  document.getElementById('dash-body').innerHTML = `
+    <div class="sg" style="grid-template-columns:repeat(auto-fit,minmax(140px,1fr))">
+      <div class="sc"><div class="sc-lbl">This Month Sale</div><div class="sc-val g">${fc(mTotal)}</div></div>
+      <div class="sc"><div class="sc-lbl">Wholesale</div><div class="sc-val b">${fc(mWholesale)}</div></div>
+      <div class="sc"><div class="sc-lbl">Purchase</div><div class="sc-val o">${fc(mPur)}</div></div>
+      <div class="sc"><div class="sc-lbl">Cash Due</div><div class="sc-val r">${fc(cashDue)}</div></div>
+      <div class="sc"><div class="sc-lbl">Credit Due</div><div class="sc-val" style="color:var(--o)">${fc(creditDue)}</div></div>
+      <div class="sc"><div class="sc-lbl">Pending Dispatch</div><div class="sc-val p">${pendDisp}</div></div>
+    </div>
+    <div class="fr2">
+      <div class="card">
+        <div style="font-weight:700;font-size:14px;margin-bottom:10px;display:flex;justify-content:space-between;align-items:center">
+          <span>Recent Invoices</span>
+          <span onclick="nav('sales-list')" style="font-size:12px;color:var(--b);cursor:pointer;font-weight:400">View All →</span>
+        </div>
+        ${rI.length===0?`<div class="empty"><div class="ic">📄</div>No invoices yet</div>`:rI.map(i=>`
+          <div ondblclick="viewInvoice('${i.id}')" onclick="viewInvoice('${i.id}')" style="display:flex;justify-content:space-between;align-items:center;padding:7px 0;border-bottom:1px solid var(--gray-100);cursor:pointer">
+            <div>
+              <div style="font-size:13px;font-weight:600">${i.invoiceNo} <span class="badge ${ptBadge(i.paymentType)}" style="font-size:10px">${i.paymentType||'Cash'}</span></div>
+              <div style="font-size:11.5px;color:var(--gray-500)">${i.partyName||'Cash'} · ${fmtDate(i.date)}</div>
+            </div>
+            <div style="text-align:right">
+              <div style="font-size:13px;font-weight:700;color:var(--g)">${fc(i.total)}</div>
+              ${(i.balance||0)>0?`<span class="badge br">${fc(i.balance)} due</span>`:`<span class="badge bg">Paid ✓</span>`}
+            </div>
+          </div>`).join('')}
+      </div>
+      <div class="card">
+        ${cashDue>0||creditDue>0?`
+          <div style="font-weight:700;color:var(--r);margin-bottom:10px;font-size:13.5px">📋 Due Collection — ${fc(cashDue+creditDue)}</div>
+          ${activeInvs.filter(i=>(i.balance||0)>0).slice().reverse().slice(0,6).map(i=>`
+            <div style="display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-bottom:1px solid var(--gray-100)">
+              <div>
+                <span style="font-weight:600">${i.partyName}</span>
+                <span class="badge ${ptBadge(i.paymentType)}" style="margin-left:4px;font-size:10px">${i.paymentType}</span>
+                <br><span style="font-size:11.5px;color:var(--gray-500)">${i.invoiceNo} · ${fmtDate(i.date)}</span>
+              </div>
+              <div style="display:flex;align-items:center;gap:6px">
+                <span style="color:var(--r);font-weight:700">${fc(i.balance)}</span>
+                <button class="btn btn-g btn-xs" onclick="openPayModal('${i.id}')">Pay</button>
+              </div>
+            </div>`).join('')}
+        `:''}
+        ${pendDisp>0?`
+          <div style="font-weight:700;color:var(--p);margin-top:12px;margin-bottom:8px;font-size:13.5px">📦 Pending Dispatch (${pendDisp})</div>
+          ${activeInvs.filter(i=>i.dispatchStatus==='pending').slice().reverse().slice(0,4).map(i=>`
+            <div style="display:flex;justify-content:space-between;align-items:center;padding:5px 0;border-bottom:1px solid var(--gray-100)">
+              <div><span style="font-weight:600">${i.partyName}</span> <span style="font-size:11.5px;color:var(--gray-500)">· ${i.invoiceNo}</span></div>
+              <button class="btn btn-c btn-xs" onclick="quickDispatch('${i.id}')">✓ Dispatch</button>
+            </div>`).join('')}
+        `:''}
+        ${cashDue===0&&creditDue===0&&pendDisp===0?`<div class="empty"><div class="ic">✅</div>All clear! No pending dues or dispatch.</div>`:''}
+        ${cancelled>0?`<div style="margin-top:12px;font-size:12px;color:var(--gray-400)">⚠️ ${cancelled} cancelled invoice(s) — <span style="cursor:pointer;color:var(--b)" onclick="nav('sales-list');setSLPill('cancelled')">view</span></div>`:''}
+      </div>
+    </div>`;
+};
+
+// ════════════════════════════════════════════════════════
+// 12. REPORTS — better layout and party ledger
+// ════════════════════════════════════════════════════════
+const _origRepTab = window.repTab;
+window.repTab = function(tab) {
+  _origRepTab(tab);
+};
+
+// Override Sale Report to exclude cancelled
+const _origRenderSaleRep = window.renderSaleRep;
+window.renderSaleRep = function() {
+  const allInvs = getInvoices();
+  const invs = allInvs.filter(i=>!isCancelled(i)); // EXCLUDE CANCELLED
+  const retail = getRetail();
+
+  const wm = {};
+  invs.forEach(i=>{const m=(i.date||'').slice(0,7);if(!m)return;if(!wm[m])wm[m]={month:m,wTotal:0,wCnt:0,rTotal:0};wm[m].wTotal+=i.total||0;wm[m].wCnt++;});
+  retail.forEach(r=>{const m=(r.date||'').slice(0,7);if(!m)return;if(!wm[m])wm[m]={month:m,wTotal:0,wCnt:0,rTotal:0};wm[m].rTotal+=r.amount||0;});
+  const months = Object.values(wm).sort((a,b)=>b.month.localeCompare(a.month));
+
+  const allW = invs.reduce((a,i)=>a+(i.total||0),0);
+  const allR = retail.reduce((a,r)=>a+(r.amount||0),0);
+  const allBal = invs.reduce((a,i)=>a+(i.balance||0),0);
+
+  // Party-wise
+  const pm = {};
+  invs.forEach(i=>{
+    const k=i.partyId||i.partyName||'Cash';
+    if(!pm[k])pm[k]={name:i.partyName||'Cash',cnt:0,total:0,paid:0,bal:0,last:'',lastAmt:0};
+    pm[k].cnt++;pm[k].total+=i.total||0;pm[k].paid+=(i.paid||0);pm[k].bal+=(i.balance||0);
+    if(!pm[k].last||i.date>pm[k].last){pm[k].last=i.date;pm[k].lastAmt=i.total||0;}
+  });
+  const pList = Object.values(pm).sort((a,b)=>b.total-a.total);
+
+  document.getElementById('rep-content').innerHTML=`
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px;margin-bottom:16px">
+      <div class="sc" style="border-left:4px solid var(--g)"><div class="sc-lbl">Grand Total Sale</div><div class="sc-val g">${fc(allW+allR)}</div></div>
+      <div class="sc" style="border-left:4px solid var(--b)"><div class="sc-lbl">Wholesale (Invoices)</div><div class="sc-val b">${fc(allW)}</div></div>
+      <div class="sc" style="border-left:4px solid var(--c)"><div class="sc-lbl">Retail (Manual)</div><div class="sc-val c">${fc(allR)}</div></div>
+      <div class="sc" style="border-left:4px solid var(--r)"><div class="sc-lbl">Total Outstanding</div><div class="sc-val r">${fc(allBal)}</div></div>
+    </div>
+
+    <div class="card">
+      <div style="font-weight:700;font-size:14px;margin-bottom:12px">📅 Month-wise Sale</div>
+      ${months.length===0?`<div class="empty">No data</div>`:`<div class="tw"><table>
+        <thead><tr><th>Month</th><th style="text-align:right">Wholesale</th><th style="text-align:right">Retail</th><th style="text-align:right">Grand Total</th><th style="text-align:center">Invoices</th></tr></thead>
+        <tbody>${months.map(m=>`<tr>
+          <td style="font-weight:600">${fmtMonth(m.month)}</td>
+          <td style="color:var(--b);text-align:right">${fc(m.wTotal)}</td>
+          <td style="color:var(--c);text-align:right">${fc(m.rTotal)}</td>
+          <td style="font-weight:700;color:var(--g);text-align:right">${fc(m.wTotal+m.rTotal)}</td>
+          <td style="text-align:center"><span class="badge bb">${m.wCnt}</span></td>
+        </tr>`).join('')}</tbody>
+        <tfoot><tr><td>Total</td><td style="color:var(--b);text-align:right">${fc(allW)}</td><td style="color:var(--c);text-align:right">${fc(allR)}</td><td style="color:var(--g);text-align:right">${fc(allW+allR)}</td><td style="text-align:center">${invs.length}</td></tr></tfoot>
+      </table></div>`}
+    </div>
+
+    <div class="card">
+      <div style="font-weight:700;font-size:14px;margin-bottom:12px">👥 Party-wise Summary</div>
+      ${pList.length===0?`<div class="empty">No data</div>`:`<div class="tw"><table>
+        <thead><tr><th>Party</th><th style="text-align:center">Invoices</th><th style="text-align:right">Total Sale</th><th style="text-align:right">Received</th><th style="text-align:right">Outstanding</th><th>Last Sale</th></tr></thead>
+        <tbody>${pList.map(p=>`<tr>
+          <td style="font-weight:600">${p.name}</td>
+          <td style="text-align:center">${p.cnt}</td>
+          <td style="font-weight:700;color:var(--g);text-align:right">${fc(p.total)}</td>
+          <td style="color:var(--b);text-align:right">${fc(p.paid)}</td>
+          <td style="${p.bal>0?'color:var(--r);':'color:var(--gray-400);'}font-weight:600;text-align:right">${fc(p.bal)}</td>
+          <td>${fmtDate(p.last)} · ${fc(p.lastAmt)}</td>
+        </tr>`).join('')}</tbody>
+      </table></div>`}
+    </div>`;
+};
+
+// ════════════════════════════════════════════════════════
+// 13. PARTY PHONE CAPTURE — warn if no phone during invoice
+// ════════════════════════════════════════════════════════
+const _origSelectPartyV13 = window.selectParty;
+window.selectParty = function(inputId, hiddenId, id, name, listId) {
+  if (typeof _origSelectPartyV13 === 'function') _origSelectPartyV13(inputId, hiddenId, id, name, listId);
+  if (inputId === 'inv-party') {
+    const p = getParties().find(x=>x.id===id);
+    if (p && !p.phone) {
+      // Show a gentle phone capture prompt
+      const el = document.getElementById('party-last-info');
+      if (el) {
+        const phonePrompt = document.createElement('div');
+        phonePrompt.style.cssText = 'margin-top:5px;display:flex;align-items:center;gap:8px;flex-wrap:wrap';
+        phonePrompt.innerHTML = `
+          <span class="phone-missing-badge">⚠️ No phone</span>
+          <input id="quick-phone-inp" class="fc fc-sm" placeholder="Enter mobile..." style="width:140px;border-color:#f59e0b"
+            onkeydown="if(event.key==='Enter')saveQuickPhone('${id}')">
+          <button class="btn btn-o btn-xs" onclick="saveQuickPhone('${id}')">Save</button>`;
+        // Remove existing prompt if any
+        const old = el.querySelector('.quick-phone-wrap');
+        if (old) old.remove();
+        phonePrompt.className = 'quick-phone-wrap';
+        el.appendChild(phonePrompt);
+        setTimeout(()=>document.getElementById('quick-phone-inp')?.focus(), 80);
+      }
+    }
+  }
+};
+
+window.saveQuickPhone = function(partyId) {
+  const phone = document.getElementById('quick-phone-inp')?.value?.trim();
+  if (!phone) return;
+  const parties = getParties();
+  const p = parties.find(x=>x.id===partyId);
+  if (!p) return;
+  p.phone = phone;
+  DB.set('parties', parties);
+  toast(`Phone ${phone} saved for ${p.name} ✓`);
+  // Remove prompt
+  document.querySelector('.quick-phone-wrap')?.remove();
+};
+
+// ════════════════════════════════════════════════════════
+// 14. QUICK DISPATCH from invoice view — also fix toggleDispatch
+// ════════════════════════════════════════════════════════
+window.quickDispatch = function(id) {
+  const invs = getInvoices();
+  const inv = invs.find(i=>i.id===id); if(!inv) return;
+  if (isCancelled(inv)) { toast('Cannot dispatch a cancelled invoice.'); return; }
+  inv.dispatchStatus = 'dispatched';
+  inv.dispatchedAt = new Date().toISOString();
+  DB.set('invoices', invs);
+  if (typeof renderSalesList==='function') renderSalesList();
+  if (typeof renderDashboard==='function') renderDashboard();
+  toast('Marked as Dispatched ✓');
+};
+
+// ════════════════════════════════════════════════════════
+// 15. RESET PAGINATION on search / filter change
+// ════════════════════════════════════════════════════════
+['sl-from','sl-to','sl-srch'].forEach(id=>{
+  const el = document.getElementById(id);
+  if (el) el.addEventListener('input', ()=>{ pgState.sales=1; });
+});
+['pl-from','pl-to','pl-srch'].forEach(id=>{
+  const el = document.getElementById(id);
+  if (el) el.addEventListener('input', ()=>{ pgState.purchases=1; });
+});
+const itemSrch = document.getElementById('item-srch');
+if (itemSrch) itemSrch.addEventListener('input', ()=>{ pgState.items=1; });
+const partySrch = document.getElementById('party-srch');
+if (partySrch) partySrch.addEventListener('input', ()=>{ pgState.parties=1; });
+
+// ════════════════════════════════════════════════════════
+// 16. MIGRATION — mark old invoices with no status field
+// ════════════════════════════════════════════════════════
+(function migrateV13() {
+  const invs = getInvoices();
+  let changed = false;
+  invs.forEach(inv => {
+    if (!inv.payments) { inv.payments = []; changed = true; }
+    if (!inv.dispatchStatus) { inv.dispatchStatus = 'pending'; changed = true; }
+    if (!inv.paymentType) { inv.paymentType = 'Cash'; changed = true; }
+    // Fix balance if paid > total (data corruption guard)
+    if ((inv.paid||0) > (inv.total||0)) {
+      inv.paid = inv.total||0;
+      inv.balance = 0;
+      changed = true;
+    }
+    // Recalculate balance if missing
+    if (inv.balance === undefined || inv.balance === null) {
+      inv.balance = Math.max(0, (inv.total||0) - (inv.paid||0));
+      changed = true;
+    }
+  });
+  if (changed) { DB.set('invoices', invs); console.log('v13 migration done'); }
+})();
+
+console.log('v13 applied ✓ — Cancel Invoice | PDF Naming | Pagination(20) | Party Detail | Status Fixes | Dashboard Fix | Reports | Phone Capture');
+
+})(); // end v13
+</script>
+PATCH_END
+echo "Done. Lines: $(wc -l < /home/claude/v9base.html)"
