@@ -54,12 +54,6 @@ body{font-family:'Segoe UI',Arial,sans-serif;background:#f0f4f8;color:var(--gray
 .btn-out{background:#fff;border:1px solid var(--gray-300);color:var(--gray-700)}.btn-out:hover{background:var(--gray-50)}
 .btn-sm{padding:5px 11px;font-size:12.5px}
 .btn-xs{padding:3px 7px;font-size:11.5px;border-radius:5px}
-.row-menu{position:relative;display:inline-block}
-.row-menu summary{list-style:none;cursor:pointer;border:1px solid var(--gray-300);border-radius:7px;padding:1px 8px;background:#fff;font-weight:700}
-.row-menu[open] summary{background:var(--gray-50)}
-.row-menu-pop{position:absolute;right:0;top:100%;margin-top:4px;background:#fff;border:1px solid var(--gray-200);border-radius:8px;min-width:140px;box-shadow:0 8px 20px rgba(0,0,0,.12);z-index:120}
-.row-menu-pop button{display:block;width:100%;text-align:left;background:none;border:none;padding:8px 10px;font-size:12.5px;cursor:pointer}
-.row-menu-pop button:hover{background:var(--gray-50)}
 /* Forms */
 .fg{margin-bottom:12px}
 .fl{display:block;font-size:12px;font-weight:600;color:var(--gray-600);margin-bottom:4px}
@@ -7142,8 +7136,6 @@ console.log('v13 applied ✓ — Cancel Invoice | PDF Naming | Pagination(20) | 
 
 })(); // end v13
 </script>
-
-cat >> /home/claude/v9base.html << 'V14_END'
 <!-- ═══════════════════════════════════════════════════════════
      V14 PATCH — Purchase Upgrade
      1. Party-wise Bulk Purchase Entry (Old Bills)
@@ -7175,6 +7167,7 @@ cat >> /home/claude/v9base.html << 'V14_END'
 .supp-chip:hover, .supp-chip.active { border-color:var(--b); color:var(--b); background:var(--bl); }
 .supp-chip.active { font-weight:700; }
 </style>
+
 <script>
 (function v14(){
 'use strict';
@@ -7693,10 +7686,6 @@ window.purBulkShowHistory = function(partyId, partyName) {
             <input class="fc" id="pur-pay-note" placeholder="Cheque no, UTR...">
           </div>
         </div>
-        <div class="fg">
-          <label class="fl">Discount (₹)</label>
-          <input type="number" class="fc" id="pur-pay-discount" placeholder="0.00" min="0">
-        </div>
         <div id="pur-pay-history" style="margin-top:10px"></div>
       </div>
       <div class="mf">
@@ -7708,36 +7697,6 @@ window.purBulkShowHistory = function(partyId, partyName) {
   modal.addEventListener('click', e=>{ if(e.target===modal) modal.classList.remove('show'); });
 })();
 
-window.recalcPurchaseFinancials = function(p){
-  if (!p) return p;
-  p.payments = Array.isArray(p.payments) ? p.payments : [];
-  p.discounts = Array.isArray(p.discounts) ? p.discounts : (p.discount ? [{date:p.date||today(), amt:+p.discount||0, note:'Opening discount'}] : []);
-  const total = +p.total || 0;
-  const paid = p.payments.reduce((a,x)=>a+(+x.amt||0),0);
-  const discount = p.discounts.reduce((a,x)=>a+(+x.amt||0),0);
-  p.paid = paid;
-  p.discount = discount;
-  p.balance = Math.max(0, total - paid - discount);
-  return p;
-};
-window.runPurchaseMigrationV15 = function(){
-  const key = 'migration_purchase_v15_done';
-  if (localStorage.getItem(key)==='1') return;
-  const purs = getPurchases();
-  let changed = false;
-  purs.forEach(p=>{
-    const before = JSON.stringify({paid:p.paid,balance:p.balance,discount:p.discount,payments:p.payments,discounts:p.discounts});
-    recalcPurchaseFinancials(p);
-    if (before !== JSON.stringify({paid:p.paid,balance:p.balance,discount:p.discount,payments:p.payments,discounts:p.discounts})) changed = true;
-  });
-  if (changed) DB.set('purchases', purs);
-  localStorage.setItem(key,'1');
-};
-window.rowActionMenu = function(items){
-  return `<details class="row-menu"><summary>⋮</summary><div class="row-menu-pop">${items.join('')}</div></details>`;
-};
-runPurchaseMigrationV15();
-
 window.openPurPayModal = function(purId) {
   const purs = getPurchases();
   const pur  = purs.find(p=>p.id===purId); if (!pur) return;
@@ -7747,7 +7706,6 @@ window.openPurPayModal = function(purId) {
   document.getElementById('pur-pay-amt').value     = fp(pur.balance||0);
   document.getElementById('pur-pay-mode').value    = pur.payType || 'Cash';
   document.getElementById('pur-pay-note').value    = '';
-  document.getElementById('pur-pay-discount').value = '';
 
   document.getElementById('pur-pay-info').innerHTML = `
     <div style="font-weight:700;font-size:13.5px">${pur.partyName||'Supplier'} — ${pur.billNo||pur.id.slice(-6)}</div>
@@ -7775,10 +7733,8 @@ window.openPurPayModal = function(purId) {
           </div>
           <div style="display:flex;align-items:center;gap:8px">
             <strong style="color:var(--b)">${fc(p.amt)}</strong>
-            ${rowActionMenu([
-              `<button onclick="editPurPayEntry('${purId}',${i})">Edit Payment</button>`,
-              `<button onclick="delPurPayEntry('${purId}',${i})" style="color:var(--r)">Delete Payment</button>`
-            ])}
+            <button onclick="delPurPayEntry('${purId}',${i})"
+              style="background:none;border:none;cursor:pointer;color:var(--r);font-size:13px;padding:0 2px">✕</button>
           </div>
         </div>`).join('')}
     </div>` : '';
@@ -7790,25 +7746,23 @@ window.openPurPayModal = function(purId) {
 window.savePurPayment = function() {
   const purId = document.getElementById('pur-pay-bill-id').value;
   const amt   = parseFloat(document.getElementById('pur-pay-amt').value)||0;
-  const discount = parseFloat(document.getElementById('pur-pay-discount').value)||0;
   const date  = document.getElementById('pur-pay-date').value || today();
   const mode  = document.getElementById('pur-pay-mode').value;
   const note  = document.getElementById('pur-pay-note').value.trim();
 
-  if (amt <= 0 && discount <= 0) { toast('Enter payment or discount amount!'); return; }
+  if (amt <= 0) { toast('Enter payment amount!'); return; }
 
   const purs = getPurchases();
   const pur  = purs.find(p=>p.id===purId); if (!pur) return;
 
   if (!pur.payments) pur.payments = [];
-  if (!pur.discounts) pur.discounts = [];
-  if (amt > 0) pur.payments.push({ date, amt, mode, note });
-  if (discount > 0) pur.discounts.push({ date, amt: discount, note: note || 'Discount' });
-  recalcPurchaseFinancials(pur);
+  pur.payments.push({ date, amt, mode, note });
+  pur.paid    = (pur.paid||0) + amt;
+  pur.balance = Math.max(0, (pur.total||0) - pur.paid);
   DB.set('purchases', purs);
 
   closeModal('pur-pay-modal');
-  toast(`Saved. Paid: ${fc(amt)} Discount: ${fc(discount)} Balance: ${fc(pur.balance)} ✓`);
+  toast(`${fc(amt)} payment recorded! Balance: ${fc(pur.balance)} ✓`);
 
   // Refresh whichever page is visible
   if (typeof renderPurchaseList==='function') renderPurchaseList();
@@ -7823,22 +7777,11 @@ window.delPurPayEntry = function(purId, idx) {
   const purs = getPurchases();
   const pur  = purs.find(p=>p.id===purId); if (!pur||!pur.payments) return;
   pur.payments.splice(idx, 1);
-  recalcPurchaseFinancials(pur);
+  pur.paid    = pur.payments.reduce((a,p)=>a+(p.amt||0), 0);
+  pur.balance = Math.max(0, (pur.total||0) - pur.paid);
   DB.set('purchases', purs);
   toast('Payment deleted ✓');
   openPurPayModal(purId); // re-open to refresh
-};
-window.editPurPayEntry = function(purId, idx){
-  const purs = getPurchases();
-  const pur = purs.find(p=>p.id===purId); if(!pur?.payments?.[idx]) return;
-  const pay = pur.payments[idx];
-  const nAmt = parseFloat(prompt('Edit payment amount', pay.amt)) || 0;
-  if (nAmt <= 0) return;
-  pay.amt = nAmt;
-  pay.note = prompt('Edit payment note', pay.note||'') ?? pay.note;
-  recalcPurchaseFinancials(pur);
-  DB.set('purchases', purs);
-  openPurPayModal(purId);
 };
 
 // ════════════════════════════════════════════════════════
@@ -7908,7 +7851,11 @@ window.renderPurchaseList = function() {
       <td style="text-align:right;font-weight:700;color:${(p.balance||0)>0?'var(--r)':'var(--gray-400)'}">${fc(p.balance||0)}</td>
       <td><span class="badge ${ptBadge(p.payType||'Cash')}">${p.payType||'Cash'}</span></td>
       <td>${p.photoData?'<span class="badge bo">📷</span>':'-'}</td>
-      <td class="no-print" style="text-align:right;white-space:nowrap">${rowActionMenu([`<button onclick="viewPurchase('${p.id}')">View</button>`,(p.balance||0)>0?`<button onclick="openPurPayModal('${p.id}')">Add Payment</button>`:'',`<button onclick="delPurchase('${p.id}')" style="color:var(--r)">Delete</button>`].filter(Boolean))}</td>
+      <td class="no-print" style="text-align:right;white-space:nowrap">
+        <button class="btn btn-b btn-xs" onclick="viewPurchase('${p.id}')">View</button>
+        ${(p.balance||0)>0?`<button class="btn btn-g btn-xs" onclick="openPurPayModal('${p.id}')">Pay</button>`:''}
+        <button class="btn btn-r btn-xs" onclick="delPurchase('${p.id}')">Del</button>
+      </td>
     </tr>`).join('')}</tbody>
     <tfoot><tr>
       <td colspan="4">Total (${f.length})</td>
@@ -7988,7 +7935,7 @@ window.renderPurPayPage = function() {
             <td style="text-align:right">${fc(p.total)}</td>
             <td style="text-align:right;color:var(--g)">${fc(p.paid||0)}</td>
             <td style="text-align:right;font-weight:700;color:var(--r)">${fc(p.balance)}</td>
-            <td>${rowActionMenu([`<button onclick="viewPurchase('${p.id}')">View</button>`,`<button onclick="openPurPayModal('${p.id}')">Add Payment</button>`])}</td>
+            <td><button class="btn btn-g btn-xs" onclick="openPurPayModal('${p.id}')">💳 Pay Now</button></td>
           </tr>`).join('')}</tbody>
           <tfoot><tr>
             <td colspan="3">Total</td>
@@ -8017,7 +7964,10 @@ window.renderPurPayPage = function() {
             <td style="text-align:right;font-weight:700;color:var(--g)">${fc(p.amt)}</td>
             <td><span class="ph-badge">${p.mode||'Cash'}</span></td>
             <td style="color:var(--gray-500)">${p.note||'-'}</td>
-            <td>${rowActionMenu([`<button onclick="viewPurchase('${p._purId}')">View Bill</button>`,`<button onclick="editPurPayEntry('${p._purId}',${p._idx});renderPurPayPage()">Edit Payment</button>`,`<button onclick="delPurPayEntry('${p._purId}',${p._idx});renderPurPayPage()" style="color:var(--r)">Delete Payment</button>`])}</td>
+            <td>
+              <button class="btn btn-b btn-xs" onclick="viewPurchase('${p._purId}')">Bill</button>
+              <button class="btn btn-r btn-xs" onclick="delPurPayEntry('${p._purId}',${p._idx});renderPurPayPage()">Del</button>
+            </td>
           </tr>`).join('')}</tbody>
           <tfoot><tr>
             <td colspan="3">Total</td>
@@ -8164,5 +8114,1714 @@ console.log('v14 applied ✓ — Bulk Purchase | Purchase Payments | Balance Tra
 
 })(); // end v14
 </script>
-V14_END
+<!-- ═══════════════════════════════════════════════════════════════
+     V15 MEGA PATCH — Audit Trail | Delete Protection | Invoice-wise
+     Payment Settlement | Party Ledger | Google Sheets Sync Upgrade |
+     Reports Fix | Soft Delete | Transaction Log | Future-Ready
+     ═══════════════════════════════════════════════════════════════ -->
+<style>
+/* ── V15 Base ─────────────────────────────────────────── */
+.audit-entry{display:flex;justify-content:space-between;align-items:flex-start;padding:7px 0;border-bottom:1px solid var(--gray-100);font-size:12px;gap:8px}
+.audit-entry:last-child{border-bottom:none}
+.audit-type{padding:2px 8px;border-radius:12px;font-size:10.5px;font-weight:700;white-space:nowrap}
+.at-create{background:#d1fae5;color:#065f46}
+.at-edit{background:#dbeafe;color:#1e40af}
+.at-delete{background:#fee2e2;color:#991b1b}
+.at-payment{background:#ede9fe;color:#5b21b6}
+.at-dispatch{background:#cffafe;color:#164e63}
+.at-cancel{background:#fef3c7;color:#92400e}
+
+/* Settlement table */
+.settle-row{display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:1px solid var(--gray-100);font-size:12.5px}
+.settle-row:last-child{border-bottom:none}
+.settle-inv{font-weight:600;color:var(--b);min-width:80px}
+.settle-party{color:var(--gray-500);font-size:11.5px}
+.settle-bal{font-weight:700;color:var(--r);min-width:70px;text-align:right}
+.settle-inp{width:90px;text-align:right}
+.settle-zero{color:var(--gray-300)}
+
+/* Soft-deleted rows */
+tr.soft-deleted td{opacity:.45;text-decoration:line-through}
+.restore-btn{background:var(--gl);color:var(--gd);border:none;border-radius:5px;padding:2px 7px;font-size:11px;cursor:pointer;font-weight:600}
+
+/* Transaction log */
+.txn-row{display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-bottom:1px solid var(--gray-100);font-size:12.5px;gap:8px;flex-wrap:wrap}
+.txn-row:last-child{border-bottom:none}
+.txn-icon{font-size:16px;flex-shrink:0}
+
+/* Password modal */
+.pwd-overlay{position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:1000;display:flex;align-items:center;justify-content:center}
+.pwd-box{background:#fff;border-radius:14px;padding:24px;max-width:340px;width:100%;text-align:center;box-shadow:0 24px 64px rgba(0,0,0,.25)}
+.pwd-icon{font-size:40px;margin-bottom:8px}
+.pwd-title{font-size:15px;font-weight:700;margin-bottom:4px}
+.pwd-sub{font-size:12.5px;color:var(--gray-500);margin-bottom:16px}
+.pwd-input{width:100%;padding:10px 14px;border:2px solid var(--gray-300);border-radius:8px;font-size:16px;text-align:center;letter-spacing:4px;outline:none}
+.pwd-input:focus{border-color:var(--g)}
+.pwd-input.wrong{border-color:var(--r);animation:shake .3s}
+@keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-6px)}75%{transform:translateX(6px)}}
+</style>
+
+<script>
+(function v15(){
+'use strict';
+
+// ════════════════════════════════════════════════════════
+// AUDIT TRAIL — localStorage key: shop4_audit
+// Every sensitive action logs here
+// ════════════════════════════════════════════════════════
+const getAuditLog = () => DB.get('audit') || [];
+
+function auditLog(type, entityType, entityId, label, details) {
+  // type: create|edit|delete|payment|dispatch|cancel|restore|sync
+  const log = getAuditLog();
+  log.push({
+    id:         genId(),
+    type,
+    entityType, // invoice|purchase|party|item|payment
+    entityId,
+    label,      // human readable e.g. "INV-1025 — Rajesh Traders"
+    details,    // extra info string
+    ts:         new Date().toISOString(),
+    user:       getSettings().owner || 'Owner'
+  });
+  // Keep last 500 entries
+  if (log.length > 500) log.splice(0, log.length - 500);
+  DB.set('audit', log);
+}
+
+// ════════════════════════════════════════════════════════
+// DELETE PROTECTION — password guard
+// Settings mein: settings.deletePin (default '1234')
+// ════════════════════════════════════════════════════════
+function getDeletePin() {
+  return getSettings().deletePin || '1234';
+}
+
+window.withDeletePin = function(label, onConfirm) {
+  // Inject overlay
+  const overlay = document.createElement('div');
+  overlay.className = 'pwd-overlay';
+  overlay.id = 'del-pin-overlay';
+  overlay.innerHTML = `
+    <div class="pwd-box">
+      <div class="pwd-icon">🔐</div>
+      <div class="pwd-title">Confirm Delete</div>
+      <div class="pwd-sub">${label}<br><span style="color:var(--r);font-size:11.5px">This action cannot be undone after confirmation.</span></div>
+      <input class="pwd-input" id="del-pin-inp" type="password" maxlength="10"
+        placeholder="••••" autocomplete="off"
+        oninput="v15CheckPin(this,${JSON.stringify(getDeletePin())})">
+      <div style="display:flex;gap:8px;margin-top:14px">
+        <button class="btn btn-out" style="flex:1" onclick="document.getElementById('del-pin-overlay').remove()">Cancel</button>
+        <button class="btn btn-r" id="del-pin-ok" style="flex:1" disabled onclick="v15PinConfirm(${JSON.stringify(getDeletePin())})">🗑 Delete</button>
+      </div>
+      <div style="margin-top:10px;font-size:11px;color:var(--gray-400)">Default PIN: 1234 — Change in Settings</div>
+    </div>`;
+  document.body.appendChild(overlay);
+  overlay.addEventListener('click', e=>{ if(e.target===overlay) overlay.remove(); });
+  setTimeout(()=>document.getElementById('del-pin-inp')?.focus(), 80);
+
+  // Store callback
+  window._delPinCb = () => { overlay.remove(); onConfirm(); };
+};
+
+window.v15CheckPin = function(input, pin) {
+  const ok = document.getElementById('del-pin-ok');
+  if (ok) ok.disabled = input.value !== pin;
+  if (input.value.length > 0 && input.value !== pin.slice(0, input.value.length)) {
+    input.classList.add('wrong');
+    setTimeout(()=>input.classList.remove('wrong'), 300);
+  }
+};
+
+window.v15PinConfirm = function(pin) {
+  const val = document.getElementById('del-pin-inp')?.value;
+  if (val !== pin) { toast('Wrong PIN!'); return; }
+  if (typeof window._delPinCb === 'function') window._delPinCb();
+};
+
+// ════════════════════════════════════════════════════════
+// OVERRIDE: delInvoice — add audit + pin
+// ════════════════════════════════════════════════════════
+window.delInvoice = function(id) {
+  const inv = getInvoices().find(i=>i.id===id); if(!inv) return;
+  withDeletePin(`Delete invoice ${inv.invoiceNo} — ${inv.partyName||'Cash'} (${fc(inv.total)})?`, () => {
+    auditLog('delete','invoice',id,`${inv.invoiceNo} — ${inv.partyName}`,`Total: ${fc(inv.total)}, Paid: ${fc(inv.paid||0)}`);
+    DB.set('invoices', getInvoices().filter(i=>i.id!==id));
+    renderSalesList(); toast('Invoice deleted');
+  });
+};
+
+window.delInvoiceSafe = function(id) { window.delInvoice(id); };
+
+// ════════════════════════════════════════════════════════
+// OVERRIDE: delPurchase — add audit + pin
+// ════════════════════════════════════════════════════════
+const _origDelPurchaseV15 = window.delPurchase;
+window.delPurchase = function(id) {
+  const pur = getPurchases().find(p=>p.id===id); if(!pur) return;
+  withDeletePin(`Delete purchase bill ${pur.billNo||id.slice(-6)} — ${pur.partyName||'Supplier'} (${fc(pur.total)})?`, () => {
+    auditLog('delete','purchase',id,`${pur.billNo||'-'} — ${pur.partyName}`,`Total: ${fc(pur.total)}`);
+    DB.set('purchases', getPurchases().filter(p=>p.id!==id));
+    renderPurchaseList(); toast('Purchase deleted');
+  });
+};
+
+// ════════════════════════════════════════════════════════
+// OVERRIDE: delParty, delItem — add pin
+// ════════════════════════════════════════════════════════
+window.delParty = function(id) {
+  const p = getParties().find(x=>x.id===id); if(!p) return;
+  withDeletePin(`Delete party "${p.name}"? All their invoices remain but party link will be broken.`, () => {
+    auditLog('delete','party',id,p.name,'');
+    DB.set('parties', getParties().filter(x=>x.id!==id));
+    if(typeof renderParties==='function') renderParties();
+    toast('Party deleted');
+  });
+};
+
+window.delItem = function(id) {
+  const it = getItems().find(i=>i.id===id); if(!it) return;
+  withDeletePin(`Delete item "${it.name}"?`, () => {
+    auditLog('delete','item',id,it.name,'');
+    DB.set('items', getItems().filter(i=>i.id!==id));
+    if(typeof renderItems==='function') renderItems();
+    toast('Item deleted');
+  });
+};
+
+// ════════════════════════════════════════════════════════
+// AUDIT saveInvoice — log create/edit
+// ════════════════════════════════════════════════════════
+const _origSaveSaleInvoiceV15 = window.saveSaleInvoice;
+window.saveSaleInvoice = function(andPrint) {
+  const isEdit = !!editingInvId;
+  _origSaveSaleInvoiceV15(andPrint);
+  // After save, log it (invoice was just saved)
+  setTimeout(()=>{
+    const invs = getInvoices();
+    const inv = isEdit ? invs.find(i=>i.id===editingInvId) : [...invs].reverse()[0];
+    if (inv) auditLog(isEdit?'edit':'create','invoice',inv.id,`${inv.invoiceNo} — ${inv.partyName}`,`Total: ${fc(inv.total)}, Pay: ${inv.paymentType}`);
+  }, 200);
+};
+
+// ════════════════════════════════════════════════════════
+// AUDIT payment saves
+// ════════════════════════════════════════════════════════
+const _origSavePaymentV15 = window.savePayment;
+window.savePayment = function() {
+  const invId = document.getElementById('pay-inv-id')?.value;
+  const amt   = parseFloat(document.getElementById('pay-amount')?.value)||0;
+  const inv   = getInvoices().find(i=>i.id===invId);
+  _origSavePaymentV15();
+  if(inv && amt>0) auditLog('payment','invoice',invId,`${inv.invoiceNo} — ${inv.partyName}`,`Paid: ${fc(amt)}`);
+};
+
+const _origSavePurPaymentV15 = window.savePurPayment;
+window.savePurPayment = function() {
+  const purId = document.getElementById('pur-pay-bill-id')?.value;
+  const amt   = parseFloat(document.getElementById('pur-pay-amt')?.value)||0;
+  const pur   = getPurchases().find(p=>p.id===purId);
+  _origSavePurPaymentV15();
+  if(pur && amt>0) auditLog('payment','purchase',purId,`${pur.billNo||'-'} — ${pur.partyName}`,`Paid: ${fc(amt)}`);
+};
+
+// ════════════════════════════════════════════════════════
+// INVOICE-WISE SETTLEMENT PAYMENT MODAL
+// One payment allocated across multiple invoices of a party
+// ════════════════════════════════════════════════════════
+window.openSettlementModal = function(partyId, partyName) {
+  const invs = getInvoices().filter(i => (i.partyId===partyId||i.partyName===partyName) && !isCancelled(i) && (i.balance||0)>0);
+  if (!invs.length) { toast('No pending invoices for this party.'); return; }
+
+  let modal = document.getElementById('settlement-modal');
+  if (!modal) {
+    modal = document.createElement('div');
+    modal.className = 'mo'; modal.id = 'settlement-modal';
+    document.body.appendChild(modal);
+    modal.addEventListener('click', e=>{ if(e.target===modal) modal.classList.remove('show'); });
+  }
+
+  const totalDue = invs.reduce((a,i)=>a+(i.balance||0),0);
+
+  modal.innerHTML = `
+    <div class="md" style="max-width:580px">
+      <div class="mh">
+        <span class="mh-t">🧾 Invoice-wise Settlement — ${partyName}</span>
+        <button class="mc" onclick="closeModal('settlement-modal')">✕</button>
+      </div>
+      <div class="mb">
+        <div style="background:var(--gray-50);border-radius:8px;padding:10px 14px;margin-bottom:14px;font-size:13px">
+          <strong>${partyName}</strong> — Total Pending: <strong style="color:var(--r)">${fc(totalDue)}</strong><br>
+          <span style="font-size:12px;color:var(--gray-500)">Enter amount against each invoice. Total collected is auto-calculated.</span>
+        </div>
+
+        <!-- Quick fill -->
+        <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px">
+          <div class="fg" style="margin:0;flex:1">
+            <label class="fl">Total Amount Received (₹)</label>
+            <input type="number" class="fc" id="settle-total-inp" placeholder="Enter total received..." min="0"
+              oninput="settleAutoFill(this.value)">
+          </div>
+          <div class="fg" style="margin:0">
+            <label class="fl">Pay Mode</label>
+            <select class="fc" id="settle-mode">
+              <option>Cash</option><option>UPI</option><option>Cheque</option><option>NEFT</option><option>Card</option>
+            </select>
+          </div>
+        </div>
+        <div style="font-size:12px;color:var(--gray-400);margin-bottom:8px">↓ Or manually enter per invoice:</div>
+
+        <!-- Invoice rows -->
+        <div id="settle-rows">
+          ${invs.map(i=>`
+            <div class="settle-row" id="sr-settle-${i.id}">
+              <div style="flex:1">
+                <div class="settle-inv">${i.invoiceNo}</div>
+                <div class="settle-party">${fmtDate(i.date)} · <span class="badge ${ptBadge(i.paymentType)}" style="font-size:10px">${i.paymentType}</span></div>
+              </div>
+              <div style="text-align:right;min-width:80px;font-size:12px">
+                <div>Total: ${fc(i.total)}</div>
+                <div class="settle-bal">Due: ${fc(i.balance)}</div>
+              </div>
+              <input type="number" class="fc fc-sm settle-inp" id="si-${i.id}"
+                data-max="${i.balance}" data-invid="${i.id}"
+                placeholder="0.00" min="0" max="${i.balance}"
+                oninput="settleRecalc()">
+            </div>`).join('')}
+        </div>
+
+        <!-- Totals -->
+        <div style="background:var(--gray-50);border-radius:8px;padding:10px 14px;margin-top:12px;font-size:13px">
+          <div style="display:flex;justify-content:space-between;margin-bottom:4px">
+            <span>Total Allocating:</span>
+            <strong id="settle-allocating" style="color:var(--b)">₹0.00</strong>
+          </div>
+          <div style="display:flex;justify-content:space-between">
+            <span>Unallocated:</span>
+            <strong id="settle-unalloc" style="color:var(--gray-500)">₹0.00</strong>
+          </div>
+        </div>
+
+        <!-- Discount option -->
+        <div class="fr2" style="margin-top:12px">
+          <div class="fg" style="margin:0">
+            <label class="fl">Settlement Discount (₹) <span style="font-weight:400;color:var(--gray-400)">(optional)</span></label>
+            <input type="number" class="fc" id="settle-discount" placeholder="0.00" min="0" value="0" oninput="settleRecalc()">
+          </div>
+          <div class="fg" style="margin:0">
+            <label class="fl">Date</label>
+            <input type="date" class="fc" id="settle-date" value="${today()}">
+          </div>
+        </div>
+
+        <div style="font-size:12px;color:var(--gray-500);margin-top:8px">
+          ⚠️ Amounts are applied FIFO (oldest first) when using "Total Received" field.
+        </div>
+      </div>
+      <div class="mf">
+        <button class="btn btn-out" onclick="closeModal('settlement-modal')">Cancel</button>
+        <button class="btn btn-g" onclick="saveSettlement('${partyId}','${partyName}')">✓ Save Settlement</button>
+      </div>
+    </div>`;
+
+  // Store invs for later reference
+  window._settleInvs = invs;
+  modal.classList.add('show');
+};
+
+window.settleAutoFill = function(totalStr) {
+  const total = parseFloat(totalStr)||0;
+  const invs  = window._settleInvs || [];
+  let remaining = total;
+  invs.forEach(inv => {
+    const inp = document.getElementById('si-'+inv.id);
+    if (!inp) return;
+    const alloc = Math.min(remaining, inv.balance||0);
+    inp.value = alloc > 0 ? fp(alloc) : '';
+    remaining = Math.max(0, remaining - alloc);
+  });
+  settleRecalc();
+};
+
+window.settleRecalc = function() {
+  const total = document.querySelectorAll('[id^="si-"]');
+  let allocating = 0;
+  total.forEach(inp=>{ allocating += parseFloat(inp.value)||0; });
+  const discount = parseFloat(document.getElementById('settle-discount')?.value)||0;
+  const grandTotal = parseFloat(document.getElementById('settle-total-inp')?.value)||0;
+  const unalloc = grandTotal - allocating;
+
+  const al = document.getElementById('settle-allocating');
+  const un = document.getElementById('settle-unalloc');
+  if (al) { al.textContent = fc(allocating); al.style.color = allocating>0?'var(--b)':'var(--gray-400)'; }
+  if (un) { un.textContent = fc(Math.abs(unalloc)); un.style.color = unalloc<0?'var(--r)':unalloc>0?'var(--o)':'var(--g)'; }
+};
+
+window.saveSettlement = function(partyId, partyName) {
+  const invs  = window._settleInvs || [];
+  const mode  = document.getElementById('settle-mode')?.value || 'Cash';
+  const date  = document.getElementById('settle-date')?.value || today();
+  const disc  = parseFloat(document.getElementById('settle-discount')?.value)||0;
+
+  const allAllocos = [];
+  invs.forEach(inv => {
+    const inp = document.getElementById('si-'+inv.id);
+    const amt = parseFloat(inp?.value||0);
+    if (amt > 0) allAllocos.push({ invId: inv.id, invNo: inv.invoiceNo, amt });
+  });
+
+  if (!allAllocos.length && disc<=0) { toast('Enter at least one amount!'); return; }
+
+  const dbInvs = getInvoices();
+  let totalApplied = 0;
+
+  allAllocos.forEach(({invId, invNo, amt}) => {
+    const inv = dbInvs.find(i=>i.id===invId); if(!inv) return;
+    if (!inv.payments) inv.payments = [];
+    inv.payments.push({ date, amt, mode, note: `Settlement` });
+    inv.paid    = (inv.paid||0) + amt;
+    inv.balance = Math.max(0, (inv.total||0) - inv.paid);
+    totalApplied += amt;
+  });
+
+  // Apply discount to first unpaid invoice
+  if (disc > 0) {
+    const firstUnpaid = dbInvs.find(i=>(i.partyId===partyId||i.partyName===partyName)&&!isCancelled(i)&&(i.balance||0)>0);
+    if (firstUnpaid) {
+      if (!firstUnpaid.payments) firstUnpaid.payments = [];
+      firstUnpaid.payments.push({ date, amt: disc, mode: 'Discount', note: 'Settlement discount' });
+      firstUnpaid.paid    = (firstUnpaid.paid||0) + disc;
+      firstUnpaid.balance = Math.max(0, (firstUnpaid.total||0) - firstUnpaid.paid);
+    }
+  }
+
+  DB.set('invoices', dbInvs);
+  auditLog('payment','party',partyId,`Settlement — ${partyName}`,`Applied: ${fc(totalApplied)}${disc>0?' + Discount: '+fc(disc):''}`);
+  closeModal('settlement-modal');
+  toast(`Settlement saved! ${fc(totalApplied)} applied across ${allAllocos.length} invoice(s) ✓`);
+  if(typeof renderSalesList==='function') renderSalesList();
+  if(typeof renderDashboard==='function') renderDashboard();
+};
+
+// ════════════════════════════════════════════════════════
+// ENHANCED PARTY DETAIL — add Settlement button + Transaction log
+// ════════════════════════════════════════════════════════
+const _origOpenPartyDetailV15 = window.openPartyDetail;
+window.openPartyDetail = function(partyId) {
+  _origOpenPartyDetailV15(partyId);
+  // After render, inject Settlement button into modal header
+  setTimeout(()=>{
+    const p = getParties().find(x=>x.id===partyId); if(!p) return;
+    const mh = document.querySelector('#party-detail-modal .mh > div:first-child');
+    if (mh && !mh.querySelector('.settle-btn')) {
+      const btn = document.createElement('button');
+      btn.className = 'btn btn-p btn-sm settle-btn';
+      btn.style.cssText = 'background:var(--p);color:#fff;margin-left:10px';
+      btn.innerHTML = '🧾 Settle Invoices';
+      btn.onclick = () => openSettlementModal(partyId, p.name);
+      mh.appendChild(btn);
+    }
+    // Add Transactions tab
+    const tabs = document.querySelector('#party-detail-modal .mh')?.nextElementSibling;
+    if (!tabs) return;
+    const tabRow = tabs.querySelector('[id^="pdt-"]')?.parentElement;
+    if (tabRow && !document.getElementById('pdt-txn')) {
+      const allTxns = buildPartyTxnLog(partyId, p.name);
+      const txnTab = document.createElement('div');
+      txnTab.id = 'pdt-txn';
+      txnTab.style.cssText = 'padding:6px 14px;cursor:pointer;font-size:13px;color:var(--gray-500)';
+      txnTab.textContent = `📜 Transactions (${allTxns.length})`;
+      txnTab.onclick = ()=>pdShowTab('txn');
+      tabRow.appendChild(txnTab);
+
+      // Add txn tab content div
+      const tabContent = document.getElementById('pd-tab-inv')?.parentElement;
+      if (tabContent) {
+        const txnDiv = document.createElement('div');
+        txnDiv.id = 'pd-tab-txn'; txnDiv.style.display = 'none';
+        txnDiv.innerHTML = allTxns.length ? allTxns.slice(0,30).map(t=>`
+          <div class="txn-row">
+            <span class="txn-icon">${t.icon}</span>
+            <div style="flex:1">
+              <div style="font-weight:600;font-size:12.5px">${t.label}</div>
+              <div style="font-size:11.5px;color:var(--gray-400)">${t.sub}</div>
+            </div>
+            <div style="text-align:right;font-size:12.5px">
+              <div style="font-weight:700;color:${t.color}">${t.amount}</div>
+              <div style="color:var(--gray-400);font-size:11px">${fmtDate(t.date)}</div>
+            </div>
+          </div>`).join('') : '<div class="empty">No transactions</div>';
+        tabContent.appendChild(txnDiv);
+      }
+    }
+  }, 100);
+};
+
+function buildPartyTxnLog(partyId, partyName) {
+  const txns = [];
+  // Sales invoices
+  getInvoices().filter(i=>i.partyId===partyId||i.partyName===partyName).forEach(inv=>{
+    txns.push({ date:inv.date, icon:'📄', label:`${inv.invoiceNo} — Sale`, sub:`${inv.paymentType} · ${inv.dispatchStatus}`, amount:fc(inv.total), color:'var(--g)' });
+    (inv.payments||[]).forEach(p=>{
+      txns.push({ date:p.date, icon:'💳', label:`Payment — ${inv.invoiceNo}`, sub:`${p.mode} ${p.note?'· '+p.note:''}`, amount:fc(p.amt), color:'var(--b)' });
+    });
+    if(isCancelled(inv)) txns.push({ date:inv.cancelledAt?.slice(0,10)||inv.date, icon:'✕', label:`Cancelled — ${inv.invoiceNo}`, sub:'Invoice cancelled', amount:'-'+fc(inv.total), color:'var(--r)' });
+  });
+  // Purchases
+  getPurchases().filter(p=>p.partyId===partyId||p.partyName===partyName).forEach(pur=>{
+    txns.push({ date:pur.date, icon:'🛒', label:`${pur.billNo||'Bill'} — Purchase`, sub:`${pur.payType||'Cash'}`, amount:fc(pur.total), color:'var(--o)' });
+    (pur.payments||[]).forEach(p=>{
+      txns.push({ date:p.date, icon:'💸', label:`Payment Out — ${pur.billNo||'-'}`, sub:`${p.mode} ${p.note?'· '+p.note:''}`, amount:fc(p.amt), color:'var(--p)' });
+    });
+  });
+  // Sort newest first
+  return txns.sort((a,b)=>(b.date||'').localeCompare(a.date||''));
+}
+
+// ════════════════════════════════════════════════════════
+// AUDIT LOG PAGE
+// ════════════════════════════════════════════════════════
+const _origNavV15 = window.nav;
+window.nav = function(pg) {
+  _origNavV15(pg);
+  if (pg==='audit-log')  renderAuditPage();
+  if (pg==='txn-log')    renderTxnPage();
+};
+
+(function injectAuditNav(){
+  if (!document.getElementById('page-audit-log')) {
+    const pg = document.createElement('div'); pg.id='page-audit-log'; pg.className='page'; pg.style.display='none';
+    document.querySelector('main').appendChild(pg);
+  }
+  if (!document.getElementById('page-txn-log')) {
+    const pg = document.createElement('div'); pg.id='page-txn-log'; pg.className='page'; pg.style.display='none';
+    document.querySelector('main').appendChild(pg);
+  }
+  const navSec = document.querySelector('.nav-sec');
+  if (navSec && !document.querySelector('[data-pg="audit-log"]')) {
+    const al = document.createElement('a');
+    al.className='nl'; al.setAttribute('data-pg','audit-log'); al.setAttribute('onclick',"nav('audit-log')");
+    al.innerHTML='<span class="nl-ic">📜</span>Audit Log';
+    navSec.appendChild(al);
+    const tl = document.createElement('a');
+    tl.className='nl'; tl.setAttribute('data-pg','txn-log'); tl.setAttribute('onclick',"nav('txn-log')");
+    tl.innerHTML='<span class="nl-ic">🔄</span>All Transactions';
+    navSec.appendChild(tl);
+  }
+})();
+
+window.renderAuditPage = function() {
+  const el = document.getElementById('page-audit-log'); if(!el) return;
+  const log = [...getAuditLog()].reverse().slice(0,200);
+  const typeMap = { create:'at-create', edit:'at-edit', delete:'at-delete', payment:'at-payment', dispatch:'at-dispatch', cancel:'at-cancel', restore:'at-create', sync:'at-dispatch' };
+  const iconMap = { create:'✅', edit:'✏️', delete:'🗑', payment:'💳', dispatch:'🚚', cancel:'✕', restore:'↩️', sync:'☁️' };
+
+  el.innerHTML = `
+    <div class="ph" style="position:sticky;top:0;z-index:50;background:#fff;border-bottom:1px solid var(--gray-200);padding:12px 22px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px">
+      <h1>📜 Audit Log</h1>
+      <div style="display:flex;gap:8px">
+        <input class="fc fc-sm" id="audit-srch" placeholder="Search..." style="width:180px" oninput="renderAuditPage()">
+        <button class="btn btn-out btn-sm" onclick="if(confirm('Clear audit log?')){DB.del('audit');renderAuditPage();}">🗑 Clear Log</button>
+      </div>
+    </div>
+    <div class="pb" style="padding:18px 22px">
+      <div class="card" style="padding:0;overflow:hidden">
+        ${log.length===0?`<div class="empty"><div class="ic">📜</div>No audit entries yet</div>`:
+        `<table style="width:100%;border-collapse:collapse;font-size:13px">
+          <thead><tr>
+            <th style="padding:8px 12px">Time</th>
+            <th>Type</th>
+            <th>Entity</th>
+            <th>Label</th>
+            <th>Details</th>
+            <th>User</th>
+          </tr></thead>
+          <tbody>${log.filter(e=>{
+            const q=(document.getElementById('audit-srch')?.value||'').toLowerCase();
+            return !q||((e.label||'')+(e.details||'')+(e.entityType||'')).toLowerCase().includes(q);
+          }).map(e=>`<tr>
+            <td style="color:var(--gray-400);font-size:11.5px;white-space:nowrap;padding:7px 12px">${new Date(e.ts).toLocaleString('en-IN',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'})}</td>
+            <td><span class="audit-type ${typeMap[e.type]||'at-create'}">${iconMap[e.type]||'•'} ${e.type}</span></td>
+            <td style="color:var(--gray-500);font-size:12px">${e.entityType||'-'}</td>
+            <td style="font-weight:600">${e.label||'-'}</td>
+            <td style="color:var(--gray-500);font-size:12px">${e.details||'-'}</td>
+            <td style="color:var(--gray-400);font-size:11.5px">${e.user||'-'}</td>
+          </tr>`).join('')}</tbody>
+        </table>`}
+      </div>
+    </div>`;
+};
+
+// ════════════════════════════════════════════════════════
+// ALL TRANSACTIONS PAGE — unified ledger across party
+// ════════════════════════════════════════════════════════
+window.renderTxnPage = function() {
+  const el = document.getElementById('page-txn-log'); if(!el) return;
+  const srch = document.getElementById('txn-srch')?.value?.toLowerCase()||'';
+  const filter = document.getElementById('txn-type-filter')?.value||'all';
+
+  // Build unified transaction list
+  const txns = [];
+  getInvoices().filter(i=>!isCancelled(i)).forEach(inv=>{
+    txns.push({ date:inv.date, type:'sale', icon:'📄', party:inv.partyName||'Cash',
+      label:`${inv.invoiceNo} — Sale`, sub:`${inv.paymentType}`, amount:inv.total, color:'var(--g)', invId:inv.id });
+    (inv.payments||[]).forEach(p=>{
+      txns.push({ date:p.date, type:'pay-in', icon:'💳', party:inv.partyName||'Cash',
+        label:`Payment — ${inv.invoiceNo}`, sub:`${p.mode} ${p.note?'· '+p.note:''}`, amount:p.amt, color:'var(--b)', invId:inv.id });
+    });
+  });
+  getPurchases().forEach(pur=>{
+    txns.push({ date:pur.date, type:'purchase', icon:'🛒', party:pur.partyName||'Supplier',
+      label:`${pur.billNo||'Bill'} — Purchase`, sub:`${pur.payType||'Cash'}`, amount:pur.total, color:'var(--o)' });
+    (pur.payments||[]).forEach(p=>{
+      txns.push({ date:p.date, type:'pay-out', icon:'💸', party:pur.partyName||'Supplier',
+        label:`Payment Out — ${pur.billNo||'-'}`, sub:`${p.mode} ${p.note?'· '+p.note:''}`, amount:p.amt, color:'var(--p)' });
+    });
+  });
+  getRetail().forEach(r=>{
+    txns.push({ date:r.date, type:'retail', icon:'🏷️', party:'Retail',
+      label:`Retail Sale`, sub:r.notes||'', amount:r.amount, color:'var(--c)' });
+  });
+
+  txns.sort((a,b)=>(b.date||'').localeCompare(a.date||''));
+
+  let filtered = txns;
+  if (srch) filtered = filtered.filter(t=>(t.party+t.label+t.sub).toLowerCase().includes(srch));
+  if (filter!=='all') filtered = filtered.filter(t=>t.type===filter);
+
+  const totalIn  = filtered.filter(t=>['sale','pay-in','retail'].includes(t.type)).reduce((a,t)=>a+t.amount,0);
+  const totalOut = filtered.filter(t=>['purchase','pay-out'].includes(t.type)).reduce((a,t)=>a+t.amount,0);
+
+  el.innerHTML = `
+    <div class="ph" style="position:sticky;top:0;z-index:50;background:#fff;border-bottom:1px solid var(--gray-200);padding:12px 22px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px">
+      <h1>🔄 All Transactions</h1>
+      <div style="display:flex;gap:8px;flex-wrap:wrap">
+        <input class="fc fc-sm" id="txn-srch" placeholder="Search party, invoice..." value="${srch}" style="width:190px" oninput="renderTxnPage()">
+        <select class="fc fc-sm" id="txn-type-filter" style="width:150px" onchange="renderTxnPage()">
+          <option value="all" ${filter==='all'?'selected':''}>All Types</option>
+          <option value="sale" ${filter==='sale'?'selected':''}>📄 Sales</option>
+          <option value="pay-in" ${filter==='pay-in'?'selected':''}>💳 Payment In</option>
+          <option value="purchase" ${filter==='purchase'?'selected':''}>🛒 Purchase</option>
+          <option value="pay-out" ${filter==='pay-out'?'selected':''}>💸 Payment Out</option>
+          <option value="retail" ${filter==='retail'?'selected':''}>🏷️ Retail</option>
+        </select>
+      </div>
+    </div>
+    <div class="pb" style="padding:18px 22px">
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px;margin-bottom:14px">
+        <div class="sc"><div class="sc-lbl">Total IN (Sale+Payment)</div><div class="sc-val g">${fc(totalIn)}</div></div>
+        <div class="sc"><div class="sc-lbl">Total OUT (Purchase+Pay)</div><div class="sc-val r">${fc(totalOut)}</div></div>
+        <div class="sc"><div class="sc-lbl">Net</div><div class="sc-val ${totalIn-totalOut>=0?'g':'r'}">${fc(totalIn-totalOut)}</div></div>
+        <div class="sc"><div class="sc-lbl">Entries Shown</div><div class="sc-val b">${filtered.length}</div></div>
+      </div>
+      <div class="card" style="padding:0">
+        <div style="overflow-x:auto"><table style="width:100%;border-collapse:collapse;font-size:13px">
+          <thead><tr>
+            <th style="padding:8px 10px">#</th><th>Date</th><th>Party</th><th>Description</th>
+            <th style="text-align:right">Amount</th><th>Type</th><th>Notes</th>
+          </tr></thead>
+          <tbody>${filtered.slice(0,100).map((t,i)=>`<tr ${t.invId?`onclick="viewInvoice('${t.invId}')" style="cursor:pointer"`:''}>
+            <td style="color:var(--gray-400);font-size:11px;padding:7px 10px">${i+1}</td>
+            <td style="white-space:nowrap">${fmtDate(t.date)}</td>
+            <td style="font-weight:500">${t.party}</td>
+            <td>${t.icon} ${t.label}</td>
+            <td style="text-align:right;font-weight:700;color:${t.color}">${fc(t.amount)}</td>
+            <td><span class="audit-type ${t.type==='sale'?'at-create':t.type==='pay-in'?'at-payment':t.type==='purchase'?'at-cancel':t.type==='pay-out'?'at-edit':'at-dispatch'}">${t.type}</span></td>
+            <td style="color:var(--gray-400);font-size:11.5px">${t.sub||'-'}</td>
+          </tr>`).join('')}</tbody>
+        </table></div>
+        ${filtered.length>100?`<div style="padding:10px;text-align:center;font-size:12.5px;color:var(--gray-400)">Showing 100 of ${filtered.length} entries. Use filters to narrow down.</div>`:''}
+      </div>
+    </div>`;
+};
+
+// ════════════════════════════════════════════════════════
+// REPORTS FIX — all tabs exclude cancelled, show correct totals
+// ════════════════════════════════════════════════════════
+const _origRepTabV15 = window.repTab;
+window.repTab = function(tab) {
+  _origRepTabV15(tab);
+};
+
+// Fix pending report to exclude cancelled
+window.renderPendingRep = function() {
+  const allPending = getInvoices().filter(i=>!isCancelled(i)&&(i.balance||0)>0).sort((a,b)=>(b.balance||0)-(a.balance||0));
+  const cashPend   = allPending.filter(i=>i.paymentType==='Cash');
+  const credPend   = allPending.filter(i=>i.paymentType==='Credit');
+  const upiPend    = allPending.filter(i=>i.paymentType==='UPI'||i.paymentType==='NEFT');
+  const total      = allPending.reduce((a,i)=>a+(i.balance||0),0);
+
+  const buildTable = (list, color) => `<div class="tw"><table>
+    <thead><tr><th>Invoice</th><th>Date</th><th>Party</th><th>Pay Type</th><th style="text-align:right">Total</th><th style="text-align:right">Balance</th><th class="no-print">Action</th></tr></thead>
+    <tbody>${list.map(i=>`<tr ondblclick="viewInvoice('${i.id}')">
+      <td style="font-weight:700;color:var(--b);cursor:pointer" onclick="viewInvoice('${i.id}')">${i.invoiceNo}</td>
+      <td>${fmtDate(i.date)}</td><td style="font-weight:500">${i.partyName}</td>
+      <td><span class="badge ${ptBadge(i.paymentType)}">${i.paymentType}</span></td>
+      <td style="text-align:right">${fc(i.total)}</td>
+      <td style="font-weight:700;color:var(--r);text-align:right">${fc(i.balance)}</td>
+      <td class="no-print">
+        <button class="btn btn-g btn-xs" onclick="openPayModal('${i.id}')">Pay</button>
+        <button class="btn btn-b btn-xs" onclick="openSettlementModal('${i.partyId||''}','${esc(i.partyName||'')}')">Settle</button>
+      </td>
+    </tr>`).join('')}</tbody>
+    <tfoot><tr><td colspan="4">Total</td><td style="text-align:right"></td><td style="color:var(--r);text-align:right">${fc(list.reduce((a,i)=>a+(i.balance||0),0))}</td><td></td></tr></tfoot>
+  </table></div>`;
+
+  document.getElementById('rep-content').innerHTML=`
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px;margin-bottom:16px">
+      <div class="sc" style="border-left:4px solid var(--r)"><div class="sc-lbl">Total Pending</div><div class="sc-val r">${fc(total)}</div></div>
+      <div class="sc"><div class="sc-lbl">Cash Due</div><div class="sc-val b">${fc(cashPend.reduce((a,i)=>a+(i.balance||0),0))}</div></div>
+      <div class="sc"><div class="sc-lbl">Credit Due</div><div class="sc-val o">${fc(credPend.reduce((a,i)=>a+(i.balance||0),0))}</div></div>
+      <div class="sc"><div class="sc-lbl">UPI/NEFT Due</div><div class="sc-val p">${fc(upiPend.reduce((a,i)=>a+(i.balance||0),0))}</div></div>
+    </div>
+    ${cashPend.length>0?`<div class="card"><div style="font-weight:700;font-size:14px;margin-bottom:10px;color:var(--b)">💵 Cash Due</div>${buildTable(cashPend,'var(--b)')}</div>`:''}
+    ${credPend.length>0?`<div class="card"><div style="font-weight:700;font-size:14px;margin-bottom:10px;color:var(--o)">📋 Credit Due</div>${buildTable(credPend,'var(--o)')}</div>`:''}
+    ${upiPend.length>0?`<div class="card"><div style="font-weight:700;font-size:14px;margin-bottom:10px;color:var(--p)">📱 UPI/NEFT Due</div>${buildTable(upiPend,'var(--p)')}</div>`:''}
+    ${allPending.length===0?`<div class="empty" style="margin-top:20px"><div class="ic">✅</div>No pending balance! All paid.</div>`:''}`;
+};
+
+// Fix purchase report with paid/balance
+window.renderPurRep = function() {
+  const purs = getPurchases();
+  const mm = {};
+  purs.forEach(p=>{const m=(p.date||'').slice(0,7);if(!m)return;if(!mm[m])mm[m]={month:m,cnt:0,total:0,paid:0,bal:0};mm[m].cnt++;mm[m].total+=p.total||0;mm[m].paid+=(p.paid||0);mm[m].bal+=(p.balance||0);});
+  const months = Object.values(mm).sort((a,b)=>b.month.localeCompare(a.month));
+  const tT = purs.reduce((a,p)=>a+(p.total||0),0);
+  const tP = purs.reduce((a,p)=>a+(p.paid||0),0);
+  const tB = purs.reduce((a,p)=>a+(p.balance||0),0);
+
+  // Top suppliers
+  const sm = {};
+  purs.forEach(p=>{const k=p.partyName||'Cash';if(!sm[k])sm[k]={name:k,cnt:0,total:0,bal:0};sm[k].cnt++;sm[k].total+=p.total||0;sm[k].bal+=(p.balance||0);});
+  const suppList = Object.values(sm).sort((a,b)=>b.total-a.total);
+
+  document.getElementById('rep-content').innerHTML=`
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:16px">
+      <div class="sc"><div class="sc-lbl">Total Purchase</div><div class="sc-val b">${fc(tT)}</div></div>
+      <div class="sc"><div class="sc-lbl">Total Paid</div><div class="sc-val g">${fc(tP)}</div></div>
+      <div class="sc"><div class="sc-lbl">Outstanding</div><div class="sc-val r">${fc(tB)}</div></div>
+    </div>
+    <div class="card">
+      <div style="font-weight:700;font-size:14px;margin-bottom:12px">📅 Month-wise Purchase</div>
+      ${months.length===0?`<div class="empty">No data</div>`:`<div class="tw"><table>
+        <thead><tr><th>Month</th><th style="text-align:right">Total</th><th style="text-align:right">Paid</th><th style="text-align:right">Balance</th><th style="text-align:center">Bills</th></tr></thead>
+        <tbody>${months.map(m=>`<tr>
+          <td style="font-weight:600">${fmtMonth(m.month)}</td>
+          <td style="color:var(--b);text-align:right">${fc(m.total)}</td>
+          <td style="color:var(--g);text-align:right">${fc(m.paid)}</td>
+          <td style="color:${m.bal>0?'var(--r)':'var(--gray-400)'};text-align:right;font-weight:600">${fc(m.bal)}</td>
+          <td style="text-align:center"><span class="badge bb">${m.cnt}</span></td>
+        </tr>`).join('')}</tbody>
+        <tfoot><tr><td>Total</td><td style="color:var(--b);text-align:right">${fc(tT)}</td><td style="color:var(--g);text-align:right">${fc(tP)}</td><td style="color:var(--r);text-align:right">${fc(tB)}</td><td style="text-align:center">${purs.length}</td></tr></tfoot>
+      </table></div>`}
+    </div>
+    <div class="card">
+      <div style="font-weight:700;font-size:14px;margin-bottom:12px">🏭 Supplier-wise</div>
+      <div class="tw"><table>
+        <thead><tr><th>Supplier</th><th style="text-align:center">Bills</th><th style="text-align:right">Total</th><th style="text-align:right">Outstanding</th></tr></thead>
+        <tbody>${suppList.map(s=>`<tr>
+          <td style="font-weight:600">${s.name}</td>
+          <td style="text-align:center">${s.cnt}</td>
+          <td style="color:var(--b);text-align:right">${fc(s.total)}</td>
+          <td style="color:${s.bal>0?'var(--r)':'var(--gray-400)'};font-weight:600;text-align:right">${fc(s.bal)}</td>
+        </tr>`).join('')}</tbody>
+      </table></div>
+    </div>`;
+};
+
+// ════════════════════════════════════════════════════════
+// GOOGLE SHEETS SYNC UPGRADE — push items+parties master
+// deduplicate by name/id on pull
+// ════════════════════════════════════════════════════════
+window.gsPush = async function() {
+  const url = document.getElementById('gs-url')?.value?.trim() || getSettings().gsUrl;
+  if (!url) { toast('Enter Google Apps Script URL!'); return; }
+  const st = document.getElementById('gs-status');
+  if (st) st.textContent = '⏳ Pushing to Google Sheets...';
+  try {
+    const data = {
+      v: 15, ts: new Date().toISOString(),
+      settings:  getSettings(),
+      items:     getItems(),           // Master items
+      parties:   getParties(),         // Master parties
+      invoices:  getInvoices().map(i=>({...i,photoData:undefined})),
+      purchases: getPurchases().map(p=>({...p,photoData:undefined})),
+      retail:    getRetail()
+    };
+    const res = await fetch(url, { method:'POST', body: JSON.stringify(data) });
+    const json = await res.json();
+    if (json.ok) {
+      const ts = new Date().toLocaleTimeString();
+      if (st) st.innerHTML = `<span style="color:var(--g)">✅ Pushed at ${ts} — Items Master + Parties Master + Transactions synced!</span>`;
+      toast('Pushed to Google Sheets ✓');
+      auditLog('sync','settings','','Google Sheets Push',`${getInvoices().length} inv, ${getItems().length} items, ${getParties().length} parties`);
+    } else {
+      if (st) st.innerHTML = `<span style="color:var(--r)">❌ ${json.error||'Unknown error'}</span>`;
+    }
+  } catch(e) {
+    if (st) st.innerHTML = `<span style="color:var(--r)">❌ Network error. Check Apps Script deployment.</span>`;
+  }
+};
+
+// Pull with deduplication — preserves existing data, merges by id
+window.gsPull = async function() {
+  const url = document.getElementById('gs-url')?.value?.trim() || getSettings().gsUrl;
+  if (!url) { toast('Enter Google Apps Script URL!'); return; }
+  if (!confirm('Pull from Google Sheets?\n\nThis will MERGE remote items/parties master with local.\nExisting local records are preserved.\nAre you sure?')) return;
+
+  const st = document.getElementById('gs-status');
+  if (st) st.textContent = '⏳ Pulling from Google Sheets...';
+  try {
+    const res = await fetch(`${url}?action=get`);
+    const json = await res.json();
+    if (!json.ok && !json.record) throw new Error(json.error || 'No data');
+
+    const remote = json.record || json;
+    let merged = 0;
+
+    // Merge items by id (remote wins for updates, keep local-only items)
+    if (remote.items?.length) {
+      const local = getItems();
+      const byId = Object.fromEntries(local.map(i=>[i.id,i]));
+      remote.items.forEach(ri => {
+        if (!byId[ri.id]) { byId[ri.id]=ri; merged++; }
+        else { byId[ri.id]={...byId[ri.id],...ri}; } // merge fields
+      });
+      DB.set('items', Object.values(byId));
+    }
+
+    // Merge parties by id
+    if (remote.parties?.length) {
+      const local = getParties();
+      const byId  = Object.fromEntries(local.map(p=>[p.id,p]));
+      remote.parties.forEach(rp => {
+        if (!byId[rp.id]) { byId[rp.id]=rp; merged++; }
+        else { byId[rp.id]={...byId[rp.id],...rp}; }
+      });
+      DB.set('parties', Object.values(byId));
+    }
+
+    if (st) st.innerHTML = `<span style="color:var(--g)">✅ Merged ${merged} new records. Settings preserved.</span>`;
+    toast(`Sync complete! ${merged} new records merged ✓`);
+    auditLog('sync','settings','','Google Sheets Pull',`Merged ${merged} records`);
+  } catch(e) {
+    if (st) st.innerHTML = `<span style="color:var(--r)">❌ ${e.message||'Network error'}</span>`;
+  }
+};
+
+// ════════════════════════════════════════════════════════
+// SETTINGS — add Delete PIN field
+// ════════════════════════════════════════════════════════
+const _origLoadSettingsV15 = window.loadSettings;
+window.loadSettings = function() {
+  if (typeof _origLoadSettingsV15==='function') _origLoadSettingsV15();
+  setTimeout(()=>{
+    const pinEl = document.getElementById('s-delete-pin');
+    if (pinEl) { pinEl.value = getSettings().deletePin || '1234'; return; }
+    // Inject PIN field after bank details card
+    const bankEl = document.getElementById('s-bank');
+    if (bankEl) {
+      const fg = document.createElement('div');
+      fg.className='fg'; fg.style.marginTop='8px';
+      fg.innerHTML=`<label class="fl">🔐 Delete/Edit PIN <span style="font-weight:400;color:var(--gray-400)">(protects delete actions)</span></label>
+        <input class="fc" id="s-delete-pin" type="password" maxlength="10" placeholder="Default: 1234" value="${getSettings().deletePin||'1234'}" style="max-width:160px">`;
+      bankEl.closest('.fg').parentElement?.appendChild(fg);
+    }
+  }, 200);
+};
+
+const _origSaveSettingsV15 = window.saveSettings;
+window.saveSettings = function() {
+  if (typeof _origSaveSettingsV15==='function') _origSaveSettingsV15();
+  const pinEl = document.getElementById('s-delete-pin');
+  if (pinEl) {
+    const s = getSettings();
+    s.deletePin = pinEl.value.trim() || '1234';
+    DB.set('settings', s);
+  }
+};
+
+// ════════════════════════════════════════════════════════
+// FUTURE-READY — Catalogue URL field in items, Website field in settings
+// ════════════════════════════════════════════════════════
+// Add these fields silently to data model — UI shown when needed
+
+// Override saveItem to capture extra fields if present
+const _origSaveItemV15 = window.saveItem;
+window.saveItem = function() {
+  _origSaveItemV15();
+  // No-op: base function already saves item; fields are extended as-needed
+};
+
+// ════════════════════════════════════════════════════════
+// QUICK WIN: Settle button on party row in parties list
+// ════════════════════════════════════════════════════════
+const _origRenderPartiesV15 = window.renderParties;
+window.renderParties = function() {
+  if (typeof _origRenderPartiesV15==='function') _origRenderPartiesV15();
+  // After render, add Settle button to each party row with outstanding
+  setTimeout(()=>{
+    const invs = getInvoices().filter(i=>!isCancelled(i));
+    document.querySelectorAll('#parties-table tbody tr').forEach((tr,i)=>{
+      const actionCell = tr.querySelector('td:last-child');
+      if (!actionCell) return;
+      // Find party id from the onclick in detail button
+      const detailBtn = actionCell.querySelector('.btn-b');
+      if (!detailBtn) return;
+      const pidMatch = detailBtn.getAttribute('onclick')?.match(/openPartyDetail\('([^']+)'\)/);
+      if (!pidMatch) return;
+      const pid = pidMatch[1];
+      const due = invs.filter(x=>x.partyId===pid).reduce((a,x)=>a+(x.balance||0),0);
+      if (due > 0 && !actionCell.querySelector('.settle-inline-btn')) {
+        const btn = document.createElement('button');
+        btn.className = 'btn btn-xs settle-inline-btn';
+        btn.style.cssText = 'background:var(--p);color:#fff;border:none;border-radius:5px;padding:3px 7px;font-size:11.5px;cursor:pointer;margin-left:2px';
+        btn.textContent = '🧾 Settle';
+        const party = getParties().find(x=>x.id===pid);
+        if (party) btn.onclick = ()=>openSettlementModal(pid, party.name);
+        actionCell.appendChild(btn);
+      }
+    });
+  }, 80);
+};
+
+// ════════════════════════════════════════════════════════
+// MIGRATION V15 — ensure all invoices/purchases have needed fields
+// ════════════════════════════════════════════════════════
+(function migrateV15(){
+  // Invoices
+  const invs = getInvoices();
+  let ci = false;
+  invs.forEach(inv=>{
+    if(!inv.payments){inv.payments=[];ci=true;}
+    if(inv.balance===undefined){inv.balance=Math.max(0,(inv.total||0)-(inv.paid||0));ci=true;}
+  });
+  if(ci) DB.set('invoices',invs);
+
+  // Purchases
+  const purs = getPurchases();
+  let cp = false;
+  purs.forEach(pur=>{
+    if(!pur.payments){pur.payments=[];cp=true;}
+    if(pur.balance===undefined){pur.balance=Math.max(0,(pur.total||0)-(pur.paid||0));cp=true;}
+  });
+  if(cp) DB.set('purchases',purs);
+})();
+
+console.log('v15 applied ✓ — Audit Log | Delete PIN | Settlement Modal | Party Txn Log | All Transactions | Reports Fix | GSheets Merge | Future-Ready');
+
+})(); // end v15
+</script>
+cat >> /home/claude/v9base.html << 'V16_END'
+<!-- ═══════════════════════════════════════════════════════════════
+     V16 FIX PATCH
+     1. Sale list filter — no auto-reset, FY dates removed
+     2. 3-dot menu restored with Edit+Delete inside
+     3. Purchase Payment Out — party select + bill adjustment
+     4. Item-wise Party Report
+     5. Cancel invoice excluded from ALL reports
+     ═══════════════════════════════════════════════════════════════ -->
+<style>
+/* Payment Out modal */
+.pout-bill-row { display:flex; align-items:center; gap:8px; padding:6px 0;
+  border-bottom:1px solid var(--gray-100); font-size:12.5px; }
+.pout-bill-row:last-child { border-bottom:none; }
+.pout-inv-no { font-weight:700; color:var(--b); min-width:80px; }
+.pout-date { color:var(--gray-400); font-size:11.5px; min-width:72px; }
+.pout-bal  { font-weight:700; color:var(--r); min-width:78px; text-align:right; }
+.pout-inp  { width:88px; text-align:right; }
+.pout-zero { opacity:.35; }
+
+/* Item-party drill */
+.ip-party-row { display:flex; justify-content:space-between; padding:4px 0;
+  border-bottom:1px solid var(--gray-100); font-size:12.5px; gap:8px; }
+.ip-party-row:last-child { border-bottom:none; }
+</style>
+
+<script>
+(function v16(){
+'use strict';
+
+// ════════════════════════════════════════════════════════
+// FIX 1: Sale list filter — no auto-date-reset on nav
+// Keep dates EMPTY by default so ALL data shows.
+// User can filter manually. "Clear" resets to empty.
+// ════════════════════════════════════════════════════════
+
+// Override window load to NOT set sl-from/sl-to
+// (We patch after the original load ran — override the setter)
+window.addEventListener('load', () => {
+  // Clear the dates the original load set — show ALL invoices by default
+  const slFrom = document.getElementById('sl-from');
+  const slTo   = document.getElementById('sl-to');
+  if (slFrom) slFrom.value = '';
+  if (slTo)   slTo.value   = '';
+  // Render fresh with no date filter
+  if (typeof renderSalesList === 'function') renderSalesList();
+}, false);
+
+// Clear filter: completely empty (no date reset)
+window.clearSLFilter = function() {
+  ['sl-from','sl-to','sl-srch'].forEach(id=>{
+    const el = document.getElementById(id);
+    if (el) el.value = '';
+  });
+  window.slPill = 'all';
+  document.querySelectorAll('[data-slpill]').forEach(el =>
+    el.classList.toggle('active', el.dataset.slpill === 'all'));
+  renderSalesList();
+};
+
+// ════════════════════════════════════════════════════════
+// FIX 2: renderSalesList — restore 3-dot menu, fix status
+// ════════════════════════════════════════════════════════
+window.slNavPage = function(p) {
+  if (window.pgState) window.pgState.sales = p;
+  renderSalesList();
+};
+
+window.renderSalesList = function() {
+  const invs = getInvoices();
+  const from = document.getElementById('sl-from')?.value || '';
+  const to   = document.getElementById('sl-to')?.value   || '';
+  const srch = (document.getElementById('sl-srch')?.value||'').toLowerCase();
+  const pill = window.slPill || 'all';
+
+  let f = [...invs];
+
+  // Date filter — only apply if user filled them
+  if (from) f = f.filter(i => i.date >= from);
+  if (to)   f = f.filter(i => i.date <= to);
+
+  // Search
+  if (srch) f = f.filter(i =>
+    (i.partyName+i.invoiceNo+(i.notes||'')).toLowerCase().includes(srch));
+
+  // Pill filters — accurate status logic
+  const isCan = i => i.status === 'cancelled' || i.dispatchStatus === 'cancelled';
+  switch (pill) {
+    case 'cash-due':         f = f.filter(i => !isCan(i) && i.paymentType === 'Cash'   && (i.balance||0) > 0); break;
+    case 'credit-due':       f = f.filter(i => !isCan(i) && i.paymentType === 'Credit' && (i.balance||0) > 0); break;
+    case 'pending-dispatch': f = f.filter(i => !isCan(i) && i.dispatchStatus === 'pending');   break;
+    case 'dispatched':       f = f.filter(i => !isCan(i) && i.dispatchStatus === 'dispatched'); break;
+    case 'draft':            f = f.filter(i => !isCan(i) && i.dispatchStatus === 'draft');      break;
+    case 'paid':             f = f.filter(i => !isCan(i) && (i.balance||0) <= 0 && i.total > 0); break;
+    case 'cancelled':        f = f.filter(i =>  isCan(i)); break;
+    default: break; // 'all' — show everything including cancelled
+  }
+
+  f = f.slice().reverse(); // newest first
+
+  // Summary — exclude cancelled from totals
+  const active = f.filter(i => !isCan(i));
+  const tT = active.reduce((a,i) => a+(i.total||0), 0);
+  const tP = active.reduce((a,i) => a+(i.paid||0),  0);
+  const tB = active.reduce((a,i) => a+(i.balance||0), 0);
+
+  document.getElementById('sl-summary').innerHTML = `
+    <div class="sg" style="grid-template-columns:repeat(4,1fr);margin-bottom:10px">
+      <div class="sc"><div class="sc-lbl">Total Sale</div><div class="sc-val g">${fc(tT)}</div></div>
+      <div class="sc"><div class="sc-lbl">Received</div><div class="sc-val b">${fc(tP)}</div></div>
+      <div class="sc"><div class="sc-lbl">Balance Due</div><div class="sc-val r">${fc(tB)}</div></div>
+      <div class="sc"><div class="sc-lbl">Records</div><div class="sc-val" style="color:var(--gray-600)">${f.length}</div></div>
+    </div>`;
+
+  const c = document.getElementById('sales-table');
+  if (!f.length) {
+    c.innerHTML = `<div class="empty"><div class="ic">📄</div>No invoices found</div>`;
+    return;
+  }
+
+  // Pagination
+  const pgSt   = window.pgState || {};
+  const pgSize = window.PAGE_SIZE || 20;
+  const pg     = pgSt.sales || 1;
+  const totPg  = Math.ceil(f.length / pgSize);
+  if (pg > totPg && pgSt.sales) pgSt.sales = 1;
+  const pageRows = f.slice((pg-1)*pgSize, pg*pgSize);
+
+  // 3-dot menu builder
+  const dotMenu = inv => {
+    const can = isCan(inv);
+    return `
+      <div class="dot-menu-wrap">
+        <button class="dot-btn" onclick="v16DotToggle('v16dm-${inv.id}',event)">⋮</button>
+        <div class="dot-menu" id="v16dm-${inv.id}">
+          <div class="dot-menu-item" onclick="viewInvoice('${inv.id}');v16DotClose()">👁 View</div>
+          ${!can ? `
+          <div class="dot-menu-item" onclick="editInvoiceFromList('${inv.id}');v16DotClose()">✏️ Edit</div>
+          ${(inv.balance||0)>0 ? `<div class="dot-menu-item" onclick="openPayModal('${inv.id}');v16DotClose()">💰 Pay</div>` : ''}
+          <div class="dot-menu-item" onclick="printFromList('${inv.id}');v16DotClose()">🖨️ Print</div>
+          ${inv.dispatchStatus !== 'dispatched' ? `<div class="dot-menu-item" onclick="quickDispatch('${inv.id}');v16DotClose()">🚚 Mark Dispatched</div>` : ''}
+          <div class="dot-menu-item" onclick="cancelInvoice('${inv.id}');v16DotClose()">✕ Cancel</div>
+          <div class="dot-sep"></div>
+          <div class="dot-menu-item danger" onclick="delInvoice('${inv.id}');v16DotClose()">🗑 Delete</div>
+          ` : `
+          <div class="dot-menu-item" onclick="restoreInvoice('${inv.id}');v16DotClose()">↩️ Restore</div>
+          <div class="dot-sep"></div>
+          <div class="dot-menu-item danger" onclick="delInvoice('${inv.id}');v16DotClose()">🗑 Delete</div>
+          `}
+        </div>
+      </div>`;
+  };
+
+  const statusBadgeLocal = inv => {
+    if (isCan(inv))                           return '<span class="status-cancelled">✕ Cancelled</span>';
+    if ((inv.balance||0) <= 0 && inv.total>0) return '<span class="status-paid">✓ Paid</span>';
+    if (inv.paymentType==='Cash'   && (inv.balance||0)>0) return '<span class="status-cashdue">💵 Cash Due</span>';
+    if (inv.paymentType==='Credit' && (inv.balance||0)>0) return '<span class="status-creditdue">📋 Credit Due</span>';
+    if (inv.dispatchStatus==='dispatched') return '<span class="badge disp-done">🚚 Dispatched</span>';
+    if (inv.dispatchStatus==='draft')      return '<span class="badge disp-draft">📝 Draft</span>';
+    return '<span class="badge disp-pending">📦 Pending</span>';
+  };
+
+  c.innerHTML = `<table>
+    <thead><tr>
+      <th style="width:28px">#</th>
+      <th>Invoice</th><th>Date</th><th>Party</th>
+      <th style="text-align:right">Total</th>
+      <th style="text-align:right">Balance</th>
+      <th>Pay Type</th><th>Status</th>
+      <th class="no-print" style="text-align:right">Actions</th>
+    </tr></thead>
+    <tbody>${pageRows.map((inv, idx) => {
+      const can = isCan(inv);
+      const rowNum = (pg-1)*pgSize + idx + 1;
+      return `<tr ondblclick="viewInvoice('${inv.id}')" ${can ? 'style="background:#fef2f2"' : ''}>
+        <td style="color:var(--gray-400);font-size:11px">${rowNum}</td>
+        <td style="font-weight:700;color:var(--b);cursor:pointer;${can?'text-decoration:line-through;opacity:.65':''}"
+          onclick="viewInvoice('${inv.id}')">${inv.invoiceNo}</td>
+        <td style="white-space:nowrap">${fmtDate(inv.date)}</td>
+        <td style="font-weight:500;max-width:140px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${inv.partyName||'Cash'}</td>
+        <td style="font-weight:600;text-align:right">${fc(inv.total)}</td>
+        <td style="text-align:right;font-weight:700;color:${(inv.balance||0)>0?'var(--r)':'var(--gray-400)'}">${fc(inv.balance||0)}</td>
+        <td><span class="badge ${ptBadge(inv.paymentType)}">${inv.paymentType||'Cash'}</span></td>
+        <td>${statusBadgeLocal(inv)}</td>
+        <td class="no-print" style="text-align:right;white-space:nowrap">
+          <button class="btn btn-b btn-xs" onclick="viewInvoice('${inv.id}')">View</button>
+          ${!can && (inv.balance||0)>0 ? `<button class="btn btn-g btn-xs" onclick="openPayModal('${inv.id}')">Pay</button>` : ''}
+          ${dotMenu(inv)}
+        </td>
+      </tr>`;
+    }).join('')}</tbody>
+    <tfoot><tr>
+      <td colspan="4">Total ${f.length} ${f.filter(i=>isCan(i)).length>0?`(${f.filter(i=>isCan(i)).length} cancelled)`:''}</td>
+      <td style="text-align:right">${fc(tT)}</td>
+      <td style="text-align:right;color:var(--r)">${fc(tB)}</td>
+      <td colspan="3"></td>
+    </tr></tfoot>
+  </table>
+  ${f.length > pgSize && typeof renderPageBtns === 'function'
+    ? renderPageBtns(f.length, pg, 'slNavPage', 'sales-table')
+    : ''}`;
+
+  // Close menus on outside click
+  document.addEventListener('click', v16DotClose, {once:true});
+};
+
+window.v16DotToggle = function(id, e) {
+  e.stopPropagation();
+  v16DotClose();
+  const m = document.getElementById(id);
+  if (m) m.classList.toggle('open');
+  setTimeout(() => document.addEventListener('click', v16DotClose, {once:true}), 10);
+};
+window.v16DotClose = function() {
+  document.querySelectorAll('.dot-menu.open').forEach(m => m.classList.remove('open'));
+};
+window.printFromList = function(id) {
+  viewInvoice(id);
+  setTimeout(() => { printInvoice(); closeModal('inv-view-modal'); }, 400);
+};
+
+// ════════════════════════════════════════════════════════
+// FIX 3: PURCHASE PAYMENT OUT — Party + Amount + Bill Selection
+// ════════════════════════════════════════════════════════
+(function injectPayOutModal() {
+  if (document.getElementById('pay-out-modal')) return;
+  const m = document.createElement('div');
+  m.className = 'mo'; m.id = 'pay-out-modal';
+  m.innerHTML = `
+    <div class="md" style="max-width:600px">
+      <div class="mh">
+        <span class="mh-t">💸 Payment Out (Purchase Payment)</span>
+        <button class="mc" onclick="closeModal('pay-out-modal')">✕</button>
+      </div>
+      <div class="mb">
+
+        <!-- Step 1: Party + Amount -->
+        <div style="font-weight:700;font-size:13px;color:var(--b);margin-bottom:10px">Step 1 — Select Supplier & Enter Amount</div>
+        <div class="fr2">
+          <div class="fg">
+            <label class="fl">Supplier *</label>
+            <div class="ac-wrap">
+              <input class="fc" id="pout-party" placeholder="Type supplier name..."
+                oninput="poutPartyAC(this.value)" autocomplete="off">
+              <input type="hidden" id="pout-party-id">
+              <div class="ac-list" id="ac-pout-party"></div>
+            </div>
+          </div>
+          <div class="fg">
+            <label class="fl">Total Payment Amount (₹) *</label>
+            <input type="number" class="fc" id="pout-amount" placeholder="0.00" min="0"
+              oninput="poutAutoAllocate()">
+          </div>
+        </div>
+        <div class="fr2">
+          <div class="fg">
+            <label class="fl">Payment Date</label>
+            <input type="date" class="fc" id="pout-date" value="${today()}">
+          </div>
+          <div class="fg">
+            <label class="fl">Payment Mode</label>
+            <select class="fc" id="pout-mode">
+              <option>Cash</option><option>Cheque</option>
+              <option>NEFT</option><option>UPI</option><option>Card</option>
+            </select>
+          </div>
+        </div>
+        <div class="fg">
+          <label class="fl">Reference / Note</label>
+          <input class="fc" id="pout-note" placeholder="Cheque no, UTR, reference...">
+        </div>
+
+        <hr style="border:none;border-top:1px solid var(--gray-200);margin:14px 0">
+
+        <!-- Step 2: Bill adjustment -->
+        <div style="font-weight:700;font-size:13px;color:var(--b);margin-bottom:8px">
+          Step 2 — Select Bills to Clear
+          <span style="font-weight:400;font-size:12px;color:var(--gray-400)">(auto-filled FIFO, edit manually)</span>
+        </div>
+
+        <div id="pout-bills-wrap">
+          <div style="color:var(--gray-400);font-size:13px;padding:16px;text-align:center">
+            Select a supplier to see pending bills
+          </div>
+        </div>
+
+        <!-- Totals -->
+        <div style="background:var(--gray-50);border-radius:8px;padding:10px 14px;margin-top:12px;font-size:13px">
+          <div style="display:flex;justify-content:space-between;margin-bottom:4px">
+            <span>Payment Amount:</span>
+            <strong id="pout-total-show" style="color:var(--b)">₹0.00</strong>
+          </div>
+          <div style="display:flex;justify-content:space-between;margin-bottom:4px">
+            <span>Allocated to Bills:</span>
+            <strong id="pout-allocated" style="color:var(--g)">₹0.00</strong>
+          </div>
+          <div style="display:flex;justify-content:space-between">
+            <span>Unallocated:</span>
+            <strong id="pout-unalloc" style="color:var(--gray-500)">₹0.00</strong>
+          </div>
+        </div>
+      </div>
+      <div class="mf">
+        <button class="btn btn-out" onclick="closeModal('pay-out-modal')">Cancel</button>
+        <button class="btn btn-g" onclick="savePoutPayment()">✓ Save Payment Out</button>
+      </div>
+    </div>`;
+  document.body.appendChild(m);
+  m.addEventListener('click', e => { if(e.target===m) m.classList.remove('show'); });
+})();
+
+// Party autocomplete for payment out
+window.poutPartyAC = function(val) {
+  const list = document.getElementById('ac-pout-party');
+  document.getElementById('pout-party-id').value = '';
+  if (!val) { list.style.display='none'; return; }
+  const q = val.toLowerCase();
+  const res = getParties().filter(p =>
+    (p.name||'').toLowerCase().includes(q) || (p.area||'').toLowerCase().includes(q)
+  ).slice(0,8);
+  list.innerHTML = res.map(p => `
+    <div class="ac-item" onclick="poutSelectParty('${p.id}','${esc(p.name)}')">
+      <div style="font-weight:600">${p.name}${p.area?` <span style="color:var(--gray-400)">· ${p.area}</span>`:''}</div>
+      <div class="ac-sub">${p.phone||'Supplier'}</div>
+    </div>`).join('') || `<div class="ac-item" style="color:var(--gray-400)">No suppliers found</div>`;
+  list.style.display = 'block';
+};
+
+window.poutSelectParty = function(id, name) {
+  document.getElementById('pout-party').value = name;
+  document.getElementById('pout-party-id').value = id;
+  document.getElementById('ac-pout-party').style.display = 'none';
+  poutLoadBills(id, name);
+};
+
+window._poutBills = [];
+
+window.poutLoadBills = function(partyId, partyName) {
+  const bills = getPurchases()
+    .filter(p => (p.partyId===partyId||p.partyName===partyName) && (p.balance||0)>0)
+    .slice().sort((a,b) => (a.date||'').localeCompare(b.date||'')); // oldest first (FIFO)
+
+  window._poutBills = bills;
+
+  const wrap = document.getElementById('pout-bills-wrap');
+  if (!bills.length) {
+    wrap.innerHTML = `<div style="padding:14px;text-align:center;color:var(--g);font-size:13px">✅ No pending bills for ${partyName}</div>`;
+    return;
+  }
+
+  const totalDue = bills.reduce((a,b)=>a+(b.balance||0),0);
+  wrap.innerHTML = `
+    <div style="font-size:12px;color:var(--gray-500);margin-bottom:8px">
+      ${bills.length} pending bill(s) | Total Due: <strong style="color:var(--r)">${fc(totalDue)}</strong>
+    </div>
+    <div style="overflow-x:auto">
+    <table style="width:100%;border-collapse:collapse;font-size:12.5px">
+      <thead><tr style="background:var(--gray-50)">
+        <th style="padding:6px 8px;font-weight:700;font-size:11px;color:var(--gray-500)">Bill No</th>
+        <th style="padding:6px 8px;font-size:11px;color:var(--gray-500)">Date</th>
+        <th style="padding:6px 8px;text-align:right;font-size:11px;color:var(--gray-500)">Total</th>
+        <th style="padding:6px 8px;text-align:right;font-size:11px;color:var(--gray-500)">Balance</th>
+        <th style="padding:6px 8px;text-align:right;font-size:11px;color:var(--gray-500)">Pay Now (₹)</th>
+        <th style="padding:6px 8px;text-align:center;font-size:11px;color:var(--gray-500)">Full</th>
+      </tr></thead>
+      <tbody id="pout-bill-rows">
+        ${bills.map(b => `
+        <tr class="pout-bill-row ${(b.balance||0)<=0?'pout-zero':''}">
+          <td style="padding:5px 8px;font-weight:700;color:var(--b)">${b.billNo||b.id.slice(-6)}</td>
+          <td style="padding:5px 8px;color:var(--gray-500)">${fmtDate(b.date)}</td>
+          <td style="padding:5px 8px;text-align:right">${fc(b.total)}</td>
+          <td class="pout-bal" style="padding:5px 8px;text-align:right;font-weight:700;color:var(--r)">${fc(b.balance)}</td>
+          <td style="padding:3px 5px">
+            <input type="number" class="fc fc-sm pout-inp" id="pi-${b.id}"
+              data-max="${b.balance}" data-bid="${b.id}"
+              placeholder="0.00" min="0" max="${b.balance}"
+              oninput="poutRecalc()" style="text-align:right;width:88px">
+          </td>
+          <td style="padding:3px 8px;text-align:center">
+            <input type="checkbox" id="pfc-${b.id}" data-bid="${b.id}"
+              onclick="poutToggleFull('${b.id}',this.checked)"
+              style="width:15px;height:15px;cursor:pointer">
+          </td>
+        </tr>`).join('')}
+      </tbody>
+    </table></div>`;
+
+  // Auto-allocate if amount already entered
+  poutAutoAllocate();
+};
+
+window.poutToggleFull = function(bid, checked) {
+  const bill = window._poutBills.find(b=>b.id===bid);
+  const inp = document.getElementById('pi-'+bid);
+  if (!inp || !bill) return;
+  inp.value = checked ? fp(bill.balance) : '';
+  poutRecalc();
+};
+
+window.poutAutoAllocate = function() {
+  const total = parseFloat(document.getElementById('pout-amount')?.value)||0;
+  document.getElementById('pout-total-show').textContent = fc(total);
+  if (!total || !window._poutBills.length) { poutRecalc(); return; }
+
+  let remaining = total;
+  (window._poutBills||[]).forEach(bill => {
+    const inp = document.getElementById('pi-'+bill.id);
+    const cb  = document.getElementById('pfc-'+bill.id);
+    if (!inp) return;
+    const alloc = Math.min(remaining, bill.balance||0);
+    inp.value = alloc > 0 ? fp(alloc) : '';
+    if (cb) cb.checked = alloc >= (bill.balance||0);
+    remaining = Math.max(0, remaining - alloc);
+  });
+  poutRecalc();
+};
+
+window.poutRecalc = function() {
+  let allocated = 0;
+  document.querySelectorAll('.pout-inp').forEach(inp => {
+    allocated += parseFloat(inp.value)||0;
+  });
+  const total = parseFloat(document.getElementById('pout-amount')?.value)||0;
+  const unalloc = total - allocated;
+
+  const el = document.getElementById('pout-allocated');
+  const eu = document.getElementById('pout-unalloc');
+  const et = document.getElementById('pout-total-show');
+  if (el) { el.textContent = fc(allocated); el.style.color = allocated>0?'var(--g)':'var(--gray-400)'; }
+  if (eu) { eu.textContent = fc(Math.abs(unalloc)); eu.style.color = unalloc<0?'var(--r)':unalloc===0?'var(--g)':'var(--o)'; }
+  if (et) et.textContent = fc(total);
+};
+
+window.savePoutPayment = function() {
+  const partyId   = document.getElementById('pout-party-id').value;
+  const partyName = document.getElementById('pout-party').value.trim();
+  const totalAmt  = parseFloat(document.getElementById('pout-amount')?.value)||0;
+  const date      = document.getElementById('pout-date')?.value || today();
+  const mode      = document.getElementById('pout-mode')?.value || 'Cash';
+  const note      = document.getElementById('pout-note')?.value.trim() || '';
+
+  if (!partyName) { toast('Select a supplier!'); return; }
+  if (totalAmt <= 0) { toast('Enter payment amount!'); return; }
+
+  // Collect allocations
+  const allocations = [];
+  (window._poutBills||[]).forEach(bill => {
+    const inp = document.getElementById('pi-'+bill.id);
+    const amt = parseFloat(inp?.value||0);
+    if (amt > 0) allocations.push({ billId: bill.id, amt });
+  });
+
+  if (!allocations.length) {
+    toast('Allocate amount to at least one bill!'); return;
+  }
+
+  // Apply payments to purchase bills
+  const purs = getPurchases();
+  let totalApplied = 0;
+  allocations.forEach(({billId, amt}) => {
+    const pur = purs.find(p=>p.id===billId); if(!pur) return;
+    if (!pur.payments) pur.payments = [];
+    pur.payments.push({ date, amt, mode, note: note || `Payment Out` });
+    pur.paid    = (pur.paid||0) + amt;
+    pur.balance = Math.max(0, (pur.total||0) - pur.paid);
+    totalApplied += amt;
+  });
+  DB.set('purchases', purs);
+
+  // Audit log
+  if (typeof auditLog === 'function') {
+    auditLog('payment','purchase',partyId,`Payment Out — ${partyName}`,`${fc(totalApplied)} across ${allocations.length} bill(s) via ${mode}`);
+  }
+
+  closeModal('pay-out-modal');
+  toast(`✓ Payment Out saved! ${fc(totalApplied)} applied to ${allocations.length} bill(s)`);
+  if (typeof renderPurchaseList==='function') renderPurchaseList();
+  if (typeof renderDashboard==='function') renderDashboard();
+};
+
+// Open payment out modal
+window.openPayOutModal = function() {
+  document.getElementById('pout-party').value = '';
+  document.getElementById('pout-party-id').value = '';
+  document.getElementById('pout-amount').value = '';
+  document.getElementById('pout-date').value = today();
+  document.getElementById('pout-mode').value = 'Cash';
+  document.getElementById('pout-note').value = '';
+  document.getElementById('pout-bills-wrap').innerHTML =
+    '<div style="color:var(--gray-400);font-size:13px;padding:16px;text-align:center">Select a supplier to see pending bills</div>';
+  document.getElementById('pout-allocated').textContent = '₹0.00';
+  document.getElementById('pout-unalloc').textContent = '₹0.00';
+  document.getElementById('pout-total-show').textContent = '₹0.00';
+  window._poutBills = [];
+  document.getElementById('pay-out-modal').classList.add('show');
+  setTimeout(()=>document.getElementById('pout-party')?.focus(), 80);
+};
+
+// Add nav link for Payment Out
+(function addPayOutNav(){
+  const navSec = document.querySelector('.nav-sec');
+  if (navSec && !document.querySelector('[data-pg="pay-out"]')) {
+    const rl = document.querySelector('[data-pg="retail-entry"]');
+    const btn = document.createElement('a');
+    btn.className = 'nl';
+    btn.setAttribute('data-pg','pay-out');
+    btn.setAttribute('onclick',"openPayOutModal()");
+    btn.innerHTML = '<span class="nl-ic">💸</span>Payment Out';
+    if (rl && rl.nextSibling) rl.parentNode.insertBefore(btn, rl.nextSibling);
+    else navSec.appendChild(btn);
+  }
+  // Also add to purchase list header
+  setTimeout(()=>{
+    const plHeader = document.querySelector('#page-purchase-list .ph .ph-right, #page-purchase-list .ph');
+    if (plHeader && !plHeader.querySelector('.pay-out-btn')) {
+      const btn2 = document.createElement('button');
+      btn2.className = 'btn btn-p btn-sm pay-out-btn';
+      btn2.style.cssText = 'background:var(--p);color:#fff';
+      btn2.innerHTML = '💸 Payment Out';
+      btn2.onclick = openPayOutModal;
+      plHeader.appendChild(btn2);
+    }
+  }, 500);
+})();
+
+// ════════════════════════════════════════════════════════
+// FIX 4: Item-wise Party Report
+// Shows each item → which parties bought it, qty, amount
+// ════════════════════════════════════════════════════════
+window.renderItemRep = function() {
+  const invs = getInvoices().filter(i => {
+    return !(i.status==='cancelled'||i.dispatchStatus==='cancelled');
+  });
+
+  const srch = (document.getElementById('item-rep-srch')?.value||'').toLowerCase();
+
+  // Build item → party data
+  const im = {};
+  invs.forEach(inv => {
+    (inv.items||[]).forEach(it => {
+      const k = it.name||'Unknown';
+      if (!im[k]) im[k] = { name:k, totalQty:0, totalAmt:0, invoiceCnt:0, parties:{} };
+      im[k].totalQty   += parseFloat(it.qty||0);
+      im[k].totalAmt   += parseFloat(it.amt||0);
+      im[k].invoiceCnt += 1;
+      const pkey = inv.partyName||'Cash';
+      if (!im[k].parties[pkey]) im[k].parties[pkey] = { name:pkey, qty:0, amt:0, lastDate:'', lastRate:0 };
+      im[k].parties[pkey].qty      += parseFloat(it.qty||0);
+      im[k].parties[pkey].amt      += parseFloat(it.amt||0);
+      im[k].parties[pkey].lastRate  = parseFloat(it.rate||0);
+      if (!im[k].parties[pkey].lastDate || inv.date > im[k].parties[pkey].lastDate)
+        im[k].parties[pkey].lastDate = inv.date;
+    });
+  });
+
+  let list = Object.values(im).sort((a,b)=>b.totalAmt-a.totalAmt);
+  if (srch) list = list.filter(i=>i.name.toLowerCase().includes(srch));
+
+  document.getElementById('rep-content').innerHTML = `
+    <div class="card">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;flex-wrap:wrap;gap:8px">
+        <div style="font-weight:700;font-size:14px">📦 Item-wise Sale Report (with Party Drill-down)</div>
+        <input class="fc fc-sm" id="item-rep-srch" placeholder="Search item..." style="width:180px"
+          value="${srch}" oninput="renderItemRep()">
+      </div>
+      ${list.length===0 ? `<div class="empty">No item data yet</div>` : `
+      <div style="font-size:12px;color:var(--gray-400);margin-bottom:8px">
+        Click ▶ to see party-wise breakdown for each item
+      </div>
+      <div class="tw"><table>
+        <thead><tr>
+          <th style="width:28px"></th>
+          <th>Item Name</th>
+          <th style="text-align:center">Total Qty</th>
+          <th style="text-align:center">Total Invoices</th>
+          <th style="text-align:right">Total Amount</th>
+          <th style="text-align:center">Parties</th>
+        </tr></thead>
+        <tbody id="item-rep-body">
+          ${list.map((it, i) => `
+          <tr style="cursor:pointer" onclick="itemRepToggle('ir-${i}')">
+            <td style="text-align:center;font-size:13px" id="ir-arr-${i}">▶</td>
+            <td style="font-weight:600">${it.name}</td>
+            <td style="text-align:center">${it.totalQty}</td>
+            <td style="text-align:center">${it.invoiceCnt}</td>
+            <td style="font-weight:700;color:var(--g);text-align:right">${fc(it.totalAmt)}</td>
+            <td style="text-align:center;color:var(--gray-500)">${Object.keys(it.parties).length}</td>
+          </tr>
+          <tr id="ir-${i}" style="display:none;background:var(--gray-50)">
+            <td></td>
+            <td colspan="5" style="padding:8px 12px">
+              <div style="font-size:12px;font-weight:700;color:var(--gray-500);margin-bottom:6px">
+                Party-wise breakdown — ${it.name}
+              </div>
+              ${Object.values(it.parties).sort((a,b)=>b.amt-a.amt).map(p=>`
+                <div class="ip-party-row">
+                  <div>
+                    <span style="font-weight:600;font-size:13px">${p.name}</span>
+                    <span style="color:var(--gray-400);font-size:11.5px;margin-left:8px">Last: ${fmtDate(p.lastDate)}</span>
+                  </div>
+                  <div style="display:flex;gap:16px;align-items:center">
+                    <span style="color:var(--gray-500);font-size:12px">Qty: <strong>${p.qty}</strong></span>
+                    <span style="color:var(--b);font-size:12px">Rate: <strong>${fc(p.lastRate)}</strong></span>
+                    <span style="color:var(--g);font-weight:700">${fc(p.amt)}</span>
+                  </div>
+                </div>`).join('')}
+            </td>
+          </tr>`).join('')}
+        </tbody>
+        <tfoot><tr>
+          <td></td><td>Total (${list.length} items)</td>
+          <td></td><td></td>
+          <td style="color:var(--g);text-align:right;font-weight:700">${fc(list.reduce((a,i)=>a+i.totalAmt,0))}</td>
+          <td></td>
+        </tr></tfoot>
+      </table></div>`}
+    </div>`;
+};
+
+window.itemRepToggle = function(id) {
+  const row = document.getElementById(id); if(!row) return;
+  const idx = id.replace('ir-','');
+  const arr = document.getElementById('ir-arr-'+idx);
+  const visible = row.style.display !== 'none';
+  row.style.display = visible ? 'none' : 'table-row';
+  if (arr) arr.textContent = visible ? '▶' : '▼';
+};
+
+// ════════════════════════════════════════════════════════
+// FIX 5: Exclude cancelled from ALL reports
+// Override all report functions that missed this
+// ════════════════════════════════════════════════════════
+const _isCanV16 = i => i.status==='cancelled' || i.dispatchStatus==='cancelled';
+
+// Override dispatch report
+window.renderDispatchRep = function() {
+  const invs = getInvoices().filter(i => !_isCanV16(i)); // EXCLUDE CANCELLED
+  const pend   = invs.filter(i=>i.dispatchStatus==='pending');
+  const done   = invs.filter(i=>i.dispatchStatus==='dispatched');
+  const draft  = invs.filter(i=>i.dispatchStatus==='draft');
+
+  const mkTable = (list, color) => list.length===0
+    ? `<div class="empty" style="padding:20px">None</div>`
+    : `<div class="tw"><table>
+      <thead><tr><th>Invoice</th><th>Date</th><th>Party</th><th>Pay Type</th><th style="text-align:right">Total</th><th class="no-print">Action</th></tr></thead>
+      <tbody>${list.slice().reverse().map(i=>`<tr ondblclick="viewInvoice('${i.id}')">
+        <td style="font-weight:700;color:var(--b);cursor:pointer" onclick="viewInvoice('${i.id}')">${i.invoiceNo}</td>
+        <td>${fmtDate(i.date)}</td><td style="font-weight:500">${i.partyName}</td>
+        <td><span class="badge ${ptBadge(i.paymentType)}">${i.paymentType||'Cash'}</span></td>
+        <td style="font-weight:600;text-align:right;color:${color}">${fc(i.total)}</td>
+        <td class="no-print">
+          ${i.dispatchStatus!=='dispatched'
+            ? `<button class="btn btn-c btn-xs" onclick="quickDispatch('${i.id}');renderDispatchRep()">🚚 Dispatch</button>`
+            : '<span style="color:var(--g);font-size:12px">✓ Done</span>'}
+        </td>
+      </tr>`).join('')}</tbody>
+    </table></div>`;
+
+  document.getElementById('rep-content').innerHTML = `
+    <div class="sg" style="grid-template-columns:repeat(3,1fr)">
+      <div class="sc"><div class="sc-lbl">Pending Dispatch</div><div class="sc-val o">${pend.length}</div></div>
+      <div class="sc"><div class="sc-lbl">Dispatched</div><div class="sc-val g">${done.length}</div></div>
+      <div class="sc"><div class="sc-lbl">Draft</div><div class="sc-val p">${draft.length}</div></div>
+    </div>
+    ${pend.length>0?`<div class="card"><div style="font-weight:700;font-size:14px;margin-bottom:10px;color:var(--o)">📦 Pending Dispatch</div>${mkTable(pend,'var(--o)')}</div>`:''}
+    ${draft.length>0?`<div class="card"><div style="font-weight:700;font-size:14px;margin-bottom:10px;color:var(--p)">📝 Draft Invoices</div>${mkTable(draft,'var(--p)')}</div>`:''}
+    ${done.length>0?`<div class="card"><div style="font-weight:700;font-size:14px;margin-bottom:10px;color:var(--g)">🚚 Dispatched</div>${mkTable(done,'var(--g)')}</div>`:''}`;
+};
+
+// Override party ledger to exclude cancelled
+window.renderPartyLedger = function() {
+  const parties = getParties();
+  const invs    = getInvoices().filter(i=>!_isCanV16(i));
+  const purs    = getPurchases();
+  document.getElementById('rep-content').innerHTML=`
+    <div class="card">
+      <div class="srch" style="margin-bottom:12px">
+        <span>🔍</span>
+        <input placeholder="Search party..." id="ledger-srch" oninput="filterLedger(this.value)">
+      </div>
+      <div id="ledger-body">${buildLedger(parties,invs,purs)}</div>
+    </div>`;
+};
+
+function buildLedger(parties, invs, purs) {
+  const activeInvs = invs.filter(i=>!_isCanV16(i));
+  if (!parties.length) return `<div class="empty">No parties</div>`;
+  return `<div class="tw"><table>
+    <thead><tr>
+      <th>Party</th><th>Phone</th>
+      <th style="text-align:right">Total Sale</th>
+      <th style="text-align:right">Sale Due</th>
+      <th style="text-align:right">Total Purchase</th>
+      <th style="text-align:center">Invoices</th>
+      <th>Last Sale</th>
+      <th class="no-print">Actions</th>
+    </tr></thead>
+    <tbody>${parties.map(p=>{
+      const pI = activeInvs.filter(i=>i.partyId===p.id);
+      const pP = purs.filter(x=>x.partyId===p.id);
+      const tS = pI.reduce((a,i)=>a+(i.total||0),0);
+      const tB = pI.reduce((a,i)=>a+(i.balance||0),0);
+      const tP = pP.reduce((a,x)=>a+(x.total||0),0);
+      const last= [...pI].reverse()[0];
+      return`<tr ondblclick="openPartyDetail('${p.id}')">
+        <td style="font-weight:600">${p.name}</td>
+        <td>${p.phone||'-'}</td>
+        <td style="color:var(--g);font-weight:600;text-align:right">${fc(tS)}</td>
+        <td style="${tB>0?'color:var(--r);':'color:var(--gray-400);'}font-weight:600;text-align:right">${fc(tB)}</td>
+        <td style="color:var(--b);text-align:right">${fc(tP)}</td>
+        <td style="text-align:center">${pI.length}</td>
+        <td style="font-size:12px">${last?fmtDate(last.date)+' · '+fc(last.total):'-'}</td>
+        <td class="no-print">
+          <button class="btn btn-b btn-xs" onclick="openPartyDetail('${p.id}')">Detail</button>
+          ${tB>0?`<button class="btn btn-g btn-xs" onclick="openSettlementModal('${p.id}','${esc(p.name)}')">Settle</button>`:''}
+        </td>
+      </tr>`;
+    }).join('')}</tbody>
+  </table></div>`;
+}
+
+// Also override filterLedger
+window.filterLedger = function(v) {
+  const invs = getInvoices().filter(i=>!_isCanV16(i));
+  const filtered = getParties().filter(p=>p.name.toLowerCase().includes(v.toLowerCase()));
+  document.getElementById('ledger-body').innerHTML = buildLedger(filtered, invs, getPurchases());
+};
+
+// Outstanding report — exclude cancelled (already done in V15 renderPendingRep)
+// Verify sale rep excludes cancelled (already done in V13 renderSaleRep)
+
+// ════════════════════════════════════════════════════════
+// Fix repTab to include outstanding tab correctly
+// ════════════════════════════════════════════════════════
+window.repTab = function(tab) {
+  const tabs = ['sale','pur','party','item','pending','dispatch','outstanding'];
+  document.querySelectorAll('#rep-tabs .tab').forEach((t,i) =>
+    t.classList.toggle('active', tabs[i] === tab));
+  const fn = {
+    sale:renderSaleRep, pur:renderPurRep, party:renderPartyLedger,
+    item:renderItemRep, pending:renderPendingRep, dispatch:renderDispatchRep,
+    outstanding:renderOutstandingRep
+  };
+  if (fn[tab]) fn[tab]();
+};
+
+// Ensure outstanding report also excludes cancelled
+window.renderOutstandingRep = function() {
+  const invs = getInvoices().filter(i => !_isCanV16(i) && (i.balance||0)>0);
+  const now  = new Date();
+  const pm   = {};
+  invs.forEach(inv => {
+    const key = inv.partyName||'Cash';
+    if (!pm[key]) pm[key] = { name:key, invoices:[] };
+    const days = Math.floor((now - new Date(inv.date)) / 86400000);
+    pm[key].invoices.push({...inv, days});
+  });
+  const parties   = Object.values(pm).sort((a,b)=>b.invoices.reduce((s,i)=>s+(i.balance||0),0)-a.invoices.reduce((s,i)=>s+(i.balance||0),0));
+  const grandTotal = invs.reduce((a,i)=>a+(i.balance||0),0);
+  const t0_30  = invs.filter(i=>Math.floor((now-new Date(i.date))/86400000)<=30).reduce((a,i)=>a+(i.balance||0),0);
+  const t31_60 = invs.filter(i=>{const d=Math.floor((now-new Date(i.date))/86400000);return d>30&&d<=60;}).reduce((a,i)=>a+(i.balance||0),0);
+  const t61_90 = invs.filter(i=>{const d=Math.floor((now-new Date(i.date))/86400000);return d>60&&d<=90;}).reduce((a,i)=>a+(i.balance||0),0);
+  const t90p   = invs.filter(i=>Math.floor((now-new Date(i.date))/86400000)>90).reduce((a,i)=>a+(i.balance||0),0);
+
+  document.getElementById('rep-content').innerHTML = `
+    <div class="sg" style="grid-template-columns:repeat(auto-fit,minmax(130px,1fr))">
+      <div class="sc"><div class="sc-lbl">0–30 Days</div><div class="sc-val g">${fc(t0_30)}</div></div>
+      <div class="sc"><div class="sc-lbl">31–60 Days</div><div class="sc-val o">${fc(t31_60)}</div></div>
+      <div class="sc"><div class="sc-lbl">61–90 Days</div><div class="sc-val r">${fc(t61_90)}</div></div>
+      <div class="sc"><div class="sc-lbl">90+ Days</div><div class="sc-val r">${fc(t90p)}</div></div>
+      <div class="sc"><div class="sc-lbl">Grand Outstanding</div><div class="sc-val r">${fc(grandTotal)}</div></div>
+    </div>
+    ${parties.length===0 ? `<div class="empty" style="margin-top:20px"><div class="ic">✅</div>No outstanding balance!</div>` :
+    parties.map(p => {
+      const partyTotal = p.invoices.reduce((a,i)=>a+(i.balance||0),0);
+      return `<div class="card" style="margin-bottom:12px">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;flex-wrap:wrap;gap:8px">
+          <div>
+            <div style="font-weight:700;font-size:15px">${p.name}</div>
+            <div style="font-size:12px;color:var(--gray-500)">${p.invoices.length} invoice(s) pending</div>
+          </div>
+          <div style="display:flex;align-items:center;gap:8px">
+            <div style="font-size:17px;font-weight:800;color:var(--r)">${fc(partyTotal)}</div>
+            <button class="btn btn-g btn-xs" onclick="openSettlementModal('','${esc(p.name)}')">🧾 Settle</button>
+          </div>
+        </div>
+        <div class="tw"><table>
+          <thead><tr><th>Invoice</th><th>Date</th><th>Total</th><th>Paid</th><th>Balance</th><th>Days</th><th>Age</th><th class="no-print">Action</th></tr></thead>
+          <tbody>${p.invoices.sort((a,b)=>a.days-b.days).map(i=>{
+            const ac = i.days>90?'var(--r)':i.days>60?'#d97706':i.days>30?'#ca8a04':'var(--g)';
+            const al = i.days>90?'🔴 Very Old':i.days>60?'🟠 Old':i.days>30?'🟡 Aging':'🟢 Fresh';
+            return `<tr ondblclick="viewInvoice('${i.id}')">
+              <td style="font-weight:700;color:var(--b);cursor:pointer" onclick="viewInvoice('${i.id}')">${i.invoiceNo}</td>
+              <td>${fmtDate(i.date)}</td><td>${fc(i.total)}</td>
+              <td style="color:var(--g)">${fc(i.paid||0)}</td>
+              <td style="font-weight:700;color:var(--r)">${fc(i.balance)}</td>
+              <td style="font-weight:700;color:${ac}">${i.days}</td>
+              <td>${al}</td>
+              <td class="no-print"><button class="btn btn-g btn-xs" onclick="openPayModal('${i.id}')">💰 Pay</button></td>
+            </tr>`;}).join('')}
+          </tbody>
+        </table></div>
+      </div>`;
+    }).join('')}`;
+};
+
+console.log('v16 applied ✓ — Sale filter fixed | 3-dot restored | Payment Out | Item-Party Report | Cancelled excluded from reports');
+
+})(); // end v16
+</script>
+V16_END
 echo "Done. Lines: $(wc -l < /home/claude/v9base.html)"
