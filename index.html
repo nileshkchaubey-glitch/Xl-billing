@@ -4557,7 +4557,7 @@ window.renderExcelPage = function(){
           <button class="btn btn-out btn-sm" onclick="exportToCSV('retail')">📋 Export Retail CSV</button>
         </div>
         <div style="margin-top:10px;font-size:12.5px;color:var(--gray-500)">
-          💡 CSV file Excel mein directly open ho jaata hai. Double-click karo ya "Open With Excel" karo.
+          💡 CSV files open directly in Excel. Double-click the file or select "Open With Excel".
         </div>
       </div>
 
@@ -4565,8 +4565,8 @@ window.renderExcelPage = function(){
       <div class="card">
         <div style="font-weight:700;font-size:14px;margin-bottom:8px;color:var(--b)">📤 Import from CSV / Excel</div>
         <p style="font-size:13px;color:var(--gray-600);margin-bottom:12px">
-          Excel se CSV save karo (Save As → CSV UTF-8), phir yahan upload karo. 
-          System automatically detect karega kaunsa data hai.
+          Save your Excel file as CSV (Save As → CSV UTF-8), then upload it here.
+          The system automatically detects the data type.
         </p>
         <div class="xl-drop" id="xl-drop-zone" onclick="document.getElementById('xl-file-input').click()"
           ondragover="event.preventDefault();this.classList.add('drag')"
@@ -4585,11 +4585,11 @@ window.renderExcelPage = function(){
         <div style="font-weight:700;font-size:14px;margin-bottom:8px;color:var(--g)">🟢 Google Sheets Live Sync</div>
         <div style="background:#f0fdf4;border-radius:8px;padding:12px;margin-bottom:14px;font-size:13px;color:#065f46;line-height:1.8">
           <strong>Setup (One-time, 5 minutes):</strong><br>
-          1. <a href="https://sheets.new" target="_blank" style="color:var(--b)">sheets.new</a> → Ek naya Google Sheet banao<br>
-          2. <strong>Extensions → Apps Script</strong> → Neeche wala code paste karo<br>
+          1. <a href="https://sheets.new" target="_blank" style="color:var(--b)">sheets.new</a> → Create a new Google Sheet<br>
+          2. <strong>Extensions → Apps Script</strong> → Paste the code below<br>
           3. <strong>Deploy → New Deployment → Web App</strong> → "Anyone" access → Deploy<br>
-          4. Copy kiya hua <strong>Web App URL</strong> neeche paste karo<br>
-          5. Save karo → Sync!
+          4. Copy the <strong>Web App URL</strong> and paste it below<br>
+          5. Save → Sync!
         </div>
         <div class="fg"><label class="fl">Google Apps Script Web App URL</label>
           <input class="fc" id="gs-url" placeholder="https://script.google.com/macros/s/YOUR_ID/exec">
@@ -4652,7 +4652,7 @@ function doGet(e) {
           ✅ <strong>Daily backup:</strong> Export Invoices CSV → Save in OneDrive/Drive<br>
           ✅ <strong>Old bills import:</strong> Fill CSV template → Upload here<br>
           ✅ <strong>Google Sheets:</strong> Live data in Sheets — share with accountant!<br>
-          ✅ <strong>Pivot Table:</strong> Excel mein CSV import karo → PivotTable se reports banao
+          ✅ <strong>Pivot Table:</strong> Import the CSV into Excel → Create reports with a PivotTable
         </div>
       </div>
     </div>`;
@@ -5635,11 +5635,11 @@ window.renderGitHubGuide = function(){
     <div class="pb" style="padding:18px 22px">
 
       <div class="card" style="border-left:4px solid #7c3aed;background:linear-gradient(135deg,#f5f3ff,#fff)">
-        <div style="font-weight:700;font-size:14px;margin-bottom:6px;color:#7c3aed">💡 Kya milega?</div>
+        <div style="font-weight:700;font-size:14px;margin-bottom:6px;color:#7c3aed">💡 What you get</div>
         <p style="font-size:13px;color:var(--gray-600);line-height:1.8">
-          Aapki billing file <strong>https://yourusername.github.io/myshop/</strong> pe live ho jaayegi.<br>
-          PC, Mobile, Tablet — kisi bhi device se open karo. <strong>Bilkul Free.</strong><br>
-          ⚠️ Data abhi bhi browser localStorage mein rahega — Cloud Sync (JSONBin) se mobile-PC sync karo.
+          Your billing app will be available at <strong>https://yourusername.github.io/myshop/</strong>.<br>
+          Open it on a PC, phone or tablet. <strong>Free hosting.</strong><br>
+          ⚠️ Data remains in browser localStorage. Use Cloud Sync (JSONBin) to sync your phone and PC.
         </p>
       </div>
 
@@ -5649,63 +5649,63 @@ window.renderGitHubGuide = function(){
 
         <div class="gh-step">
           <span class="num">1</span>
-          <strong>GitHub account banao</strong> (free) —
+          <strong>Create a GitHub account</strong> (free) —
           <a href="https://github.com/signup" target="_blank" style="color:var(--b)">github.com/signup</a>
         </div>
 
         <div class="gh-step">
           <span class="num">2</span>
-          <strong>New Repository banao</strong> —
+          <strong>Create a new repository</strong> —
           <a href="https://github.com/new" target="_blank" style="color:var(--b)">github.com/new</a><br>
           <div style="margin-top:6px;font-size:12.5px;color:var(--gray-600)">
             • Repository name: <code class="inline">myshop</code><br>
-            • Visibility: <code class="inline">Public</code> (GitHub Pages ke liye zaroori)<br>
-            • ✅ Add a README file checkbox tick karo<br>
+            • Visibility: <code class="inline">Public</code><br>
+            • ✅ Select the "Add a README file" checkbox<br>
             • Click <strong>Create repository</strong>
           </div>
         </div>
 
         <div class="gh-step">
           <span class="num">3</span>
-          <strong>HTML file upload karo</strong><br>
+          <strong>Upload your HTML file</strong><br>
           <div style="margin-top:6px;font-size:12.5px;color:var(--gray-600)">
-            • Repository mein jaake <strong>"Add file" → "Upload files"</strong> click karo<br>
-            • Apni <code class="inline">myshop-billing-v8.html</code> file drag karo<br>
-            • File ka naam change karo: <code class="inline">index.html</code><br>
-            • <strong>"Commit changes"</strong> click karo
+            • In your repository, select <strong>"Add file" → "Upload files"</strong><br>
+            • Drag your <code class="inline">myshop-billing-v8.html</code> file into the upload area<br>
+            • Rename the file to <code class="inline">index.html</code><br>
+            • Select <strong>"Commit changes"</strong>
           </div>
         </div>
 
         <div class="gh-step">
           <span class="num">4</span>
-          <strong>GitHub Pages enable karo</strong><br>
+          <strong>Enable GitHub Pages</strong><br>
           <div style="margin-top:6px;font-size:12.5px;color:var(--gray-600)">
-            • Repository → <strong>Settings</strong> → left sidebar mein <strong>Pages</strong><br>
+            • Repository → <strong>Settings</strong> → <strong>Pages</strong> in the left sidebar<br>
             • Source: <code class="inline">Deploy from a branch</code><br>
             • Branch: <code class="inline">main</code> → folder: <code class="inline">/ (root)</code><br>
-            • <strong>Save</strong> click karo
+            • Select <strong>Save</strong>
           </div>
         </div>
 
         <div class="gh-step" style="border-left-color:var(--g)">
           <span class="num" style="background:var(--g)">5</span>
-          <strong style="color:var(--g)">Done! 2-3 minutes mein live ho jaayega</strong><br>
+          <strong style="color:var(--g)">Done! Your site should be live in 2–3 minutes</strong><br>
           <div style="margin-top:6px;font-size:12.5px;color:var(--gray-600)">
-            URL hoga: <code class="inline">https://YourUsername.github.io/myshop/</code><br>
-            Is URL ko mobile pe open karo — ek dum app jaisa!<br>
-            Home screen pe add karo (Android: Chrome → ⋮ → "Add to Home screen")
+            Your site URL: <code class="inline">https://YourUsername.github.io/myshop/</code><br>
+            Open this URL on your phone to use the app.<br>
+            Add it to your home screen (Android: Chrome → ⋮ → "Add to Home screen")
           </div>
         </div>
       </div>
 
-      <!-- Update karna -->
+      <!-- Update the app -->
       <div class="card">
-        <div style="font-weight:700;font-size:14px;margin-bottom:10px;color:var(--o)">🔄 Update kaise kare?</div>
+        <div style="font-weight:700;font-size:14px;margin-bottom:10px;color:var(--o)">🔄 How to update</div>
         <div style="font-size:13px;color:var(--gray-600);line-height:1.9">
-          1. Naya updated HTML file download karo<br>
-          2. GitHub → repository → <strong>index.html</strong> pe click karo<br>
-          3. Pencil (✏️) edit icon → "Upload" → naya file select karo<br>
-          4. Commit → 2 minutes mein automatically update ho jaayega
+          1. Download the updated HTML file<br>
+          2. GitHub → your repository → select <strong>index.html</strong><br>
+          3. Replace the existing file using Edit (✏️) or "Add file" → "Upload files"<br>
+          4. Commit the changes → Your site should update automatically in about 2 minutes
         </div>
       </div>
 
@@ -5713,11 +5713,11 @@ window.renderGitHubGuide = function(){
       <div class="card" style="border-left:4px solid var(--c)">
         <div style="font-weight:700;font-size:14px;margin-bottom:8px;color:var(--c)">☁️ Mobile ↔ PC Data Sync</div>
         <div style="font-size:13px;color:var(--gray-600);line-height:1.9">
-          GitHub Pages pe sirf file host hoti hai — data alag device pe share nahi hota.<br>
-          <strong>Solution:</strong> Settings → Cloud Sync (JSONBin.io) setup karo → Push/Pull se data sync karo.<br>
+          GitHub Pages hosts the app file. It does not share billing data between devices.<br>
+          <strong>Solution:</strong> Configure Settings → Cloud Sync (JSONBin.io), then use Push/Pull to sync your data.<br>
           <br>
           <strong>Best workflow:</strong><br>
-          🖥️ PC pe kaam karo → "Push ↑" karo → 📱 Mobile pe "Pull ↓" karo
+          🖥️ Work on your PC → Select "Push ↑" → 📱 Select "Pull ↓" on your phone
         </div>
       </div>
 
@@ -5768,22 +5768,22 @@ window.renderGitHubGuide = function(){
      V11 PATCH — Keyboard Navigation + Smart Item Info + Party-wise Rates
      ═══════════════════════════════════════════════════════════
 
-  KAISE UPDATE KARTE HAIN — SEEKHNE KE LIYE:
+  HOW UPDATES WORK — LEARNING NOTES:
   ─────────────────────────────────────────────
-  Har naya feature ek script block mein add hota hai file ke end mein.
-  Purana code kabhi delete nahi hota — sirf override hota hai.
+  Each new feature is added in a script block at the end of the file.
+  Existing code is retained and its functions are overridden.
   
   Override pattern:
-    const _orig = window.functionName;   // Step 1: purana save karo
-    window.functionName = function(){    // Step 2: naya version banao
-      // nayi cheez karo
-      _orig();                           // Step 3: purana bhi chalao
+    const _orig = window.functionName;   // Step 1: save the original function
+    window.functionName = function(){    // Step 2: define the new version
+      // Run the new behavior
+      _orig();                           // Step 3: also run the original function
     };
   
-  Is patch mein:
-  - Autocomplete mein keyboard navigation (↑↓ Enter)
-  - Item select ke baad info panel (last party, purchase rate)
-  - Rate popup sirf selected party ka rate dikhayega
+  This patch adds:
+  - Keyboard navigation for autocomplete (↑↓ Enter)
+  - An item information panel after selection (last customer, purchase rate)
+  - The rate popup shows rates for the selected customer
   ═══════════════════════════════════════════════════════════ -->
 <script>
 (function v11(){
@@ -5796,10 +5796,10 @@ window.renderGitHubGuide = function(){
 const acState = {}; // { listId: { idx: number } }
 
 function acSetup(inputEl, listEl){
-  // Kaise kaam karta hai:
+  // How it works:
   // - inputEl = text input
   // - listEl  = .ac-list div
-  // - keydown event sunao, ArrowDown/Up/Enter handle karo
+  // - Listen for keydown events and handle ArrowDown, ArrowUp and Enter
 
   inputEl.addEventListener('keydown', function(e){
     const items = Array.from(listEl.querySelectorAll('.ac-item'));
@@ -5825,7 +5825,7 @@ function acSetup(inputEl, listEl){
       listEl.style.display = 'none';
       acState[lid] = { idx: -1 };
     } else {
-      // Koi aur key dabaya — reset highlight
+      // Another key was pressed — reset the highlight
       acState[lid] = { idx: -1 };
     }
   });
@@ -5833,7 +5833,7 @@ function acSetup(inputEl, listEl){
 
 function acHighlight(items, idx){
   items.forEach((el, i) => {
-    // Highlighted item ko green background
+    // Give the highlighted item a green background
     el.style.background = i === idx ? 'var(--gl)' : '';
     el.style.color      = i === idx ? 'var(--gd)' : '';
     if(i === idx) el.scrollIntoView({ block:'nearest' });
@@ -5843,19 +5843,19 @@ function acHighlight(items, idx){
 // ══════════════════════════════════════════════════════════
 // FIX 1: Party Autocomplete — keyboard support
 // ══════════════════════════════════════════════════════════
-// Kaise: partyAC function override karte hain
-// Pehle list render hoti hai, uske baad acSetup chalate hain
+// Override partyAC to add keyboard support
+// Render the list first, then run acSetup
 
 const _origPartyAC_v11 = window.partyAC;
 window.partyAC = function(inputId, hiddenId, val){
-  // Purana function chalao (list render karta hai)
+  // Run the original function to render the list
   _origPartyAC_v11(inputId, hiddenId, val);
 
-  // Keyboard setup attach karo
+  // Attach keyboard navigation
   const inputEl = document.getElementById(inputId);
   const listEl  = document.getElementById('ac-' + inputId);
   if(inputEl && listEl && !inputEl._v11kb){
-    inputEl._v11kb = true; // ek baar hi setup karo (flag)
+    inputEl._v11kb = true; // Set up once using this flag
     acSetup(inputEl, listEl);
   }
 };
@@ -5863,7 +5863,7 @@ window.partyAC = function(inputId, hiddenId, val){
 // ══════════════════════════════════════════════════════════
 // FIX 1b: Item Autocomplete — keyboard support
 // ══════════════════════════════════════════════════════════
-// showSaleItemAC override karte hain — yahi item list banata hai
+// Override showSaleItemAC, which renders the item list
 
 const _origShowSaleItemAC_v11 = window.showSaleItemAC;
 window.showSaleItemAC = function(id, val){
@@ -5879,21 +5879,21 @@ window.showSaleItemAC = function(id, val){
 
 // ══════════════════════════════════════════════════════════
 // FIX 2: Item Info Panel — last party + purchase rate
-// Tab dabane par chhup jaata hai
+// Hide the panel when Tab is pressed
 // ══════════════════════════════════════════════════════════
-// Kaise kaam karta hai:
-// - setSaleItem mein item select hone ke baad ek info panel dikhate hain
-// - Rate field ke neeche, compact format mein
-// - Tab press hone par panel chhup jaata hai
+// How it works:
+// - Show an information panel after setSaleItem selects an item
+// - Use a compact layout below the Rate field
+// - Hide the panel when Tab is pressed
 
 function getItemInfo(itemName, itemId){
-  // 1. Items master se purchase rate nikalo
+  // 1. Get the purchase rate from the item master
   const masterItem = getItems().find(i =>
     i.id === itemId || (i.name && i.name.toLowerCase() === itemName.toLowerCase())
   );
   const purchaseRate = masterItem?.purchaseRate || 0;
 
-  // 2. Invoices se last sale info nikalo (kisi bhi party ko)
+  // 2. Get the latest sale information across all customers
   const invs = getInvoices();
   let lastSale = null;
   for(let i = invs.length - 1; i >= 0; i--){
@@ -5917,11 +5917,11 @@ function getItemInfo(itemName, itemId){
 }
 
 function showItemInfoPanel(rowId, itemName, itemId){
-  // Info panel ki ID
+  // Information panel ID
   const panelId = 'iip-' + rowId;
   let panel = document.getElementById(panelId);
 
-  // Agar panel nahi hai to banao rate field ke neeche
+  // Create the panel below the Rate field if it does not exist
   if(!panel){
     const rateWrap = document.getElementById('srt-' + rowId)?.parentElement;
     if(!rateWrap) return;
@@ -5965,7 +5965,7 @@ function showItemInfoPanel(rowId, itemName, itemId){
 
   panel.style.display = 'block';
 
-  // Tab ya bahar jaane par chhupao
+  // Hide the panel on Tab or when focus leaves the field
   const hidePanel = () => setTimeout(()=>{ panel.style.display='none'; }, 200);
   const rateInput = document.getElementById('srt-' + rowId);
   if(rateInput && !rateInput._iipSetup){
@@ -5977,37 +5977,37 @@ function showItemInfoPanel(rowId, itemName, itemId){
   }
 }
 
-// Override setSaleItem — item select hone ke baad info panel dikhao
+// Override setSaleItem to show item information after selection
 const _origSetSaleItem_v11 = window.setSaleItem;
 window.setSaleItem = function(id, itemId, name, rate, unit){
   _origSetSaleItem_v11(id, itemId, name, rate, unit);
 
-  // Item ki jaankari store karo saleItems mein
+  // Store item information in saleItems
   const it = saleItems.find(i=>i.id===id);
   if(it){ it.itemId = itemId; it.name = name; }
 
-  // Info panel dikhao
+  // Show the information panel
   setTimeout(()=> showItemInfoPanel(id, name, itemId), 80);
 };
 
 // ══════════════════════════════════════════════════════════
-// FIX 3: Rate Popup — sirf SELECTED PARTY ka rate dikhao
+// FIX 3: Rate Popup — show rates for the SELECTED CUSTOMER
 // ══════════════════════════════════════════════════════════
-// Kaise kaam karta hai:
-// - siRatePopup override karte hain
-// - Pehle party ID lete hain jo invoice mein select hai
-// - Filter karte hain: sirf us party ke invoices
-// - Agar koi rate nahi mila to sabke rates dikhao (fallback)
+// How it works:
+// - Override siRatePopup
+// - Get the customer ID selected on the invoice
+// - Filter invoices for that customer
+// - Fall back to rates from all customers if no matching rate is found
 
 window.siRatePopup = function(id){
   const it = saleItems.find(i=>i.id===id); if(!it) return;
   const name = it.name || document.getElementById('sn-'+id)?.value?.trim();
   if(!name){ closeAllRatePopups(); return; }
 
-  // Selected party ID — invoice form se
+  // Selected customer ID from the invoice form
   const partyId = document.getElementById('inv-party-id')?.value || '';
 
-  // Invoices filter — pehle party se, fallback all
+  // Filter by customer first, then fall back to all invoices
   const invs = getInvoices();
   const partyRates = [], allRates = [];
 
@@ -6065,7 +6065,7 @@ window.siRatePopup = function(id){
 // ══════════════════════════════════════════════════════════
 // CLEANUP: Close popups on Tab / outside click
 // ══════════════════════════════════════════════════════════
-// Tab press par sabhi popups chhupao
+// Hide all popups when Tab is pressed
 document.addEventListener('keydown', e=>{
   if(e.key==='Tab') closeAllRatePopups();
 });
@@ -6073,38 +6073,38 @@ document.addEventListener('keydown', e=>{
 console.log('v11 applied ✓ — Keyboard AC | Item Info Panel | Party-filtered Rates');
 
 // ══════════════════════════════════════════════════════════
-// SEEKHNE KE LIYE — Yahan summarize kiya gaya hai
+// LEARNING NOTES — Summary
 // ══════════════════════════════════════════════════════════
 /*
-  IS PATCH MEIN KYA SIKHA:
+  CONCEPTS USED IN THIS PATCH:
 
-  1. EVENT LISTENER kya hota hai:
+  1. Event listeners:
      element.addEventListener('keydown', function(e){ ... })
-     → Jab user key dabaye to yeh function chale
+     → Run this function when the user presses a key
 
   2. e.key values:
      'ArrowDown', 'ArrowUp', 'Enter', 'Tab', 'Escape'
 
   3. e.preventDefault():
-     → Browser ka default kaam rokna (jaise ArrowDown se scroll)
+     → Prevent the default browser action, such as scrolling with ArrowDown
 
   4. Array.from():
-     → NodeList (querySelectorAll result) ko real Array banao
-     → Taki .forEach, .find etc. kaam kare
+     → Convert a NodeList (the querySelectorAll result) to an Array
+     → Use Array methods such as .forEach and .find
 
-  5. element.scrollIntoView({ block:'nearest' }): // Element visible range mein scroll karo
-     → Element visible range mein scroll karo
+  5. element.scrollIntoView({ block:'nearest' }): // Scroll the element into view
+     → Scroll the element into view
 
   6. Function chaining with override:
      const _orig = window.fn;
      window.fn = function(){ _orig(); newCode(); }
 
   7. setTimeout(fn, 200):
-     → 200ms baad fn chalaao — blur se pehle click complete ho sake
+     → Run fn after 200 ms so a click can complete before the panel is hidden
 
-  8. Closures — function ke andar variable yaad rahta hai:
+  8. Closures retain access to variables from their outer scope:
      function setup(id){
-       return function(){ console.log(id); } // id yaad raha
+       return function(){ console.log(id); } // Retain access to id
      }
 */
 
@@ -6128,7 +6128,7 @@ window.renderSaleItems = function(){
     'minmax(180px,1fr)',                           // Name
     showBrand ? '86px' : '',          // Brand
     showPack ? '84px' : '',
-    '64px',   // Pack pehle, Cnt baad mein
+    '64px',   // Parcel count
     '74px',                          // Qty per parcel (or saved total)
     '82px',                          // Final Qty
     '88px',                          // Rate
@@ -8210,7 +8210,7 @@ function auditLog(type, entityType, entityId, label, details) {
 
 // ════════════════════════════════════════════════════════
 // DELETE PROTECTION — password guard
-// Settings mein: settings.deletePin (default '1234')
+// Setting: settings.deletePin (default '1234')
 // ════════════════════════════════════════════════════════
 function getDeletePin() {
   return getSettings().deletePin || '1234';
