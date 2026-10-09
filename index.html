@@ -5096,7 +5096,7 @@ window.addSaleItem = function(){
   renderSaleItems();
   setTimeout(()=>{
     const ins=document.querySelectorAll('[id^="sn-"]');
-    if(ins.length) ins[ins.length-1].focus();
+    if(ins.length && (document.activeElement===document.body || document.activeElement?.id?.startsWith('sn-'))) ins[ins.length-1].focus();
   }, 60);
 };
 
@@ -6178,7 +6178,7 @@ window.renderSaleItems = function(){
 
       <!-- 6. Qty -->
       <input type="number" class="fc fc-sm" id="sqt-${it.id}" value="${saleEntryEscape(it.quantityMode === 'packs' ? it.qtyPerPack : it.qty)}" min="0.000001" step="any" inputmode="decimal"
-        title="${it.quantityMode === 'packs' ? 'Qty per parcel (or loose Qty if Packs is empty)' : 'Saved total Qty; Packs do not multiply this older row'}"
+        title="${it.quantityMode === 'packs' ? 'Qty per parcel (or loose Qty if Packs is empty)' : it.quantityMode === 'direct' ? 'Total Qty; multiplication is off for this row' : 'Saved total Qty; Packs do not multiply this older row'}"
         style="text-align:center" oninput="siNum('${it.id}','qty',this.value)">
 
       <input class="fc fc-sm fc-ro" id="sfq-${it.id}" value="${saleEntryEscape(it.qty)}" readonly tabindex="-1" style="text-align:center;font-weight:600" title="Final billing quantity">
@@ -9877,7 +9877,7 @@ window.labelSaleEntryRows = function(entry){
       const cell=document.createElement('div');cell.className='entry-cell';cell.dataset.label=label;
       const text=document.createElement('span');text.className='entry-cell-label';
       const item=saleItems.find(it=>'sr-'+it.id===row.id);
-      text.textContent=label==='Qty'?(item?.quantityMode==='packs'?'Qty per parcel / loose':'Qty (saved total)'):label;
+      text.textContent=label==='Qty'?(item?.quantityMode==='packs'?'Qty per parcel / loose':item?.quantityMode==='direct'?'Qty (total)':'Qty (saved total)'):label;
       const control=child.matches('input,select,button')?child:child.querySelector('input,select');
       if(control)control.setAttribute('aria-label',text.textContent);
       row.replaceChild(cell,child);cell.append(text,child);
@@ -9885,8 +9885,9 @@ window.labelSaleEntryRows = function(entry){
   });
   let help=document.getElementById('sale-entry-help');
   if(!help){help=document.createElement('div');help.id='sale-entry-help';help.className='entry-help';const body=document.getElementById('sale-items-body');body.before(help);}
-  const legacy=saleItems.some(it=>it.quantityMode!=='packs');
-  help.textContent='Empty Packs = Open Box. A number = parcel count. '+(legacy?'Rows labelled “saved total” keep their original Qty; Packs do not multiply them. ':'Final Qty = Packs × Qty, or Qty when Packs is empty. ')+ 'Columns: Settings → Fast Invoice Entry.';
+  const legacy=saleItems.some(it=>!it.quantityMode);
+  const direct=saleItems.some(it=>it.quantityMode==='direct');
+  help.textContent='Empty Packs = Open Box. A number = parcel count. '+(legacy?'Rows labelled “saved total” keep their original Qty; Packs do not multiply them. ':direct?'Rows labelled “total” use Qty directly; multiplication is off. ':'Final Qty = Packs × Qty, or Qty when Packs is empty. ')+ 'Columns: Settings → Fast Invoice Entry.';
 };
 
 const load=window.loadSettings;
@@ -9908,6 +9909,8 @@ function updateQuantity(it){
     const factor=it.packCount===''?1:Number(it.packCount);
     it.qty=Number((Number(it.qtyPerPack)*factor).toPrecision(15));
     if(!Number.isFinite(it.qty))it.qty=0;
+  }
+  if(it.quantityMode){
     it.packType=it.packCount===''?'':(saleEntryOptions(getSettings()).showPacking?(it.packType||'Parcel'):'Parcel');
   }
   it.amt=it.qty*it.rate;
@@ -9932,12 +9935,12 @@ window.siNum=function(id,field,value){
 window.siPackCnt=function(id,value){
   const it=saleItems.find(item=>item.id===id);if(!it)return;
   it.packCount=value.trim()===''?'':Number(value);
-  if(it.quantityMode==='packs')updateQuantity(it);
+  if(it.quantityMode)updateQuantity(it);
 };
 const packBeforeEntry=window.siPack;
 window.siPack=function(id,value){
   const it=saleItems.find(item=>item.id===id);if(!it)return;
-  if(it.quantityMode!=='packs'){packBeforeEntry(id,value);const count=document.getElementById('spc-'+id);if(count)count.disabled=false;return;}
+  if(!it.quantityMode){packBeforeEntry(id,value);const count=document.getElementById('spc-'+id);if(count)count.disabled=false;return;}
   it.packType=value;updateQuantity(it);
 };
 
@@ -9959,7 +9962,7 @@ window.saveSaleInvoice=function(andPrint){
     if(it.packCount!==''&&it.packCount!==undefined&&(!Number.isInteger(Number(it.packCount))||Number(it.packCount)<=0)){
       toast('Packs must be a whole number above zero, or empty for Open Box.');return;
     }
-    if(it.quantityMode==='packs')updateQuantity(it);
+    if(it.quantityMode)updateQuantity(it);
     if(!Number.isFinite(it.qty)||it.qty<=0||!Number.isFinite(it.rate)||it.rate<0||!Number.isFinite(it.amt)){
       toast('Check the Qty and Rate for '+it.name);return;
     }
