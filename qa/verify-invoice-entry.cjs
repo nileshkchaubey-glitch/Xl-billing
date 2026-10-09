@@ -1,0 +1,27 @@
+const fs=require('fs'),vm=require('vm'),assert=require('node:assert/strict');
+const html=fs.readFileSync(require('path').join(__dirname,'../index.html'),'utf8');
+const blocks=[...html.matchAll(/<script\b[^>]*>([\s\S]*?)<\/script>/gi)].map(m=>m[1]);
+const elements=new Map();let settings={shopName:'Test',invNo:10,modules:{packing:false},printSettings:{showColour:true}},saved=0;
+const calls=[];
+function element(id){if(!elements.has(id))elements.set(id,{value:'',checked:false,checkValidity:()=>true,reportValidity(){},focus(){calls.push('focus:'+id)}});return elements.get(id)}
+const context={console,Number,String,Array,Math,document:{getElementById:element},getSettings:()=>structuredClone(settings),DB:{set(k,v){assert.equal(k,'settings');settings=structuredClone(v)}},saleItems:[],loadSettings(){},saveSettings(){},siNum(id,field,value){const it=context.saleItems.find(i=>i.id===id);it[field]=parseFloat(value)||0;it.amt=it.qty*it.rate},siPack(){},setSaleItem(){},saveSaleInvoice(){saved++},calcSaleTotal:()=>{},fp:n=>Number(n).toFixed(2),toast:msg=>calls.push(msg)};
+context.window=context;vm.createContext(context);vm.runInContext(blocks.at(-1),context);
+const item={id:'a',name:'Cups',quantityMode:'packs',qtyPerPack:100,qty:100,rate:2,amt:200,packCount:'',packType:''};context.saleItems=[item];
+context.siPackCnt('a','3');assert.equal(item.qty,300);assert.equal(item.amt,600);assert.equal(item.packType,'Parcel');assert.equal(element('sfq-a').value,300);
+context.siNum('a','qty','150');assert.equal(item.qty,450);assert.equal(item.amt,900);
+context.siPackCnt('a','');assert.equal(item.qty,150);assert.equal(item.packType,'');
+context.siNum('a','qty','0.1');context.siPackCnt('a','3');assert.equal(item.qty,0.3);
+context.siNum('a','rate','1.5');assert.equal(item.amt,0.44999999999999996);
+context.saveSaleInvoice(false);assert.equal(saved,1);
+context.siPackCnt('a','0');context.saveSaleInvoice(false);assert.equal(saved,1);
+context.siPackCnt('a','1.5');context.saveSaleInvoice(false);assert.equal(saved,1);
+context.siPackCnt('a','-2');context.saveSaleInvoice(false);assert.equal(saved,1);
+context.siPackCnt('a','2');context.siNum('a','qty','-10');context.saveSaleInvoice(false);assert.equal(saved,1);
+context.siNum('a','qty','1e309');context.saveSaleInvoice(false);assert.equal(saved,1);
+const legacy={id:'b',name:'Legacy',qty:500,rate:3,amt:1500,packCount:5,packType:'Box',colour:'Brand'};context.saleItems=[legacy];
+context.siPackCnt('b','10');assert.equal(legacy.qty,500);assert.equal(legacy.amt,1500);
+context.siNum('b','qty','600');assert.equal(legacy.qty,600);assert.equal(legacy.amt,1800);assert.equal(element('sfq-b').value,600);
+context.saveSaleInvoice(false);assert.equal(saved,2);assert.equal(legacy.colour,'Brand');assert.equal(legacy.packType,'Box');
+context.loadSettings();assert.equal(element('entry-brand').checked,false);assert.equal(element('entry-packing').checked,false);assert.equal(element('entry-multiply').checked,true);
+element('entry-brand').checked=true;element('entry-packing').checked=false;element('entry-multiply').checked=false;context.saveSettings();assert.equal(settings.invoiceEntry.showBrand,true);assert.equal(settings.invoiceEntry.multiplyPacks,false);assert.equal(settings.invNo,10);assert.equal(settings.modules.packing,false);assert.equal(settings.printSettings.showColour,true);
+console.log('PASS: parcel/open-box calculation, decimals, immediate totals, invalid inputs, legacy quantities, settings preservation.');
