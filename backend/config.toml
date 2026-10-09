@@ -1,0 +1,4 @@
+[functions.xl-billing-google]
+# The function verifies the user JWT with Auth itself; supports publishable keys.
+verify_jwt = false
+entrypoint = './functions/xl-billing-google/index.js'
