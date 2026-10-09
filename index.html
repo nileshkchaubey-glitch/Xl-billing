@@ -3614,15 +3614,15 @@ window.<span class="fn">saveSaleInvoice</span> = <span class="kw">function</span
 <span class="cm">// Variables go inside ${"{"}...{"}"}</span>
 
 <span class="kw">function</span> <span class="fn">renderTable</span>(<span class="nm">items</span>) {
-  <span class="kw">return</span> <span class="st">`
+  <span class="kw">return</span> <span class="st">\`
     &lt;table&gt;
-      \${</span><span class="nm">items</span>.<span class="fn">map</span>(<span class="nm">item</span> => <span class="st">`
+      \${</span><span class="nm">items</span>.<span class="fn">map</span>(<span class="nm">item</span> => <span class="st">\`
         &lt;tr&gt;
           &lt;td&gt;\${</span><span class="nm">item</span>.name<span class="st">}&lt;/td&gt;
           &lt;td&gt;\${</span><span class="fn">fc</span>(<span class="nm">item</span>.price)<span class="st">}&lt;/td&gt;
-        &lt;/tr&gt;`
+        &lt;/tr&gt;\`
       </span>).<span class="fn">join</span>(<span class="st">''</span>)<span class="st">}
-    &lt;/table&gt;`</span>;
+    &lt;/table&gt;\`</span>;
 }
 
 <span class="cm">// Inject into page:</span>
@@ -3668,8 +3668,8 @@ window.<span class="fn">nav</span> = <span class="kw">function</span>(<span clas
 
 <span class="cm">// 4. Write render function</span>
 <span class="kw">function</span> <span class="fn">renderMyPage</span>() {
-  document.<span class="fn">getElementById</span>(<span class="st">'page-mypage'</span>).innerHTML = <span class="st">`
-    &lt;div&gt;Hello World!&lt;/div&gt;`</span>;
+  document.<span class="fn">getElementById</span>(<span class="st">'page-mypage'</span>).innerHTML = <span class="st">\`
+    &lt;div&gt;Hello World!&lt;/div&gt;\`</span>;
 }</div>
       </div>
 
@@ -5474,6 +5474,7 @@ window.siHidePopup = function(id){
 function closeAllRatePopups(){
   document.querySelectorAll('.rate-popup.show').forEach(p=>p.classList.remove('show'));
 }
+window.closeAllRatePopups = closeAllRatePopups;
 
 // Close popups when clicking outside
 document.addEventListener('click', e=>{
@@ -5514,7 +5515,7 @@ document.addEventListener('click', e=>{
   if(saveBtn) pb.insertBefore(card, saveBtn);
   else pb.appendChild(card);
 
-  renderPrintSettingsUI();
+  setTimeout(renderPrintSettingsUI, 0);
 })();
 
 const PRINT_TOGGLES = [
