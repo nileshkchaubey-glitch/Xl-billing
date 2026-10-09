@@ -5,7 +5,9 @@ export class CloudError extends Error {
 // in the browser. PC and phone use the same signed-in ChatGPT account.
 export class CloudClient {
   constructor(fetcher = globalThis.fetch) {
-    this.fetcher = fetcher; this.available = false; this.session = null; this.googleConfigured = false;
+    // Block device-only posting while the initial host/session probe is pending.
+    // Only a confirmed missing API enables the local development mode.
+    this.fetcher = fetcher; this.available = true; this.session = null; this.googleConfigured = false;
   }
   get connected() { return Boolean(this.session); }
   async request(path, options = {}) {

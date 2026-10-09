@@ -64,6 +64,14 @@ test('cloud client sends only the operation command for normal saves', async () 
   await client.commit(fixture(),3,operation.id,operation);
   assert.deepEqual(body,{expectedRevision:3,operationId:operation.id,command:operation}); assert.equal(body.data,undefined);
 });
+test('initial session discovery blocks local posting until a missing API confirms local preview mode', async () => {
+  const client = new CloudClient(async () => new Response('No API', { status: 404 }));
+  const store = new BillingStore(new MemoryStorage(), client);
+  await assert.rejects(store.execute('retail', { date: '2026-10-09', amount: 10 }), /Sign in/);
+  assert.equal(store.data.retail.length, 0);
+  await client.discover(); await store.execute('retail', { date: '2026-10-09', amount: 10 });
+  assert.equal(store.data.retail.length, 1);
+});
 test('a queued second operation cannot overwrite an earlier uncertain save', async () => {
   const cloud = remoteCloud(), store = storeFor(cloud);
   cloud.commit = async () => { throw new Error('Interrupted'); };
