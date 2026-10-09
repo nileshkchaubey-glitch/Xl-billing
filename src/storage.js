@@ -89,8 +89,14 @@ export class BillingStore extends EventTarget {
   async refresh() {
     if (!this.cloud?.connected || this.busy || this.envelope.ownerId !== this.cloud.session.user.id) return;
     try {
-      const remote = await this.cloud.read();
-      if (remote && remote.revision !== this.envelope.revision) await this.save({ ...remote, ownerId: this.cloud.session.user.id });
+      // Poll a tiny revision value, not every bill/photo on unchanged workspaces.
+      const revision = await this.cloud.readRevision();
+      if (revision === null) throw new Error('Cloud workspace is missing. Check the project before posting more bills.');
+      if (revision !== this.envelope.revision) {
+        const remote = await this.cloud.read();
+        if (!remote) throw new Error('Cloud workspace is missing.');
+        await this.save({ ...remote, ownerId: this.cloud.session.user.id });
+      }
       this.markStatus(this.pending ? 'pending' : 'synced');
     } catch (error) { this.markStatus('error', error.message); throw error; }
   }

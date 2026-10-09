@@ -53,6 +53,10 @@ export class CloudClient {
     const rows = await this.request('/rest/v1/xl_billing_workspaces?select=data,revision&limit=1');
     return rows?.[0] || null;
   }
+  async readRevision() {
+    const rows = await this.request('/rest/v1/xl_billing_workspaces?select=revision&limit=1');
+    return rows?.[0]?.revision ?? null;
+  }
   async commit(data, expectedRevision, operationId) {
     return this.request('/rest/v1/rpc/xl_billing_commit', { method: 'POST', body: JSON.stringify({ next_data: data, expected_revision: expectedRevision, operation_id: operationId }) });
   }

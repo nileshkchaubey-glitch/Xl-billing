@@ -79,3 +79,10 @@ test('a queued second operation cannot overwrite an earlier uncertain save', asy
   await assert.rejects(store.submit(command('retail', { date: '2026-10-09', amount: 20 })), /pending save/);
   assert.deepEqual(store.pending, pending);
 });
+test('polling downloads full billing data only when its revision changes', async () => {
+  const cloud = remoteCloud(), store = storeFor(cloud), originalRead = cloud.read.bind(cloud); let downloads = 0;
+  cloud.read = async () => { downloads++; return originalRead(); };
+  await store.refresh(); assert.equal(downloads, 0);
+  await cloud.commit(clone(cloud.envelope.data), 1, 'remote-change');
+  downloads = 0; await store.refresh(); assert.equal(downloads, 1); assert.equal(store.envelope.revision, 2);
+});

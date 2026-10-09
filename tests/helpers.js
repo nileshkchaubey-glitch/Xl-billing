@@ -21,6 +21,7 @@ export function remoteCloud(data = fixture()) {
   return {
     connected: true, session: { user: { id: 'owner' } }, envelope: { revision: 1, data: clone(data) }, operations: new Set(), writes: 0,
     async read() { return clone(this.envelope); },
+    async readRevision() { return this.envelope.revision; },
     async commit(next, expectedRevision, id) {
       if (this.operations.has(id)) return this.read();
       if (expectedRevision !== this.envelope.revision) throw new CloudError('Changed', '40001');
