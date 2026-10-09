@@ -538,6 +538,14 @@ input[type=number]::-webkit-inner-spin-button,input[type=number]::-webkit-outer-
       <div class="fg"><label class="fl">Bank Details</label><textarea class="fc" id="s-bank" rows="2" placeholder="Bank: SBI, A/c: 123456..."></textarea></div>
     </div>
 
+    <div class="card" id="invoice-entry-settings">
+      <div style="font-weight:700;font-size:14px;margin-bottom:12px;color:var(--g)">⚡ Fast Invoice Entry</div>
+      <label class="entry-setting"><span><strong>Show Brand column</strong><small>Hide it for faster entry. Saved brands remain on old bills.</small></span><input type="checkbox" id="entry-brand"></label>
+      <label class="entry-setting"><span><strong>Show Packing type column</strong><small>Packs stays available even when the Packing dropdown is hidden.</small></span><input type="checkbox" id="entry-packing"></label>
+      <label class="entry-setting"><span><strong>Multiply Packs × Qty for new rows</strong><small>3 Packs × 100 Qty = 300 Final Qty. Amount = Final Qty × Rate.</small></span><input type="checkbox" id="entry-multiply" checked></label>
+      <p style="font-size:12px;color:var(--gray-500);margin-top:12px">Empty Packs = Open Box (Qty is the final quantity). A Packs number is the parcel count. Old rows keep their saved total Qty; no automatic multiplication.</p>
+    </div>
+
     <!-- Module Toggles (Feature 8) -->
     <div class="card">
       <div style="font-weight:700;font-size:14px;margin-bottom:14px;color:var(--p)">🧩 Modules — Enable / Disable Features</div>
@@ -3606,15 +3614,15 @@ window.<span class="fn">saveSaleInvoice</span> = <span class="kw">function</span
 <span class="cm">// Variables go inside ${"{"}...{"}"}</span>
 
 <span class="kw">function</span> <span class="fn">renderTable</span>(<span class="nm">items</span>) {
-  <span class="kw">return</span> <span class="st">`
+  <span class="kw">return</span> <span class="st">\`
     &lt;table&gt;
-      \${</span><span class="nm">items</span>.<span class="fn">map</span>(<span class="nm">item</span> => <span class="st">`
+      \${</span><span class="nm">items</span>.<span class="fn">map</span>(<span class="nm">item</span> => <span class="st">\`
         &lt;tr&gt;
           &lt;td&gt;\${</span><span class="nm">item</span>.name<span class="st">}&lt;/td&gt;
           &lt;td&gt;\${</span><span class="fn">fc</span>(<span class="nm">item</span>.price)<span class="st">}&lt;/td&gt;
-        &lt;/tr&gt;`
+        &lt;/tr&gt;\`
       </span>).<span class="fn">join</span>(<span class="st">''</span>)<span class="st">}
-    &lt;/table&gt;`</span>;
+    &lt;/table&gt;\`</span>;
 }
 
 <span class="cm">// Inject into page:</span>
@@ -3660,8 +3668,8 @@ window.<span class="fn">nav</span> = <span class="kw">function</span>(<span clas
 
 <span class="cm">// 4. Write render function</span>
 <span class="kw">function</span> <span class="fn">renderMyPage</span>() {
-  document.<span class="fn">getElementById</span>(<span class="st">'page-mypage'</span>).innerHTML = <span class="st">`
-    &lt;div&gt;Hello World!&lt;/div&gt;`</span>;
+  document.<span class="fn">getElementById</span>(<span class="st">'page-mypage'</span>).innerHTML = <span class="st">\`
+    &lt;div&gt;Hello World!&lt;/div&gt;\`</span>;
 }</div>
       </div>
 
@@ -5084,11 +5092,11 @@ window.setSaleItem = function(id, itemId, name, rate, unit){
 // Just ensure addSaleItem includes the compatible field.
 const _origAddSaleItem = window.addSaleItem;
 window.addSaleItem = function(){
-  saleItems.push({id:genId(),itemId:'',name:'',packType:'',packCount:'',qty:1,rate:0,amt:0,unit:'Pcs',colour:''});
+  saleItems.push({id:genId(),itemId:'',name:'',packType:'',packCount:'',qty:1,qtyPerPack:1,quantityMode:saleEntryOptions(getSettings()).multiplyPacks?'packs':'direct',rate:0,amt:0,unit:'Pcs',colour:''});
   renderSaleItems();
   setTimeout(()=>{
     const ins=document.querySelectorAll('[id^="sn-"]');
-    if(ins.length) ins[ins.length-1].focus();
+    if(ins.length && (document.activeElement===document.body || document.activeElement?.id?.startsWith('sn-'))) ins[ins.length-1].focus();
   }, 60);
 };
 
@@ -5466,6 +5474,7 @@ window.siHidePopup = function(id){
 function closeAllRatePopups(){
   document.querySelectorAll('.rate-popup.show').forEach(p=>p.classList.remove('show'));
 }
+window.closeAllRatePopups = closeAllRatePopups;
 
 // Close popups when clicking outside
 document.addEventListener('click', e=>{
@@ -5506,7 +5515,7 @@ document.addEventListener('click', e=>{
   if(saveBtn) pb.insertBefore(card, saveBtn);
   else pb.appendChild(card);
 
-  renderPrintSettingsUI();
+  setTimeout(renderPrintSettingsUI, 0);
 })();
 
 const PRINT_TOGGLES = [
@@ -6110,14 +6119,18 @@ console.log('v11 applied ✓ — Keyboard AC | Item Info Panel | Party-filtered 
 
 window.renderSaleItems = function(){
   const s   = getSettings();
-  const showPack   = s.modules?.packing !== false;
+  const entry = saleEntryOptions(s);
+  const showBrand = entry.showBrand;
+  const showPack = entry.showPacking;
 
   const colDef = [
     '20px',                          // Sr No
-    '1fr',                           // Name
-    '86px',                           // Brand
-    showPack   ? '84px 50px' : '',   // Pack pehle, Cnt baad mein
-    '52px',                          // Qty
+    'minmax(180px,1fr)',                           // Name
+    showBrand ? '86px' : '',          // Brand
+    showPack ? '84px' : '',
+    '64px',   // Pack pehle, Cnt baad mein
+    '74px',                          // Qty per parcel (or saved total)
+    '82px',                          // Final Qty
     '88px',                          // Rate
     '82px',                          // Amt
     '26px',                          // ▲▼
@@ -6126,14 +6139,14 @@ window.renderSaleItems = function(){
 
   const c = document.getElementById('sale-items-body');
   c.innerHTML = saleItems.map((it, idx) => `
-    <div id="sr-${it.id}" style="display:grid;grid-template-columns:${colDef};gap:3px;align-items:center;margin-bottom:5px">
+    <div class="fast-sale-row" id="sr-${it.id}" style="display:grid;grid-template-columns:${colDef};gap:3px;align-items:center;margin-bottom:5px">
 
       <!-- 1. Sr No -->
       <div style="color:var(--gray-400);font-size:11px;text-align:center">${idx+1}</div>
 
       <!-- 2. Item Name -->
       <div class="ac-wrap" style="position:relative">
-        <input class="fc fc-sm" id="sn-${it.id}" value="${esc(it.name)}" placeholder="Item name..." autocomplete="off"
+        <input class="fc fc-sm" id="sn-${it.id}" value="${saleEntryEscape(it.name)}" placeholder="Item name..." autocomplete="off"
           oninput="siName('${it.id}',this.value)"
           onfocus="siRatePopup('${it.id}')">
         <div class="ac-list" id="ac-sn-${it.id}"></div>
@@ -6143,10 +6156,10 @@ window.renderSaleItems = function(){
       </div>
 
       <!-- 3. Brand -->
-      <input class="fc fc-sm" id="scol-${it.id}" value="${esc(it.colour||'')}"
+      ${showBrand ? `<input class="fc fc-sm" id="scol-${it.id}" value="${saleEntryEscape(it.colour||'')}"
         placeholder="Brand" title="Brand"
         style="font-size:12px"
-        onchange="siField('${it.id}','colour',this.value)">
+        oninput="siField('${it.id}','colour',this.value)">` : ''}
 
       <!-- 4. Pack Type (Packing) -->
       ${showPack ? `<select class="fc fc-sm" id="spt-${it.id}" onchange="siPack('${it.id}',this.value)">
@@ -6159,19 +6172,22 @@ window.renderSaleItems = function(){
       </select>` : ''}
 
       <!-- 5. Pack Count (Packs) -->
-      ${showPack ? `<input type="number" class="fc fc-sm" id="spc-${it.id}" value="${it.packCount||''}" min="1"
-        placeholder="-" style="text-align:center" ${!it.packType ? 'disabled' : ''}
-        onchange="siPackCnt('${it.id}',this.value)">` : ''}
+      <input type="number" class="fc fc-sm" id="spc-${it.id}" value="${saleEntryEscape(it.packCount ?? '')}" min="1" step="1" inputmode="numeric"
+        placeholder="Open" title="Blank = Open Box; number = parcel count" style="text-align:center"
+        oninput="siPackCnt('${it.id}',this.value)">
 
       <!-- 6. Qty -->
-      <input type="number" class="fc fc-sm" id="sqt-${it.id}" value="${it.qty}" min="0.001" step="any"
-        style="text-align:center" onchange="siNum('${it.id}','qty',this.value)">
+      <input type="number" class="fc fc-sm" id="sqt-${it.id}" value="${saleEntryEscape(it.quantityMode === 'packs' ? it.qtyPerPack : it.qty)}" min="0.000001" step="any" inputmode="decimal"
+        title="${it.quantityMode === 'packs' ? 'Qty per parcel (or loose Qty if Packs is empty)' : it.quantityMode === 'direct' ? 'Total Qty; multiplication is off for this row' : 'Saved total Qty; Packs do not multiply this older row'}"
+        style="text-align:center" oninput="siNum('${it.id}','qty',this.value)">
+
+      <input class="fc fc-sm fc-ro" id="sfq-${it.id}" value="${saleEntryEscape(it.qty)}" readonly tabindex="-1" style="text-align:center;font-weight:600" title="Final billing quantity">
 
       <!-- 7. Rate + last-5 popup -->
       <div style="position:relative">
         <input type="number" class="fc fc-sm" id="srt-${it.id}" value="${it.rate}" min="0" step="any"
           style="text-align:right"
-          onchange="siNum('${it.id}','rate',this.value)"
+          oninput="siNum('${it.id}','rate',this.value)" inputmode="decimal"
           onfocus="siRatePopup('${it.id}')"
           onblur="siHidePopup('${it.id}')">
         <div class="rate-popup" id="rp-${it.id}"></div>
@@ -6194,21 +6210,24 @@ window.renderSaleItems = function(){
     </div>`).join('');
 
   // Header — same column order
-  const hdr = document.querySelector('.it-hdr');
+  const hdr = document.querySelector('#page-new-sale .it-hdr');
   if(hdr){
     hdr.style.cssText = `display:grid;grid-template-columns:${colDef};gap:3px;padding:5px 0;font-size:11px;font-weight:700;color:var(--gray-500);border-bottom:1px solid var(--gray-200);margin-bottom:5px`;
     hdr.innerHTML = `
       <div></div>
       <div>Item Description</div>
-      <div>Brand</div>
-      ${showPack ? '<div style="text-align:center">Packing</div><div style="text-align:center">Packs</div>' : ''}
+      ${showBrand ? '<div>Brand</div>' : ''}
+      ${showPack ? '<div style="text-align:center">Packing</div>' : ''}
+      <div style="text-align:center">Packs</div>
       <div style="text-align:center">Qty</div>
+      <div style="text-align:center">Final Qty</div>
       <div style="text-align:right">Rate</div>
       <div style="text-align:right">Amount</div>
       <div></div>
       <div></div>`;
   }
 
+  labelSaleEntryRows(entry);
   calcSaleTotal();
 };
 
@@ -9825,3 +9844,130 @@ console.log('v16 applied ✓ — Sale filter fixed | 3-dot restored | Payment Ou
 </script>
 V16_END
 echo "Done. Lines: $(wc -l < /home/claude/v9base.html)"
+<!-- Focused invoice-entry patch. Existing storage keys, totals and printing use qty as final quantity. -->
+<style>
+.entry-setting{display:flex;justify-content:space-between;align-items:center;gap:16px;padding:11px 0;border-bottom:1px solid var(--gray-100)}
+.entry-setting small{display:block;color:var(--gray-500);font-size:12px;margin-top:4px;line-height:1.5}
+.entry-setting input{width:18px;height:18px;flex-shrink:0;accent-color:var(--g)}
+.entry-cell{min-width:0}.entry-cell-label{display:none}
+.entry-help{font-size:12px;color:var(--gray-500);line-height:1.5;margin:8px 0 12px}
+@media(max-width:720px){
+  #page-new-sale .it-hdr{display:none!important}
+  #page-new-sale .fast-sale-row{grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:10px!important;border:1px solid var(--gray-200);border-radius:9px;padding:12px;margin-bottom:12px!important;align-items:start!important}
+  .fast-sale-row .entry-cell[data-label="Item Description"],.fast-sale-row .entry-cell[data-label="#"]{grid-column:1/-1}
+  .fast-sale-row .entry-cell-label{display:block;font-size:11px;font-weight:600;color:var(--gray-500);margin-bottom:4px}
+  .fast-sale-row .fc{min-height:40px;font-size:14px}
+  .fast-sale-row .del-btn{min-width:40px;min-height:40px}
+}
+</style>
+<script>
+(function invoiceFastEntry(){
+'use strict';
+window.saleEntryOptions = function(s){
+  const entry=s.invoiceEntry||{};
+  return {showBrand:entry.showBrand===true,showPacking:entry.showPacking===true,multiplyPacks:entry.multiplyPacks!==false};
+};
+window.saleEntryEscape = value => String(value ?? '').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+
+window.labelSaleEntryRows = function(entry){
+  const labels=['#','Item Description',...(entry.showBrand?['Brand']:[]),...(entry.showPacking?['Packing']:[]),'Packs','Qty','Final Qty','Rate','Amount','Move','Remove'];
+  document.querySelectorAll('#sale-items-body .fast-sale-row').forEach(row=>{
+    Array.from(row.children).forEach((child,index)=>{
+      const label=labels[index];
+      const cell=document.createElement('div');cell.className='entry-cell';cell.dataset.label=label;
+      const text=document.createElement('span');text.className='entry-cell-label';
+      const item=saleItems.find(it=>'sr-'+it.id===row.id);
+      text.textContent=label==='Qty'?(item?.quantityMode==='packs'?'Qty per parcel / loose':item?.quantityMode==='direct'?'Qty (total)':'Qty (saved total)'):label;
+      const control=child.matches('input,select,button')?child:child.querySelector('input,select');
+      if(control)control.setAttribute('aria-label',text.textContent);
+      row.replaceChild(cell,child);cell.append(text,child);
+    });
+  });
+  let help=document.getElementById('sale-entry-help');
+  if(!help){help=document.createElement('div');help.id='sale-entry-help';help.className='entry-help';const body=document.getElementById('sale-items-body');body.before(help);}
+  const legacy=saleItems.some(it=>!it.quantityMode);
+  const direct=saleItems.some(it=>it.quantityMode==='direct');
+  help.textContent='Empty Packs = Open Box. A number = parcel count. '+(legacy?'Rows labelled “saved total” keep their original Qty; Packs do not multiply them. ':direct?'Rows labelled “total” use Qty directly; multiplication is off. ':'Final Qty = Packs × Qty, or Qty when Packs is empty. ')+ 'Columns: Settings → Fast Invoice Entry.';
+};
+
+const load=window.loadSettings;
+window.loadSettings=function(){
+  load();const entry=saleEntryOptions(getSettings());
+  document.getElementById('entry-brand').checked=entry.showBrand;
+  document.getElementById('entry-packing').checked=entry.showPacking;
+  document.getElementById('entry-multiply').checked=entry.multiplyPacks;
+};
+const saveSettingsBeforeEntry=window.saveSettings;
+window.saveSettings=function(){
+  saveSettingsBeforeEntry();const s=getSettings();
+  s.invoiceEntry={...(s.invoiceEntry||{}),showBrand:document.getElementById('entry-brand').checked,showPacking:document.getElementById('entry-packing').checked,multiplyPacks:document.getElementById('entry-multiply').checked};
+  DB.set('settings',s);toast('Invoice entry settings saved! ✓');
+};
+
+function updateQuantity(it){
+  if(it.quantityMode==='packs'){
+    const factor=it.packCount===''?1:Number(it.packCount);
+    it.qty=Number((Number(it.qtyPerPack)*factor).toPrecision(15));
+    if(!Number.isFinite(it.qty))it.qty=0;
+  }
+  if(it.quantityMode){
+    it.packType=it.packCount===''?'':(saleEntryOptions(getSettings()).showPacking?(it.packType||'Parcel'):'Parcel');
+  }
+  it.amt=it.qty*it.rate;
+  const final=document.getElementById('sfq-'+it.id);if(final)final.value=it.qty;
+  const amount=document.getElementById('samt-'+it.id);if(amount)amount.value=fp(it.amt);
+  const pack=document.getElementById('spt-'+it.id);if(pack)pack.value=it.packType||'';
+  calcSaleTotal();
+}
+
+const numberBeforeEntry=window.siNum;
+window.siNum=function(id,field,value){
+  const it=saleItems.find(item=>item.id===id);if(!it)return;
+  if(it.quantityMode!=='packs'){
+    numberBeforeEntry(id,field,value);
+    const final=document.getElementById('sfq-'+id);if(final)final.value=it.qty;
+    return;
+  }
+  if(field==='qty')it.qtyPerPack=Number(value);
+  else it[field]=Number(value);
+  updateQuantity(it);
+};
+window.siPackCnt=function(id,value){
+  const it=saleItems.find(item=>item.id===id);if(!it)return;
+  it.packCount=value.trim()===''?'':Number(value);
+  if(it.quantityMode)updateQuantity(it);
+};
+const packBeforeEntry=window.siPack;
+window.siPack=function(id,value){
+  const it=saleItems.find(item=>item.id===id);if(!it)return;
+  if(!it.quantityMode){packBeforeEntry(id,value);const count=document.getElementById('spc-'+id);if(count)count.disabled=false;return;}
+  it.packType=value;updateQuantity(it);
+};
+
+const selectBeforeEntry=window.setSaleItem;
+window.setSaleItem=function(...args){
+  selectBeforeEntry(...args);
+  const id=args[0];const target=document.getElementById('spc-'+id)||document.getElementById('sqt-'+id);
+  if(target)target.focus();
+};
+
+// Validate before delegating to the original save/print/audit chain.
+const saveBeforeEntry=window.saveSaleInvoice;
+window.saveSaleInvoice=function(andPrint){
+  for(const it of saleItems){
+    if(!it.name?.trim())continue;
+    const controls=['spc-','sqt-','srt-'].map(prefix=>document.getElementById(prefix+it.id));
+    const invalid=controls.find(el=>el&&!el.checkValidity());
+    if(invalid){toast('Enter positive Qty, a whole Packs number (or leave it empty), and a valid Rate.');invalid.reportValidity();invalid.focus();return;}
+    if(it.packCount!==''&&it.packCount!==undefined&&(!Number.isInteger(Number(it.packCount))||Number(it.packCount)<=0)){
+      toast('Packs must be a whole number above zero, or empty for Open Box.');return;
+    }
+    if(it.quantityMode)updateQuantity(it);
+    if(!Number.isFinite(it.qty)||it.qty<=0||!Number.isFinite(it.rate)||it.rate<0||!Number.isFinite(it.amt)){
+      toast('Check the Qty and Rate for '+it.name);return;
+    }
+  }
+  saveBeforeEntry(andPrint);
+};
+})();
+</script>
