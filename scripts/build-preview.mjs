@@ -10,7 +10,7 @@ state.items = [{ id:'demo-cups',name:'Demo Paper Cups',unit:'Pcs',saleRate:8,pur
 state = applyCommand(state, { id:'sample-sale',at:new Date().toISOString(),type:'save-document',collection:'invoices',payload:{date:today(),partyId:'demo-customer',partyName:'Demo Customer',items:[{id:'sample-line',itemId:'demo-cups',name:'Demo Paper Cups',unit:'Pcs',colour:'Demo brand',qty:100,rate:8}],initialPaid:200,discount:0,taxPct:0,dispatchStatus:'pending'} });
 let html = await readFile(new URL('index.html',root),'utf8');
 const css = await readFile(new URL('styles/app.css',root),'utf8');
-html = html.replace(/<link rel="stylesheet"[^>]+>/,'<style>'+css+'</style>').replace(/<link rel="manifest"[^>]+>/,'').replace(/<script type="module"[^>]+><\/script>/,'');
+html = html.replace(/<link rel="stylesheet"[^>]+>/,()=>'<style>'+css+'</style>').replace(/^[ \t]*<link rel="manifest"[^>]+>[ \t]*\r?\n?/m,'').replace(/^[ \t]*<script type="module"[^>]+><\/script>[ \t]*\r?\n?/m,'');
 const files=['src/domain.js','src/ui.js','src/navigation.js','src/features/invoice.js','src/features/lists.js','src/features/dialogs.js','src/features/settings.js'];
 const modules=[]; for(const file of files) modules.push((await readFile(new URL(file,root),'utf8')).replace(/^import[^\n]+\n/gm,'').replace(/^export /gm,''));
 const controller = `
@@ -77,6 +77,6 @@ demoEditor=freshEditor('invoices');demoRender();
 const script = modules.join('\n')+'\n'+controller;
 const check = spawnSync(process.execPath,['--input-type=module','--check'],{input:script,encoding:'utf8'});
 if(check.status!==0)throw new Error(check.stderr || 'Preview script could not be parsed.');
-html=html.replace('</body>','<script type="module">'+script+'</script></body>');
+html=html.replace('</body>',()=>'<script type="module">'+script+'</script></body>');
 await writeFile(new URL('docs/ui-preview.html',root),html);
 console.log('Built standalone sample-only UI preview from production renderers and styles.');

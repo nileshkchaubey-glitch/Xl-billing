@@ -77,6 +77,11 @@ test('API requires billing identity and trusted-origin JSON writes, and checks G
   assert.equal(preflight.status,204); assert.equal(preflight.headers.get('Access-Control-Allow-Origin'),env.APP_ORIGIN);
   const crossOriginRead = await call('workspace', { headers:{...owner,Origin:env.APP_ORIGIN} });
   assert.equal(crossOriginRead.status,200); assert.equal(crossOriginRead.headers.get('Access-Control-Allow-Origin'),env.APP_ORIGIN);
+  const operation = command('retail',{date:'2026-10-09',amount:10});
+  const crossOriginSave = await call('commit',{method:'POST',headers:{...owner,Origin:env.APP_ORIGIN,'Content-Type':'application/json'},body:JSON.stringify({expectedRevision:1,operationId:operation.id,command:operation})});
+  assert.equal(crossOriginSave.status,200); assert.equal((await crossOriginSave.json()).data.retail.length,1);
+  const forbidden = await call('commit',{method:'OPTIONS',headers:{Origin:'https://evil.example','Access-Control-Request-Method':'POST'}});
+  assert.equal(forbidden.status,403); assert.equal(forbidden.headers.get('Access-Control-Allow-Origin'),null);
   assert.equal((await call('google',{ method:'POST',headers:{...owner,Origin:'https://billing.example','Content-Type':'application/json'},body:'{"action":"backup"}' })).status,403);
   const health=await (await call('health')).json(); assert.ok(health.schemaReady); assert.ok(health.photosReady);
 });
