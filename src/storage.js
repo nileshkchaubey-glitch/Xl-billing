@@ -5,7 +5,7 @@ const PENDING_KEY = 'xl_billing_pending';
 export class BillingStore extends EventTarget {
   constructor(storage = globalThis.localStorage, cloud = null) {
     super(); this.storage = storage; this.cloud = cloud; this.busy = false; this.status = 'local';
-    this.envelope = this.readLocal();
+    this.envelope = globalThis.indexedDB ? { revision: 0, data: blankState(), source: 'loading' } : this.readLocal();
     try { this.pending = JSON.parse(storage.getItem(PENDING_KEY) || 'null'); } catch { throw new Error('An unsaved operation is damaged. Export the browser data before continuing.'); }
     globalThis.addEventListener?.('storage', async event => {
       if ([STATE_KEY, 'xl_billing_cache_revision'].includes(event.key) && !this.busy) {
@@ -18,8 +18,10 @@ export class BillingStore extends EventTarget {
     if (globalThis.indexedDB) {
       this.cache = new BrowserCache(); await this.cache.open();
       const saved = await this.cache.read();
-      if (saved) this.envelope = { ...saved, data: normalizeState(saved.data) };
-      else await this.save(this.envelope);
+      if (saved) {
+        if (!Number.isSafeInteger(saved.revision) || saved.revision < 0) throw new Error('The browser cache revision is invalid. Keep your backup before continuing.');
+        this.envelope = { ...saved, data: normalizeState(saved.data) };
+      } else await this.save(this.readLocal());
     }
   }
   async readFresh() { return this.cache ? (await this.cache.read()) || this.envelope : this.readLocal(); }
@@ -102,6 +104,7 @@ export class BillingStore extends EventTarget {
       this.busy = true;
       let knownRejected = false;
       try {
+        if (this.pending && this.pending.id !== command.id) throw new Error('Resolve the pending save before starting another operation.');
         if (this.cloud?.connected) {
           if (this.envelope.ownerId !== this.cloud.session.user.id) throw new Error('Finish connecting the cloud account before saving.');
           let next = applyCommand(this.data, command); // Validation before persisting a pending operation.

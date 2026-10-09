@@ -71,3 +71,11 @@ test('REST client refreshes authentication once and sends revision + operation I
   assert.equal(calls.length, 2); assert.equal(calls[1].headers.Authorization, 'Bearer new');
   assert.equal(JSON.parse(calls[1].body).expected_revision, 3); assert.equal(JSON.parse(calls[1].body).operation_id, 'unique-op');
 });
+test('a queued second operation cannot overwrite an earlier uncertain save', async () => {
+  const cloud = remoteCloud(), store = storeFor(cloud);
+  cloud.commit = async () => { throw new Error('Interrupted'); };
+  await assert.rejects(store.execute('retail', { date: '2026-10-09', amount: 10 }));
+  const pending = clone(store.pending);
+  await assert.rejects(store.submit(command('retail', { date: '2026-10-09', amount: 20 })), /pending save/);
+  assert.deepEqual(store.pending, pending);
+});

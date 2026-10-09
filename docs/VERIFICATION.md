@@ -6,7 +6,7 @@
 
 The tests cover rounding, old paid amounts, photos/audit backup preservation, invalid dates/IDs, last-price order and variants, cancellation, invoice uniqueness, atomic imports, FIFO/payment-out/discounts, reversal, overpayment prevention, stale edits/settings, first-connect data preservation, uncertain-response retries, forbidden keys, Google owner/origin enforcement and literal spreadsheet cells.
 
-GitHub Actions also provisions a **disposable PostgreSQL 16** service and runs `scripts/test-database.js` to exercise the actual schema, RLS, permissions, commit RPC, stale revisions and retry deduplication. The local review environment had no PostgreSQL server/client, so this database suite must pass in CI before merging. The script must never run against a live database; it creates fixture roles and a mock Auth schema. It does not emulate Supabase Auth itself.
+GitHub Actions also provisions a **disposable PostgreSQL 16** service and runs `scripts/test-database.js` to exercise the actual schema, RLS, permissions, commit RPC, stale revisions and retry deduplication. The local review environment had no PostgreSQL server/client; the database suite was run successfully in GitHub Actions during review. Keep it passing before merging. The script must never run against a live database; it creates fixture roles and a mock Auth schema. It does not emulate Supabase Auth itself.
 
 The hosted browser could not reach the local development server during review, so desktop/mobile browser interaction, IndexedDB behavior, print preview and live cloud/Google service calls require the release checks below. Source and renderer tests do not establish that those browser paths were visually tested.
 
