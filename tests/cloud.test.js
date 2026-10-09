@@ -50,26 +50,19 @@ test('signed-out cloud workspace blocks posting while preserving saved data', as
   await assert.rejects(store.execute('retail', { date: '2026-10-09', amount: 10 }), /Sign in/);
   assert.equal(store.data.retail.length, 0);
 });
-test('connection rejects secret/service-role credentials and resets sessions when changing projects', () => {
-  const storage = new MemoryStorage(), session = new MemoryStorage(), client = new CloudClient(storage, session);
-  assert.throws(() => client.configure('http://bad.test', 'key'), /HTTPS/);
-  assert.throws(() => client.configure('https://project.supabase.co', 'sb_secret_bad'), /secret/);
-  const token = `header.${Buffer.from(JSON.stringify({ role: 'service_role' })).toString('base64url')}.signature`;
-  assert.throws(() => client.configure('https://project.supabase.co', token), /valid/);
-  client.configure('https://project.supabase.co', 'sb_publishable_test'); client.session = { access_token: 'token' };
-  client.configure('https://other.supabase.co', 'sb_publishable_test'); assert.equal(client.session, null);
+test('same-origin client discovers platform identity without browser API keys', async () => {
+  const calls = [];
+  const client = new CloudClient(async (url, options) => { calls.push({url,options}); return Response.json({ storage:'d1', authenticated:true, user:{ id:'owner',email:'owner@example.test' }, googleConfigured:false }); });
+  await client.discover(); assert.equal(client.connected,true); assert.equal(client.available,true);
+  assert.equal(calls[0].url,'/api/billing/session'); assert.equal(calls[0].options.credentials,'same-origin');
+  assert.equal(calls[0].options.headers.apikey,undefined);
 });
-test('REST client refreshes authentication once and sends revision + operation ID to RPC', async () => {
-  const calls = [], storage = new MemoryStorage(), sessions = new MemoryStorage();
-  const client = new CloudClient(storage, sessions, async (url, options) => {
-    calls.push({ url, ...options });
-    if (url.includes('refresh_token')) return Response.json({ access_token: 'new', refresh_token: 'refresh', expires_at: Date.now()/1000 + 3600, user: { id: 'owner' } });
-    return Response.json({ data: fixture(), revision: 4 });
-  });
-  client.configure('https://project.supabase.co', 'sb_publishable_test'); client.session = { expires_at: 0, refresh_token: 'refresh' };
-  await client.commit(fixture(), 3, 'unique-op');
-  assert.equal(calls.length, 2); assert.equal(calls[1].headers.Authorization, 'Bearer new');
-  assert.equal(JSON.parse(calls[1].body).expected_revision, 3); assert.equal(JSON.parse(calls[1].body).operation_id, 'unique-op');
+test('cloud client sends only the operation command for normal saves', async () => {
+  let body;
+  const client = new CloudClient(async (url, options) => { body=JSON.parse(options.body); return Response.json({data:fixture(),revision:4}); });
+  const operation=command('retail',{date:'2026-10-09',amount:10});
+  await client.commit(fixture(),3,operation.id,operation);
+  assert.deepEqual(body,{expectedRevision:3,operationId:operation.id,command:operation}); assert.equal(body.data,undefined);
 });
 test('a queued second operation cannot overwrite an earlier uncertain save', async () => {
   const cloud = remoteCloud(), store = storeFor(cloud);

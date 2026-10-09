@@ -1,65 +1,55 @@
 # XL Billing
 
-A modular billing application with sale invoices, purchases, customer/supplier ledgers, allocated payments and an optional Supabase cloud workspace. The navigation follows the familiar business workflow of Vyapar: **Overview → Parties / Items → Sales / Purchases → Payment in / out → Reports**. The visual design is original.
+A modular billing application with sale invoices, purchases, party ledgers, allocated payments and a private cloud workspace. Navigation follows the familiar Vyapar business workflow: **Overview → Parties / Items → Sales / Purchases → Payment in / out → Reports**. The interface and assets are original.
+
+The backend uses **Cloudflare D1**, with bill photos in **private R2 storage**. Authentication is supplied by the owner-private Sites host. The browser never needs a database key or an integration password. Open the same private URL with the same ChatGPT account on PC and phone.
 
 ## Run and verify
 
-Requires Node.js 20.11 or newer; Node.js 24 is used in CI. There are **no npm dependencies to install**.
+Node.js 24 or later is required. There are no npm dependencies to install.
 
-```bash
+```sh
 node server.js
 node scripts/check.js
 node --test tests/*.test.js
+node scripts/build-worker.js
+node scripts/validate-artifact.mjs
+node scripts/smoke-worker.mjs
 ```
 
-Open `http://localhost:4173`. ES modules must be served over HTTP/HTTPS; double-clicking `index.html` is not supported. For shared PC/mobile access, host the root on an HTTPS static host such as GitHub Pages, then configure the same owner account on both devices. The development server has no billing API; the backend is Supabase.
-
-## What works
-
-- Sale and purchase creation, item-wise or amount-only entries, edits, historical bills in a bulk entry screen, invoice numbering, dispatch and cancellation/restoration.
-- Party and item catalogues; archived masters can be restored. Historical bills retain their original descriptions and prices.
-- Payment in/out with explicit allocation or FIFO allocation, settlement discounts, payment reversals and separate opening-balance payments. Overpayments and unmatched allocations are rejected.
-- Last-price hints and history by party, item identity, unit and brand, ordered by bill date. Draft and cancelled bills are excluded. Purchase history is separate from sale history.
-- Daily retail entries, date/search/status filters, paginated transaction lists, item sales reports and activity history.
-- Business settings, custom invoice fields, packing, bill-level tax and A4 / 80 mm print layouts.
-- Full JSON backup/restore and Excel-compatible CSV export; reviewed atomic CSV imports for parties/items. JSON contains photos and audit history; CSV is a reporting format.
-- Cloud sync every eight seconds, on focus/reconnect and after saving. The backend checks revisions, locks writes and deduplicates operation IDs. Stale edits are rejected; independent creates can be rebased safely.
-- Offline application shell and local drafts. Cloud billing requires a successful online save; an uncertain response leaves a pending operation available to retry.
-
-## Connect PC and phone
-
-1. Download a JSON backup from the old app on the device containing your current records.
-2. Create a dedicated Supabase project and run [`backend/schema.sql`](backend/schema.sql) in its SQL editor. Create one owner account in Authentication. Restrict public signups if you only need your own business.
-3. Deploy the web files at an HTTPS URL. In **Data & sync**, enter that project's URL, **publishable/anon key** and the owner email/password.
-4. On the original device, restore the reviewed JSON backup if the deployed origin differs from the old app. Sign in to the new, empty cloud workspace to upload those records.
-5. On the phone, open the same URL and sign in with the same project/account. Its empty local workspace loads the cloud records. An existing local dataset is preserved until you explicitly choose **Use cloud data**; that action downloads a backup first.
-6. Verify one test invoice and its payment on both devices before switching daily billing to the new version.
-
-Browser storage is scoped to its origin. Moving from one URL to another does not automatically move the old browser records. Import is required in that case. The original `shop4_*` keys remain untouched when migration happens on the same origin. Full records are cached in IndexedDB; small connection/pending-operation metadata stays in localStorage. Auth sessions stay in sessionStorage.
-
-Optional Drive backups and Sheets reports require the separate [Google integration setup](docs/BACKEND_SETUP.md). They do not affect database saves.
+`server.js` serves a device-only development preview at `http://localhost:4173`; it does not emulate the hosted API or authentication. ES modules need HTTP/HTTPS. The cloud app must be deployed as a Worker through Sites, rather than as static GitHub Pages.
 
 ## Source layout
 
-| File / folder | Responsibility |
+| Path | Responsibility |
 | --- | --- |
-| `index.html` | HTML shell and accessible navigation/dialog containers |
-| `styles/app.css` | Desktop, tablet, phone and print styles |
-| `src/main.js` | Routing and one set of delegated control handlers |
-| `src/domain.js` | Billing rules, migration, allocations, balances, history |
-| `src/features/` | Invoice editor, lists, dialogs and settings renderers |
-| `src/storage.js`, `src/cache.js` | Workspace cache, pending saves and sync coordination |
-| `src/cloud.js` | Authenticated REST client and session refresh |
-| `src/export.js`, `src/print.js` | Safe exports and invoice printing |
-| `backend/` | PostgreSQL schema/RPC and optional Google Edge Function |
-| `tests/`, `scripts/` | Financial, migration, rendering, API and database checks |
+| `index.html`, `styles/` | Small HTML shell, responsive desktop/mobile layouts, print styles |
+| `src/domain.js` | Financial validation, migration, invoice history and commands |
+| `src/features/` | Invoice editor, lists, ledgers, dialogs and settings |
+| `src/storage.js`, `src/cache.js` | IndexedDB cache, safe pending saves and synchronization |
+| `src/cloud.js` | Same-origin authenticated billing API client |
+| `backend/d1.js`, `backend/worker.js` | Owner-scoped database transactions and HTTP API |
+| `backend/google.js`, `backend/projections.js` | Optional server-side Google backups and reporting |
+| `drizzle/` | Deployment-time SQLite migrations |
+| `scripts/build-worker.js` | Dependency-free deterministic Worker packager |
+| `tests/` | Billing rules, rendering, migration, synchronization and actual SQLite tests |
 
-## Architecture and limits
+## Cloud behavior
 
-The initial cloud implementation stores one versioned JSON workspace per owner in PostgreSQL. This preserves unknown legacy fields and allows an atomic migration without inventing a different accounting model. Each save writes the complete workspace under a row lock with an expected revision. RLS isolates owners; the client cannot update tables directly. PC and phone use the same owner account. Multiple staff accounts and role permissions are a later extension.
+- Every save is validated again on the server. A revision comparison and atomic SQL batch prevent two devices from overwriting each other. Operation IDs make uncertain-response retries safe.
+- Other devices check a small revision value every eight seconds and refresh after changes or reconnecting. This is polling-based synchronization.
+- Cloud bills require an online successful commit. Drafts can remain on the device while disconnected; pending saves can be retried in **Data & sync**.
+- Photos are private objects referenced by database records. Full JSON backups include photos, audit history, opening payments and preserved legacy fields.
+- The current full-workspace sync supports up to 20 MB including photo data. Metadata in one record is limited to 1.8 MB. Larger archives need a future paginated sync migration; the app rejects oversized writes explicitly.
 
-This is suitable for a modest single-business workspace. Snapshots are capped at 20 MB; new bill photos are capped at 1 MB each. For larger histories, migrate to normalized parties/items/documents/lines/payments tables and private object storage for photos, with paginated queries and incremental realtime events. Sheets exports have a 2 MB request limit. These limits produce errors rather than deleting or truncating records.
+Deployment, optional Google configuration and migration steps are in [BACKEND_SETUP.md](docs/BACKEND_SETUP.md). The original defects and workflow mapping are in [CLEANUP.md](docs/CLEANUP.md); verified behavior and device checks are in [VERIFICATION.md](docs/VERIFICATION.md).
 
-The original **bill-level tax** calculation is retained. Item GST defaults are stored, but automatic GST breakup, e-invoicing, inventory stock valuation and staff access are outside this refactor. Customer advances cannot be entered through the allocated-payment screen. Google Sheets changes do not import back into billing.
+## Existing billing data
 
-See [cleanup findings and preserved workflows](docs/CLEANUP.md), [backend activation](docs/BACKEND_SETUP.md) and [verification / release checks](docs/VERIFICATION.md).
+Download a full JSON backup from the old app before switching. Browser data is isolated by origin, so the new private URL cannot automatically read the old site's local storage. On the private app, use **Data & sync → Restore JSON**, review the record counts, then confirm. Both devices must subsequently use that private link and account.
+
+When running the new code on the original origin, existing `shop4_*` keys can be migrated without overwriting the originals. Duplicate invoice numbers, invalid dates and malformed records fail visibly. Do not clear the old browser data until the restored totals, balances, photos and custom fields have been checked.
+
+## Scope
+
+The refactor preserves wholesale and bulk sales, purchases, retail entries, packing/brand/unit details, last-party prices, dispatch status, cancellations, allocated receipts/payments, opening balances, reports and A4/80 mm print templates. This is a billing and ledger application; automated stock accounting, statutory tax filing and a complete Vyapar feature set are not implemented.

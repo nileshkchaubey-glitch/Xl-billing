@@ -1,24 +1,26 @@
-# Verification and release checklist
+# Verification and release checks
 
-## Automated checks
+## Automated verification
 
-`node scripts/check.js` parses all application, backend and test JavaScript, checks relative module links, rejects inline HTML handlers/styles and checks named `data-action` handlers. `node --test tests/*.test.js` exercises the billing domain, legacy migration, safe renderers, CSV handling, REST/session behavior, mocked concurrent devices and the authenticated Google handler.
+`node scripts/check.js` parses source JavaScript, checks relative module links, rejects inline HTML handlers/styles and checks named delegated actions. It excludes generated build output so old artifacts cannot masquerade as live source. The Worker artifact is separately parsed and exercised after building.
 
-The tests cover rounding, old paid amounts, photos/audit backup preservation, invalid dates/IDs, last-price order and variants, cancellation, invoice uniqueness, atomic imports, FIFO/payment-out/discounts, reversal, overpayment prevention, stale edits/settings, first-connect data preservation, uncertain-response retries, forbidden keys, Google owner/origin enforcement and literal spreadsheet cells.
+`node --test tests/*.test.js` covers money rounding, legacy paid amounts, photos and audit preservation, invalid dates/IDs, last-party prices and variants, cancellations, invoice uniqueness, atomic imports, FIFO/discounts/payment-out, reversals, overpayment prevention, stale edits/settings, first-connect preservation and uncertain-response retries. Rendering and exports cover HTML escaping, CSV formulas and literal spreadsheet cells.
 
-GitHub Actions also provisions a **disposable PostgreSQL 16** service and runs `scripts/test-database.js` to exercise the actual schema, RLS, permissions, commit RPC, stale revisions and retry deduplication. The local review environment had no PostgreSQL server/client; the database suite was run successfully in GitHub Actions during review. Keep it passing before merging. The script must never run against a live database; it creates fixture roles and a mock Auth schema. It does not emulate Supabase Auth itself.
+Backend tests run the actual migration SQL against Node 24's built-in SQLite engine, with D1/R2 adapters. They exercise owner isolation, server-side financial validation, competing writes, complete transaction rollback, operation deduplication, large master imports and private photo roundtrips. API tests exercise identity, origin, body validation and Google-owner enforcement. They establish database logic, not a full emulation of Cloudflare or host authentication.
 
-The hosted browser could not reach the local development server during review, so desktop/mobile browser interaction, IndexedDB behavior, print preview and live cloud/Google service calls require the release checks below. Source and renderer tests do not establish that those browser paths were visually tested.
+`node scripts/build-worker.js`, `node scripts/validate-artifact.mjs` and `node scripts/smoke-worker.mjs` verify the generated ESM Worker, frontend asset responses and an HTTP-level billing roundtrip against the SQLite adapter. GitHub Actions runs these same checks on Node 24 without dependency installations.
+
+Google tests use mocked responses; live OAuth, Drive and Sheets have not been exercised. Managed browser preview was unavailable in this environment. Desktop/mobile interaction, browser IndexedDB, print preview and real simultaneous-device use have not been visually verified. Source, SQLite and Worker tests do not establish those device paths.
 
 ## Before daily use
 
-- Keep a full backup from the old app. Restore a copy into a test workspace; compare invoice/purchase/party/item counts, paid amounts, balances, opening balances, photos and custom fields.
-- At desktop and phone widths (including 360 px), open each main screen. Confirm nav, date/status filters, pagination, dialogs and save actions remain usable. Check no horizontal page overflow.
-- Select customer + item and verify last-price hints update when switching customers/brands/units. Save, edit, cancel and restore a test invoice; print both A4 and an 80 mm layout using your actual printer settings.
-- Record payments in/out and discounts across multiple bills. Reverse one payment and verify ledger balances. Check opening-balance payments separately.
-- On PC and phone, create different bills at the same time. Both must appear with unique numbers. Attempt a stale edit after the other device records a payment; it must require reopening the bill.
-- Interrupt the connection while saving. Restore connectivity and retry the pending operation; there must be exactly one bill. Offline drafts should survive reload; cloud bills should not claim a successful offline save.
-- Export/restore JSON; confirm photos and audit remain. Import a malformed CSV/JSON and confirm no partial replacement occurs.
-- If Google is configured, export to Drive and restore that JSON in a test workspace. Refresh Sheets, remove a test record from the projection and export again to ensure stale rows disappear. Confirm another Auth account cannot use the owner's Google connection.
+- Keep the old app's full backup and browser recovery keys. Restore a copy, then compare invoice/purchase/party/item counts, totals, opening and remaining balances, photos and custom fields.
+- At desktop and phone widths, including 360 px, open each main screen. Check navigation, pagination, date/status filters, dialogs and save actions, with no horizontal page overflow.
+- Switch customers, brands and units in an invoice; verify last-price hints. Save/edit/cancel/restore a test bill. Check A4 and 80 mm print previews using the actual printer settings.
+- Record receipts, payment-out, discounts and opening-balance payments. Reverse a payment and compare ledger balances.
+- On PC and phone, create different bills simultaneously. Confirm both appear with unique numbers. Reopen a stale bill after a payment on the other device; stale edits must be rejected.
+- Disconnect while saving, reconnect and retry in Data & sync. Confirm exactly one bill. Check draft survival after reload and that offline cloud posting never claims success.
+- Export and restore JSON with photos/audit intact. A malformed import must reject the entire operation.
+- When Google is authorized, verify a full Drive backup and Sheets refresh, including stale row clearing and owner enforcement.
 
-Only promote the reviewed branch after CI and these device/service checks. The original source and `shop4_*` recovery keys allow rollback; switching code versions does not merge two divergent datasets, so retain the final cloud backup when rolling back.
+The GitHub branch remains a draft for review. Keep the final cloud backup when switching code versions: rolling back source does not merge divergent data.

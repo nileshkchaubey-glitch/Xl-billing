@@ -1,4 +1,4 @@
-const CACHE = 'xl-billing-shell-v2-1';
+const CACHE = 'xl-billing-shell-v2-2';
 const ASSETS = ['./', './index.html', './styles/app.css', './src/main.js', './src/domain.js', './src/ui.js', './src/storage.js', './src/cache.js', './src/cloud.js', './src/export.js', './src/print.js', './src/features/invoice.js', './src/features/lists.js', './src/features/dialogs.js', './src/features/settings.js', './manifest.webmanifest'];
 self.addEventListener('install', event => event.waitUntil(caches.open(CACHE).then(cache => cache.addAll(ASSETS))));
 self.addEventListener('activate', event => event.waitUntil(caches.keys().then(keys => Promise.all(keys.filter(key => key.startsWith('xl-billing-shell-') && key !== CACHE).map(key => caches.delete(key))))));

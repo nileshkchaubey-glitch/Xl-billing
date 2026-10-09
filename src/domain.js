@@ -75,6 +75,10 @@ export function normalizeState(input) {
       reconcile(doc);
     }
   }
+  const numbers = new Set();
+  for (const doc of output.invoices) {
+    requireValue(typeof doc.invoiceNo === 'string' && doc.invoiceNo.trim() && !numbers.has(doc.invoiceNo), 'Missing or duplicate invoice number.'); numbers.add(doc.invoiceNo);
+  }
   for (const payment of output.openingPayments) requireValue(validDate(payment.date) && cents(payment.amt) > 0 && ['in', 'out'].includes(payment.direction), 'Invalid opening payment.');
   for (const row of output.retail) requireValue(validDate(row.date) && cents(row.amount) > 0, 'Invalid retail entry.');
   return output;

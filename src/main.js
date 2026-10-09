@@ -161,8 +161,6 @@ async function handleClick(target) {
   else if (action === 'use-cloud') {
     if (!confirm('Use this account’s cloud data on this device? A full local backup will download first.')) return;
     exportBackup(store.data); await store.useCloud(); renderPage(); toast('Cloud workspace loaded.');
-  } else if (action === 'logout-cloud') {
-    await cloud.logout(); clearInterval(store.timer); store.markStatus('local'); renderPage();
   } else if (action === 'confirm-import') {
     if (!reviewedImport) return;
     exportBackup(store.data);
@@ -172,7 +170,7 @@ async function handleClick(target) {
   } else if (action === 'google-export') {
     if (!cloud.connected) throw new Error('Sign in to your cloud account first.');
     target.disabled = true;
-    try { const result = await cloud.request('/functions/v1/xl-billing-google', { method: 'POST', body: JSON.stringify({ action: target.dataset.type }) }); toast(result.message || 'Google export completed.'); }
+    try { const result = await cloud.request('/api/billing/google', { method: 'POST', body: JSON.stringify({ action: target.dataset.type }) }); toast(result.message || 'Google export completed.'); }
     finally { target.disabled = false; }
   }
 }
@@ -203,12 +201,6 @@ async function handleSubmit(form, submitter) {
     if (customFields.some(field => !field.label)) throw new Error('Custom fields need a label.');
     const payload = Object.fromEntries(['shopName', 'owner', 'address', 'phone', 'gstin', 'state', 'prefix', 'invNo', 'fy', 'bank', 'terms'].map(name => [name, input[name]]));
     await store.execute('settings', { ...payload, modules, printSettings, customFields, expectedUpdatedAt: form.dataset.version || undefined, expectedCounter: Number(form.dataset.counter) }); toast('Settings saved.'); renderPage();
-  } else if (form.id === 'cloud-form') {
-    cloud.configure(input.url, input.key);
-    await cloud.login(input.email, input.password);
-    form.elements.password.value = '';
-    try { await store.connect(); toast('Cloud connected.'); }
-    finally { renderPage(); }
   } else if (form.id === 'bulk-form') {
     const party = store.data.parties.find(row => row.id === input.partyId);
     if (!party) throw new Error('Select a party.');
@@ -284,7 +276,7 @@ try {
   store.addEventListener('change', () => { if (editor) { updateEditorView(editor, store.data); renderNavigation(); } else if (!['bulk-sales', 'bulk-purchases', 'settings'].includes(page)) renderPage(); });
   store.addEventListener('status', renderStatus);
   navigate(location.hash.slice(1) || 'dashboard');
-  if (cloud.connected) store.connect().catch(error => showError(error));
+  cloud.discover().then(() => { if (cloud.connected) return store.connect(); }).catch(error => { store.markStatus('error', error.message); showError(error); }).finally(() => { renderStatus(); if (page === 'data') renderPage(); });
   if ('serviceWorker' in navigator && location.protocol !== 'file:') navigator.serviceWorker.register('./sw.js').catch(() => {});
 } catch (error) {
   view.innerHTML = `<section class="card"><h1>Your data needs attention</h1><p class="form-error">${e(error.message)}</p><p>The app has not overwritten your saved records. Keep this browser’s data and restore a valid backup before continuing.</p></section>`;

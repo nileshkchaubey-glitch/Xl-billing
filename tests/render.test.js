@@ -6,7 +6,7 @@ import { renderEditor } from '../src/features/invoice.js';
 import { masterForm, documentDetail, partyLedger, paymentForm } from '../src/features/dialogs.js';
 import { invoicePrintMarkup } from '../src/print.js';
 import { renderSettings, renderData } from '../src/features/settings.js';
-import { sheetsProjection, sheetRequests, cell } from '../backend/functions/xl-billing-google/projections.js';
+import { sheetsProjection, sheetRequests, cell } from '../backend/projections.js';
 
 test('all main screen and dialog renderers safely escape record text and emit no inline handlers', () => {
   let state = fixture(); const payload = '<img src=x onerror=alert(1)>';

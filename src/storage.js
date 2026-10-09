@@ -117,7 +117,7 @@ export class BillingStore extends EventTarget {
           this.storage.setItem(PENDING_KEY, JSON.stringify(command)); this.pending = command;
           this.markStatus('syncing');
           let saved;
-          try { saved = await this.cloud.commit(next, this.envelope.revision, command.id); }
+          try { saved = await this.cloud.commit(next, this.envelope.revision, command.id, command); }
           catch (error) {
             if (error.code !== '40001') throw error;
             const remote = await this.cloud.read();
@@ -127,11 +127,11 @@ export class BillingStore extends EventTarget {
             knownRejected = true;
             next = applyCommand(this.data, command);
             knownRejected = false;
-            saved = await this.cloud.commit(next, this.envelope.revision, command.id);
+            saved = await this.cloud.commit(next, this.envelope.revision, command.id, command);
           }
           await this.save({ ...saved, ownerId: this.cloud.session.user.id });
         } else {
-          if (this.envelope.ownerId) throw new Error('Sign in to the cloud account to post bills. Offline work can be kept as a draft.');
+          if (this.envelope.ownerId || this.cloud?.available) throw new Error('Sign in to the cloud account to post bills. Offline work can be kept as a draft.');
           this.envelope = await this.readFresh();
           await this.save({ revision: this.envelope.revision + 1, data: applyCommand(this.data, command), source: 'local' });
         }

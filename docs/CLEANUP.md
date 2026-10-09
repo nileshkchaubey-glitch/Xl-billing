@@ -12,9 +12,9 @@ Reviewed `main` at `fa371cd9197dc71f050a65cee05a4fdb223b02c9`. It contained one 
 | The last-party price badge contained escaped template expressions | Escaped, computed history output; tests cover backdated/cancelled bills and item identity |
 | Last prices depended on array order/name matches | Date-based, party/unit/brand-aware lookup, indexed once per immutable workspace |
 | Shell append commands leaked into the HTML | Minimal HTML shell; no patch script or command text |
-| JSONBin whole-snapshot push/pull could overwrite newer device changes | PostgreSQL revision checks, row lock, safe retry operation IDs |
+| JSONBin whole-snapshot push/pull could overwrite newer device changes | D1 revision checks, atomic commit batches and safe retry operation IDs |
 | The supplied Sheets example did not implement the reads the app expected | Optional authenticated reporting export, with the database as source |
-| Frontend settings asked for integration master credentials | Publishable key + user JWT only; Google OAuth secrets remain in the function |
+| Frontend settings asked for integration master credentials | Trusted host authentication; no browser database keys; Google secrets remain in the Worker |
 | Backup omitted activity history; spreadsheet exports dropped photos | Full JSON backup includes audit, photos, payments and unknown legacy fields |
 | Fixed invoice grids and unrelated mobile selector patches caused overflow | Responsive invoice rows, phone cards, bottom navigation, sticky save actions |
 | Partial escaping left user text unsafe in HTML | A shared HTML escape function and literal-safe CSV/Sheets exports |

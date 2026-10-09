@@ -1,53 +1,63 @@
-# Backend activation
+# Cloud backend and migration
 
-The source includes the integration. A live project, owner account, hosted URL and Google authorization must be configured before cloud/Google controls can work. No existing cloud project is modified by this refactor.
+## Hosting and storage
 
-## Billing database
+The application is a dependency-free Worker ESM service deployed to an owner-private Sites project. `.openai/hosting.json` identifies that project and requests the `DB` D1 binding and `BUCKET` private R2 binding. Reuse the existing project ID for updates. Changing the ID requires deliberately provisioning another site; copying this manifest is not a new-site setup process.
 
-1. Create a dedicated Supabase project. Run `backend/schema.sql` in the SQL editor; the script is transactional and can be rerun for this version.
-2. Create an owner email/password account in Authentication. Disable public signup if it is unnecessary. Use this account on every billing device.
-3. Deploy the static frontend over HTTPS. GitHub Pages can serve the ES modules directly from the repository root. No build or package installation is required. Disable Jekyll processing if your host requires it; the repository includes `.nojekyll`.
-4. In Data & sync, enter the Supabase project URL and a publishable or legacy anon key, then sign in. Never enter a secret/service-role key.
-5. Restore your full old JSON backup on the original device before its first connection to an empty workspace. Check counts, balances and photos. Open the other device and sign in.
+Run the checks in the README, build with `node scripts/build-worker.js`, and validate the artifact. The generated `dist/server/index.js` contains the Worker and embedded static assets; frontend source remains modular. The build also copies `drizzle/` to `dist/.openai/drizzle/`. Publish through the Sites source/package workflow so the exact pushed source commit and its archive match.
 
-`xl_billing_workspaces` contains a private data snapshot and revision for each `auth.uid()`. An authenticated owner can select their row; only `xl_billing_commit` can write. `xl_billing_operations` is private and deduplicates acknowledged or uncertain retries. A revision conflict returns SQLSTATE `40001`. The client fetches the newer data and rebases independent creates. Bill/master/settings edits carry version checks and fail if stale. Neither device silently replaces the other device's changes.
+Migrations run during deployment. Requests never create tables. `0000_billing.sql` creates:
 
-An uncertain network response leaves the original operation in localStorage. Retry in Data & sync sends the same ID. Do not clear browser storage before exporting saved data and any pending operation. Restoring a backup replaces the workspace after review and first downloads its current contents.
-
-The schema deliberately preserves a JSON workspace for this migration. Back up the database according to your hosting plan and retain periodic JSON exports. For growth, the next migration should split documents/lines/payments into relational tables and store photos in private object storage. Do not raise the size cap as a substitute for that migration.
-
-## Optional Google integration
-
-Use a Google Cloud OAuth **web application** for the business owner's account. Enable Drive API and Sheets API, configure the OAuth consent screen, request Drive and Sheets access, and obtain a refresh token through the server OAuth authorization-code flow with offline access. Use the narrow `drive.file` scope if your application creates/selects its folder/files; access to existing files may require broader scopes. Obtain explicit authorization for the chosen resources. Google refresh tokens for an external app left in Testing can expire; configure the consent screen appropriately for ongoing backups.
-
-Create/select a dedicated Drive folder and a spreadsheet owned by that account. Store the following as Edge Function secrets (Supabase URL/anon key are normally supplied by the platform):
-
-| Secret | Value |
+| Table | Stored data |
 | --- | --- |
-| `APP_ORIGIN` | Exact frontend origin, e.g. `https://owner.github.io` (no trailing slash or repository path) |
-| `BILLING_OWNER_ID` | Owner's UUID from Supabase Authentication |
-| `GOOGLE_CLIENT_ID` | OAuth client ID |
+| `billing_workspaces` | Owner ID, settings and extra metadata, current revision, last operation |
+| `billing_records` | Collection, stable record ID, order, JSON fields, private photo reference |
+| `billing_operations` | Owner-scoped operation IDs and successful revisions for retry deduplication |
+
+Collections are constrained to the known billing datasets. Photos are content-addressed private R2 objects; they are returned only through the authenticated workspace API and included in full backups. A failed competing save can leave an unreferenced immutable photo object, but cannot replace committed billing records. Object garbage collection is future maintenance work.
+
+The host supplies trusted `oai-authenticated-user-id` and email headers. Every billing-data query uses that owner ID. The app must remain behind the trusted Sites dispatch layer: do not expose this Worker through a public route that accepts caller-supplied identity headers. Sign in/out use the host's ordinary ChatGPT authentication links. The current audience is owner-only; multiple employees and business roles are outside this release.
+
+## Atomic saves and device synchronization
+
+The browser sends a command, expected revision and unique operation ID. The server applies the same financial rules independently. An atomic D1 batch updates the revision, records and operation receipt together. A constrained operation row aborts the entire transaction when a competing revision wins. Repeating a committed operation returns the latest workspace without posting another bill.
+
+The browser polls the revision every eight seconds, fetching records/photos only after a change. Independent creates can rebase once after a conflict; edits and payments retain version checks and require reopening stale records. A pending save is retained locally before its network request. No other operation can silently replace it.
+
+Full-workspace synchronization is currently capped at 20 MB, including photos; each metadata record is capped at 1.8 MB and API bodies at 21 MB. The invoice editor limits newly attached photos to 1 MB. Writes use bounded JSON groups to avoid one SQL statement per imported record. This is suitable for a small business workspace, with explicit size limits rather than an unlimited-history claim.
+
+## Move from the old app
+
+1. Keep a full JSON backup and preserve the old browser's recovery data.
+2. Open the private hosted link with the same account on both devices. An empty cloud workspace is initialized on first connection.
+3. On one device, choose **Data & sync → Restore JSON**. Inspect the proposed counts and confirm. The current workspace is backed up before replacement.
+4. Compare parties/items, invoice and purchase totals, paid amounts, opening balances, custom fields and photos against the old app.
+5. Refresh the second device and check the same data appears. Use the private cloud link for subsequent bills.
+
+An existing cloud workspace never silently overwrites nonempty device-only data on first connection. Export the local backup before choosing **Use cloud data**. Migration does not merge divergent datasets automatically.
+
+## Optional Google exports
+
+Google Sheets is a reporting destination; D1 remains the billing source of truth. Drive receives complete versioned JSON backups. These actions remain disabled until an owner-authorized Google connection is configured on the server. Cloud synchronization does not depend on Google.
+
+Create/select a dedicated Drive folder and spreadsheet, authorize the appropriate Google Drive and Sheets scopes through Google's OAuth process, and store the following as private Sites runtime variables. Keep credentials out of Git, browser settings, generated assets and logs.
+
+| Variable | Value |
+| --- | --- |
+| `GOOGLE_OWNER_ID` | Trusted owner ID returned by the authenticated `/api/billing/session` endpoint |
+| `GOOGLE_CLIENT_ID` | Authorized Google OAuth client ID |
 | `GOOGLE_CLIENT_SECRET` | OAuth client secret |
-| `GOOGLE_REFRESH_TOKEN` | Authorized business account's refresh token |
-| `GOOGLE_DRIVE_FOLDER_ID` | Target Drive folder ID |
-| `GOOGLE_SHEET_ID` | Target spreadsheet ID |
+| `GOOGLE_REFRESH_TOKEN` | Owner-authorized refresh token |
+| `GOOGLE_DRIVE_FOLDER_ID` | Dedicated backup folder ID |
+| `GOOGLE_SHEET_ID` | Dedicated reporting spreadsheet ID |
 
-Deployment through an existing Supabase CLI:
+The Worker verifies the billing owner and request origin, refreshes the token server-side and exports the current committed database revision. It never accepts a spreadsheet ID or arbitrary snapshot from the browser. Sheets tabs contain literal values with stale rows cleared in one batch; photos are represented as references rather than image data. Full Drive JSON preserves photos and all billing fields. Sheet export requests are capped at 2 MB; use JSON backup for larger workspaces.
 
-1. Run `supabase init` in a separate deployment directory.
-2. Copy `backend/functions/xl-billing-google/` to `supabase/functions/xl-billing-google/`.
-3. Copy the `[functions.xl-billing-google]` section from `backend/config.toml` into the generated `supabase/config.toml`.
-4. Add secrets through the dashboard or a private env file. Do not commit credentials. Deploy with `supabase functions deploy xl-billing-google --project-ref YOUR_PROJECT_REF`.
+Live Google OAuth authorization and exports have not been completed. They require the owner's Google resources and authorization.
 
-The custom entry point is JavaScript. `verify_jwt = false` disables the platform's legacy JWT precheck; the function **still validates every request** through `/auth/v1/user`, requires the configured owner UUID and enforces the frontend origin. It then reads the workspace using that user's JWT/RLS. A caller cannot choose another owner, folder or spreadsheet in their request.
+## Reference documentation
 
-**Back up to Drive** creates a new version-labelled JSON file using a resumable upload, including photos and audit history. A failed upload may leave an incomplete upload session; retry can create a second backup, which is harmless but not a deduplicated export. **Update Google Sheets** atomically refreshes the named reporting tabs (Items, Parties, Sales, Purchases, Lines, Payments, Retail, OpeningPayments, Audit, Snapshot), clearing stale cells in those tabs and preserving unrelated tabs. Named tabs are generated reports; edits inside them will be replaced. Photos stay in JSON backups. Upstream failures are shown without changing billing records.
-
-## Primary API references
-
-- [Supabase row-level security](https://supabase.com/docs/guides/database/postgres/row-level-security)
-- [Supabase Edge Function authentication](https://supabase.com/docs/guides/functions/auth)
-- [Function configuration / custom JavaScript entry point](https://supabase.com/docs/guides/functions/function-configuration)
-- [Google Drive resumable uploads](https://developers.google.com/workspace/drive/api/guides/manage-uploads)
-- [Google Sheets UpdateCellsRequest](https://developers.google.com/workspace/sheets/api/reference/rest/v4/spreadsheets/request#updatecellsrequest)
-- [Google OAuth server flow](https://developers.google.com/identity/protocols/oauth2/web-server)
+- [Cloudflare D1 prepared statements, sessions and atomic batches](https://developers.cloudflare.com/d1/worker-api/d1-database/)
+- [Cloudflare D1 limits](https://developers.cloudflare.com/d1/platform/limits/)
+- [Google Drive resumable uploads](https://developers.google.com/drive/api/guides/manage-uploads)
+- [Google Sheets batch updates](https://developers.google.com/workspace/sheets/api/reference/rest/v4/spreadsheets/batchUpdate)
