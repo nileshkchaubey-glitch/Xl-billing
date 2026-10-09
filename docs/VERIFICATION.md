@@ -6,11 +6,11 @@
 
 `node --test tests/*.test.js` covers money rounding, legacy paid amounts, photos and audit preservation, invalid dates/IDs, last-party prices and variants, cancellations, invoice uniqueness, atomic imports, FIFO/discounts/payment-out, reversals, overpayment prevention, stale edits/settings, first-connect preservation and uncertain-response retries. Rendering and exports cover HTML escaping, CSV formulas and literal spreadsheet cells.
 
-Backend tests run the actual migration SQL against Node 24's built-in SQLite engine, with D1/R2 adapters. They exercise owner isolation, server-side financial validation, competing writes, complete transaction rollback, operation deduplication, large master imports and private photo roundtrips. API tests exercise identity, origin, body validation and Google-owner enforcement. They establish database logic, not a full emulation of Cloudflare or host authentication.
+Backend tests run the actual migration SQL against Node 24's built-in SQLite engine, with D1/R2 adapters. They exercise owner isolation, server-side financial validation, competing writes, complete transaction rollback, operation deduplication, large master imports and private photo roundtrips. API tests exercise authenticated owner access, rejection of host identity headers, trusted cross-origin preflight/reads, body validation and Google-owner enforcement. Login tests cover password non-persistence, rejected business access and concurrent token refresh. Verification also rejects disabled/revoked credentials and unavailable authentication services. They establish database logic, not a full emulation of Cloudflare or Firebase authentication.
 
 `node scripts/build-worker.js`, `node scripts/validate-artifact.mjs` and `node scripts/smoke-worker.mjs` verify the generated ESM Worker, frontend asset responses and an HTTP-level billing roundtrip against the SQLite adapter. GitHub Actions runs these same checks on Node 24 without dependency installations.
 
-Google tests use mocked responses; live OAuth, Drive and Sheets have not been exercised. Managed browser preview was unavailable in this environment. Desktop/mobile interaction, browser IndexedDB, print preview and real simultaneous-device use have not been visually verified. Source, SQLite and Worker tests do not establish those device paths.
+Firebase and Google service responses are mocked in tests. Live email/password login, token refresh/reset, Drive and Sheets exports have not been exercised. This independent-auth revision has not been deployed. Desktop/mobile interaction, browser IndexedDB, print preview and real simultaneous-device use have not been visually verified. Source, SQLite and Worker tests do not establish those device paths.
 
 ## Before daily use
 

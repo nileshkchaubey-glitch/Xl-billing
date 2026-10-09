@@ -2,7 +2,7 @@
 
 A modular billing application with sale invoices, purchases, party ledgers, allocated payments and a private cloud workspace. Navigation follows the familiar Vyapar business workflow: **Overview → Parties / Items → Sales / Purchases → Payment in / out → Reports**. The interface and assets are original.
 
-The backend uses **Cloudflare D1**, with bill photos in **private R2 storage**. Authentication is supplied by the owner-private Sites host. The browser never needs a database key or an integration password. Open the same private URL with the same ChatGPT account on PC and phone.
+The backend uses **Cloudflare D1**, with bill photos in **private R2 storage**. The app uses its own email/password login through Firebase Authentication, independently of hosting accounts. Billing data remains in D1/R2. The browser needs no database secret. Only the configured business owner can access billing records.
 
 ## Run and verify
 
@@ -15,9 +15,10 @@ node --test tests/*.test.js
 node scripts/build-worker.js
 node scripts/validate-artifact.mjs
 node scripts/smoke-worker.mjs
+node scripts/build-preview.mjs
 ```
 
-`server.js` serves a device-only development preview at `http://localhost:4173`; it does not emulate the hosted API or authentication. ES modules need HTTP/HTTPS. The cloud app must be deployed as a Worker through Sites, rather than as static GitHub Pages.
+`server.js` serves a device-only development preview at `http://localhost:4173`; it does not emulate the hosted API or authentication. ES modules need HTTP/HTTPS. The frontend can remain on the existing GitHub Pages URL. Its API runs in a Cloudflare Worker in your own account. `config.json` connects those two origins; leaving it empty enables device-only mode.
 
 ## Source layout
 
@@ -27,8 +28,8 @@ node scripts/smoke-worker.mjs
 | `src/domain.js` | Financial validation, migration, invoice history and commands |
 | `src/features/` | Invoice editor, lists, ledgers, dialogs and settings |
 | `src/storage.js`, `src/cache.js` | IndexedDB cache, safe pending saves and synchronization |
-| `src/cloud.js` | Same-origin authenticated billing API client |
-| `backend/d1.js`, `backend/worker.js` | Owner-scoped database transactions and HTTP API |
+| `src/cloud.js` | Independent login, token refresh and authenticated billing API client |
+| `backend/d1.js`, `backend/worker.js` | Owner-scoped database transactions, CORS and HTTP API |
 | `backend/google.js`, `backend/projections.js` | Optional server-side Google backups and reporting |
 | `drizzle/` | Deployment-time SQLite migrations |
 | `scripts/build-worker.js` | Dependency-free deterministic Worker packager |
@@ -46,7 +47,9 @@ Deployment, optional Google configuration and migration steps are in [BACKEND_SE
 
 ## Existing billing data
 
-Download a full JSON backup from the old app before switching. Browser data is isolated by origin, so the new private URL cannot automatically read the old site's local storage. On the private app, use **Data & sync → Restore JSON**, review the record counts, then confirm. Both devices must subsequently use that private link and account.
+The current GitHub Pages app remains on `main`; this draft has not been merged. Use its **Export Backup** action regularly while continuing entries. Do not clear that browser's storage. The backend/login configuration in this branch is intentionally empty pending setup.
+
+Review the sample-only [UI preview](docs/ui-preview.html) and follow [ROLLOUT.md](docs/ROLLOUT.md) before switching. Existing `shop4_*` records can be copied into the new cache on the same origin, or restored from a JSON backup when testing on another origin. Never replace the live app until UI and migrated totals have been checked.
 
 When running the new code on the original origin, existing `shop4_*` keys can be migrated without overwriting the originals. Duplicate invoice numbers, invalid dates and malformed records fail visibly. Do not clear the old browser data until the restored totals, balances, photos and custom fields have been checked.
 

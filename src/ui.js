@@ -25,5 +25,5 @@ export function badge(record) {
   const status = record.status === 'cancelled' || record.dispatchStatus === 'cancelled' ? 'Cancelled' : record.dispatchStatus === 'draft' ? 'Draft' : Number(record.balance) > 0 ? 'Unpaid' : 'Paid';
   return `<span class="badge ${status.toLowerCase()}">${status}</span>`;
 }
-export function pageHead(title, subtitle, actions = '') { return `<div class="page-head"><div><div class="eyebrow">YOUR BUSINESS, IN ORDER</div><h1>${e(title)}</h1><p>${e(subtitle)}</p></div><div class="actions">${actions}</div></div>`; }
+export function pageHead(title, subtitle, actions = '') { return `<div class="page-head"><div><h1>${e(title)}</h1>${subtitle ? `<p>${e(subtitle)}</p>` : ''}</div><div class="actions">${actions}</div></div>`; }
 export const dataObject = form => Object.fromEntries(new FormData(form).entries());

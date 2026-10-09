@@ -162,6 +162,11 @@ function findDoc(state, command) {
   if (command.expectedVersion != null) requireValue(doc.version === command.expectedVersion, 'This bill changed on another screen or device. Open it again before editing.');
   return doc;
 }
+export function nextInvoiceNumber(state) {
+  let counter = Number(state.settings.invNo) || 1001, number;
+  do { number = `${state.settings.prefix || 'INV-'}${counter++}`; } while (state.invoices.some(doc => doc.invoiceNo === number));
+  return { number, counter };
+}
 function saveDocument(state, command, payload, suffix = '') {
   const collection = command.collection;
   requireValue(['invoices', 'purchases'].includes(collection), 'Invalid bill type.');
@@ -191,8 +196,8 @@ function saveDocument(state, command, payload, suffix = '') {
   if (!number && collection === 'invoices') {
     number = String(payload.invoiceNo || '').trim();
     if (!number) {
-      let counter = Number(state.settings.invNo) || 1001;
-      do { number = `${state.settings.prefix || 'INV-'}${counter++}`; } while (state.invoices.some(d => d.invoiceNo === number));
+      const next = nextInvoiceNumber(state), counter = next.counter;
+      number = next.number;
       state.settings.invNo = counter;
     }
     requireValue(!state.invoices.some(d => d.invoiceNo === number), 'This invoice number already exists.');

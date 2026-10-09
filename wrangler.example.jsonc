@@ -1,0 +1,17 @@
+{
+  "name": "xl-billing-api",
+  "main": "worker/index.js",
+  "compatibility_date": "2026-10-09",
+  "d1_databases": [{
+    "binding": "DB",
+    "database_name": "xl-billing",
+    "database_id": "REPLACE_WITH_YOUR_DATABASE_ID",
+    "migrations_dir": "drizzle"
+  }],
+  "r2_buckets": [{ "binding": "BUCKET", "bucket_name": "xl-billing-photos" }],
+  "vars": {
+    "APP_ORIGIN": "https://nileshkchaubey-glitch.github.io",
+    "FIREBASE_PROJECT_ID": "REPLACE_WITH_YOUR_PROJECT_ID",
+    "BILLING_OWNER_UID": "REPLACE_WITH_YOUR_OWNER_UID"
+  }
+}

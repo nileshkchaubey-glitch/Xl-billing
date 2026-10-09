@@ -3,11 +3,17 @@ import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
 import { LocalD1, LocalBucket } from '../tests/d1-helper.js';
 import { fixture, command } from '../tests/helpers.js';
+import { identityEnv, testToken } from '../tests/auth-helper.js';
 const source = await readFile(new URL('../dist/server/index.js', import.meta.url), 'utf8');
 const { default: worker } = await import('data:text/javascript;base64,' + Buffer.from(source).toString('base64'));
-const env = { DB: new LocalD1(), BUCKET: new LocalBucket() }, origin = 'https://billing.example';
+const env = { DB: new LocalD1(), BUCKET: new LocalBucket(), ...identityEnv('review-owner') }, origin = 'https://billing.example';
 const call = (path, options = {}) => worker.fetch(new Request(origin + path, options), env);
-const headers = { Origin: origin, 'Content-Type': 'application/json', 'oai-authenticated-user-id': 'review-owner' };
+const headers = { Origin: origin, 'Content-Type': 'application/json', Authorization: 'Bearer ' + testToken({}, 'review-owner') };
+const originalFetch = globalThis.fetch;
+globalThis.fetch = async url => {
+  assert.match(String(url), /^https:\/\/identitytoolkit\.googleapis\.com\/v1\/accounts:lookup\?/);
+  return Response.json({ users: [{ localId:'review-owner',email:'review@example.test' }] });
+};
 try {
   const html = await call('/'); assert.equal(html.status, 200);
   const shell = await html.text();
@@ -26,4 +32,4 @@ try {
   assert.deepEqual(await (await call('/api/billing/workspace', { headers })).json(), state);
   assert.equal(env.BUCKET.files.size, 1);
   console.log('Built Worker verified: asset routes, auth boundary, SQLite commit, private photos and safe retry.');
-} finally { env.DB.close(); }
+} finally { env.DB.close(); globalThis.fetch = originalFetch; }

@@ -14,7 +14,7 @@ Reviewed `main` at `fa371cd9197dc71f050a65cee05a4fdb223b02c9`. It contained one 
 | Shell append commands leaked into the HTML | Minimal HTML shell; no patch script or command text |
 | JSONBin whole-snapshot push/pull could overwrite newer device changes | D1 revision checks, atomic commit batches and safe retry operation IDs |
 | The supplied Sheets example did not implement the reads the app expected | Optional authenticated reporting export, with the database as source |
-| Frontend settings asked for integration master credentials | Trusted host authentication; no browser database keys; Google secrets remain in the Worker |
+| Frontend settings asked for integration master credentials | Independent email/password login; no browser database secrets; Google secrets remain in the Worker |
 | Backup omitted activity history; spreadsheet exports dropped photos | Full JSON backup includes audit, photos, payments and unknown legacy fields |
 | Fixed invoice grids and unrelated mobile selector patches caused overflow | Responsive invoice rows, phone cards, bottom navigation, sticky save actions |
 | Partial escaping left user text unsafe in HTML | A shared HTML escape function and literal-safe CSV/Sheets exports |
@@ -44,3 +44,7 @@ Records are archived or cancelled rather than hard-deleted. Existing amounts, op
 The frontend uses native ES modules and DOM event delegation, avoiding a framework/package migration during the data repair. Feature renderers are separate from financial rules and persistence. Large lists are paginated, reports paginate item totals, and historical price searches are indexed. These structural changes reduce repeated work; no device performance benchmark is claimed.
 
 The Vyapar reference is the business workflow described in its [official sales/purchase overview](https://vyaparapp.in/free/sale-purchase-software) and [transaction reports documentation](https://vyaparapp.in/guides/how-to-check-transaction-reports-in-vyapar-app). This is an original responsive UI following that workflow, rather than a pixel reproduction or use of Vyapar assets.
+
+## UI revision after owner review
+
+The first redesign was rejected. The revised draft uses direct New sale/New purchase navigation, compact item columns on desktop, labelled item cards on mobile, prominent last prices, party balance/ledger access, collapsible additional details and side-by-side payment/totals. The standalone demo uses these same renderers and styles without reading or writing real browser/cloud billing data. It is an original interface following the requested billing workflow; exact Vyapar visual parity is not claimed.

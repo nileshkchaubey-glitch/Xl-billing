@@ -50,12 +50,12 @@ test('signed-out cloud workspace blocks posting while preserving saved data', as
   await assert.rejects(store.execute('retail', { date: '2026-10-09', amount: 10 }), /Sign in/);
   assert.equal(store.data.retail.length, 0);
 });
-test('same-origin client discovers platform identity without browser API keys', async () => {
+test('client discovers independent billing login and sends no host cookies', async () => {
   const calls = [];
-  const client = new CloudClient(async (url, options) => { calls.push({url,options}); return Response.json({ storage:'d1', authenticated:true, user:{ id:'owner',email:'owner@example.test' }, googleConfigured:false }); });
-  await client.discover(); assert.equal(client.connected,true); assert.equal(client.available,true);
-  assert.equal(calls[0].url,'/api/billing/session'); assert.equal(calls[0].options.credentials,'same-origin');
-  assert.equal(calls[0].options.headers.apikey,undefined);
+  const client = new CloudClient(async (url, options) => { calls.push({url,options}); return Response.json(url==='./config.json' ? { apiBaseUrl:'https://billing.example',firebaseApiKey:'public-key',firebaseProjectId:'billing-test' } : { storage:'d1',configured:true,authenticated:false, user:null,googleConfigured:false }); });
+  await client.discover(); assert.equal(client.connected,false); assert.equal(client.available,true);
+  assert.equal(calls[1].url,'https://billing.example/api/billing/session'); assert.equal(calls[1].options.credentials,'omit');
+  assert.equal(calls[1].options.headers.apikey,undefined);
 });
 test('cloud client sends only the operation command for normal saves', async () => {
   let body;

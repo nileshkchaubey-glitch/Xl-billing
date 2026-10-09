@@ -1,0 +1,2632 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#0c6d59">
+  <meta name="description" content="XL Billing — sales, purchases, parties and payments for your business.">
+  <title>XL Billing</title>
+  <style>:root {
+  --primary:#0c6d59;
+  --primary-dark:#075341;
+  --primary-soft:#e8f4ee;
+  --ink:#172e29;
+  --muted:#6d7c76;
+  --border:#dce5df;
+  --paper:#fff;
+  --background:#f3f5f8;
+  --orange:#a76421;
+  --danger:#b23d37;
+  --blue:#346695;
+  --sidebar:220px;
+  --radius:8px;
+  --shadow:none;
+  font-family:Inter,ui-sans-serif,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+  color:var(--ink);
+  font-size:14px;
+  line-height:1.5;
+  font-synthesis:none;
+}
+
+* {
+  box-sizing:border-box;
+}
+
+body {
+  margin:0;
+  background:var(--background);
+}
+
+button,input,select,textarea {
+  font:inherit;
+}
+
+button,a,input,select,textarea {
+  -webkit-tap-highlight-color:transparent;
+}
+
+button {
+  cursor:pointer;
+}
+
+a {
+  color:inherit;
+  text-decoration:none;
+}
+
+button:disabled {
+  opacity:.55;
+  cursor:wait;
+}
+
+button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible,summary:focus-visible {
+  outline:3px solid #76baa7;
+  outline-offset:3px;
+}
+
+h1,h2,h3,p {
+  margin:0;
+}
+
+h1 {
+  font-size:23px;
+  line-height:1.25;
+  font-weight:700;
+  letter-spacing:-.4px;
+}
+
+h2 {
+  font-size:17px;
+  line-height:1.4;
+}
+
+h3 {
+  font-size:15px;
+}
+
+small {
+  font-size:12px;
+}
+
+input,select,textarea {
+  width:100%;
+  min-height:42px;
+  border:1px solid #d5dfd8;
+  border-radius:7px;
+  padding:9px 11px;
+  background:white;
+  color:var(--ink);
+}
+
+textarea {
+  resize:vertical;
+}
+
+input:focus,select:focus,textarea:focus {
+  border-color:var(--primary);
+}
+
+input[readonly] {
+  background:#f3f5f3;
+  color:var(--muted);
+}
+
+input[type=number] {
+  appearance:textfield;
+}
+
+input::-webkit-inner-spin-button {
+  appearance:none;
+}
+
+input[type=checkbox] {
+  width:17px;
+  min-height:17px;
+  accent-color:var(--primary);
+}
+
+input[type=file] {
+  font-size:12px;
+}
+
+input[type=file]::file-selector-button {
+  border:0;
+  border-radius:4px;
+  padding:6px 10px;
+  margin-right:8px;
+  color:var(--primary);
+  background:var(--primary-soft);
+}
+
+.skip-link {
+  position:fixed;
+  left:20px;
+  top:-100px;
+  padding:12px;
+  background:white;
+  z-index:999;
+}
+
+.skip-link:focus {
+  top:16px;
+}
+
+.visually-hidden {
+  position:absolute;
+  width:1px;
+  height:1px;
+  overflow:hidden;
+  clip:rect(0,0,0,0);
+  white-space:nowrap;
+}
+
+.muted {
+  color:var(--muted);
+}
+
+.tiny {
+  font-size:12px;
+}
+
+.number {
+  text-align:right;
+  font-variant-numeric:tabular-nums;
+  white-space:nowrap;
+}
+
+.warning-text {
+  color:var(--orange);
+}
+
+.actions,.row-actions {
+  display:flex;
+  gap:8px;
+  align-items:center;
+}
+
+.wrap {
+  flex-wrap:wrap;
+}
+
+.button {
+  min-height:40px;
+  display:inline-flex;
+  justify-content:center;
+  align-items:center;
+  gap:7px;
+  border-radius:7px;
+  border:1px solid transparent;
+  padding:9px 14px;
+  font-size:13px;
+  font-weight:600;
+  background:#eef2ee;
+  color:var(--ink);
+  white-space:nowrap;
+}
+
+.button.primary {
+  background:var(--primary);
+  color:white;
+  box-shadow:0 2px 4px #0c6d5915;
+}
+
+.button.primary:hover {
+  background:var(--primary-dark);
+}
+
+.button.secondary {
+  background:var(--primary-soft);
+  border-color:#cadfd3;
+  color:var(--primary);
+}
+
+.button.subtle {
+  background:white;
+  border-color:var(--border);
+  color:#4e6259;
+}
+
+.button.subtle:hover {
+  background:#f0f5f0;
+}
+
+.button.danger {
+  color:var(--danger);
+}
+
+.button.icon {
+  padding:3px 8px;
+  min-height:30px;
+  font-size:12px;
+  background:#f4f6f3;
+}
+
+.text-button {
+  border:0;
+  background:none;
+  color:var(--primary);
+  font-weight:650;
+  padding:0;
+  text-align:left;
+}
+
+.text-button:hover {
+  text-decoration:underline;
+}
+
+.badge {
+  display:inline-block;
+  font-size:11px;
+  font-weight:650;
+  line-height:1.5;
+  padding:4px 9px;
+  border-radius:5px;
+  white-space:nowrap;
+  background:#eef2ee;
+  color:#55655b;
+}
+
+.badge.paid {
+  color:var(--primary);
+  background:var(--primary-soft);
+}
+
+.badge.unpaid {
+  background:#faf0e0;
+  color:var(--orange);
+}
+
+.badge.cancelled {
+  background:#f9e9e8;
+  color:var(--danger);
+}
+
+.badge.draft {
+  background:#edf0f4;
+  color:#63758a;
+}
+
+.badge.neutral {
+  background:#eef3ef;
+  color:#607369;
+}
+
+.sidebar {
+  position:fixed;
+  inset:0 auto 0 0;
+  width:var(--sidebar);
+  background:#fff;
+  border-right:1px solid var(--border);
+  display:flex;
+  flex-direction:column;
+  z-index:40;
+}
+
+.brand {
+  display:flex;
+  align-items:center;
+  gap:11px;
+  margin:20px 18px;
+  font-size:18px;
+  font-weight:750;
+  line-height:1.15;
+}
+
+.brand-mark {
+  background:var(--primary);
+  color:white;
+  border-radius:10px;
+  width:40px;
+  height:42px;
+  display:grid;
+  place-items:center;
+  font-size:20px;
+  letter-spacing:-1px;
+}
+
+.brand small {
+  display:block;
+  font-size:10px;
+  color:var(--muted);
+  font-weight:450;
+  letter-spacing:.3px;
+  margin-top:5px;
+}
+
+#desktop-navigation {
+  overflow:auto;
+  flex:1;
+  padding:0 12px 20px;
+}
+
+.nav-group {
+  margin-bottom:12px;
+}
+
+.nav-group>small {
+  font-size:9px;
+  font-weight:750;
+  letter-spacing:1.2px;
+  color:#929f94;
+  display:block;
+  margin:0 14px 6px;
+}
+
+.nav-group a {
+  display:block;
+  min-height:39px;
+  font-size:13px;
+  font-weight:550;
+  border-radius:7px;
+  padding:10px 14px;
+  color:#66756b;
+}
+
+.nav-group a:hover {
+  background:#f3f6f2;
+}
+
+.nav-group a[aria-current] {
+  color:var(--primary);
+  background:var(--primary-soft);
+  font-weight:700;
+}
+
+.sidebar-footer {
+  padding:17px 25px;
+  border-top:1px solid var(--border);
+  font-size:11px;
+  color:var(--muted);
+  display:flex;
+  gap:9px;
+  align-items:center;
+}
+
+.connection-dot {
+  height:7px;
+  width:7px;
+  border-radius:50%;
+  background:#9aa69d;
+}
+
+.connection-dot.synced {
+  background:var(--primary);
+}
+
+.connection-dot.pending,.connection-dot.error {
+  background:var(--orange);
+}
+
+.workspace {
+  margin-left:var(--sidebar);
+  min-width:0;
+}
+
+.topbar {
+  height:62px;
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  padding:0 24px;
+  background:white;
+  border-bottom:1px solid var(--border);
+}
+
+.topbar-left,.topbar-actions {
+  display:flex;
+  align-items:center;
+  gap:16px;
+}
+
+.topbar-left strong {
+  font-size:14px;
+}
+
+.topbar-left small {
+  display:block;
+  color:var(--muted);
+  font-size:10px;
+  letter-spacing:.5px;
+}
+
+.sync-pill {
+  font-size:11px;
+  font-weight:600;
+  border:1px solid var(--border);
+  border-radius:30px;
+  padding:7px 12px;
+  background:#fff;
+  color:var(--muted);
+  min-height:35px;
+}
+
+.sync-pill.synced {
+  color:var(--primary);
+  border-color:#c8e1d1;
+  background:#f3faf4;
+}
+
+.sync-pill.pending,.sync-pill.error {
+  color:var(--orange);
+  background:#fff6e7;
+  border-color:#eed6ab;
+}
+
+.mobile-menu,.drawer-backdrop,.mobile-navigation {
+  display:none;
+}
+
+.view {
+  padding:20px 24px 50px;
+  max-width:1650px;
+  margin:0 auto;
+  outline:none;
+}
+
+.page-head {
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  gap:20px;
+  margin-bottom:18px;
+}
+
+.page-head p {
+  color:var(--muted);
+  margin-top:4px;
+  font-size:13px;
+}
+
+.card {
+  padding:18px;
+  background:white;
+  border:1px solid var(--border);
+  border-radius:var(--radius);
+  box-shadow:var(--shadow);
+  margin-bottom:16px;
+}
+
+.section-title {
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  gap:14px;
+  margin-bottom:12px;
+}
+
+.section-title p {
+  font-size:12px;
+  margin-top:4px;
+}
+
+.info-strip {
+  background:#edf2ed;
+  color:#617365;
+  padding:12px 15px;
+  border-radius:7px;
+  font-size:12px;
+  margin-top:15px;
+}
+
+.status-banner {
+  margin:18px 34px 0;
+  padding:12px 16px;
+  background:#fff0db;
+  border:1px solid #efd4a8;
+  border-radius:7px;
+  color:#8b5b26;
+  font-size:12px;
+}
+
+.status-banner[hidden] {
+  display:none;
+}
+
+.stat-grid {
+  display:grid;
+  grid-template-columns:repeat(4,minmax(0,1fr));
+  gap:17px;
+  margin-bottom:24px;
+}
+
+.stat-card {
+  background:white;
+  border:1px solid var(--border);
+  border-top:3px solid #4c9c70;
+  border-radius:11px;
+  padding:18px 20px;
+  box-shadow:var(--shadow);
+  min-width:0;
+}
+
+.stat-card>span {
+  color:#738477;
+  font-size:12px;
+  display:block;
+}
+
+.stat-card>strong {
+  font-size:25px;
+  letter-spacing:-.6px;
+  display:block;
+  margin:10px 0 6px;
+  overflow-wrap:anywhere;
+}
+
+.stat-card>small {
+  color:#8b998e;
+  font-size:11px;
+}
+
+.stat-card.orange {
+  border-top-color:#d8a158;
+}
+
+.stat-card.blue {
+  border-top-color:#78a4c2;
+}
+
+.stat-card.plain {
+  border-top-color:#9cae93;
+}
+
+.quick-grid {
+  display:grid;
+  grid-template-columns:repeat(4,minmax(0,1fr));
+  gap:14px;
+  margin-bottom:18px;
+}
+
+.quick-card {
+  text-align:left;
+  background:#eff5ee;
+  border:1px solid #d7e3d6;
+  border-radius:9px;
+  padding:16px 20px;
+  position:relative;
+  color:var(--ink);
+  min-height:93px;
+}
+
+.quick-card strong {
+  display:block;
+  font-size:13px;
+  margin-bottom:5px;
+}
+
+.quick-card>span:not(.arrow) {
+  display:block;
+  color:#7c8a7b;
+  font-size:11px;
+  max-width:150px;
+}
+
+.quick-card .arrow {
+  position:absolute;
+  right:16px;
+  top:16px;
+  color:var(--primary);
+}
+
+.quick-card:hover {
+  background:#e5f0e5;
+}
+
+.field {
+  display:flex;
+  flex-direction:column;
+  gap:6px;
+  min-width:0;
+}
+
+.field>span {
+  font-size:12px;
+  font-weight:550;
+  color:#6b7e70;
+}
+
+.field small {
+  color:var(--muted);
+  font-size:11px;
+}
+
+.form-grid {
+  display:grid;
+  grid-template-columns:repeat(4,minmax(0,1fr));
+  gap:16px;
+}
+
+.span-2 {
+  grid-column:span 2;
+}
+
+.filter-bar {
+  display:flex;
+  gap:12px;
+  align-items:end;
+  flex-wrap:wrap;
+  margin-bottom:19px;
+}
+
+.filter-bar>.field:first-child {
+  flex:1;
+  min-width:190px;
+}
+
+.filter-bar>.field:not(:first-child) {
+  width:150px;
+}
+
+.filter-bar input,.filter-bar select {
+  font-size:12px;
+}
+
+.list-summary {
+  display:flex;
+  justify-content:space-between;
+  font-size:12px;
+  padding:0 1px 16px;
+  color:var(--muted);
+}
+
+.list-summary strong {
+  color:var(--ink);
+}
+
+.table-wrap {
+  overflow-x:auto;
+  max-width:100%;
+}
+
+table {
+  border-collapse:collapse;
+  width:100%;
+  font-size:13px;
+}
+
+thead {
+  background:#f6f8f4;
+  border-top:1px solid #e9eee7;
+  border-bottom:1px solid var(--border);
+}
+
+th {
+  font-size:10px;
+  font-weight:650;
+  color:#7d8c7f;
+  text-align:left;
+  text-transform:uppercase;
+  letter-spacing:.4px;
+  padding:12px;
+}
+
+td {
+  padding:16px 12px;
+  border-bottom:1px solid #edf1eb;
+  vertical-align:middle;
+}
+
+td strong {
+  font-size:13px;
+  font-weight:600;
+}
+
+td small {
+  display:block;
+  font-size:11px;
+  color:#8b978c;
+  margin-top:4px;
+  max-width:250px;
+  white-space:normal;
+}
+
+tbody tr:last-child td {
+  border-bottom:none;
+}
+
+.row-actions {
+  gap:6px;
+  flex-wrap:wrap;
+}
+
+.row-actions .button {
+  padding:6px 10px;
+  font-size:11px;
+  min-height:32px;
+}
+
+.pagination {
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  border-top:1px solid var(--border);
+  padding-top:17px;
+  margin-top:12px;
+  font-size:11px;
+  color:var(--muted);
+}
+
+.pagination .button {
+  min-height:32px;
+  padding:5px 10px;
+  font-size:11px;
+}
+
+.empty {
+  text-align:center;
+  padding:44px 16px;
+  color:var(--muted);
+}
+
+.empty h3 {
+  color:var(--ink);
+  font-size:16px;
+  margin:12px 0 6px;
+}
+
+.empty p {
+  font-size:13px;
+  max-width:430px;
+  margin:0 auto;
+}
+
+.empty-mark {
+  width:42px;
+  height:42px;
+  display:grid;
+  place-items:center;
+  margin:0 auto;
+  border-radius:10px;
+  background:var(--primary-soft);
+  color:var(--primary);
+  font-weight:700;
+  font-size:16px;
+}
+
+.empty .button {
+  margin-top:14px;
+}
+
+.editor {
+  padding-bottom:72px;
+}
+
+.invoice-line {
+  display:grid;
+  grid-template-columns:minmax(170px,2.8fr) minmax(64px,.85fr) 80px 54px 70px 84px 92px 74px;
+  align-items:start;
+  gap:8px;
+  border-bottom:1px solid #e9eee7;
+  padding:10px 8px;
+}
+
+.invoice-line:last-child {
+  border-bottom:none;
+}
+
+.invoice-line .field input,.invoice-line .field select {
+  padding:8px 9px;
+  min-height:39px;
+  font-size:12px;
+}
+
+.line-name {
+  position:relative;
+  padding-left:23px;
+}
+
+.line-number {
+  position:absolute;
+  left:0;
+  top:31px;
+  color:#9aa89b;
+  font-size:11px;
+}
+
+.history-hint {
+  margin-top:5px;
+  line-height:1.3;
+  min-height:17px;
+}
+
+.last-price {
+  background:none;
+  padding:0;
+  border:0;
+  font-size:10px;
+  text-align:left;
+  color:var(--primary);
+  font-weight:600;
+}
+
+.last-price span {
+  color:#8b9a8f;
+  font-weight:450;
+}
+
+.line-amount {
+  padding-top:0;
+  text-align:right;
+}
+
+.line-amount>span {
+  display:block;
+  color:#6b7e70;
+  font-size:12px;
+  margin-bottom:6px;
+}
+
+.line-amount strong {
+  display:block;
+  font-size:13px;
+  padding-top:9px;
+}
+
+.line-controls {
+  display:flex;
+  flex-wrap:wrap;
+  gap:3px;
+  align-items:center;
+  padding-top:25px;
+  justify-content:flex-end;
+}
+
+.summary {
+  margin:22px 0 2px;
+  margin-left:auto;
+  max-width:350px;
+  padding:17px 20px;
+  background:#f5f8f2;
+  border-radius:9px;
+}
+
+.summary>div {
+  display:flex;
+  justify-content:space-between;
+  padding:5px 0;
+  font-size:12px;
+  color:var(--muted);
+}
+
+.summary strong {
+  color:var(--ink);
+  font-size:13px;
+}
+
+.summary .total {
+  border-top:1px solid #d9e5d6;
+  padding-top:12px;
+  margin-top:7px;
+  font-size:15px;
+}
+
+.summary .total strong {
+  font-size:18px;
+  color:var(--primary);
+}
+
+.form-error {
+  font-size:12px;
+  color:var(--danger);
+  margin:12px 0;
+}
+
+.form-error:empty {
+  display:none;
+}
+
+.save-bar {
+  position:fixed;
+  bottom:0;
+  left:var(--sidebar);
+  right:0;
+  background:#fffffff5;
+  backdrop-filter:blur(10px);
+  border-top:1px solid var(--border);
+  padding:10px 24px;
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  z-index:30;
+}
+
+.save-bar small {
+  display:block;
+  color:var(--muted);
+  font-size:10px;
+}
+
+.save-bar strong {
+  font-size:19px;
+  color:var(--primary);
+}
+
+.bulk-row {
+  display:grid;
+  grid-template-columns:140px 1fr 120px 120px 1.3fr auto;
+  gap:12px;
+  padding:17px 0;
+  border-bottom:1px solid var(--border);
+  align-items:end;
+}
+
+.bulk-row .button {
+  min-height:42px;
+}
+
+.custom-row {
+  display:grid;
+  grid-template-columns:1fr 160px auto;
+  gap:14px;
+  align-items:end;
+  margin-bottom:14px;
+}
+
+.checkbox-grid {
+  display:flex;
+  gap:20px;
+  flex-wrap:wrap;
+  margin-top:22px;
+}
+
+.check {
+  display:flex;
+  gap:9px;
+  align-items:center;
+  font-size:12px;
+  color:var(--muted);
+}
+
+.dialog {
+  border:1px solid var(--border);
+  border-radius:14px;
+  width:min(590px,calc(100% - 32px));
+  max-height:90dvh;
+  padding:0;
+  box-shadow:0 20px 100px #09241933;
+  background:white;
+  color:var(--ink);
+}
+
+.dialog.wide {
+  width:min(1000px,calc(100% - 40px));
+}
+
+.dialog::backdrop {
+  background:#122c295c;
+  backdrop-filter:blur(2px);
+}
+
+.dialog-head {
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  border-bottom:1px solid var(--border);
+  padding:20px 24px;
+  position:sticky;
+  top:0;
+  background:white;
+  z-index:3;
+}
+
+.dialog-head small {
+  display:block;
+  font-size:9px;
+  color:var(--primary);
+  letter-spacing:1.3px;
+  margin-bottom:4px;
+}
+
+.dialog-body {
+  padding:24px;
+}
+
+.dialog .form-grid {
+  grid-template-columns:repeat(2,minmax(0,1fr));
+}
+
+.dialog-actions {
+  display:flex;
+  justify-content:flex-end;
+  gap:9px;
+  margin-top:22px;
+  border-top:1px solid var(--border);
+  padding-top:18px;
+}
+
+.detail-heading {
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  margin-bottom:22px;
+  gap:15px;
+}
+
+.detail-heading p {
+  font-size:12px;
+  color:var(--muted);
+  margin-top:4px;
+}
+
+.detail-metrics {
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  gap:12px;
+  background:#f4f7f1;
+  padding:17px;
+  border-radius:8px;
+  margin-bottom:20px;
+}
+
+.detail-metrics span {
+  display:block;
+  font-size:11px;
+  color:var(--muted);
+}
+
+.detail-metrics strong {
+  font-size:20px;
+}
+
+.dialog .table-wrap {
+  margin-top:20px;
+}
+
+.detail-summary {
+  display:flex;
+  gap:18px;
+  justify-content:flex-end;
+  margin:16px 0;
+  font-size:12px;
+  color:var(--muted);
+  flex-wrap:wrap;
+}
+
+.subheading {
+  margin:24px 0 13px;
+}
+
+.notes {
+  white-space:pre-wrap;
+  color:var(--muted);
+  font-size:13px;
+  padding:16px 0;
+}
+
+.payment-history>div,.price-options>div {
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  gap:15px;
+  padding:13px 0;
+  border-bottom:1px solid var(--border);
+}
+
+.payment-history>div>span,.price-options>div>span {
+  flex:1;
+}
+
+.payment-history small,.price-options small {
+  display:block;
+  color:var(--muted);
+  font-size:11px;
+  margin-top:4px;
+}
+
+.allocation-row {
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  gap:20px;
+  padding:12px 0;
+  border-bottom:1px solid var(--border);
+}
+
+.allocation-row input {
+  width:145px;
+  text-align:right;
+}
+
+.allocation-row small {
+  display:block;
+  color:var(--muted);
+  font-size:11px;
+  margin-top:4px;
+}
+
+.ledger-balance {
+  text-align:right;
+}
+
+.ledger-balance small {
+  display:block;
+  color:var(--muted);
+}
+
+.ledger-balance strong {
+  font-size:23px;
+  color:var(--primary);
+}
+
+.bill-photo {
+  max-width:100%;
+  height:auto;
+  display:block;
+  margin-top:15px;
+}
+
+.activity-list {
+  list-style:none;
+  padding:0;
+  margin:20px 0;
+}
+
+.activity-list li {
+  display:flex;
+  gap:16px;
+  padding:17px 0;
+  border-bottom:1px solid var(--border);
+}
+
+.activity-dot {
+  width:8px;
+  height:8px;
+  background:#72a684;
+  border-radius:50%;
+  margin-top:7px;
+  flex-shrink:0;
+}
+
+.activity-list small {
+  display:block;
+  margin-top:4px;
+  color:var(--muted);
+  font-size:11px;
+}
+
+.activity-list p {
+  font-size:12px;
+  color:var(--muted);
+  margin-top:6px;
+}
+
+.pending-box {
+  margin-top:18px;
+  background:#fff5e9;
+  border:1px solid #ead7bb;
+  border-radius:8px;
+  padding:17px;
+}
+
+.pending-box p {
+  font-size:12px;
+  margin:6px 0 13px;
+}
+
+.toast {
+  position:fixed;
+  bottom:90px;
+  left:50%;
+  transform:translate(-50%,20px);
+  background:#172e29;
+  color:white;
+  font-size:13px;
+  padding:13px 19px;
+  border-radius:8px;
+  max-width:min(560px,calc(100% - 30px));
+  z-index:200;
+  opacity:0;
+  pointer-events:none;
+  transition:opacity .2s,transform .2s;
+  box-shadow:0 10px 35px #12332226;
+}
+
+.toast.visible {
+  opacity:1;
+  transform:translate(-50%,0);
+}
+
+.toast.bad {
+  background:#8b3430;
+}
+
+#print-area {
+  display:none;
+}
+
+
+.brand strong { font-size:17px; display:block; max-width:145px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+[hidden] { display:none!important; }
+.party-strip { display:flex; align-items:center; justify-content:space-between; gap:12px; margin-top:10px; }
+.party-strip .party-context { margin:0; }
+.party-strip .button { min-height:32px; padding:5px 10px; }
+.invoice-grid { margin-bottom:10px; }
+.invoice-columns { display:grid; grid-template-columns:minmax(170px,2.8fr) minmax(64px,.85fr) 80px 54px 70px 84px 92px 74px; gap:8px; padding:9px 8px; background:#f3f5f8; border-block:1px solid var(--border); color:#566477; font-size:11px; font-weight:650; }
+.invoice-line.no-packing,.invoice-columns.no-packing { grid-template-columns:minmax(170px,2.8fr) minmax(64px,.85fr) 70px 84px 92px 74px; }
+.line-unit { display:block; color:var(--muted); font-size:10px; margin-top:2px; }
+.line-menu { position:relative; font-size:11px; }
+.line-menu summary { cursor:pointer; min-height:36px; padding:8px; border:1px solid var(--border); border-radius:5px; }
+.line-menu>div { position:absolute; right:0; top:100%; width:140px; z-index:10; padding:5px; background:white; border:1px solid var(--border); box-shadow:0 8px 18px #172e291a; border-radius:6px; }
+.line-menu .button { width:100%; justify-content:flex-start; font-size:12px; margin:2px 0; }
+.invoice-payment { display:grid; grid-template-columns:minmax(0,1fr) minmax(260px,.65fr); gap:32px; align-items:start; }
+.invoice-payment .form-grid { grid-template-columns:repeat(2,minmax(0,1fr)); gap:12px; }
+.invoice-payment .summary { margin:0; max-width:none; padding:12px 16px; background:#f6f8fa; border:1px solid var(--border); border-radius:7px; }
+.invoice-extra { margin-top:14px; }
+.invoice-extra>summary { cursor:pointer; color:var(--muted); font-size:12px; min-height:40px; padding-block:10px; }
+@media(min-width:1101px) {
+  .invoice-line .field>span { position:absolute; width:1px; height:1px; overflow:hidden; clip:rect(0,0,0,0); white-space:nowrap; }
+  .invoice-line .line-controls { padding-top:0; }
+  .invoice-line .line-amount>span { display:none; }
+  .invoice-line .line-amount strong { padding-top:9px; }
+  .invoice-line .line-number { top:11px; }
+  .invoice-line .last-price { font-size:11px; padding:3px 6px; background:var(--primary-soft); border-radius:4px; }
+}
+@media(max-width:1100px) {
+  .invoice-columns { display:none; }
+  .invoice-line,.invoice-line.no-packing { grid-template-columns:repeat(4,minmax(0,1fr)); }
+  .invoice-line .line-name { grid-column:span 4; }
+  .invoice-payment { grid-template-columns:minmax(0,1fr); gap:16px; }
+}
+
+@media(min-width:901px) and (max-width:1300px) {
+  :root {
+    --sidebar:218px;
+  }
+  .view {
+    padding:26px 23px;
+  }
+  .topbar {
+    padding:0 23px;
+  }
+  .stat-card {
+    padding:16px;
+  }
+  .stat-card>strong {
+    font-size:22px;
+  }
+  .page-head {
+    align-items:flex-start;
+  }
+  .page-head>.actions {
+    flex-wrap:wrap;
+    justify-content:flex-end;
+  }
+  .quick-card {
+    padding:14px;
+  }
+  .bulk-row {
+    grid-template-columns:repeat(3,1fr);
+  }
+}
+
+@media(max-width:900px) {
+  :root {
+    --sidebar:0px;
+  }
+  .sidebar {
+    width:264px;
+    transform:translateX(-100%);
+    transition:transform .18s;
+    box-shadow:20px 0 70px #102e2520;
+  }
+  .menu-open .sidebar {
+    transform:translateX(0);
+  }
+  .drawer-backdrop {
+    position:fixed;
+    inset:0;
+    background:#132f2966;
+    border:0;
+    z-index:39;
+  }
+  .menu-open .drawer-backdrop {
+    display:block;
+  }
+  .workspace {
+    margin-left:0;
+  }
+  .mobile-menu {
+    display:inline-flex;
+  }
+  .topbar {
+    height:65px;
+    padding:0 20px;
+  }
+  .topbar-actions {
+    gap:9px;
+  }
+  .topbar-left {
+    gap:11px;
+  }
+  .view {
+    padding:24px 20px 110px;
+  }
+  .page-head {
+    align-items:flex-start;
+    flex-wrap:wrap;
+  }
+  .page-head>.actions {
+    flex-wrap:wrap;
+  }
+  .stat-grid {
+    grid-template-columns:repeat(2,minmax(0,1fr));
+    gap:13px;
+  }
+  .quick-grid {
+    grid-template-columns:repeat(2,minmax(0,1fr));
+  }
+  .form-grid {
+    grid-template-columns:repeat(2,minmax(0,1fr));
+  }
+  .invoice-line {
+    grid-template-columns:repeat(4,minmax(0,1fr));
+    gap:12px;
+    padding:20px 0;
+  }
+  .invoice-line .line-name {
+    grid-column:span 4;
+  }
+  .invoice-line .line-controls {
+    grid-column:span 2;
+    padding-top:5px;
+  }
+  .invoice-line .line-amount {
+    text-align:left;
+  }
+  .mobile-navigation {
+    position:fixed;
+    bottom:0;
+    inset-inline:0;
+    z-index:35;
+    display:flex;
+    align-items:center;
+    justify-content:space-around;
+    background:white;
+    border-top:1px solid var(--border);
+    padding:9px 5px max(9px,env(safe-area-inset-bottom));
+    box-shadow:0 -2px 15px #142e2310;
+  }
+  .mobile-navigation a,.mobile-navigation button {
+    border:0;
+    background:none;
+    text-align:center;
+    flex:1;
+    font-size:11px;
+    padding:10px 0;
+    min-height:42px;
+    font-weight:600;
+    color:var(--muted);
+    border-radius:7px;
+  }
+  .mobile-navigation [aria-current] {
+    background:var(--primary-soft);
+    color:var(--primary);
+  }
+  .save-bar {
+    left:0;
+    bottom:66px;
+    padding:12px 20px;
+  }
+  .editor {
+    padding-bottom:95px;
+  }
+  .status-banner {
+    margin:15px 20px 0;
+  }
+  .bulk-row {
+    grid-template-columns:repeat(3,1fr);
+  }
+  .dialog .form-grid {
+    grid-template-columns:repeat(2,minmax(0,1fr));
+  }
+}
+
+@media(max-width:600px) {
+  h1 {
+    font-size:24px;
+  }
+  .view {
+    padding:22px 14px 105px;
+  }
+  .topbar {
+    padding:0 14px;
+  }
+  .topbar-left small {
+    display:none;
+  }
+  .topbar-actions .header-create {
+    display:none;
+  }
+  .topbar-left strong {
+    font-size:12px;
+  }
+  .sync-pill {
+    font-size:10px;
+    padding:7px 9px;
+  }
+  .mobile-menu {
+    font-size:11px;
+    padding:7px 10px;
+  }
+  .page-head {
+    gap:14px;
+    margin-bottom:20px;
+  }
+  .page-head p {
+    font-size:12px;
+  }
+  .page-head>.actions {
+    width:100%;
+  }
+  .page-head>.actions .button {
+    flex:1;
+    font-size:11px;
+    white-space:normal;
+    min-height:43px;
+  }
+  .card {
+    padding:16px;
+    border-radius:10px;
+    margin-bottom:15px;
+  }
+  .stat-card {
+    padding:15px 14px;
+    min-height:135px;
+  }
+  .stat-card>strong {
+    font-size:21px;
+    margin:10px 0 8px;
+  }
+  .stat-card>span {
+    font-size:11px;
+  }
+  .stat-card>small {
+    font-size:10px;
+  }
+  .stat-grid {
+    gap:10px;
+    margin-bottom:18px;
+  }
+  .quick-grid {
+    gap:9px;
+    margin-bottom:18px;
+  }
+  .quick-card {
+    padding:14px;
+    min-height:102px;
+  }
+  .quick-card>span:not(.arrow) {
+    font-size:10px;
+    max-width:110px;
+  }
+  .quick-card .arrow {
+    right:10px;
+    top:12px;
+  }
+  .section-title {
+    gap:10px;
+    align-items:flex-start;
+  }
+  .section-title h2 {
+    font-size:15px;
+  }
+  .section-title .button {
+    font-size:10px;
+    min-height:35px;
+    padding:7px 10px;
+  }
+  .form-grid {
+    grid-template-columns:repeat(2,minmax(0,1fr));
+    gap:13px;
+  }
+  .form-grid>.span-2 {
+    grid-column:span 2;
+  }
+  .field>span {
+    font-size:11px;
+  }
+  .field input,.field select,.field textarea {
+    min-height:44px;
+    font-size:13px;
+  }
+  .filter-bar {
+    gap:10px;
+  }
+  .filter-bar>.field:first-child {
+    min-width:100%;
+    width:100%;
+  }
+  .filter-bar>.field:not(:first-child) {
+    width:calc(50% - 5px);
+  }
+  .filter-bar>.button {
+    min-height:40px;
+  }
+  .responsive-table thead {
+    display:none;
+  }
+  .responsive-table,.responsive-table tbody,.responsive-table tr {
+    display:block;
+  }
+  .responsive-table tr {
+    border:1px solid var(--border);
+    border-radius:9px;
+    padding:12px;
+    margin-bottom:12px;
+  }
+  .responsive-table td {
+    display:flex;
+    align-items:flex-start;
+    justify-content:space-between;
+    gap:10px;
+    padding:6px 0;
+    border:0;
+    font-size:12px;
+    text-align:right;
+    white-space:normal;
+  }
+  .responsive-table td:before {
+    content:attr(data-label);
+    font-size:10px;
+    font-weight:550;
+    color:var(--muted);
+    flex-shrink:0;
+    text-align:left;
+  }
+  .responsive-table td>strong,.responsive-table td>.text-button {
+    margin-left:auto;
+  }
+  .responsive-table td small {
+    display:none;
+  }
+  .responsive-table td .row-actions {
+    justify-content:flex-end;
+  }
+  .responsive-table td.number {
+    display:flex;
+    text-align:right;
+  }
+  .row-actions .button {
+    min-height:42px;
+    padding:8px 12px;
+    font-size:11px;
+  }
+  .pagination {
+    gap:8px;
+    font-size:10px;
+    flex-wrap:wrap;
+  }
+  .pagination .actions {
+    gap:5px;
+  }
+  .pagination .button {
+    min-height:38px;
+  }
+  .invoice-line,.invoice-line.no-packing {
+    grid-template-columns:repeat(2,minmax(0,1fr));
+    border:1px solid var(--border);
+    border-radius:9px;
+    padding:14px;
+    margin-bottom:12px;
+  }
+  .invoice-line .line-name {
+    grid-column:span 2;
+    padding-left:0;
+  }
+  .line-number {
+    position:static;
+    display:block;
+    color:var(--primary);
+    margin-bottom:4px;
+    font-size:10px;
+  }
+  .line-name .field>span {
+    display:none;
+  }
+  .history-hint {
+    margin:8px 0 0;
+  }
+  .last-price {
+    font-size:11px;
+    min-height:25px;
+  }
+  .line-controls {
+    grid-column:span 1!important;
+    align-self:end;
+    justify-content:flex-start;
+    padding-top:2px!important;
+  }
+  .line-menu summary { min-height:44px; padding:11px; }
+  .line-amount {
+    text-align:left;
+    padding:0;
+  }
+  .line-amount strong {
+    font-size:16px;
+    white-space:normal;
+    overflow-wrap:anywhere;
+  }
+  .summary {
+    max-width:none;
+    margin:20px 0 0;
+  }
+  .save-bar {
+    padding:10px 14px;
+    bottom:65px;
+    gap:8px;
+  }
+  .save-bar>div:first-child {
+    display:none;
+  }
+  .save-bar>.actions {
+    width:100%;
+    gap:7px;
+  }
+  .save-bar .button {
+    flex:1;
+    min-height:45px;
+    font-size:11px;
+    padding:9px 8px;
+  }
+  .save-bar .subtle {
+    flex:0 0 auto;
+  }
+  .save-bar>.actions .secondary {
+    font-size:10px;
+  }
+  .dialog,.dialog.wide {
+    width:calc(100% - 18px);
+    max-height:93dvh;
+    border-radius:11px;
+  }
+  .dialog-head {
+    padding:17px;
+  }
+  .dialog-head h2 {
+    font-size:17px;
+  }
+  .dialog-body {
+    padding:17px;
+  }
+  .dialog .form-grid {
+    gap:12px;
+  }
+  .detail-metrics {
+    gap:8px;
+    padding:13px;
+  }
+  .detail-metrics strong {
+    font-size:17px;
+    overflow-wrap:anywhere;
+  }
+  .detail-metrics span {
+    font-size:10px;
+  }
+  .dialog .actions .button {
+    min-height:43px;
+    font-size:11px;
+    padding:9px 11px;
+  }
+  .detail-heading {
+    align-items:flex-start;
+  }
+  .ledger-balance strong {
+    font-size:20px;
+  }
+  .ledger-balance small {
+    font-size:10px;
+  }
+  .allocation-row {
+    gap:10px;
+  }
+  .allocation-row input {
+    width:105px;
+    min-height:44px;
+  }
+  .allocation-row strong {
+    font-size:12px;
+  }
+  .allocation-row small {
+    font-size:10px;
+  }
+  .bulk-row {
+    grid-template-columns:repeat(2,minmax(0,1fr));
+    gap:11px;
+  }
+  .custom-row {
+    grid-template-columns:1fr 100px;
+    gap:9px;
+    border-bottom:1px solid var(--border);
+    padding-bottom:13px;
+  }
+  .custom-row>.button {
+    grid-column:span 2;
+  }
+  .checkbox-grid {
+    gap:14px;
+  }
+  .checkbox-grid .check {
+    min-height:30px;
+  }
+  .status-banner {
+    margin:12px 14px 0;
+  }
+  .toast {
+    bottom:145px;
+    font-size:12px;
+  }
+  .payment-history>div {
+    flex-wrap:wrap;
+  }
+  .dialog-actions .button {
+    min-height:45px;
+  }
+  .info-strip {
+    font-size:11px;
+    padding:12px;
+  }
+  .card .actions.wrap .button {
+    flex:1;
+    white-space:normal;
+    min-height:44px;
+  }
+  .print-totals {
+    max-width:100%;
+  }
+}
+
+@media(prefers-reduced-motion:reduce) {
+  *,*::before,*::after {
+    scroll-behavior:auto!important;
+    transition:none!important;
+    animation:none!important;
+  }
+}
+
+@media print {
+  @page {
+    size:A4;
+    margin:12mm;
+  }
+  @page thermal {
+    size:80mm 297mm;
+    margin:4mm;
+  }
+  body {
+    background:white;
+    font-size:11px;
+    color:black;
+  }
+  .app-shell,.mobile-navigation,.dialog,.toast,.skip-link,.status-banner {
+    display:none!important;
+  }
+  body.printing #print-area {
+    display:block!important;
+  }
+  .printed-invoice {
+    max-width:100%;
+    font-size:11px;
+    color:#111;
+  }
+  .printed-invoice header {
+    display:flex;
+    justify-content:space-between;
+    border-bottom:2px solid #111;
+    padding-bottom:18px;
+    gap:20px;
+  }
+  .printed-invoice header>div:last-child {
+    text-align:right;
+  }
+  .printed-invoice h1 {
+    font-size:23px;
+  }
+  .printed-invoice h2 {
+    font-size:15px;
+  }
+  .printed-invoice h3 {
+    font-size:12px;
+  }
+  .printed-invoice p {
+    white-space:pre-wrap;
+    margin:4px 0;
+  }
+  .printed-invoice section {
+    padding:16px 0;
+  }
+  .printed-invoice table {
+    width:100%;
+    font-size:11px;
+  }
+  .printed-invoice table th,.printed-invoice table td {
+    padding:10px 6px;
+    border-bottom:1px solid #bbb;
+  }
+  .printed-invoice th:last-child,.printed-invoice td:last-child {
+    text-align:right;
+  }
+  .printed-invoice table small {
+    display:block;
+  }
+  .print-totals {
+    max-width:330px;
+    margin:15px 0 20px auto;
+  }
+  .print-totals p {
+    display:flex;
+    justify-content:space-between;
+    gap:20px;
+  }
+  .print-totals .grand {
+    font-size:15px;
+    border-top:1px solid black;
+    margin-top:8px;
+    padding-top:8px;
+  }
+  .printed-invoice.thermal {
+    page:thermal;
+    max-width:72mm;
+    margin:0;
+    font-size:10px;
+  }
+  .printed-invoice.thermal header {
+    display:block;
+  }
+  .printed-invoice.thermal header>div:last-child {
+    text-align:left;
+    margin-top:10px;
+  }
+  .printed-invoice.thermal h1 {
+    font-size:18px;
+  }
+  .printed-invoice.thermal td,.printed-invoice.thermal th {
+    padding:6px 2px;
+    font-size:9px;
+  }
+  .printed-invoice.thermal .print-totals {
+    max-width:none;
+  }
+  tr {
+    break-inside:avoid;
+  }
+}
+
+
+/* Keep secondary transaction details visible and controls usable on phones. */
+@media (max-width: 600px) {
+  .responsive-table td { flex-wrap: wrap; }
+  .responsive-table td small { display: block; flex-basis: 100%; font-size: 10px; }
+  .field input, .field select, .field textarea { font-size: 16px; }
+  .button, .text-button, .last-price, .section-title .button, .row-actions .button, .pagination .button { min-height: 44px; }
+}
+</style>
+  
+  
+</head>
+<body>
+  <a class="skip-link" href="#view">Skip to content</a>
+  <div class="app-shell" id="app-shell">
+    <aside class="sidebar" id="sidebar" aria-label="Main navigation">
+      <a class="brand" href="#dashboard"><span class="brand-mark">XL</span><span><strong id="business-name">My Shop</strong><small id="business-owner">Billing workspace</small></span></a>
+      <nav id="desktop-navigation"></nav>
+      <div class="sidebar-footer"><span class="connection-dot" id="sidebar-dot"></span><span id="sidebar-status">On this device</span></div>
+    </aside>
+    <button type="button" class="drawer-backdrop" data-action="close-menu" aria-label="Close navigation"></button>
+    <div class="workspace">
+      <header class="topbar"><div class="topbar-left"><button type="button" class="button mobile-menu" data-action="toggle-menu" aria-controls="sidebar" aria-expanded="false">Menu</button><div><strong id="section-name">Overview</strong><small>XL Billing</small></div></div><div class="topbar-actions"><button type="button" class="sync-pill" id="sync-status" data-action="navigate" data-page="data">On this device</button><button type="button" class="button primary header-create" data-action="navigate" data-page="new-sale">+ Sale invoice</button></div></header>
+      <div class="status-banner" id="status-banner" role="status" hidden></div>
+      <main id="view" class="view" tabindex="-1" aria-label="Billing workspace"><div class="empty"><h1>Opening your billing workspace…</h1></div></main>
+    </div>
+  </div>
+  <nav class="mobile-navigation" id="mobile-navigation" aria-label="Mobile navigation"></nav>
+  <dialog id="dialog" class="dialog" aria-label="Billing details"></dialog>
+  <div id="toast" class="toast" role="status" aria-live="polite"></div>
+  <div id="print-area"></div>
+  <noscript>Enable JavaScript to use XL Billing. Your saved data is not changed when JavaScript is disabled.</noscript>
+<script type="module">// Billing rules live here, independently of screens and persistence.
+const COLLECTIONS = ['items', 'parties', 'invoices', 'purchases', 'retail', 'audit', 'openingPayments'];
+const today = () => new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Kolkata', year: 'numeric', month: '2-digit', day: '2-digit' }).format(new Date());
+const uid = () => crypto.randomUUID();
+const clone = value => structuredClone(value);
+const active = row => !row.deletedAt && row.status !== 'cancelled' && row.dispatchStatus !== 'cancelled';
+const key = value => String(value ?? '').trim().toLocaleLowerCase('en-IN');
+function cents(value) {
+  const number = Number(value ?? 0);
+  if (!Number.isFinite(number) || Math.abs(number) > 1e11) throw new Error('Enter a valid amount.');
+  return Math.round((number + Math.sign(number) * Number.EPSILON) * 100);
+}
+const money = value => cents(value) / 100;
+const requireValue = (condition, message) => { if (!condition) throw new Error(message); };
+const validDate = value => /^\d{4}-\d{2}-\d{2}$/.test(value) && !Number.isNaN(Date.parse(value + 'T00:00:00Z')) && new Date(value + 'T00:00:00Z').toISOString().slice(0, 10) === value;
+function blankState() {
+  const now = new Date();
+  const year = now.getMonth() < 3 ? now.getFullYear() - 1 : now.getFullYear();
+  return { schemaVersion: 2, settings: { shopName: 'My Shop', owner: '', address: '', phone: '', gstin: '', state: '', prefix: 'INV-', invNo: 1001, fy: `${year}-${String(year + 1).slice(-2)}`, terms: '', bank: '', customFields: [], modules: { packing: true, dispatch: true, retail: true, gst: true }, printSettings: {} }, ...Object.fromEntries(COLLECTIONS.map(name => [name, []])) };
+}
+function cleanSettings(settings) {
+  const output = { ...settings };
+  // Legacy integration secrets do not belong in a backup or billing database.
+  for (const field of ['jsonbinKey', 'jsonbinId', 'gsUrl', 'deletePin']) delete output[field];
+  return output;
+}
+function paymentTotal(record) {
+  return (record.payments || []).filter(p => !p.voidedAt).reduce((sum, p) => sum + cents(p.amt), 0) / 100;
+}
+function reconcile(record) {
+  record.paid = paymentTotal(record);
+  record.balance = Math.max(0, cents(record.total) - cents(record.paid)) / 100;
+  return record;
+}
+function normalizeState(input) {
+  requireValue(input && typeof input === 'object' && !Array.isArray(input), 'Invalid backup: expected a billing data object.');
+  requireValue(COLLECTIONS.some(name => name in input) || 'settings' in input, 'This file does not contain billing data.');
+  requireValue(input.settings === undefined || (input.settings && typeof input.settings === 'object' && !Array.isArray(input.settings)), 'Invalid business settings.');
+  const defaults = blankState();
+  const output = { ...clone(input), schemaVersion: 2, settings: { ...defaults.settings, ...cleanSettings(input.settings || {}) } };
+  requireValue(Array.isArray(output.settings.customFields), 'Invalid custom invoice fields.');
+  for (const cf of output.settings.customFields) requireValue(cf && typeof cf.id === 'string' && typeof cf.label === 'string', 'Invalid custom invoice field.');
+  for (const collection of COLLECTIONS) {
+    requireValue(input[collection] === undefined || Array.isArray(input[collection]), `Invalid ${collection} data.`);
+    output[collection] = clone(input[collection] || []);
+    const ids = new Set();
+    for (const row of output[collection]) {
+      requireValue(row && typeof row === 'object' && typeof row.id === 'string' && row.id, `Invalid record in ${collection}: missing ID.`);
+      requireValue(!ids.has(row.id), `Duplicate ID in ${collection}.`);
+      ids.add(row.id);
+    }
+  }
+  for (const row of [...output.items, ...output.parties]) requireValue(typeof row.name === 'string' && row.name.trim(), 'An item or party is missing its name.');
+  for (const party of output.parties) party.openingBal = money(party.openingBal);
+  for (const collection of ['invoices', 'purchases']) {
+    for (const doc of output[collection]) {
+      requireValue(Number.isFinite(Number(doc.total)) && Number(doc.total) >= 0, 'A bill has an invalid total.');
+      requireValue(validDate(doc.date), 'A bill has an invalid date.');
+      doc.total = money(doc.total);
+      requireValue(doc.items === undefined || Array.isArray(doc.items), 'Invalid invoice lines.');
+      requireValue(doc.payments === undefined || Array.isArray(doc.payments), 'Invalid payment history.');
+      doc.items ||= [];
+      doc.payments ||= [];
+      doc.partyId ||= '';
+      // Older versions stored an amount received without creating payment entries.
+      const missingPaid = cents(doc.paid) - cents(paymentTotal(doc));
+      if (missingPaid > 0 && !doc.payments.some(p => p.voidedAt)) doc.payments.push({ id: `legacy-${doc.id}`, date: doc.date, amt: missingPaid / 100, mode: doc.paymentType || doc.payType || 'Cash', note: 'Migrated opening payment' });
+      doc.payments = doc.payments.map((payment, i) => ({ ...payment, id: payment.id || `legacy-${doc.id}-${i}` }));
+      const paymentIds = new Set();
+      for (const payment of doc.payments) {
+        requireValue(validDate(payment.date) && cents(payment.amt) >= 0, 'A payment has an invalid date or amount.');
+        requireValue(!paymentIds.has(payment.id), 'Duplicate payment ID.'); paymentIds.add(payment.id);
+      }
+      doc.version ||= 1;
+      reconcile(doc);
+    }
+  }
+  const numbers = new Set();
+  for (const doc of output.invoices) {
+    requireValue(typeof doc.invoiceNo === 'string' && doc.invoiceNo.trim() && !numbers.has(doc.invoiceNo), 'Missing or duplicate invoice number.'); numbers.add(doc.invoiceNo);
+  }
+  for (const payment of output.openingPayments) requireValue(validDate(payment.date) && cents(payment.amt) > 0 && ['in', 'out'].includes(payment.direction), 'Invalid opening payment.');
+  for (const row of output.retail) requireValue(validDate(row.date) && cents(row.amount) > 0, 'Invalid retail entry.');
+  return output;
+}
+function calculate(lines, discount = 0, taxPct = 0) {
+  const subtotal = lines.reduce((sum, line) => {
+    const qty = Number(line.qty), rate = Number(line.rate);
+    requireValue(Number.isFinite(qty) && qty > 0, 'Each item needs a quantity greater than zero.');
+    requireValue(Number.isFinite(rate) && rate >= 0, 'Rates cannot be negative.');
+    return sum + cents(qty * rate);
+  }, 0);
+  const deduction = cents(discount), tax = Number(taxPct);
+  requireValue(deduction >= 0 && deduction <= subtotal, 'Discount must be between zero and the subtotal.');
+  requireValue(Number.isFinite(tax) && tax >= 0 && tax <= 100, 'Enter a tax percentage between 0 and 100.');
+  const taxAmount = Math.round((subtotal - deduction) * tax / 100);
+  return { subtotal: subtotal / 100, discount: deduction / 100, taxPct: tax, taxAmt: taxAmount / 100, total: (subtotal - deduction + taxAmount) / 100 };
+}
+const histories = new WeakMap();
+function priceHistory(state, line, partyId = '', limit = 5, kind = 'invoices') {
+  if (!line.name && !line.itemId) return [];
+  // Store saves replace state objects. Index once per snapshot, rather than
+  // rescanning every historical bill for every keystroke in every invoice row.
+  let indexes = histories.get(state);
+  if (!indexes) { indexes = new Map(); histories.set(state, indexes); }
+  if (!indexes.has(kind)) {
+    const byId = new Map(), byName = new Map();
+    const add = (map, id, entry) => { if (!map.has(id)) map.set(id, []); map.get(id).push(entry); };
+    for (const invoice of state[kind].filter(row => active(row) && row.dispatchStatus !== 'draft' && row.status !== 'draft')) {
+      for (const item of invoice.items || []) {
+        if (Number(item.rate) <= 0) continue;
+        const entry = { item, invoice };
+        if (item.itemId) add(byId, item.itemId, entry);
+        add(byName, key(item.name), entry);
+      }
+    }
+    indexes.set(kind, { byId, byName });
+  }
+  const { byId, byName } = indexes.get(kind);
+  const named = byName.get(key(line.name)) || [];
+  const candidates = line.itemId ? [...(byId.get(line.itemId) || []), ...named.filter(entry => !entry.item.itemId)] : named;
+  return candidates.filter(({ item, invoice }) => (!partyId || invoice.partyId === partyId) && key(line.unit || 'Pcs') === key(item.unit || 'Pcs') && key(line.colour || '') === key(item.colour || ''))
+    .map(({ item, invoice }) => ({ rate: Number(item.rate), date: invoice.date, createdAt: invoice.createdAt || '', invoiceNo: invoice.invoiceNo || invoice.billNo, partyName: invoice.partyName, unit: item.unit || 'Pcs', packType: item.packType || '', invoiceId: invoice.id }))
+    .sort((a, b) => b.date.localeCompare(a.date) || b.createdAt.localeCompare(a.createdAt) || b.invoiceId.localeCompare(a.invoiceId)).slice(0, limit);
+}
+function partyBalance(state, party) {
+  const invoiceDue = state.invoices.filter(d => active(d) && d.dispatchStatus !== 'draft' && d.partyId === party.id).reduce((sum, d) => sum + cents(d.balance), 0);
+  const purchaseDue = state.purchases.filter(d => active(d) && d.partyId === party.id).reduce((sum, d) => sum + cents(d.balance), 0);
+  const openingPaid = state.openingPayments.filter(p => !p.voidedAt && p.partyId === party.id).reduce((sum, p) => sum + cents(p.amt) * (p.direction === 'out' ? -1 : 1), 0);
+  return (cents(party.openingBal) - openingPaid + invoiceDue - purchaseDue) / 100;
+}
+function outstanding(state, direction, partyId = '') {
+  const collection = direction === 'out' ? 'purchases' : 'invoices';
+  const docs = state[collection].filter(d => active(d) && d.dispatchStatus !== 'draft' && d.status !== 'draft' && cents(d.balance) > 0 && (!partyId || d.partyId === partyId));
+  return [...docs].sort((a, b) => a.date.localeCompare(b.date) || (a.createdAt || '').localeCompare(b.createdAt || ''));
+}
+function fifo(docs, amount) {
+  let remaining = cents(amount);
+  requireValue(remaining >= 0, 'Payment cannot be negative.');
+  return docs.map(doc => { const allocation = Math.min(remaining, cents(doc.balance)); remaining -= allocation; return { id: doc.id, amount: allocation / 100 }; }).filter(row => row.amount > 0);
+}
+function transactions(state) {
+  const rows = [];
+  for (const [kind, docs] of [['Sale', state.invoices], ['Purchase', state.purchases]]) {
+    for (const doc of docs) {
+      if (doc.deletedAt) continue;
+      rows.push({ id: doc.id, date: doc.date, partyId: doc.partyId, partyName: doc.partyName, reference: doc.invoiceNo || doc.billNo, type: kind, amount: doc.total, balance: doc.balance, cancelled: !active(doc), collection: kind === 'Sale' ? 'invoices' : 'purchases' });
+      for (const payment of doc.payments || []) if (!payment.voidedAt) rows.push({ id: payment.id, documentId: doc.id, date: payment.date, partyId: doc.partyId, partyName: doc.partyName, reference: doc.invoiceNo || doc.billNo, type: payment.mode === 'Discount' ? 'Settlement discount' : kind === 'Sale' ? 'Payment in' : 'Payment out', amount: payment.amt, mode: payment.mode, note: payment.note, cancelled: !active(doc), collection: kind === 'Sale' ? 'invoices' : 'purchases' });
+    }
+  }
+  for (const row of state.retail.filter(active)) rows.push({ ...row, type: 'Retail', reference: 'Retail', partyName: 'Walk-in', balance: 0 });
+  for (const row of state.openingPayments.filter(p => !p.voidedAt)) rows.push({ ...row, amount: row.amt, reference: 'Opening balance', type: row.direction === 'out' ? 'Payment out' : 'Payment in', partyName: state.parties.find(p => p.id === row.partyId)?.name || 'Party' });
+  return rows.sort((a, b) => b.date.localeCompare(a.date));
+}
+function audit(state, command, entity, label) {
+  state.audit.push({ id: command.id, type: command.type, entityType: command.collection || '', entityId: entity || '', label, details: '', ts: command.at, user: state.settings.owner || 'Owner' });
+}
+function findDoc(state, command) {
+  requireValue(['invoices', 'purchases'].includes(command.collection), 'Invalid bill type.');
+  const doc = state[command.collection].find(row => row.id === command.recordId);
+  requireValue(doc && !doc.deletedAt, 'This bill is no longer available.');
+  if (command.expectedVersion != null) requireValue(doc.version === command.expectedVersion, 'This bill changed on another screen or device. Open it again before editing.');
+  return doc;
+}
+function nextInvoiceNumber(state) {
+  let counter = Number(state.settings.invNo) || 1001, number;
+  do { number = `${state.settings.prefix || 'INV-'}${counter++}`; } while (state.invoices.some(doc => doc.invoiceNo === number));
+  return { number, counter };
+}
+function saveDocument(state, command, payload, suffix = '') {
+  const collection = command.collection;
+  requireValue(['invoices', 'purchases'].includes(collection), 'Invalid bill type.');
+  const previous = payload.id ? state[collection].find(row => row.id === payload.id) : null;
+  if (payload.id) requireValue(previous && !previous.deletedAt && active(previous), 'This bill cannot be edited.');
+  if (previous) requireValue(previous.version === payload.expectedVersion, 'This bill changed. Open the latest version before editing.');
+  requireValue(validDate(payload.date), 'Enter a valid bill date.');
+  requireValue(!payload.due || (validDate(payload.due) && payload.due >= payload.date), 'Due date must be on or after the bill date.');
+  requireValue(String(payload.partyName || '').trim(), 'Select a party or enter Cash.');
+  let partyId = payload.partyId || '';
+  if (partyId) requireValue(state.parties.some(p => p.id === partyId && !p.deletedAt), 'Select an active party.');
+  if (!partyId && key(payload.partyName) !== 'cash') {
+    const matches = state.parties.filter(p => !p.deletedAt && key(p.name) === key(payload.partyName));
+    requireValue(matches.length <= 1, 'Several parties have this name. Select a party from the list.');
+    partyId = matches[0]?.id || `${command.id}-party`;
+    if (!matches.length) state.parties.push({ id: partyId, name: payload.partyName.trim(), type: collection === 'invoices' ? 'customer' : 'supplier', openingBal: 0, createdAt: command.at });
+  }
+  const lines = clone(payload.items || []).filter(line => String(line.name || '').trim());
+  requireValue(payload.isManual || lines.length, 'Add at least one item.');
+  for (const line of lines) {
+    line.name = line.name.trim();
+    line.qty = Number(line.qty); line.rate = Number(line.rate); line.amt = money(line.qty * line.rate);
+  }
+  const totals = payload.isManual ? { subtotal: money(payload.total), discount: 0, taxPct: 0, taxAmt: 0, total: money(payload.total) } : calculate(lines, payload.discount, payload.taxPct);
+  requireValue(totals.total > 0, 'Bill total must be greater than zero.');
+  let number = previous?.invoiceNo || previous?.billNo;
+  if (!number && collection === 'invoices') {
+    number = String(payload.invoiceNo || '').trim();
+    if (!number) {
+      const next = nextInvoiceNumber(state), counter = next.counter;
+      number = next.number;
+      state.settings.invNo = counter;
+    }
+    requireValue(!state.invoices.some(d => d.invoiceNo === number), 'This invoice number already exists.');
+  }
+  if (!number && collection === 'purchases') number = String(payload.billNo || '').trim() || `PUR-${command.id.slice(0, 8)}${suffix}`;
+  if (collection === 'purchases') requireValue(!state.purchases.some(d => d.id !== previous?.id && d.partyId === partyId && d.billNo === number), 'This supplier bill number already exists.');
+  const initialPaid = cents(payload.initialPaid);
+  requireValue(initialPaid >= 0 && initialPaid <= cents(totals.total), 'Received/paid amount cannot exceed this bill total.');
+  const payments = clone(previous?.payments || []);
+  const party = state.parties.find(row => row.id === partyId);
+  const partySnapshot = previous?.partyId === partyId && previous?.partySnapshot ? previous.partySnapshot : { name: payload.partyName.trim(), address: party?.address || '', phone: party?.phone || '', gstin: party?.gstin || '' };
+  if (!previous && initialPaid) payments.push({ id: `${command.id}${suffix}-paid`, date: payload.date, amt: initialPaid / 100, mode: payload.paymentType || 'Cash', note: 'At billing' });
+  const row = reconcile({ ...previous, ...payload, ...totals, partySnapshot, id: previous?.id || `${command.id}${suffix}`, invoiceNo: collection === 'invoices' ? number : undefined, billNo: collection === 'purchases' ? number : undefined, partyId, partyName: payload.partyName.trim(), items: lines, payments, payType: payload.paymentType, mode: payload.isManual ? 'amount' : 'items', customFieldValues: payload.customFieldValues || {}, createdAt: previous?.createdAt || command.at, updatedAt: command.at, version: (previous?.version || 0) + 1 });
+  requireValue(!previous || cents(row.paid) <= cents(row.total), 'New total is below payments already recorded. Reverse or correct those payments first.');
+  delete row.expectedVersion; delete row.initialPaid;
+  const index = state[collection].findIndex(d => d.id === row.id);
+  if (index < 0) state[collection].push(row); else state[collection][index] = row;
+  return row;
+}
+function applyCommand(current, command) {
+  const state = clone(current);
+  const payload = command.payload || {};
+  requireValue(command.id && command.at, 'Missing operation identity.');
+  // Also protects retries in local mode; audit events are retained with business data.
+  if (state.audit.some(row => row.id === command.id)) return state;
+  if (command.type === 'save-document') {
+    const row = saveDocument(state, command, payload);
+    audit(state, command, row.id, `${payload.id ? 'Updated' : 'Created'} ${row.invoiceNo || row.billNo}`);
+  } else if (command.type === 'bulk-documents') {
+    requireValue(Array.isArray(payload.rows) && payload.rows.length, 'Enter at least one bill.');
+    payload.rows.forEach((row, i) => saveDocument(state, command, { ...row, partyId: payload.partyId, partyName: payload.partyName, isManual: true }, `-${i}`));
+    audit(state, command, '', `Imported ${payload.rows.length} bills`);
+  } else if (command.type === 'save-master') {
+    requireValue(['items', 'parties'].includes(command.collection), 'Invalid master type.');
+    requireValue(String(payload.name || '').trim(), 'Enter a name.');
+    const previous = payload.id ? state[command.collection].find(row => row.id === payload.id) : null;
+    requireValue(!payload.id || (previous && !previous.deletedAt), 'This record is no longer available.');
+    if (previous) requireValue(previous.updatedAt === payload.expectedUpdatedAt, 'This record changed. Open it again.');
+    const row = { ...previous, ...payload, id: previous?.id || command.id, name: payload.name.trim(), updatedAt: command.at };
+    delete row.expectedUpdatedAt;
+    if (command.collection === 'items') {
+      for (const field of ['saleRate', 'purchaseRate', 'gst']) { row[field] = Number(row[field] || 0); requireValue(Number.isFinite(row[field]) && row[field] >= 0, 'Rates and GST cannot be negative.'); }
+      requireValue(row.gst <= 100, 'GST percentage must not exceed 100.');
+    } else {
+      row.openingBal = money(row.openingBal);
+      const paidOpening = state.openingPayments.filter(p => p.partyId === row.id && !p.voidedAt).reduce((sum, p) => sum + cents(p.amt), 0);
+      requireValue(!paidOpening || (Math.sign(row.openingBal) === Math.sign(previous.openingBal) && Math.abs(cents(row.openingBal)) >= paidOpening), 'Reverse opening payments before changing their direction or reducing the balance below payments.');
+    }
+    const index = state[command.collection].findIndex(d => d.id === row.id);
+    if (index < 0) state[command.collection].push(row); else state[command.collection][index] = row;
+    audit(state, command, row.id, `Saved ${row.name}`);
+  } else if (command.type === 'payment') {
+    requireValue(['in', 'out'].includes(payload.direction), 'Invalid payment direction.');
+    requireValue(validDate(payload.date), 'Enter a valid payment date.');
+    const collection = payload.direction === 'out' ? 'purchases' : 'invoices';
+    const amount = cents(payload.amount), discount = cents(payload.discount);
+    requireValue(amount >= 0 && discount >= 0 && amount + discount > 0, 'Enter a payment or settlement discount.');
+    const seen = new Set(); let sum = 0;
+    for (const allocation of payload.allocations || []) {
+      requireValue(!seen.has(allocation.id), 'Duplicate bill allocation.'); seen.add(allocation.id);
+      const doc = state[collection].find(d => d.id === allocation.id);
+      const allocated = cents(allocation.amount);
+      requireValue(doc && active(doc) && doc.dispatchStatus !== 'draft' && doc.partyId === payload.partyId, 'A selected bill is unavailable or belongs to another party.');
+      requireValue(allocated > 0 && allocated <= cents(doc.balance), 'Allocation exceeds a bill balance.');
+      sum += allocated;
+      doc.payments.push({ id: `${command.id}-${doc.id}`, date: payload.date, amt: allocated / 100, mode: payload.mode || 'Cash', note: payload.note || '' });
+      reconcile(doc); doc.updatedAt = command.at; doc.version += 1;
+    }
+    requireValue(sum === amount, 'Allocate the full payment amount to bills. Advances are not recorded by this screen.');
+    if (discount > 0) {
+      const due = outstanding(state, payload.direction).filter(doc => doc.partyId === payload.partyId);
+      requireValue(due.reduce((sum, d) => sum + cents(d.balance), 0) >= discount, 'Settlement discount exceeds the remaining balance.');
+      for (const allocation of fifo(due, discount / 100)) {
+        const doc = state[collection].find(d => d.id === allocation.id);
+        doc.payments.push({ id: `${command.id}-discount-${doc.id}`, date: payload.date, amt: allocation.amount, mode: 'Discount', note: payload.note || 'Settlement discount' });
+        reconcile(doc); doc.updatedAt = command.at; doc.version += 1;
+      }
+    }
+    audit(state, command, payload.partyId, `Payment ${payload.direction}: ${amount / 100}, discount: ${discount / 100}`);
+  } else if (command.type === 'opening-payment') {
+    const party = state.parties.find(p => p.id === payload.partyId && !p.deletedAt);
+    requireValue(party && validDate(payload.date), 'Select a party and payment date.');
+    const paid = state.openingPayments.filter(p => p.partyId === party.id && !p.voidedAt).reduce((sum, p) => sum + cents(p.amt), 0);
+    const amount = cents(payload.amount);
+    requireValue(amount > 0 && amount <= Math.abs(cents(party.openingBal)) - paid, 'Payment exceeds the outstanding opening balance.');
+    requireValue(payload.direction === (cents(party.openingBal) < 0 ? 'out' : 'in'), 'Wrong opening-balance payment direction.');
+    state.openingPayments.push({ ...payload, id: command.id, amt: amount / 100, createdAt: command.at });
+    audit(state, command, party.id, 'Opening balance payment');
+  } else if (command.type === 'void-payment') {
+    if (command.collection === 'openingPayments') {
+      const payment = state.openingPayments.find(p => p.id === command.paymentId && !p.voidedAt);
+      requireValue(payment, 'Payment no longer available.'); payment.voidedAt = command.at;
+    } else {
+      const doc = findDoc(state, command);
+      const payment = doc.payments.find(p => p.id === command.paymentId && !p.voidedAt);
+      requireValue(payment, 'Payment no longer available.'); payment.voidedAt = command.at;
+      reconcile(doc); doc.version += 1; doc.updatedAt = command.at;
+    }
+    audit(state, command, command.recordId, 'Reversed payment');
+  } else if (command.type === 'document-status') {
+    const doc = findDoc(state, command);
+    requireValue(['cancelled', 'restored', 'dispatched', 'pending'].includes(payload.status), 'Invalid status.');
+    if (payload.status === 'cancelled') { requireValue(active(doc), 'This bill is already cancelled.'); doc.previousDispatch = doc.dispatchStatus; doc.status = 'cancelled'; doc.dispatchStatus = 'cancelled'; }
+    else if (payload.status === 'restored') { requireValue(!active(doc), 'This bill is already active.'); doc.status = 'active'; doc.dispatchStatus = doc.previousDispatch || 'pending'; }
+    else { requireValue(active(doc), 'Restore the bill first.'); doc.dispatchStatus = payload.status; }
+    doc.version += 1; doc.updatedAt = command.at;
+    audit(state, command, doc.id, `${payload.status}: ${doc.invoiceNo || doc.billNo}`);
+  } else if (command.type === 'archive') {
+    requireValue(['items', 'parties', 'retail'].includes(command.collection), 'Cancel bills instead of deleting them.');
+    const row = state[command.collection].find(d => d.id === command.recordId && !d.deletedAt);
+    requireValue(row, 'Record no longer available.');
+    if (command.collection === 'parties') {
+      const paidOpening = state.openingPayments.filter(p => p.partyId === row.id && !p.voidedAt).reduce((sum, p) => sum + cents(p.amt), 0);
+      requireValue(!outstanding(state, 'in', row.id).length && !outstanding(state, 'out', row.id).length && Math.abs(cents(row.openingBal)) === paidOpening, 'Settle all bills and opening balances before archiving this party.');
+    }
+    row.deletedAt = command.at;
+    audit(state, command, row.id, `Archived ${row.name || row.date}`);
+  } else if (command.type === 'restore-master') {
+    requireValue(['items', 'parties', 'retail'].includes(command.collection), 'Invalid record type.');
+    const row = state[command.collection].find(d => d.id === command.recordId && d.deletedAt);
+    requireValue(row, 'Archived record not found.'); delete row.deletedAt;
+    audit(state, command, row.id, 'Restored record');
+  } else if (command.type === 'retail') {
+    requireValue(validDate(payload.date) && cents(payload.amount) > 0, 'Enter a date and positive retail amount.');
+    state.retail.push({ ...payload, amount: money(payload.amount), id: command.id, createdAt: command.at });
+    audit(state, command, command.id, 'Retail sale');
+  } else if (command.type === 'settings') {
+    requireValue(String(payload.shopName || '').trim(), 'Enter a business name.');
+    requireValue(state.settings.updatedAt === payload.expectedUpdatedAt, 'Settings changed on another device. Open them again.');
+    const settingsPayload = { ...payload };
+    if (Number(payload.invNo) === payload.expectedCounter) settingsPayload.invNo = state.settings.invNo;
+    else requireValue(Number(state.settings.invNo) === payload.expectedCounter, 'The invoice counter changed. Open settings again.');
+    delete settingsPayload.expectedCounter; delete settingsPayload.expectedUpdatedAt;
+    state.settings = { ...state.settings, ...cleanSettings(settingsPayload), updatedAt: command.at };
+    requireValue(Number.isSafeInteger(Number(state.settings.invNo)) && Number(state.settings.invNo) > 0, 'Invoice counter must be a positive integer.');
+    audit(state, command, '', 'Updated business settings');
+  } else if (command.type === 'batch') {
+    requireValue(Array.isArray(payload.commands) && payload.commands.length > 0 && payload.commands.length <= 500, 'Invalid import batch.');
+    let result = state;
+    for (const child of payload.commands) {
+      requireValue(child.type === 'save-master', 'Only master imports are supported in this batch.');
+      result = applyCommand(result, child);
+    }
+    audit(result, command, '', `Imported ${payload.commands.length} master records`);
+    return result;
+  } else if (command.type === 'restore-backup') {
+    const restored = normalizeState(payload.data);
+    audit(restored, command, '', 'Restored backup');
+    return restored;
+  } else throw new Error('Unknown billing operation.');
+  return state;
+}
+
+const e = value => String(value ?? '').replace(/[&<>"']/g, char => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[char]));
+const currency = value => new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', minimumFractionDigits: 2 }).format(Number(value || 0));
+const dateLabel = value => { if (!value) return '—'; const [y, m, d] = value.split('-'); return `${d}/${m}/${y}`; };
+const options = (values, selected) => values.map(value => `<option value="${e(value)}" ${String(value) === String(selected) ? 'selected' : ''}>${e(value)}</option>`).join('');
+function field(label, name, value = '', attributes = '') {
+  return `<label class="field"><span>${e(label)}</span><input name="${e(name)}" value="${e(value)}" ${attributes}></label>`;
+}
+function empty(title, text = '', action = '') {
+  return `<div class="empty"><div class="empty-mark">XL</div><h3>${e(title)}</h3><p>${e(text)}</p>${action}</div>`;
+}
+function toast(message, bad = false) {
+  const element = document.getElementById('toast');
+  element.textContent = message; element.className = `toast visible ${bad ? 'bad' : ''}`;
+  clearTimeout(toast.timer); toast.timer = setTimeout(() => element.classList.remove('visible'), 5000);
+}
+function openDialog(title, body, wide = false) {
+  const dialog = document.getElementById('dialog');
+  dialog.className = wide ? 'dialog wide' : 'dialog';
+  dialog.innerHTML = `<header class="dialog-head"><div><small>XL BILLING</small><h2>${e(title)}</h2></div><button class="button subtle" data-action="close-dialog" aria-label="Close dialog">Close</button></header><div class="dialog-body">${body}</div>`;
+  if (!dialog.open) dialog.showModal();
+  return dialog;
+}
+function button(label, action, attributes = '', style = '') { return `<button type="button" class="button ${style}" data-action="${e(action)}" ${attributes}>${e(label)}</button>`; }
+function badge(record) {
+  const status = record.status === 'cancelled' || record.dispatchStatus === 'cancelled' ? 'Cancelled' : record.dispatchStatus === 'draft' ? 'Draft' : Number(record.balance) > 0 ? 'Unpaid' : 'Paid';
+  return `<span class="badge ${status.toLowerCase()}">${status}</span>`;
+}
+function pageHead(title, subtitle, actions = '') { return `<div class="page-head"><div><h1>${e(title)}</h1>${subtitle ? `<p>${e(subtitle)}</p>` : ''}</div><div class="actions">${actions}</div></div>`; }
+const dataObject = form => Object.fromEntries(new FormData(form).entries());
+
+const navigation = [
+  ['BUSINESS', [['dashboard', 'Overview'], ['parties', 'Parties'], ['items', 'Items']]],
+  ['SALES', [['new-sale', '+ New sale'], ['sales', 'Sale invoices'], ['payment-in', 'Payment in'], ['retail', 'Retail sales'], ['bulk-sales', 'Previous sale bills']]],
+  ['PURCHASES', [['new-purchase', '+ New purchase'], ['purchases', 'Purchase bills'], ['payment-out', 'Payment out'], ['bulk-purchases', 'Bulk purchases']]],
+  ['REPORTS & DATA', [['transactions', 'Transactions'], ['reports', 'Reports'], ['audit', 'Activity log'], ['data', 'Data & sync'], ['settings', 'Settings']]]
+];
+
+const paymentModes = ['Cash', 'UPI', 'Cheque', 'NEFT', 'Card'];
+const itemChoice = item => `${item.name} · ${item.sku || item.id.slice(-6)}`;
+const partyChoice = party => `${party.name} · ${party.id.slice(-6)}`;
+function newLine() { return { id: uid(), itemId: '', name: '', qty: 1, rate: 0, unit: 'Pcs', colour: '', packType: '', packCount: '' }; }
+function createEditor(store, kind, recordId = '') {
+  const record = recordId && store.data[kind].find(row => row.id === recordId);
+  if (recordId && (!record || !active(record))) throw new Error('This bill cannot be edited.');
+  const draftKey = `xl_draft_${store.envelope.ownerId || 'local'}_${kind}${recordId ? '_' + recordId : ''}`;
+  let cached = null;
+  try {
+    cached = JSON.parse(localStorage.getItem(draftKey) || 'null');
+    if (!Array.isArray(cached?.items) || (record ? cached.id !== record.id || cached.expectedVersion !== record.version : Boolean(cached.id))) cached = null;
+  } catch { /* A bad draft must not affect saved bills. */ }
+  return { kind, draftKey, dirty: false, draft: cached || (record ? { ...clone(record), expectedVersion: record.version, initialPaid: 0 } : { date: today(), due: '', partyId: '', partyName: '', items: [newLine()], discount: 0, taxPct: 0, initialPaid: 0, paymentType: 'Cash', dispatchStatus: 'pending', notes: '', billNo: '', invoiceNo: '', customFieldValues: {}, isManual: kind === 'purchases' }) };
+}
+function rememberEditor(editor) {
+  editor.dirty = true;
+  // Saved-bill drafts are separate and restored only while their version matches.
+  localStorage.setItem(editor.draftKey, JSON.stringify(editor.draft));
+}
+function resolveParty(state, value) {
+  const matches = state.parties.filter(p => !p.deletedAt && key(p.name) === key(value));
+  const party = state.parties.find(p => !p.deletedAt && partyChoice(p) === value) || (matches.length === 1 ? matches[0] : null);
+  return party ? { partyId: party.id, partyName: party.name } : { partyId: '', partyName: value.trim() };
+}
+function historyMarkup(state, line, partyId, kind) {
+  const rates = priceHistory(state, line, partyId, 1, kind);
+  return rates.length ? `<button type="button" class="last-price" data-action="price-history" data-line="${e(line.id)}">Last ${partyId ? 'party ' : ''}price: ${currency(rates[0].rate)} <span>· ${dateLabel(rates[0].date)}</span></button>` : `<span class="muted tiny">${line.name ? 'No previous price for this item / party' : 'Select an item to see its last price'}</span>`;
+}
+function lineMarkup(editor, state, line, index) {
+  const master = state.items.find(item => item.id === line.itemId && !item.deletedAt);
+  const displayName = master ? itemChoice(master) : line.name;
+  const showPack = state.settings.modules?.packing !== false;
+  return `<div class="invoice-line ${showPack ? '' : 'no-packing'}" data-line-id="${e(line.id)}">
+    <div class="line-name"><span class="line-number">${index + 1}</span><label class="field"><span>Item description</span><input name="name" value="${e(displayName)}" list="item-options" autocomplete="off" placeholder="Search item or type description"></label><div class="history-hint" data-history="${e(line.id)}">${historyMarkup(state, line, editor.draft.partyId, editor.kind)}</div></div>
+    ${field('Brand', 'colour', line.colour || '')}
+    ${showPack ? `<label class="field"><span>Packing</span><select name="packType">${options(['', 'Box', 'Bag', 'Parcel', 'Packet', 'Carton'], line.packType)}</select></label>${field('Packs', 'packCount', line.packCount, 'type="number" min="0" step="any" inputmode="decimal"')}` : ''}
+    <div class="quantity-cell">${field(`Qty (${line.unit || 'Pcs'})`, 'qty', line.qty, 'type="number" min="0.001" step="any" inputmode="decimal"')}<small class="line-unit">${e(line.unit || 'Pcs')}</small></div>
+    ${field('Rate / unit', 'rate', line.rate, 'type="number" min="0" step="0.01" inputmode="decimal"')}
+    <div class="line-amount"><span>Amount</span><strong data-line-total="${e(line.id)}">${currency(Number(line.qty || 0) * Number(line.rate || 0))}</strong></div>
+    <div class="line-controls"><details class="line-menu"><summary>Actions</summary><div>${button('Move up', 'move-line', `data-line="${e(line.id)}" data-step="-1"`, 'subtle')}${button('Move down', 'move-line', `data-line="${e(line.id)}" data-step="1"`, 'subtle')}${button('Remove item', 'remove-line', `data-line="${e(line.id)}"`, 'subtle danger')}</div></details></div>
+  </div>`;
+}
+function renderEditor(editor, state) {
+  const draft = editor.draft, sale = editor.kind === 'invoices';
+  const party = state.parties.find(p => p.id === draft.partyId);
+  const partyName = party ? partyChoice(party) : draft.partyName;
+  const validFields = state.settings.customFields || [];
+  const packing = state.settings.modules?.packing !== false;
+  return `${pageHead(draft.id ? `Edit ${sale ? draft.invoiceNo : draft.billNo}` : sale ? 'Sale invoice' : 'Purchase bill', sale ? 'Create a sale and collect payment.' : 'Record your supplier bill.', button('Back to list', 'navigate', `data-page="${sale ? 'sales' : 'purchases'}"`, 'subtle'))}
+  <form id="invoice-form" class="editor" novalidate>
+    <section class="card"><div class="section-title"><h2>${sale ? 'Customer & invoice' : 'Supplier & bill'}</h2><span class="badge neutral">${draft.id ? 'Editing saved bill' : 'Draft on this device'}</span></div>
+      <div class="form-grid invoice-meta"><label class="field span-2"><span>${sale ? 'Customer / party' : 'Supplier / party'}</span><input name="partyName" value="${e(partyName)}" list="party-options" autocomplete="off" placeholder="Search party or enter Cash" required></label>
+      ${sale ? field('Invoice number', draft.isManual && !draft.id ? 'invoiceNo' : '_number', draft.invoiceNo || (draft.isManual ? '' : nextInvoiceNumber(state).number), draft.isManual && !draft.id ? 'placeholder="Blank = automatic"' : 'readonly') : field('Supplier bill number', 'billNo', draft.billNo, 'placeholder="Optional"')}
+      ${field('Bill date', 'date', draft.date, 'type="date" required')}
+      ${sale ? field('Due date', 'due', draft.due, 'type="date"') : ''}
+      ${sale ? `<label class="field"><span>Dispatch / status</span><select name="dispatchStatus">${options(['pending', 'dispatched', 'draft'], draft.dispatchStatus)}</select></label>` : ''}
+      <label class="field"><span>Entry mode</span><select name="isManual">${options(['Item-wise', 'Amount only'], draft.isManual ? 'Amount only' : 'Item-wise')}</select></label>
+      </div><div class="party-strip"><p class="party-context muted" id="party-context"></p>${button('View ledger', 'party-ledger', 'id="editor-party-ledger" hidden', 'subtle')}</div>
+    </section>
+    <section class="card"><div class="section-title"><h2>${draft.isManual ? 'Bill amount' : 'Items'}</h2>${!draft.isManual ? button('Add item', 'add-line', '', 'secondary') : '<span class="muted tiny">For previous bills and supplier totals</span>'}</div>
+      ${draft.isManual ? field('Total amount', 'total', draft.total || '', 'type="number" min="0.01" step="0.01" inputmode="decimal" required') : `<div class="invoice-grid"><div class="invoice-columns ${packing ? '' : 'no-packing'}" aria-hidden="true"><span>Item description</span><span>Brand</span>${packing ? '<span>Packing</span><span>Packs</span>' : ''}<span>Qty</span><span>Rate / unit</span><span>Amount</span><span>Actions</span></div><div id="invoice-lines">${draft.items.map((line, index) => lineMarkup(editor, state, line, index)).join('')}</div></div>${button('+ Add item', 'add-line', '', 'subtle')}`}
+    </section>
+    <section class="card"><div class="section-title"><h2>Payment & totals</h2><span class="muted tiny">Amounts in INR</span></div><div class="invoice-payment"><div><div class="form-grid">
+      ${!draft.isManual ? field('Discount (₹)', 'discount', draft.discount || 0, 'type="number" min="0" step="0.01" inputmode="decimal"') : ''}
+      ${!draft.isManual && state.settings.modules?.gst !== false ? field('Bill-level tax (%)', 'taxPct', draft.taxPct || 0, 'type="number" min="0" max="100" step="0.01" inputmode="decimal"') : ''}
+      ${draft.id ? field(sale ? 'Already received' : 'Already paid', '_paid', draft.paid, 'readonly') : field(sale ? 'Amount received' : 'Amount paid', 'initialPaid', draft.initialPaid || 0, 'type="number" min="0" step="0.01" inputmode="decimal"')}
+      <label class="field"><span>Payment mode</span><select name="paymentType">${options(paymentModes, draft.paymentType || draft.payType || 'Cash')}</select></label>
+      </div><details class="invoice-extra" ${draft.notes || validFields.length || !sale ? 'open' : ''}><summary>Notes & additional details</summary><div class="form-grid">${validFields.map(cf => field(cf.label, `custom:${cf.id}`, draft.customFieldValues?.[cf.id] || '', `type="${['text', 'number', 'date'].includes(cf.type) ? cf.type : 'text'}"`)).join('')}<label class="field span-2"><span>Notes</span><textarea name="notes" rows="2">${e(draft.notes)}</textarea></label>${!sale ? '<label class="field span-2"><span>Bill photo (optional, max 1 MB)</span><input type="file" name="attachment" accept="image/png,image/jpeg,image/webp"></label><div id="attachment-status" class="muted tiny"></div>' : ''}</div></details>${draft.id ? '<p class="muted tiny">Existing payments are preserved. Record or reverse payments from the bill details.</p>' : ''}</div>
+    <div class="summary" id="invoice-summary"></div></div><p class="form-error" id="invoice-error" role="alert"></p></section>
+    <footer class="save-bar"><div><small id="draft-status">Draft kept on this device</small><strong id="save-total"></strong></div><div class="actions">${button('Clear draft', 'reset-editor', '', 'subtle')}<button type="submit" class="button secondary" data-print="true">Save & print</button><button type="submit" class="button primary">${draft.id ? 'Save changes' : sale ? 'Save invoice' : 'Save purchase'}</button></div></footer>
+  </form><datalist id="party-options">${state.parties.filter(p => !p.deletedAt).map(p => `<option value="${e(partyChoice(p))}">${e(p.name)}</option>`).join('')}<option value="Cash"></datalist><datalist id="item-options">${state.items.filter(i => !i.deletedAt).map(i => `<option value="${e(itemChoice(i))}">${e(i.name)} · ${currency(sale ? i.saleRate : i.purchaseRate)} / ${e(i.unit || 'Pcs')}</option>`).join('')}</datalist>`;
+}
+function updateEditorView(editor, state) {
+  const draft = editor.draft;
+  const party = state.parties.find(p => p.id === draft.partyId);
+  const context = document.getElementById('party-context');
+  const balance = party ? partyBalance(state, party) : 0;
+  if (context) context.textContent = party ? `${party.phone || 'No phone saved'} · ${balance >= 0 ? 'To collect' : 'To pay'} ${currency(Math.abs(balance))}${party.gstin ? ` · GSTIN ${party.gstin}` : ''}` : 'Choose a saved party to see their balance and last prices.';
+  const ledger = document.getElementById('editor-party-ledger'); if (ledger) { ledger.hidden = !party; ledger.dataset.id = party?.id || ''; }
+  let totals;
+  try { totals = draft.isManual ? { subtotal: Number(draft.total || 0), discount: 0, taxAmt: 0, total: Number(draft.total || 0) } : calculate(draft.items.filter(line => line.name), draft.discount, draft.taxPct); }
+  catch (error) { document.getElementById('invoice-error').textContent = error.message; return; }
+  document.getElementById('invoice-error').textContent = '';
+  const paid = draft.id ? Number(draft.paid || 0) : Number(draft.initialPaid || 0);
+  document.getElementById('invoice-summary').innerHTML = `<div><span>Subtotal</span><strong>${currency(totals.subtotal)}</strong></div><div><span>Discount</span><strong>${currency(totals.discount)}</strong></div><div><span>Tax</span><strong>${currency(totals.taxAmt)}</strong></div><div class="total"><span>Total</span><strong>${currency(totals.total)}</strong></div><div><span>Balance due</span><strong>${currency(Math.max(0, totals.total - paid))}</strong></div>`;
+  document.getElementById('save-total').textContent = currency(totals.total);
+  for (const line of draft.items) {
+    const total = document.querySelector(`[data-line-total="${CSS.escape(line.id)}"]`);
+    if (total) total.textContent = currency(Number(line.qty || 0) * Number(line.rate || 0));
+    const hint = document.querySelector(`[data-history="${CSS.escape(line.id)}"]`);
+    if (hint) hint.innerHTML = historyMarkup(state, line, draft.partyId, editor.kind);
+  }
+}
+function editorChange(editor, state, target) {
+  const row = target.closest('[data-line-id]');
+  if (row) {
+    const line = editor.draft.items.find(item => item.id === row.dataset.lineId);
+    if (target.name === 'name') {
+      const item = state.items.find(item => !item.deletedAt && itemChoice(item) === target.value);
+      line.name = item?.name || target.value; line.itemId = item?.id || '';
+      if (item) {
+        line.unit = item.unit || 'Pcs'; line.colour = item.colour || item.brand || ''; line.hsn = item.hsn || ''; line.rate = Number(editor.kind === 'invoices' ? item.saleRate || 0 : item.purchaseRate || 0);
+        row.querySelector('[name="rate"]').value = line.rate;
+        row.querySelector('[name="colour"]').value = line.colour;
+        row.querySelector('[name="qty"]').previousElementSibling.textContent = `Qty (${line.unit})`;
+        row.querySelector('.line-unit').textContent = line.unit;
+      }
+    } else line[target.name] = ['qty', 'rate'].includes(target.name) ? Number(target.value) : target.value;
+  } else if (target.name === 'partyName') Object.assign(editor.draft, resolveParty(state, target.value));
+  else if (target.name.startsWith('custom:')) { editor.draft.customFieldValues ||= {}; editor.draft.customFieldValues[target.name.slice(7)] = target.value; }
+  else if (target.name === 'isManual') editor.draft.isManual = target.value === 'Amount only';
+  else if (target.name && !['attachment', '_paid'].includes(target.name)) editor.draft[target.name] = target.value;
+  rememberEditor(editor);
+}
+function renderBulk(kind, state) {
+  return `${pageHead(kind === 'invoices' ? 'Add previous sales' : 'Bulk purchase bills', 'Record several historical bills for one party in a single save.', button('Back', 'navigate', `data-page="${kind === 'invoices' ? 'sales' : 'purchases'}"`, 'subtle'))}<form id="bulk-form" data-kind="${kind}"><section class="card"><div class="form-grid"><label class="field span-2"><span>Party</span><select name="partyId" required><option value="">Choose a party</option>${state.parties.filter(p => !p.deletedAt).map(p => `<option value="${e(p.id)}">${e(p.name)}</option>`).join('')}</select></label><label class="field"><span>Payment mode</span><select name="paymentType">${options(paymentModes, 'Cash')}</select></label></div><div id="bulk-rows">${[0, 1, 2].map(() => bulkRow()).join('')}</div>${button('Add bill row', 'add-bulk-row', '', 'subtle')}<p class="form-error" role="alert" id="bulk-error"></p><div class="actions"><button type="submit" class="button primary">Save all bills</button></div></section></form>`;
+}
+function bulkRow() {
+  return `<div class="bulk-row">${field('Date', 'date', today(), 'type="date"')}${field('Bill number', 'number', '', 'placeholder="Optional"')}${field('Total', 'total', '', 'type="number" min="0.01" step="0.01" inputmode="decimal"')}${field('Paid', 'initialPaid', 0, 'type="number" min="0" step="0.01" inputmode="decimal"')}${field('Notes', 'notes')}${button('Remove', 'remove-bulk-row', '', 'subtle danger')}</div>`;
+}
+
+function match(row, filter) {
+  return (!filter.search || [row.name, row.partyName, row.invoiceNo, row.billNo, row.notes, row.reference].join(' ').toLowerCase().includes(filter.search.toLowerCase())) && (!filter.from || !row.date || row.date >= filter.from) && (!filter.to || !row.date || row.date <= filter.to);
+}
+function filterBar(filter, statuses = null) {
+  return `<div class="filter-bar">${field('Search', 'search', filter.search || '', 'id="list-search" placeholder="Search party or bill…" data-filter="search" type="search"')}${field('From', 'from', filter.from || '', 'data-filter="from" type="date"')}${field('To', 'to', filter.to || '', 'data-filter="to" type="date"')}${statuses ? `<label class="field"><span>Status</span><select data-filter="status">${options(statuses, filter.status || 'All')}</select></label>` : ''}${button('Clear', 'clear-filter', '', 'subtle')}</div>`;
+}
+function pager(rows, filter) {
+  const pages = Math.max(1, Math.ceil(rows.length / 25));
+  filter.page = Math.min(filter.page || 1, pages);
+  const start = (filter.page - 1) * 25;
+  return { rows: rows.slice(start, start + 25), html: `<div class="pagination"><span>${rows.length ? start + 1 : 0}–${Math.min(start + 25, rows.length)} of ${rows.length}</span><div class="actions">${button('Previous', 'page-list', `data-step="-1" ${filter.page <= 1 ? 'disabled' : ''}`, 'subtle')}<span>Page ${filter.page} / ${pages}</span>${button('Next', 'page-list', `data-step="1" ${filter.page >= pages ? 'disabled' : ''}`, 'subtle')}</div></div>` };
+}
+function documentTable(rows, collection, { compact = false } = {}) {
+  if (!rows.length) return empty('No bills yet', 'Create a bill or adjust your filters.');
+  return `<div class="table-wrap"><table class="responsive-table"><thead><tr><th>Bill / date</th><th>Party</th><th class="number">Amount</th><th class="number">Balance</th><th>Status</th><th>Actions</th></tr></thead><tbody>${rows.map(doc => `<tr><td data-label="Bill"><button class="text-button" data-action="view-document" data-kind="${collection}" data-id="${e(doc.id)}">${e(doc.invoiceNo || doc.billNo || 'Purchase')}</button><small>${dateLabel(doc.date)}</small></td><td data-label="Party"><strong>${e(doc.partyName || 'Cash')}</strong>${doc.due ? `<small>Due ${dateLabel(doc.due)}</small>` : ''}</td><td class="number" data-label="Amount">${currency(doc.total)}</td><td class="number ${Number(doc.balance) > 0 ? 'warning-text' : ''}" data-label="Balance">${currency(active(doc) ? doc.balance : 0)}</td><td data-label="Status">${badge(doc)}${collection === 'invoices' && doc.dispatchStatus === 'dispatched' ? '<small>Dispatched</small>' : ''}</td><td data-label="Actions"><div class="row-actions">${button('View', 'view-document', `data-kind="${collection}" data-id="${e(doc.id)}"`, 'subtle')}${!compact && active(doc) ? button('Edit', 'edit-document', `data-kind="${collection}" data-id="${e(doc.id)}"`, 'subtle') : ''}${active(doc) && doc.dispatchStatus !== 'draft' && doc.balance > 0 ? button(collection === 'invoices' ? 'Collect' : 'Pay', 'open-payment', `data-kind="${collection}" data-id="${e(doc.id)}"`, 'secondary') : ''}</div></td></tr>`).join('')}</tbody></table></div>`;
+}
+function renderDashboard(state) {
+  const invoices = state.invoices.filter(d => active(d) && d.dispatchStatus !== 'draft');
+  const purchases = state.purchases.filter(active);
+  const retail = state.retail.filter(active);
+  const saleTotal = invoices.reduce((sum, d) => sum + Number(d.total), 0) + retail.reduce((sum, d) => sum + Number(d.amount), 0);
+  const receive = outstanding(state, 'in').reduce((sum, d) => sum + Number(d.balance), 0);
+  const pay = outstanding(state, 'out').reduce((sum, d) => sum + Number(d.balance), 0);
+  const pending = invoices.filter(d => d.dispatchStatus !== 'dispatched').length;
+  const cards = [['Total sales', saleTotal, `${invoices.length} invoices + ${retail.length} retail entries`, ''], ['To collect', receive, 'Pending invoice balances', 'orange'], ['To pay', pay, `${purchases.length} purchase bills`, 'blue'], ['Pending dispatch', pending, 'Invoices waiting to go out', 'plain']];
+  const recent = [...state.invoices].filter(d => !d.deletedAt).sort((a, b) => (b.createdAt || b.date).localeCompare(a.createdAt || a.date)).slice(0, 6);
+  return `${pageHead('Business overview', 'Your sales, purchases and dues, together.', button('New sale', 'navigate', 'data-page="new-sale"', 'primary') + button('New purchase', 'navigate', 'data-page="new-purchase"', 'secondary'))}<div class="stat-grid">${cards.map(([title, value, hint, style]) => `<section class="stat-card ${style}"><span>${title}</span><strong>${style === 'plain' ? value : currency(value)}</strong><small>${hint}</small></section>`).join('')}</div><section class="quick-grid">${[['Payment in', 'payment-in', 'Receive money from customers'], ['Payment out', 'payment-out', 'Pay suppliers and allocate bills'], ['Add party', 'parties', 'Customer and supplier ledgers'], ['Retail entry', 'retail', 'Record counter sales quickly']].map(([title, page, text]) => `<button class="quick-card" data-action="navigate" data-page="${page}"><strong>${title}</strong><span>${text}</span><span class="arrow">→</span></button>`).join('')}</section><section class="card"><div class="section-title"><div><h2>Recent sale invoices</h2><p class="muted">Your latest entries at a glance</p></div>${button('View all sales', 'navigate', 'data-page="sales"', 'subtle')}</div>${documentTable(recent, 'invoices', { compact: true })}</section><div class="info-strip">Invoice balances above exclude opening balances. Open a party ledger to see its complete balance.</div>`;
+}
+function renderDocuments(state, collection, filter) {
+  const sale = collection === 'invoices';
+  const rows = state[collection].filter(d => !d.deletedAt && match(d, filter)).filter(d => !filter.status || filter.status === 'All' || (filter.status === 'Cancelled' ? !active(d) : filter.status === 'Draft' ? d.dispatchStatus === 'draft' : filter.status === 'Paid' ? active(d) && d.dispatchStatus !== 'draft' && d.balance <= 0 : filter.status === 'Unpaid' ? active(d) && d.dispatchStatus !== 'draft' && d.balance > 0 : filter.status === 'Pending dispatch' ? active(d) && d.dispatchStatus === 'pending' : d.dispatchStatus === 'dispatched')).sort((a, b) => b.date.localeCompare(a.date) || (b.createdAt || '').localeCompare(a.createdAt || ''));
+  const page = pager(rows, filter);
+  const total = rows.filter(d => active(d) && d.dispatchStatus !== 'draft').reduce((sum, d) => sum + Number(d.total), 0);
+  return `${pageHead(sale ? 'Sale invoices' : 'Purchase bills', 'Search, edit, print and settle your bills.', button('Export CSV', 'export-csv', `data-type="${collection}"`, 'subtle') + button('Bulk / previous bills', 'navigate', `data-page="${sale ? 'bulk-sales' : 'bulk-purchases'}"`, 'secondary') + button(sale ? 'New sale' : 'New purchase', 'navigate', `data-page="${sale ? 'new-sale' : 'new-purchase'}"`, 'primary'))}<section class="card">${filterBar(filter, sale ? ['All', 'Unpaid', 'Paid', 'Draft', 'Pending dispatch', 'Dispatched', 'Cancelled'] : ['All', 'Unpaid', 'Paid', 'Cancelled'])}<div class="list-summary"><span>${rows.length} matching bills</span><strong>Total ${currency(total)}</strong></div>${documentTable(page.rows, collection)}${page.html}</section>`;
+}
+function renderMasters(state, collection, filter) {
+  const parties = collection === 'parties';
+  const archived = filter.status === 'Archived';
+  const rows = state[collection].filter(row => Boolean(row.deletedAt) === archived && match(row, filter)).sort((a, b) => a.name.localeCompare(b.name));
+  const page = pager(rows, filter);
+  return `${pageHead(parties ? 'Parties' : 'Items', parties ? 'Customers, suppliers and their complete transaction history.' : 'Your product catalogue, rates and packing units.', button('Export CSV', 'export-csv', `data-type="${collection}"`, 'subtle') + button(parties ? 'Add party' : 'Add item', 'edit-master', `data-kind="${collection}"`, 'primary'))}<section class="card"><div class="filter-bar">${field('Search', 'search', filter.search || '', 'id="list-search" data-filter="search" type="search" placeholder="Search by name…"')}<label class="field"><span>Records</span><select data-filter="status">${options(['Active', 'Archived'], filter.status || 'Active')}</select></label></div>${rows.length ? `<div class="table-wrap"><table class="responsive-table"><thead><tr><th>Name</th>${parties ? '<th>Contact</th><th>Type</th><th class="number">Net balance</th>' : '<th>Unit / HSN</th><th class="number">Sale price</th><th class="number">Purchase price</th>'}<th>Actions</th></tr></thead><tbody>${page.rows.map(row => `<tr><td data-label="Name"><strong>${e(row.name)}</strong><small>${e(parties ? row.gstin : row.colour || row.brand || row.sku)}</small></td>${parties ? `<td data-label="Contact">${e(row.phone || '—')}<small>${e(row.address)}</small></td><td data-label="Type">${e(row.type || 'both')}</td><td class="number" data-label="Balance">${currency(Math.abs(partyBalance(state, row)))}<small>${partyBalance(state, row) >= 0 ? 'To collect' : 'To pay'}</small></td>` : `<td data-label="Unit">${e(row.unit || 'Pcs')}<small>${e(row.hsn)}</small></td><td class="number" data-label="Sale price">${currency(row.saleRate)}</td><td class="number" data-label="Purchase price">${currency(row.purchaseRate)}</td>`}<td data-label="Actions"><div class="row-actions">${archived ? button('Restore', 'restore-master', `data-kind="${collection}" data-id="${e(row.id)}"`, 'secondary') : (parties ? button('Ledger', 'party-ledger', `data-id="${e(row.id)}"`, 'secondary') : '') + button('Edit', 'edit-master', `data-kind="${collection}" data-id="${e(row.id)}"`, 'subtle') + button('Archive', 'archive-master', `data-kind="${collection}" data-id="${e(row.id)}"`, 'subtle danger')}</div></td></tr>`).join('')}</tbody></table></div>` : empty(archived ? 'No archived records' : parties ? 'Add your first party' : 'Add your first item', 'Use the add button above or import a CSV from Data & Sync.')}${page.html}</section>`;
+}
+function renderTransactions(state, filter, mode = 'all') {
+  const rows = transactions(state).filter(row => match(row, filter) && (mode === 'all' || mode === 'in' && row.type === 'Payment in' || mode === 'out' && row.type === 'Payment out'));
+  const page = pager(rows, filter);
+  return `${pageHead(mode === 'all' ? 'Transactions' : mode === 'in' ? 'Payment in' : 'Payment out', 'Track money movement and the bills behind it.', button('Export CSV', 'export-csv', 'data-type="transactions"', 'subtle') + (mode !== 'all' ? button('Record payment', 'open-payment', `data-direction="${mode}"`, 'primary') : ''))}<section class="card">${filterBar(filter)}${page.rows.length ? `<div class="table-wrap"><table class="responsive-table"><thead><tr><th>Date / type</th><th>Party</th><th>Reference</th><th class="number">Amount</th><th>Mode / note</th></tr></thead><tbody>${page.rows.map(row => `<tr><td data-label="Date">${dateLabel(row.date)}<small>${e(row.type)}${row.cancelled ? ' · cancelled bill' : ''}</small></td><td data-label="Party">${e(row.partyName)}</td><td data-label="Reference">${row.collection ? `<button class="text-button" data-action="view-document" data-kind="${row.collection}" data-id="${e(row.documentId || row.id)}">${e(row.reference)}</button>` : e(row.reference)}</td><td class="number" data-label="Amount">${currency(row.amount)}</td><td data-label="Mode">${e(row.mode || '—')}<small>${e(row.note)}</small></td></tr>`).join('')}</tbody></table></div>` : empty('No matching transactions', 'Record your first sale, purchase or payment.')}${page.html}</section>`;
+}
+function renderRetail(state, filter) {
+  const archived = filter.status === 'Archived';
+  const rows = state.retail.filter(row => Boolean(row.deletedAt) === archived && match(row, filter)).sort((a, b) => b.date.localeCompare(a.date));
+  const page = pager(rows, filter);
+  return `${pageHead('Retail sales', 'A quick daily entry for counter sales.')}<form id="retail-form" class="card"><div class="form-grid">${field('Date', 'date', today(), 'type="date" required')}${field('Amount', 'amount', '', 'type="number" min="0.01" step="0.01" inputmode="decimal" required')}${field('Notes', 'notes', '', 'placeholder="Cash / UPI / daily total"')}<div class="field"><span>&nbsp;</span><button type="submit" class="button primary">Save retail sale</button></div></div></form><section class="card">${filterBar(filter, ['All', 'Archived'])}<div class="list-summary"><span>${rows.length} entries</span><strong>${currency(rows.reduce((sum, row) => sum + Number(row.amount), 0))}</strong></div>${rows.length ? `<div class="table-wrap"><table class="responsive-table"><thead><tr><th>Date</th><th>Notes</th><th class="number">Amount</th><th>Action</th></tr></thead><tbody>${page.rows.map(row => `<tr><td data-label="Date">${dateLabel(row.date)}</td><td data-label="Notes">${e(row.notes)}</td><td class="number" data-label="Amount">${currency(row.amount)}</td><td data-label="Action">${button(archived ? 'Restore' : 'Archive', archived ? 'restore-master' : 'archive-master', `data-kind="retail" data-id="${e(row.id)}"`, 'subtle')}</td></tr>`).join('')}</tbody></table></div>` : empty('No retail entries')}${page.html}</section>`;
+}
+function renderReports(state, filter) {
+  const sales = state.invoices.filter(d => active(d) && d.dispatchStatus !== 'draft' && match(d, filter));
+  const purchases = state.purchases.filter(d => active(d) && match(d, filter));
+  const retail = state.retail.filter(d => active(d) && match(d, filter));
+  const itemMap = new Map();
+  for (const doc of sales) for (const item of doc.items || []) {
+    const id = `${item.itemId || item.name}|${item.unit || 'Pcs'}|${item.colour || ''}`;
+    const row = itemMap.get(id) || { name: item.name, unit: item.unit || 'Pcs', qty: 0, amount: 0 };
+    row.qty += Number(item.qty || 0); row.amount += Number(item.amt ?? Number(item.qty || 0) * Number(item.rate || 0)); itemMap.set(id, row);
+  }
+  const itemPage = pager([...itemMap.values()].sort((a, b) => b.amount - a.amount), filter);
+  return `${pageHead('Reports', 'Sales, purchases, item movement and pending balances.', button('Export transactions', 'export-csv', 'data-type="transactions"', 'secondary'))}<section class="card">${filterBar(filter)}<div class="stat-grid"><div class="stat-card"><span>Wholesale sales</span><strong>${currency(sales.reduce((s, d) => s + Number(d.total), 0))}</strong><small>${sales.length} invoices</small></div><div class="stat-card blue"><span>Purchases</span><strong>${currency(purchases.reduce((s, d) => s + Number(d.total), 0))}</strong><small>${purchases.length} bills</small></div><div class="stat-card orange"><span>Retail sales</span><strong>${currency(retail.reduce((s, d) => s + Number(d.amount), 0))}</strong><small>${retail.length} entries</small></div><div class="stat-card"><span>Sales including retail</span><strong>${currency(sales.reduce((s, d) => s + Number(d.total), 0) + retail.reduce((s, d) => s + Number(d.amount), 0))}</strong><small>For the selected period</small></div></div></section><section class="card"><div class="section-title"><h2>Item-wise sales</h2></div>${itemMap.size ? `<div class="table-wrap"><table class="responsive-table"><thead><tr><th>Item</th><th class="number">Quantity</th><th class="number">Sales before bill discount / tax</th></tr></thead><tbody>${itemPage.rows.map(row => `<tr><td data-label="Item">${e(row.name)}</td><td class="number" data-label="Quantity">${row.qty.toLocaleString('en-IN')} ${e(row.unit)}</td><td class="number" data-label="Value">${currency(row.amount)}</td></tr>`).join('')}</tbody></table></div>` : empty('No item sales in this period')}${itemPage.html}</section><section class="card"><div class="section-title"><h2>Pending collections</h2></div>${documentTable(outstanding(state, 'in').filter(d => match(d, filter)).slice(0, 25), 'invoices', { compact: true })}</section><section class="card"><div class="section-title"><h2>Pending supplier payments</h2></div>${documentTable(outstanding(state, 'out').filter(d => match(d, filter)).slice(0, 25), 'purchases', { compact: true })}</section>`;
+}
+function renderAudit(state, filter) {
+  const rows = [...state.audit].filter(row => !filter.search || `${row.label} ${row.type} ${row.user}`.toLowerCase().includes(filter.search.toLowerCase())).reverse();
+  const page = pager(rows, filter);
+  return `${pageHead('Activity log', 'A retained history of saves, payments and reversals.')}<section class="card">${field('Search activity', 'search', filter.search || '', 'id="list-search" data-filter="search" type="search"')}${rows.length ? `<ol class="activity-list">${page.rows.map(row => `<li><span class="activity-dot"></span><div><strong>${e(row.label || row.type)}</strong><small>${e(row.user || 'Owner')} · ${e(row.ts ? new Date(row.ts).toLocaleString('en-IN') : '')}</small>${row.details ? `<p>${e(row.details)}</p>` : ''}</div></li>`).join('')}</ol>` : empty('No activity yet')}${page.html}</section>`;
+}
+
+function masterForm(state, kind, id = '') {
+  const row = state[kind].find(row => row.id === id) || {};
+  const parties = kind === 'parties';
+  return `<form id="master-form" data-kind="${kind}" data-id="${e(id)}" data-version="${e(row.updatedAt || '')}"><div class="form-grid">${field('Name', 'name', row.name, 'required autofocus class="master-name"')}${parties ? `<label class="field"><span>Party type</span><select name="type">${options(['customer', 'supplier', 'both'], row.type || 'both')}</select></label>${field('Phone', 'phone', row.phone, 'type="tel"')}${field('GSTIN', 'gstin', row.gstin)}${field('Opening balance', 'openingBal', row.openingBal || 0, 'type="number" step="0.01" inputmode="decimal"')}<p class="muted tiny">Positive = collect from party; negative = pay party.</p>${field('Address', 'address', row.address)}<p class="muted tiny">Opening-balance payments are tracked separately in the party ledger.</p>` : `${field('Unit', 'unit', row.unit || 'Pcs')}${field('Sale rate', 'saleRate', row.saleRate || 0, 'type="number" min="0" step="0.01" inputmode="decimal"')}${field('Purchase rate', 'purchaseRate', row.purchaseRate || 0, 'type="number" min="0" step="0.01" inputmode="decimal"')}${field('GST (%)', 'gst', row.gst || 0, 'type="number" min="0" max="100" step="0.01"')}${field('HSN', 'hsn', row.hsn)}${field('Brand / colour', 'colour', row.colour || row.brand)}${field('SKU', 'sku', row.sku)}`}</div><p class="form-error" role="alert"></p><div class="dialog-actions">${button('Cancel', 'close-dialog', '', 'subtle')}<button type="submit" class="button primary">Save ${parties ? 'party' : 'item'}</button></div></form>`;
+}
+function documentDetail(state, kind, id) {
+  const doc = state[kind].find(row => row.id === id);
+  if (!doc) throw new Error('Bill not found.');
+  const sale = kind === 'invoices';
+  const saved = (doc.payments || []).filter(p => !p.voidedAt);
+  return `<div class="detail-heading"><div><h3>${e(doc.partyName || 'Cash')}</h3><p>${dateLabel(doc.date)}${doc.due ? ` · Due ${dateLabel(doc.due)}` : ''}</p></div>${badge(doc)}</div><div class="detail-metrics"><div><span>Total</span><strong>${currency(doc.total)}</strong></div><div><span>Paid / adjusted</span><strong>${currency(doc.paid)}</strong></div><div><span>Balance</span><strong>${currency(active(doc) ? doc.balance : 0)}</strong></div></div><div class="actions wrap">${button('Print', 'print-document', `data-kind="${kind}" data-id="${e(id)}"`, 'secondary')}${active(doc) ? button('Edit bill', 'edit-document', `data-kind="${kind}" data-id="${e(id)}"`, 'subtle') + (doc.balance > 0 && doc.dispatchStatus !== 'draft' ? button(sale ? 'Collect payment' : 'Payment out', 'open-payment', `data-kind="${kind}" data-id="${e(id)}"`, 'primary') : '') + (sale && doc.dispatchStatus !== 'draft' ? button(doc.dispatchStatus === 'dispatched' ? 'Mark pending' : 'Mark dispatched', 'document-status', `data-kind="${kind}" data-id="${e(id)}" data-status="${doc.dispatchStatus === 'dispatched' ? 'pending' : 'dispatched'}"`, 'subtle') : '') + button('Cancel bill', 'document-status', `data-kind="${kind}" data-id="${e(id)}" data-status="cancelled"`, 'subtle danger') : button('Restore bill', 'document-status', `data-kind="${kind}" data-id="${e(id)}" data-status="restored"`, 'primary')}</div>
+    ${(doc.items || []).length ? `<div class="table-wrap"><table><thead><tr><th>Item</th><th>Qty</th><th>Rate</th><th class="number">Amount</th></tr></thead><tbody>${doc.items.map(item => `<tr><td>${e(item.name)}<small>${e([item.colour, item.packType, item.packCount ? `${item.packCount} packs` : ''].filter(Boolean).join(' · '))}</small></td><td>${e(item.qty)} ${e(item.unit)}</td><td>${currency(item.rate)}</td><td class="number">${currency(item.amt)}</td></tr>`).join('')}</tbody></table></div>` : '<p class="info-strip">Amount-only bill</p>'}<div class="detail-summary"><span>Subtotal ${currency(doc.subtotal ?? doc.total)}</span><span>Discount ${currency(doc.discount)}</span><span>Tax ${currency(doc.taxAmt)}</span></div>${doc.notes ? `<p class="notes">${e(doc.notes)}</p>` : ''}${doc.photoData && /^data:image\/(png|jpeg|webp);base64,/.test(doc.photoData) ? `<details><summary>View supplier bill photo</summary><img class="bill-photo" src="${e(doc.photoData)}" alt="Supplier bill attachment"></details>` : ''}<h3 class="subheading">Payment history</h3>${saved.length ? `<div class="payment-history">${saved.map(payment => `<div><span><strong>${dateLabel(payment.date)}</strong><small>${e(payment.mode)} · ${e(payment.note)}</small></span><strong>${currency(payment.amt)}</strong>${active(doc) ? button('Reverse', 'void-payment', `data-kind="${kind}" data-id="${e(id)}" data-payment="${e(payment.id)}"`, 'subtle danger') : ''}</div>`).join('')}</div>` : '<p class="muted">No payments recorded.</p>'}`;
+}
+function partyLedger(state, id) {
+  const party = state.parties.find(row => row.id === id);
+  if (!party) throw new Error('Party not found.');
+  const balance = partyBalance(state, party);
+  const rows = transactions(state).filter(row => row.partyId === id);
+  const openingPaid = state.openingPayments.filter(p => p.partyId === id && !p.voidedAt).reduce((sum, p) => sum + cents(p.amt), 0);
+  const openingDue = Math.max(0, Math.abs(cents(party.openingBal)) - openingPaid) / 100;
+  return `<div class="detail-heading"><div><h3>${e(party.name)}</h3><p>${e(party.phone || '')} ${e(party.gstin || '')}</p></div><div class="ledger-balance"><small>${balance >= 0 ? 'Net amount to collect' : 'Net amount to pay'}</small><strong>${currency(Math.abs(balance))}</strong></div></div><div class="actions wrap">${button('New sale', 'new-for-party', `data-kind="invoices" data-id="${e(id)}"`, 'primary')}${button('New purchase', 'new-for-party', `data-kind="purchases" data-id="${e(id)}"`, 'secondary')}${button('Payment in', 'open-payment', `data-direction="in" data-party="${e(id)}"`, 'subtle')}${button('Payment out', 'open-payment', `data-direction="out" data-party="${e(id)}"`, 'subtle')}${openingDue > 0 ? button('Settle opening balance', 'opening-payment', `data-id="${e(id)}"`, 'subtle') : ''}</div><p class="info-strip">Opening balance: ${currency(party.openingBal)} · Opening amount still due: ${currency(openingDue)}. Sales add to the balance; purchases reduce it.</p>${rows.length ? `<div class="table-wrap"><table class="responsive-table"><thead><tr><th>Date / type</th><th>Reference</th><th class="number">Amount</th><th>Mode</th></tr></thead><tbody>${rows.map(row => `<tr><td data-label="Date">${dateLabel(row.date)}<small>${e(row.type)}${row.cancelled ? ' · cancelled' : ''}</small></td><td data-label="Reference">${row.collection ? `<button class="text-button" data-action="view-document" data-kind="${row.collection}" data-id="${e(row.documentId || row.id)}">${e(row.reference)}</button>` : e(row.reference)}</td><td class="number" data-label="Amount">${currency(row.amount)}</td><td data-label="Mode">${e(row.mode || '—')}${!row.collection && row.amt != null ? button('Reverse', 'void-payment', `data-kind="openingPayments" data-payment="${e(row.id)}" data-id="${e(id)}"`, 'subtle') : ''}</td></tr>`).join('')}</tbody></table></div>` : empty('No transactions for this party')}`;
+}
+function renderPriceHistory(state, editor, lineId) {
+  const line = editor.draft.items.find(row => row.id === lineId);
+  if (!line) throw new Error('Item not found.');
+  const rates = priceHistory(state, line, editor.draft.partyId, 5, editor.kind);
+  return `<p class="info-strip">${editor.draft.partyId ? 'Prices for the selected party' : 'Prices across all parties'} · ${e(line.unit || 'Pcs')} · Recorded unit rates, before bill-level discounts / tax.</p>${rates.length ? `<div class="price-options">${rates.map(rate => `<div><span><strong>${currency(rate.rate)} / ${e(rate.unit)}</strong><small>${e(rate.partyName)} · ${dateLabel(rate.date)} · ${e(rate.invoiceNo)}</small></span>${button('Use price', 'use-price', `data-line="${e(lineId)}" data-rate="${rate.rate}"`, 'secondary')}</div>`).join('')}</div>` : empty('No earlier price', 'No matching item, unit, brand and party found in active bills.')}`;
+}
+function paymentForm(state, direction = 'in', partyId = '', documentId = '') {
+  const collection = direction === 'out' ? 'purchases' : 'invoices';
+  const doc = state[collection].find(row => row.id === documentId);
+  if (doc) partyId = doc.partyId || '';
+  return `<form id="payment-form" data-direction="${direction}" data-document="${e(documentId)}"><div class="form-grid"><label class="field span-2"><span>Party</span><select name="partyId" id="payment-party"><option value="">Cash / unassigned bills</option>${state.parties.filter(p => !p.deletedAt).map(p => `<option value="${e(p.id)}" ${p.id === partyId ? 'selected' : ''}>${e(p.name)}</option>`).join('')}</select></label>${field('Date', 'date', today(), 'type="date" required')}${field(direction === 'out' ? 'Amount paid' : 'Amount received', 'amount', doc?.balance || '', 'id="payment-amount" type="number" min="0" step="0.01" inputmode="decimal"')}<label class="field"><span>Mode</span><select name="mode">${options(paymentModes, 'Cash')}</select></label>${field('Settlement discount', 'discount', 0, 'type="number" min="0" step="0.01" inputmode="decimal"')}${field('Note', 'note', '', 'placeholder="Payment reference"')}</div><div class="section-title"><h3>Allocate to bills</h3>${button('Allocate oldest first', 'auto-allocate', '', 'subtle')}</div><div id="allocation-bills"></div><p id="allocation-summary" class="info-strip"></p><p class="form-error" role="alert"></p><div class="dialog-actions">${button('Cancel', 'close-dialog', '', 'subtle')}<button type="submit" class="button primary">Save payment ${direction}</button></div></form>`;
+}
+function allocationMarkup(state, direction, partyId, documentId = '') {
+  const rows = outstanding(state, direction).filter(row => (row.partyId || '') === partyId && (!documentId || row.id === documentId));
+  return rows.length ? rows.map(row => `<label class="allocation-row"><span><strong>${e(row.invoiceNo || row.billNo)}</strong><small>${dateLabel(row.date)} · Due ${currency(row.balance)}</small></span><input aria-label="Allocate to ${e(row.invoiceNo || row.billNo)}" name="allocate:${e(row.id)}" type="number" min="0" max="${row.balance}" step="0.01" inputmode="decimal" value="${documentId ? row.balance : ''}" placeholder="0.00"></label>`).join('') : empty('No pending bills', 'Choose another party or settle its opening balance from the ledger.');
+}
+function openingPaymentForm(state, partyId) {
+  const party = state.parties.find(row => row.id === partyId);
+  return `<form id="opening-form" data-party="${e(partyId)}" data-direction="${Number(party.openingBal) < 0 ? 'out' : 'in'}"><p class="info-strip">This payment is applied to ${e(party.name)}’s opening balance.</p><div class="form-grid">${field('Date', 'date', today(), 'type="date" required')}${field('Amount', 'amount', '', 'type="number" min="0.01" step="0.01" required')}<label class="field"><span>Mode</span><select name="mode">${options(paymentModes, 'Cash')}</select></label>${field('Note', 'note')}</div><p class="form-error" role="alert"></p><div class="dialog-actions"><button type="submit" class="button primary">Save opening payment</button></div></form>`;
+}
+
+function renderSettings(state) {
+  const settings = state.settings;
+  return `${pageHead('Business settings', 'Business details, invoice defaults and print preferences.')}<form id="settings-form" data-version="${e(settings.updatedAt || '')}" data-counter="${e(settings.invNo)}"><section class="card"><div class="section-title"><h2>Business profile</h2></div><div class="form-grid">${field('Business name', 'shopName', settings.shopName, 'required')}${field('Owner', 'owner', settings.owner)}${field('Phone', 'phone', settings.phone, 'type="tel"')}${field('GSTIN', 'gstin', settings.gstin)}${field('State', 'state', settings.state)}${field('Financial year', 'fy', settings.fy)}<label class="field span-2"><span>Business address</span><textarea name="address" rows="2">${e(settings.address)}</textarea></label></div></section><section class="card"><div class="section-title"><h2>Invoice defaults</h2></div><div class="form-grid">${field('Invoice prefix', 'prefix', settings.prefix)}${field('Next invoice number', 'invNo', settings.invNo, 'type="number" min="1" step="1" required')}<label class="field span-2"><span>Bank / UPI details</span><textarea name="bank" rows="2">${e(settings.bank)}</textarea></label><label class="field span-2"><span>Terms and conditions</span><textarea name="terms" rows="3">${e(settings.terms)}</textarea></label></div><div class="checkbox-grid">${[['packing', 'Packing fields'], ['dispatch', 'Dispatch tracking'], ['retail', 'Retail entries'], ['gst', 'Bill-level tax field']].map(([name, label]) => `<label class="check"><input type="checkbox" name="module:${name}" ${settings.modules?.[name] !== false ? 'checked' : ''}>${label}</label>`).join('')}</div><p class="muted tiny">This version retains the original bill-level tax model. Item GST defaults are stored in your catalogue.</p></section><section class="card"><div class="section-title"><h2>Print preferences</h2></div><div class="form-grid"><label class="field"><span>Paper width</span><select name="print:paper">${options(['A4', '80mm'], settings.printSettings?.paper || 'A4')}</select></label></div><div class="checkbox-grid">${[['showPacking', 'Packing on invoice'], ['showBrand', 'Brand on invoice'], ['showBank', 'Bank details'], ['showTerms', 'Terms']].map(([name, label]) => `<label class="check"><input type="checkbox" name="print:${name}" ${settings.printSettings?.[name] !== false ? 'checked' : ''}>${label}</label>`).join('')}</div></section><section class="card"><div class="section-title"><h2>Custom invoice fields</h2>${button('Add field', 'add-custom-field', '', 'subtle')}</div><div id="custom-fields">${(settings.customFields || []).map(cf => customFieldRow(cf)).join('')}</div></section><p class="form-error" id="settings-error" role="alert"></p><div class="actions"><button type="submit" class="button primary">Save settings</button></div></form>`;
+}
+function customFieldRow(cf) {
+  return `<div class="custom-row" data-custom-id="${e(cf.id)}">${field('Label', 'label', cf.label, 'required')}<label class="field"><span>Type</span><select name="type">${options(['text', 'number', 'date'], cf.type)}</select></label>${button('Remove', 'remove-custom-field', '', 'subtle danger')}</div>`;
+}
+function renderData(store, cloud) {
+  const counts = ['invoices', 'purchases', 'parties', 'items'].map(name => `${store.data[name].length} ${name}`).join(' · ');
+  return `${pageHead('Data & sync', 'Back up your business, import data and connect your devices.')}
+  <section class="card"><div class="section-title"><div><h2>Your billing data</h2><p class="muted">${e(counts)}</p></div><span class="badge neutral">Revision ${store.envelope.revision}</span></div><p class="info-strip">${store.envelope.ownerId ? 'Cloud workspace. Bills can be posted after signing in to this account.' : 'Device-only mode. These bills stay in this browser until you connect cloud storage.'}</p><div class="actions wrap">${button('Download full backup', 'export-backup', '', 'primary')}<label class="button secondary">Restore JSON backup<input class="visually-hidden" id="backup-file" type="file" accept="application/json,.json"></label>${button('Export all transactions CSV', 'export-csv', 'data-type="transactions"', 'subtle')}</div><p class="muted tiny">Backups include bill photos, payments, opening balances and activity history. Old shop4_* browser data is retained as a migration recovery copy.</p></section>
+  <section class="card"><div class="section-title"><h2>Connect PC & mobile</h2><span class="badge neutral">${cloud.connected ? e(cloud.session.user.email || 'Signed in') : 'Not connected'}</span></div><p class="muted">Use the same billing email and password on both devices. Your bills sync through your business cloud database.</p><p class="info-strip">A connection is required to post cloud bills. Unfinished drafts stay on this device. Other devices check for changes every 8 seconds.</p>
+  ${cloud.connected ? `<div class="actions wrap">${button('Refresh now', 'refresh-cloud', '', 'secondary')}${button('Use cloud data', 'use-cloud', '', 'subtle')}${button('Sign out', 'sign-out', '', 'subtle')}</div>` : cloud.configured ? `<form id="billing-login-form"><div class="form-grid"><label class="field"><span>Billing email</span><input id="billing-email" name="email" type="email" autocomplete="username" required></label><label class="field"><span>Password</span><input name="password" type="password" autocomplete="current-password" required></label></div><p class="form-error" role="alert"></p><div class="actions"><button type="submit" class="button primary">Sign in</button>${button('Forgot password?', 'reset-password', '', 'subtle')}</div></form>` : '<p class="muted">Cloud login is awaiting setup. Your entries remain on this device; download a full backup regularly.</p>'}
+  ${store.error ? `<p class="form-error" role="alert">${e(store.error)}</p>` : ''}${store.pending ? `<div class="pending-box"><strong>A save needs attention</strong><p>${e(store.pending.type)} · ${e(store.pending.at)}</p><div class="actions">${button('Retry pending save', 'retry-save', '', 'primary')}${button('Download pending operation', 'export-pending', '', 'subtle')}</div></div>` : ''}</section>
+  <section class="card"><div class="section-title"><h2>Google Drive & Sheets</h2></div><p class="muted">Save a full backup to your Drive or refresh spreadsheet reports through the optional Google integration.</p><div class="actions wrap">${button('Back up to Drive', 'google-export', `data-type="backup" ${!cloud.googleConfigured ? 'disabled' : ''}`, 'secondary')}${button('Update Google Sheets', 'google-export', `data-type="sheets" ${!cloud.googleConfigured ? 'disabled' : ''}`, 'subtle')}</div><p class="muted tiny">${cloud.googleConfigured ? 'Your Google connection is configured.' : 'Connect your Google account to enable these exports.'} Google credentials stay on the server. A failed export does not affect saved bills.</p></section>
+  <section class="card"><div class="section-title"><h2>Import from Excel CSV</h2></div><p class="muted">Save your Excel sheet as UTF-8 CSV. Use your exported items/parties file as a template. Existing IDs update matching records; blank IDs add new records.</p><form id="csv-form"><div class="form-grid"><label class="field"><span>Data type</span><select name="kind">${options(['items', 'parties'], 'items')}</select></label><label class="field span-2"><span>CSV file (up to 500 rows)</span><input name="file" type="file" accept="text/csv,.csv" required></label></div><p class="form-error" role="alert"></p><button type="submit" class="button secondary">Review CSV import</button></form></section>`;
+}
+
+
+let demoState = {"schemaVersion":2,"settings":{"shopName":"XL Billing · Demo","owner":"","address":"","phone":"","gstin":"","state":"","prefix":"INV-","invNo":1002,"fy":"2026-27","terms":"","bank":"","customFields":[],"modules":{"packing":true,"dispatch":true,"retail":true,"gst":true},"printSettings":{}},"items":[{"id":"demo-cups","name":"Demo Paper Cups","unit":"Pcs","saleRate":8,"purchaseRate":6,"colour":"Demo brand"}],"parties":[{"id":"demo-customer","name":"Demo Customer","type":"customer","openingBal":0,"phone":""},{"id":"demo-supplier","name":"Demo Supplier","type":"supplier","openingBal":0,"phone":""}],"invoices":[{"date":"2026-10-09","partyId":"demo-customer","partyName":"Demo Customer","items":[{"id":"sample-line","itemId":"demo-cups","name":"Demo Paper Cups","unit":"Pcs","colour":"Demo brand","qty":100,"rate":8,"amt":800}],"discount":0,"taxPct":0,"dispatchStatus":"pending","subtotal":800,"taxAmt":0,"total":800,"partySnapshot":{"name":"Demo Customer","address":"","phone":"","gstin":""},"id":"sample-sale","invoiceNo":"INV-1001","payments":[{"id":"sample-sale-paid","date":"2026-10-09","amt":200,"mode":"Cash","note":"At billing"}],"mode":"items","customFieldValues":{},"createdAt":"2026-10-09T13:15:14.513Z","updatedAt":"2026-10-09T13:15:14.513Z","version":1,"paid":200,"balance":600}],"purchases":[],"retail":[],"audit":[{"id":"sample-sale","type":"save-document","entityType":"invoices","entityId":"sample-sale","label":"Created INV-1001","details":"","ts":"2026-10-09T13:15:14.513Z","user":"Owner"}],"openingPayments":[]};
+let demoPage = 'new-sale', demoFilter = {}, demoEditor;
+const demoCloud = { configured:true,connected:false,available:true,googleConfigured:false };
+function freshEditor(kind, record) {
+  const party = demoState.parties.find(p=>p.id===(kind==='invoices'?'demo-customer':'demo-supplier'));
+  return { kind, draft:record ? {...clone(record),expectedVersion:record.version,initialPaid:0} : {date:today(),due:'',partyId:party.id,partyName:party.name,invoiceNo:'',billNo:'',dispatchStatus:'pending',isManual:false,items:[{...newLine(),itemId:'demo-cups',name:'Demo Paper Cups',unit:'Pcs',colour:'Demo brand',qty:100,rate:kind==='invoices'?8:6}],discount:0,taxPct:0,initialPaid:0,paymentType:'Cash',notes:'',customFieldValues:{}} };
+}
+function demoRender() {
+  const view=document.getElementById('view');
+  view.innerHTML = demoEditor ? renderEditor(demoEditor,demoState) : demoPage==='dashboard'?renderDashboard(demoState):demoPage==='sales'||demoPage==='purchases'?renderDocuments(demoState,demoPage==='sales'?'invoices':'purchases',demoFilter):demoPage==='parties'||demoPage==='items'?renderMasters(demoState,demoPage,demoFilter):demoPage==='data'?renderData({data:demoState,envelope:{revision:1}},demoCloud):demoPage==='settings'?renderSettings(demoState):demoPage==='reports'?renderReports(demoState,demoFilter):demoPage==='audit'?renderAudit(demoState,demoFilter):demoPage==='retail'?renderRetail(demoState,demoFilter):demoPage.startsWith('bulk-')?renderBulk(demoPage==='bulk-sales'?'invoices':'purchases',demoState):renderTransactions(demoState,demoFilter,demoPage==='payment-in'?'in':demoPage==='payment-out'?'out':'all');
+  document.getElementById('desktop-navigation').innerHTML=navigation.map(([label,links])=>'<div class="nav-group"><small>'+label+'</small>'+links.map(([name,text])=>'<a href="#'+name+'" '+(name===demoPage?'aria-current="page"':'')+'>'+text+'</a>').join('')+'</div>').join('');
+  document.getElementById('mobile-navigation').innerHTML=[['dashboard','Home'],['sales','Sales'],['parties','Parties'],['items','Items']].map(([name,text])=>'<a href="#'+name+'" '+(name===demoPage?'aria-current="page"':'')+'>'+text+'</a>').join('')+'<button type="button" data-action="toggle-menu">More</button>';
+  document.getElementById('business-name').textContent=demoState.settings.shopName;
+  document.getElementById('section-name').textContent=demoEditor?'Invoice preview':'Design preview';
+  const banner=document.getElementById('status-banner'); banner.hidden=false; banner.textContent='DESIGN PREVIEW · Sample data only. Nothing is stored or sent. Do not enter real passwords or billing data.';
+  if(demoEditor){updateEditorView(demoEditor,demoState);document.getElementById('draft-status').textContent='Preview only · not stored';}
+}
+function demoNavigate(page) { demoPage=page;demoFilter={};demoEditor=page==='new-sale'||page==='new-purchase'?freshEditor(page==='new-sale'?'invoices':'purchases'):null;document.getElementById('app-shell').classList.remove('menu-open');demoRender();window.scrollTo(0,0); }
+document.addEventListener('click',event=>{
+  const link=event.target.closest('a[href^="#"]');if(link){event.preventDefault();demoNavigate(link.getAttribute('href').slice(1));return;}
+  const target=event.target.closest('[data-action]');if(!target)return;event.preventDefault();
+  const action=target.dataset.action,kind=target.dataset.kind,id=target.dataset.id;
+  if(action==='navigate')demoNavigate(target.dataset.page);
+  else if(action==='toggle-menu')document.getElementById('app-shell').classList.toggle('menu-open');
+  else if(action==='close-menu')document.getElementById('app-shell').classList.remove('menu-open');
+  else if(action==='close-dialog')document.getElementById('dialog').close();
+  else if(action==='add-line'){demoEditor.draft.items.push(newLine());demoRender();}
+  else if(action==='reset-editor'){demoEditor=freshEditor(demoEditor.kind);demoRender();}
+  else if(action==='remove-line'){demoEditor.draft.items=demoEditor.draft.items.filter(line=>line.id!==target.dataset.line);demoRender();}
+  else if(action==='move-line'){const items=demoEditor.draft.items,index=items.findIndex(line=>line.id===target.dataset.line),next=index+Number(target.dataset.step);if(next>=0&&next<items.length){[items[index],items[next]]=[items[next],items[index]];demoRender();}}
+  else if(action==='price-history')openDialog('Last item prices',renderPriceHistory(demoState,demoEditor,target.dataset.line));
+  else if(action==='use-price'){demoEditor.draft.items.find(line=>line.id===target.dataset.line).rate=Number(target.dataset.rate);document.getElementById('dialog').close();demoRender();}
+  else if(action==='party-ledger')openDialog('Demo party ledger',partyLedger(demoState,id),true);
+  else if(action==='view-document')openDialog('Demo bill details',documentDetail(demoState,kind,id),true);
+  else if(action==='edit-document'){demoEditor=freshEditor(kind,demoState[kind].find(row=>row.id===id));demoPage=kind==='invoices'?'new-sale':'new-purchase';document.getElementById('dialog').close();demoRender();}
+  else if(action==='page-list'){demoFilter.page=Math.max(1,(demoFilter.page||1)+Number(target.dataset.step));demoRender();}
+  else if(action==='clear-filter'){demoFilter={};demoRender();}
+  else toast('Design preview only. This action uses no real data or cloud service.');
+});
+document.addEventListener('input',event=>{
+  const target=event.target;if(!demoEditor||!target.name||target.type==='file')return;
+  const row=target.closest('[data-line-id]');
+  if(row){const line=demoEditor.draft.items.find(line=>line.id===row.dataset.lineId);line[target.name]=['qty','rate'].includes(target.name)?Number(target.value):target.value;}
+  else if(target.name==='partyName')Object.assign(demoEditor.draft,resolveParty(demoState,target.value));
+  else if(target.name==='isManual')demoEditor.draft.isManual=target.value==='Amount only';
+  else demoEditor.draft[target.name]=target.value;
+  updateEditorView(demoEditor,demoState);
+});
+document.addEventListener('change',event=>{
+  if(event.target.dataset.filter){demoFilter[event.target.dataset.filter]=event.target.value;demoRender();}
+  if(demoEditor&&event.target.name==='isManual')demoRender();
+});
+document.addEventListener('submit',event=>{
+  event.preventDefault();
+  if(event.target.id==='invoice-form'){
+    try{const kind=demoEditor.kind;demoState=applyCommand(demoState,{id:uid(),at:new Date().toISOString(),type:'save-document',collection:kind,payload:clone(demoEditor.draft)});demoNavigate(kind==='invoices'?'sales':'purchases');toast('Sample bill added to this preview only. Nothing is stored.');}catch(error){toast(error.message,true);}
+  }else{if(event.target.elements.password)event.target.elements.password.value='';toast('Preview only. No information was sent or saved.');}
+});
+demoEditor=freshEditor('invoices');demoRender();
+</script></body>
+</html>

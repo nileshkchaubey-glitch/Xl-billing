@@ -8,13 +8,7 @@ import { masterForm, documentDetail, partyLedger, renderPriceHistory, paymentFor
 import { renderSettings, renderData, customFieldRow } from './features/settings.js';
 import { download, exportBackup, exportCSV, masterImportCommands } from './export.js';
 import { printDocument } from './print.js';
-
-const navigation = [
-  ['YOUR WORKSPACE', [['dashboard', 'Overview'], ['parties', 'Parties'], ['items', 'Items']]],
-  ['SALES', [['sales', 'Sale invoices'], ['payment-in', 'Payment in'], ['retail', 'Retail sales']]],
-  ['PURCHASES', [['purchases', 'Purchase bills'], ['payment-out', 'Payment out']]],
-  ['BUSINESS', [['transactions', 'Transactions'], ['reports', 'Reports'], ['audit', 'Activity log'], ['data', 'Data & sync'], ['settings', 'Settings']]]
-];
+import { navigation } from './navigation.js';
 const titles = Object.fromEntries(navigation.flatMap(([, links]) => links));
 let cloud, store, page = 'dashboard', editor = null, filter = {}, reviewedImport = null;
 const view = document.getElementById('view');
@@ -25,7 +19,7 @@ function renderNavigation() {
   document.getElementById('desktop-navigation').innerHTML = navigation.map(([label, links]) => `<div class="nav-group"><small>${label}</small>${links.filter(([name]) => name !== 'retail' || store.data.settings.modules?.retail !== false).map(([name, text]) => `<a href="#${name}" ${page === name ? 'aria-current="page"' : ''}>${text}</a>`).join('')}</div>`).join('');
   document.getElementById('mobile-navigation').innerHTML = [['dashboard', 'Home'], ['sales', 'Sales'], ['parties', 'Parties'], ['items', 'Items']].map(([name, text]) => `<a href="#${name}" ${page === name ? 'aria-current="page"' : ''}>${text}</a>`).join('') + '<button type="button" data-action="toggle-menu" aria-controls="sidebar">More</button>';
   document.getElementById('business-name').textContent = store.data.settings.shopName;
-  document.getElementById('business-owner').textContent = store.data.settings.owner || 'Owner workspace';
+  document.getElementById('business-owner').textContent = store.data.settings.owner || 'Billing workspace';
   document.getElementById('section-name').textContent = titles[page] || (page.includes('purchase') ? 'Purchase entry' : 'Sale entry');
   document.title = `${store.data.settings.shopName} · XL Billing`;
   renderStatus();
@@ -156,6 +150,12 @@ async function handleClick(target) {
   else if (action === 'add-custom-field') document.getElementById('custom-fields').insertAdjacentHTML('beforeend', customFieldRow({ id: uid(), label: '', type: 'text' }));
   else if (action === 'remove-custom-field') target.closest('.custom-row').remove();
   else if (action === 'refresh-cloud') { await store.refresh(); toast('Cloud data refreshed.'); renderPage(); }
+  else if (action === 'sign-out') {
+    if (store.pending) throw new Error('Retry or export the pending save before signing out.');
+    cloud.signOut(); clearInterval(store.timer); store.markStatus('error', 'Signed out. Sign in to post cloud bills.'); renderPage();
+  } else if (action === 'reset-password') {
+    await cloud.resetPassword(document.getElementById('billing-email')?.value.trim()); toast('If this account exists, a password reset email will arrive shortly.');
+  }
   else if (action === 'retry-save') { await store.retry(); toast('Pending save completed.'); renderPage(); }
   else if (action === 'export-pending') download(JSON.stringify(store.pending, null, 2), `xl-billing-pending-${today()}.json`);
   else if (action === 'use-cloud') {
@@ -177,7 +177,12 @@ async function handleClick(target) {
 
 async function handleSubmit(form, submitter) {
   const input = dataObject(form);
-  if (form.id === 'invoice-form') {
+  if (form.id === 'billing-login-form') {
+    try { await cloud.signIn(input.email.trim(), input.password); }
+    finally { form.elements.password.value = ''; }
+    if (store.pending && store.envelope.ownerId !== cloud.session.user.id) { cloud.signOut(); throw new Error('Sign in to the account that owns the pending save.'); }
+    await store.connect(); renderPage(); toast('Billing account connected.');
+  } else if (form.id === 'invoice-form') {
     const kind = editor.kind;
     const operationId = editor.draft.id;
     await store.execute('save-document', clone(editor.draft), { collection: kind });

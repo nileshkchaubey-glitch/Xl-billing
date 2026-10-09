@@ -4,6 +4,7 @@ import { LocalD1, LocalBucket } from './d1-helper.js';
 import { fixture, command } from './helpers.js';
 import { commitWorkspace, readWorkspace, readRevision } from '../backend/d1.js';
 import { billingApi } from '../backend/worker.js';
+import { identityEnv, testToken, mockIdentity } from './auth-helper.js';
 function setup(t) { const DB = new LocalD1(); t.after(() => DB.close()); return { DB, BUCKET: new LocalBucket() }; }
 const create = (env, owner = 'owner', data = fixture()) => commitWorkspace(env, owner, { data, expectedRevision: 0, operationId: 'initial' });
 
@@ -63,22 +64,26 @@ test('backup restore rejects duplicate invoice numbers before any cloud record i
   await assert.rejects(commitWorkspace(env,'owner',{ expectedRevision:1,operationId:operation.id,command:operation }), /duplicate invoice/);
   assert.equal(await readRevision(env,'owner'),1);
 });
-test('API requires platform identity and same-origin JSON writes, and checks Google owner', async t => {
-  const env = setup(t); await create(env);
+test('API requires billing identity and trusted-origin JSON writes, and checks Google owner', async t => {
+  const env = { ...setup(t), ...identityEnv(), APP_ORIGIN: 'https://nileshkchaubey-glitch.github.io' }; await create(env); mockIdentity(t);
   const call = (path, options={}) => billingApi(new Request('https://billing.example/api/billing/'+path,options),env);
   assert.equal((await call('workspace')).status,401);
-  const owner = { 'oai-authenticated-user-id':'owner' };
+  const owner = { Authorization: 'Bearer ' + testToken() };
   const session = await (await call('session',{ headers:owner })).json(); assert.equal(session.user.id,'owner');
   assert.equal((await call('commit',{ method:'POST',headers:{...owner, Origin:'https://evil.example','Content-Type':'application/json'},body:'{}' })).status,403);
-  assert.equal((await call('workspace',{ headers:{'oai-authenticated-user-id':'other'} })).status,200);
-  assert.equal(await (await call('workspace',{ headers:{'oai-authenticated-user-id':'other'} })).json(),null);
+  assert.equal((await call('workspace',{ headers:{'oai-authenticated-user-id':'owner'} })).status,401);
+  assert.equal((await call('workspace',{ headers:{ Authorization:'Bearer '+testToken({},'other') } })).status,403);
+  const preflight = await call('commit', { method:'OPTIONS', headers:{ Origin:env.APP_ORIGIN, 'Access-Control-Request-Method':'POST', 'Access-Control-Request-Headers':'authorization,content-type' } });
+  assert.equal(preflight.status,204); assert.equal(preflight.headers.get('Access-Control-Allow-Origin'),env.APP_ORIGIN);
+  const crossOriginRead = await call('workspace', { headers:{...owner,Origin:env.APP_ORIGIN} });
+  assert.equal(crossOriginRead.status,200); assert.equal(crossOriginRead.headers.get('Access-Control-Allow-Origin'),env.APP_ORIGIN);
   assert.equal((await call('google',{ method:'POST',headers:{...owner,Origin:'https://billing.example','Content-Type':'application/json'},body:'{"action":"backup"}' })).status,403);
   const health=await (await call('health')).json(); assert.ok(health.schemaReady); assert.ok(health.photosReady);
 });
 test('API rejects malformed and oversized bodies before a database change', async t => {
-  const env = setup(t);
+  const env = { ...setup(t), ...identityEnv() }; mockIdentity(t); const token=testToken();
   const send = (body, extra = {}) => billingApi(new Request('https://billing.example/api/billing/commit', {
-    method: 'POST', headers: { 'oai-authenticated-user-id': 'owner', Origin: 'https://billing.example', 'Content-Type': 'application/json', ...extra }, body
+    method: 'POST', headers: { Authorization:'Bearer '+token, Origin: 'https://billing.example', 'Content-Type': 'application/json', ...extra }, body
   }), env);
   for (const body of ['{', 'null', '[]']) assert.equal((await send(body)).status, 400);
   assert.equal((await send('{}', { 'Content-Length': String(22 * 1024 * 1024) })).status, 413);
