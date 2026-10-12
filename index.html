@@ -8468,7 +8468,7 @@ window.openPurPayModal = function(purId) {
   document.getElementById('pur-pay-note').value    = '';
 
   document.getElementById('pur-pay-info').innerHTML = `
-    <div style="font-weight:700;font-size:13.5px">${escHtml(pur.partyName||'Supplier')} — ${pur.billNo||pur.id.slice(-6)}</div>
+    <div style="font-weight:700;font-size:13.5px">${escHtml(pur.partyName||'Supplier')} — ${escHtml(pur.billNo||pur.id.slice(-6))}</div>
     <div style="margin-top:5px;display:flex;gap:12px;flex-wrap:wrap;font-size:12.5px">
       <span>Bill Date: <strong>${fmtDate(pur.date)}</strong></span>
       <span>Total: <strong>${fc(pur.total)}</strong></span>
@@ -10163,7 +10163,7 @@ window.poutLoadBills = function(partyId, partyName) {
       <tbody id="pout-bill-rows">
         ${bills.map(b => `
         <tr class="pout-bill-row ${escHtml((billBalance(b)||0)<=0?'pout-zero':'')}">
-          <td style="padding:5px 8px;font-weight:700;color:var(--b)">${b.billNo||b.id.slice(-6)}</td>
+          <td style="padding:5px 8px;font-weight:700;color:var(--b)">${escHtml(b.billNo||b.id.slice(-6))}</td>
           <td style="padding:5px 8px;color:var(--gray-500)">${fmtDate(b.date)}</td>
           <td style="padding:5px 8px;text-align:right">${fc(b.total)}</td>
           <td class="pout-bal" style="padding:5px 8px;text-align:right;font-weight:700;color:var(--r)">${fc(billBalance(b))}</td>
