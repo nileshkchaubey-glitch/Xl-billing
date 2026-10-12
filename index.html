@@ -846,7 +846,7 @@ function createXLStorage(options){
   };
 }
 </script>
-<script>
+<script type="text/xl-app">
 // ═══════════════════════════════════
 // DATA LAYER
 // ═══════════════════════════════════
@@ -884,15 +884,15 @@ function safeStoredIds(record){
 const DB = {
   get: k => {
     try{
-      const raw=localStorage.getItem(K(k));
+      const raw=window.XLStore.getRaw(K(k));
       if(raw===null)return null;
       const value=JSON.parse(raw);
       if(!validateStoredShape(k,value))throw new Error('Invalid stored shape');
       return value;
-    }catch{throw storageFailure(k);}
+    }catch(e){if(e.name?.startsWith('Storage'))throw e;const failure=storageFailure(k);window.XLStore.fail(failure);throw failure;}
   },
-  set: (k,v) => {if(storageBlocked)throw storageFailure(k);return localStorage.setItem(K(k), JSON.stringify(v));},
-  del: k => {if(storageBlocked)throw storageFailure(k);return localStorage.removeItem(K(k));}
+  set: (k,v) => {try{if(storageBlocked)throw storageFailure(k);if(!validateStoredShape(k,v))throw new Error('Unsupported '+k+' data shape.');return window.XLStore.setRaw(K(k),JSON.stringify(v));}catch(e){window.XLStore.fail(e);throw e;}},
+  del: k => {if(storageBlocked)throw storageFailure(k);return window.XLStore.deleteRaw(K(k));}
 };
 const getSettings  = () => DB.get('settings')  || {
   shopName:'My Shop', owner:'', address:'', phone:'', gstin:'', state:'',
@@ -923,10 +923,11 @@ function safeUrl(value){
 function normalizedInvoiceNo(value){return String(value||'').trim().toLocaleLowerCase('en');}
 function nextInvoiceNumber(prefix,records,start=1){
   const used=new Set(records.map(r=>normalizedInvoiceNo(r.invoiceNo)));
-  let next=Math.max(1,Math.trunc(Number(start)||1));
+  let next=Number(start);
+  if(!Number.isSafeInteger(next)||next<1||next>=Number.MAX_SAFE_INTEGER)throw new Error('The invoice counter cannot advance safely. Review the series before saving.');
   const normalizedPrefix=normalizedInvoiceNo(prefix);
-  for(const record of records){const no=normalizedInvoiceNo(record.invoiceNo);if(no.startsWith(normalizedPrefix)&&/^\d+$/.test(no.slice(normalizedPrefix.length)))next=Math.max(next,Number(no.slice(normalizedPrefix.length))+1);}
-  while(used.has(normalizedInvoiceNo(prefix+next)))next++;
+  for(const record of records){const no=normalizedInvoiceNo(record.invoiceNo);if(no.startsWith(normalizedPrefix)&&/^\d+$/.test(no.slice(normalizedPrefix.length))){const value=Number(no.slice(normalizedPrefix.length));if(!Number.isSafeInteger(value)||value>=Number.MAX_SAFE_INTEGER-1)throw new Error('The invoice series is exhausted or invalid.');next=Math.max(next,value+1);}}
+  while(used.has(normalizedInvoiceNo(prefix+next))){if(next>=Number.MAX_SAFE_INTEGER-1)throw new Error('The invoice series cannot advance safely.');next++;}
   return {number:prefix+next,next:next+1};
 }
 
@@ -1048,7 +1049,7 @@ function listHeaders(container,key,columns,render){
   });
 }
 
-const genId   = () => Date.now().toString(36) + Math.random().toString(36).slice(2,5);
+const genId = () => Date.now().toString(36)+'-'+(typeof crypto.randomUUID==='function'?crypto.randomUUID():Array.from(crypto.getRandomValues(new Uint8Array(16)),b=>b.toString(16).padStart(2,'0')).join(''));
 const today   = () => new Date().toISOString().slice(0,10);
 const fmtDate = d => { if(!d) return '-'; if(typeof d!=='string'||!/^\d{4}-\d{2}-\d{2}$/.test(d))return 'Invalid date'; const[y,m,dd]=d.split('-'); return `${dd}/${m}/${y}`; };
 const fc      = n  => '₹'+(+(n||0)).toLocaleString('en-IN',{minimumFractionDigits:2,maximumFractionDigits:2});
@@ -2375,7 +2376,7 @@ document.querySelectorAll('.mo').forEach(m=>m.addEventListener('click',e=>{if(e.
 // ═══════════════════════════════════
 // INIT
 // ═══════════════════════════════════
-window.addEventListener('load',()=>{
+window.addEventListener('xl:ready',()=>{
   const now=new Date();
   const first=new Date(now.getFullYear(),now.getMonth(),1).toISOString().slice(0,10);
   const last=new Date(now.getFullYear(),now.getMonth()+1,0).toISOString().slice(0,10);
@@ -2400,7 +2401,7 @@ document.addEventListener('keydown',e=>{
 </body>
 </html>
 <!-- V5 PATCH: All 6 new features injected via script -->
-<script>
+<script type="text/xl-app">
 // ═══════════════════════════════════════════════════════
 // V5 MIGRATION SYSTEM — Auto-upgrade without data loss
 // ═══════════════════════════════════════════════════════
@@ -2619,7 +2620,7 @@ window.downloadCSVTemplate = function() {
 window.importCSV = function(input) {
   const file = input.files[0]; if (!file) return;
   const reader = new FileReader();
-  reader.onload = e => {
+  reader.onload = e => window.XLRunAction('Import previous bills CSV',()=>{
     const lines = e.target.result.split('\n').filter(l => l.trim());
     if (lines.length < 2) { toast('CSV is empty!'); return; }
     const headers = lines[0].split(',').map(h => h.trim().toLowerCase());
@@ -2648,7 +2649,7 @@ window.importCSV = function(input) {
     document.getElementById('csv-import-result').textContent = `✓ ${count} bills imported successfully!`;
     renderPrevBillsTable();
     input.value = '';
-  };
+  });
   reader.readAsText(file);
 };
 
@@ -2831,7 +2832,7 @@ window.createNewBin = async function() {
 // ═══════════════════════════════════════════════════════
 // DOM INJECTION — Add new UI elements
 // ═══════════════════════════════════════════════════════
-document.addEventListener('DOMContentLoaded', () => {}, false);
+window.addEventListener('xl:ready', () => {}, false);
 
 // Inject immediately since script runs after DOM
 (function injectUI() {
@@ -2979,7 +2980,7 @@ document.addEventListener('DOMContentLoaded', () => {}, false);
 
 })();
 </script>
-<script>
+<script type="text/xl-app">
 // ═══════════════════════════════════════════════════════
 // PARTY-WISE BULK BILL ENTRY SYSTEM
 // Fast spreadsheet-style entry — select party once, enter multiple bills
@@ -3542,7 +3543,7 @@ window.renderPrevBillsTable = function() {
 kbd{background:var(--gray-100);border:1px solid var(--gray-300);border-radius:4px;padding:1px 6px;font-family:'Courier New',monospace;font-size:12px}
 </style>
 
-<script>
+<script type="text/xl-app">
 (function v6patch(){
 // ═══════════════════════════════════════════════════════════
 // HELPER: all payments extracted from invoices + standalone
@@ -4186,7 +4187,7 @@ window.<span class="fn">nav</span> = <span class="kw">function</span>(<span clas
 
 })(); // end v6patch
 </script>
-<script>
+<script type="text/xl-app">
 // ═══ V6 BUG FIXES & IMPROVEMENTS ═══
 
 // Fix 1: Better editPayment using a proper inline modal (not browser prompt)
@@ -4386,7 +4387,7 @@ document.addEventListener('click',e=>{
 
 console.log('v6 fixes applied ✓');
 </script>
-<script>
+<script type="text/xl-app">
 // ═══ USER FIX: Party Area + Description Patch (First instance) ═══
 (function partyAreaDescriptionPatch(){
   const html = s => String(s || '').replace(/[&<>"']/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
@@ -4585,7 +4586,7 @@ console.log('v6 fixes applied ✓');
 /* Compact table mode */
 .compact table td,.compact table th{padding:5px 8px!important;font-size:12px!important}
 </style>
-<script>
+<script type="text/xl-app">
 (function v8(){
 'use strict';
 
@@ -4598,8 +4599,8 @@ const SL_PER_PAGE = 50; // show 50 per page — handles 100+ entries fast
 let slCols = { invno:true, date:true, party:true, paytype:true, total:true, balance:true, dispatch:true, status:true };
 
 // Persist column visibility
-function loadSlCols(){ try{ const s=localStorage.getItem('v8_slcols'); if(s) slCols={...slCols,...JSON.parse(s)}; }catch{} }
-function saveSlCols(){ localStorage.setItem('v8_slcols',JSON.stringify(slCols)); }
+function loadSlCols(){ try{ const s=window.XLStore.getRaw('v8_slcols'); if(s) slCols={...slCols,...JSON.parse(s)}; }catch{} }
+function saveSlCols(){ window.XLStore.setRaw('v8_slcols',JSON.stringify(slCols)); }
 loadSlCols();
 
 // ═══════════════════════════════════════════════════════
@@ -5166,12 +5167,12 @@ window.copyGsCode = function(){
 window.toggleCompactMode = function(){
   document.querySelector('.main').classList.toggle('compact');
   const on = document.querySelector('.main').classList.contains('compact');
-  localStorage.setItem('v8_compact', on?'1':'0');
+  window.XLStore.setRaw('v8_compact', on?'1':'0');
   toast(on ? 'Compact mode ON' : 'Compact mode OFF');
 };
 
 // Restore compact mode
-if(localStorage.getItem('v8_compact')==='1') document.querySelector('.main')?.classList.add('compact');
+if(window.XLStore.getRaw('v8_compact')==='1') document.querySelector('.main')?.classList.add('compact');
 
 // ═══════════════════════════════════════════════════════
 // DOM INJECTION
@@ -5267,7 +5268,7 @@ if(localStorage.getItem('v8_compact')==='1') document.querySelector('.main')?.cl
 .sr-cell{color:var(--gray-400);font-size:11px;text-align:center;width:22px;flex-shrink:0;padding-top:7px}
 </style>
 
-<script>
+<script type="text/xl-app">
 (function v9patch(){
 'use strict';
 
@@ -5654,7 +5655,7 @@ console.log('v9 patch applied ✓ — Sticky headers, A5 print, Sr No, Item bran
 code.inline{background:var(--gray-100);padding:2px 6px;border-radius:4px;font-family:'Courier New',monospace;font-size:12px}
 </style>
 
-<script>
+<script type="text/xl-app">
 (function v10(){
 'use strict';
 
@@ -6142,7 +6143,7 @@ window.renderGitHubGuide = function(){
   - An item information panel after selection (last customer, purchase rate)
   - The rate popup shows rates for the selected customer
   ═══════════════════════════════════════════════════════════ -->
-<script>
+<script type="text/xl-app">
 (function v11(){
 'use strict';
 
@@ -6468,7 +6469,7 @@ console.log('v11 applied ✓ — Keyboard AC | Item Info Panel | Party-filtered 
 })(); // end v11
 </script>
 <!-- V12 FIX — Item | Brand | Packing | Packs | Qty | Rate | Amount -->
-<script>
+<script type="text/xl-app">
 (function v12fix(){
 'use strict';
 
@@ -6670,7 +6671,7 @@ table tr.cancelled-row td { background:#fef2f2 !important; }
 .phone-missing-badge { background:#fef3c7; color:#92400e; font-size:11px; padding:2px 6px; border-radius:4px; font-weight:600; }
 </style>
 
-<script>
+<script type="text/xl-app">
 (function v13(){
 'use strict';
 
@@ -7526,7 +7527,7 @@ console.log('v13 applied ✓ — Cancel Invoice | PDF Naming | Pagination(20) | 
 .supp-chip.active { font-weight:700; }
 </style>
 
-<script>
+<script type="text/xl-app">
 (function v14(){
 'use strict';
 
@@ -7540,6 +7541,8 @@ console.log('v13 applied ✓ — Cancel Invoice | PDF Naming | Pagination(20) | 
 // ════════════════════════════════════════════════════════
 // Bulk entry state
 let purBulkRows   = [];
+window.XLDomainState=window.XLDomainState||{};
+window.XLDomainState.purchaseBulk={capture:()=>structuredClone(purBulkRows),restore:value=>{purBulkRows=value;}};
 let purBulkPartyId   = '';
 let purBulkPartyName = '';
 
@@ -8502,7 +8505,7 @@ tr.soft-deleted td{opacity:.45;text-decoration:line-through}
 @keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-6px)}75%{transform:translateX(6px)}}
 </style>
 
-<script>
+<script type="text/xl-app">
 (function v15(){
 'use strict';
 
@@ -8591,8 +8594,7 @@ window.withDeletePin = function(label, onConfirm, changePin = false) {
         const salt = Array.from(crypto.getRandomValues(new Uint8Array(16)), b=>b.toString(16).padStart(2,'0')).join('');
         const hash = await pinDigest(input.value, salt);
         const next = { ...getSettings(), deletePinSalt:salt, deletePinHash:hash };
-        delete next.deletePin; DB.set('settings', next);
-        auditLog('edit','settings','delete-pin','Delete PIN changed','');
+        await window.XLRunAction('Change delete PIN',()=>{delete next.deletePin;DB.set('settings',next);auditLog('edit','settings','delete-pin','Delete PIN changed','');},true);
         close(); toast('PIN saved. Choose Delete again to confirm the record.');
       } else {
         if (!await matchesOld(input.value)) throw new Error('Wrong PIN. No record was deleted.');
@@ -9380,7 +9382,7 @@ console.log('v15 applied ✓ — Audit Log | Delete PIN | Settlement Modal | Par
 .ip-party-row:last-child { border-bottom:none; }
 </style>
 
-<script>
+<script type="text/xl-app">
 (function v16(){
 'use strict';
 
@@ -9392,7 +9394,7 @@ console.log('v15 applied ✓ — Audit Log | Delete PIN | Settlement Modal | Par
 
 // Override window load to NOT set sl-from/sl-to
 // (We patch after the original load ran — override the setter)
-window.addEventListener('load', () => {
+window.addEventListener('xl:ready', () => {
   // Clear the dates the original load set — show ALL invoices by default
   const slFrom = document.getElementById('sl-from');
   const slTo   = document.getElementById('sl-to');
@@ -10179,7 +10181,7 @@ console.log('v16 applied ✓ — Sale filter fixed | 3-dot restored | Payment Ou
   .fast-sale-row .del-btn{min-width:40px;min-height:40px}
 }
 </style>
-<script>
+<script type="text/xl-app">
 (function invoiceFastEntry(){
 'use strict';
 window.saleEntryOptions = function(s){
@@ -10288,5 +10290,103 @@ window.saveSaleInvoice=function(andPrint){
   }
   saveBeforeEntry(andPrint);
 };
+})();
+</script>
+
+<script id="xl-bootstrap">
+// All code in deferred app scripts is authored application code, never imported data.
+function xlStorageMessage(error){
+  let box=document.getElementById('storage-error');
+  if(!box){box=document.createElement('div');box.id='storage-error';box.setAttribute('role','alert');box.style.cssText='position:sticky;top:0;z-index:10001;padding:14px;background:#fef2f2;color:#991b1b;border:2px solid #dc2626';document.body.prepend(box);}
+  const quota=error?.name==='QuotaExceededError';
+  if(error?.name==='SecurityError')error=new Error('Browser access to billing storage is denied. No new changes were confirmed. Keep the original profile intact.');
+  box.textContent=quota?'Browser storage could not complete this save. Original records were restored. Keep your entries and export an independent backup before retrying.':(error?.message||'Billing changes could not be confirmed. Keep the original records and retry after review.');
+  box.dataset.kind=error?.name||'StorageError';
+}
+function xlSaving(active){
+  let box=document.getElementById('xl-saving');
+  if(active){if(!box){box=document.createElement('div');box.id='xl-saving';box.setAttribute('role','status');box.style.cssText='position:fixed;inset:0;z-index:10000;background:#ffffffd9;display:grid;place-items:center;font-weight:700';box.textContent='Saving billing changes safely...';document.body.appendChild(box);}}
+  else box?.remove();
+}
+function validateXLTransaction(after,before,options={}){
+  const core=['settings','items','parties','invoices','purchases','retail','audit'];
+  for(const key of core){
+    const raw=after['shop4_'+key];if(raw===undefined)continue;
+    let value;try{value=JSON.parse(raw);}catch{throw new Error('Stored '+key+' is not valid JSON. No changes were saved.');}
+    if(!validateStoredShape(key,value))throw new Error('Stored '+key+' has an unsupported shape. Original data was preserved.');
+    if(!Array.isArray(value))continue;
+    const ids=new Set();for(const r of value){if(typeof r.id!=='string'||!r.id||ids.has(r.id))throw new Error('The '+key+' collection has missing or duplicate identifiers. Review it before saving.');ids.add(r.id);}
+    if(!['invoices','purchases'].includes(key))continue;
+    const old=before['shop4_'+key]?JSON.parse(before['shop4_'+key]):[],oldById=new Map(old.map(r=>[r.id,r]));
+    const numbers=new Set();
+    for(const r of value){
+      const prior=oldById.get(r.id),number=key==='invoices'?normalizedInvoiceNo(r.invoiceNo):normalizedInvoiceNo(r.billNo);
+      if(number&&numbers.has(number)&&(!prior||options.restore))throw new Error('Duplicate bill numbers must be reviewed before this operation.');
+      if(number)numbers.add(number);
+      if(prior&&JSON.stringify(prior)===JSON.stringify(r)&&!options.restore)continue;
+      const state=financialState(r);
+      if(!state.valid||!state.consistent)throw new Error('Bill '+(r.invoiceNo||r.billNo||r.id)+' has conflicting financial history. It was not rewritten.');
+      if(r.balance!==undefined&&r.balance!==null&&moneyPaise(r.balance)!==moneyPaise(state.balance))throw new Error('Bill balance does not match its payments and discounts. No changes were saved.');
+    }
+  }
+}
+function xlRuntimeSnapshot(){
+  return {modules:Object.fromEntries(Object.entries(window.XLDomainState||{}).map(([key,module])=>[key,module.capture()])),saleItems:structuredClone(saleItems),editingInvId,currentViewInvId,purItems:structuredClone(purItems),purMode,purPhotoData,pbRows:structuredClone(pbRows),
+    controls:[...document.querySelectorAll('input,textarea,select')].map(el=>({el,value:el.value,checked:el.checked})),
+    modals:[...document.querySelectorAll('.mo,.pwd-overlay,.main,#photo-zone-div,#photo-preview-area')].map(el=>({el,className:el.className,display:el.style.display})),
+    statuses:['sb-shop','sb-loc','csv-import-result','xl-import-result','gs-status','cloud-status'].map(id=>{const el=document.getElementById(id);return el?{el,html:el.innerHTML}:null;}).filter(Boolean)};
+}
+function xlRestoreRuntime(state){
+  saleItems=state.saleItems;editingInvId=state.editingInvId;currentViewInvId=state.currentViewInvId;purItems=state.purItems;purMode=state.purMode;purPhotoData=state.purPhotoData;pbRows=state.pbRows;
+  for(const [key,value]of Object.entries(state.modules))window.XLDomainState[key]?.restore(value);
+  for(const c of state.controls)if(c.el.isConnected){if(c.el.type!=='file')c.el.value=c.value;c.el.checked=c.checked;}
+  for(const m of state.modals)if(m.el.isConnected){m.el.className=m.className;m.el.style.display=m.display;}
+  for(const s of state.statuses)if(s.el.isConnected)s.el.innerHTML=s.html;
+}
+function installXLStorageBindings(){
+  const store=window.XLStore;let effects=[],playing=false;
+  const defer=(fn,that,args)=>{effects.push(()=>fn.apply(that,args));};
+  window.XLRunAction=async function(label,fn,strict=false,options={}){
+    if(store.isExecuting())return fn();
+    if(store.isBusy()){const e=new Error('A save is already in progress. Wait for its result.');e.name='StorageBusyError';xlStorageMessage(e);if(strict)throw e;return false;}
+    const state=xlRuntimeSnapshot();effects=[];
+    try{
+      const result=await store.run(label,fn,options);const pending=effects;effects=[];playing=true;
+      try{for(const effect of pending)effect();}finally{playing=false;}
+      const box=document.getElementById('storage-error');if(box?.dataset.kind==='StorageBusyError'||result!==false)box?.remove();
+      return result;
+    }catch(e){effects=[];xlRestoreRuntime(state);xlStorageMessage(e);if(strict)throw e;return false;}
+  };
+  // Visual acknowledgement follows verified storage. Calculations remain immediate.
+  for(const name of Object.keys(window).filter(name=>/^render/.test(name)||['toast','nav','viewInvoice','viewPurchase','printInvoice','printInvoiceA5','closeModal'].includes(name))){
+    const original=window[name];if(typeof original!=='function')continue;
+    window[name]=function(...args){if(store.isActive()&&!playing){defer(original,this,args);return;}return original.apply(this,args);};
+  }
+  const mutationNames=['quickAddParty','saveSaleInvoice','quickDispatch','toggleDispatch','savePayment','saveRetail','savePurchase','saveItem','saveParty','addCustomField','removeCustomField','saveSettings','saveQuickItem','savePrevBill','cloudPull','cloudPush','createNewBin','pbQuickAddParty','pbSaveAll','saveStandalonePayment','saveEditPayment','saveQuickParty','xlProcessCSV','saveGsUrl','savePrintSettings','savePrintSettingsUI','cancelInvoice','restoreInvoice','saveQuickPhone','purBulkQuickAdd','purBulkSaveAll','savePurPayment','saveSettlement','savePoutPayment','toggleSlCol','toggleCompactMode','gsPull','gsPush'];
+  for(const name of mutationNames){const original=window[name];if(typeof original!=='function')continue;window[name]=function(...args){return window.XLRunAction(name,()=>original.apply(this,args));};}
+  const pin=window.withDeletePin;
+  window.withDeletePin=function(label,callback,changePin){return pin(label,()=>window.XLRunAction(label,callback,true),changePin);};
+  const remove=Element.prototype.remove;
+  Element.prototype.remove=function(){if(store.isActive()&&!playing&&/(modal|overlay)$/.test(this.id)){effects.push(()=>remove.call(this));return;}return remove.call(this);};
+  const valueDescriptor=Object.getOwnPropertyDescriptor(HTMLInputElement.prototype,'value');
+  Object.defineProperty(HTMLInputElement.prototype,'value',{...valueDescriptor,set(value){if(store.isActive()&&!playing&&this.type==='file'&&value===''){effects.push(()=>valueDescriptor.set.call(this,value));return;}valueDescriptor.set.call(this,value);}});
+  const timer=window.setTimeout,cancel=window.clearTimeout;
+  window.setTimeout=function(fn,delay,...args){if(store.isExecuting()&&!playing){const token={xlDeferredTimer:true,id:null,cancelled:false};effects.push(()=>{if(!token.cancelled)token.id=timer(fn,delay,...args);});return token;}return timer(fn,delay,...args);};
+  window.clearTimeout=function(id){if(id?.xlDeferredTimer){id.cancelled=true;if(id.id!==null)cancel(id.id);return;}return cancel(id);};
+  const statusIds=new Set(['csv-import-result','xl-import-result','gs-status','cloud-status','sb-shop','sb-loc']);
+  for(const [proto,key]of [[Node.prototype,'textContent'],[Element.prototype,'innerHTML']]){
+    const descriptor=Object.getOwnPropertyDescriptor(proto,key);
+    Object.defineProperty(proto,key,{...descriptor,set(value){if(store.isActive()&&!playing&&statusIds.has(this.id)){effects.push(()=>descriptor.set.call(this,value));return;}descriptor.set.call(this,value);}});
+  }
+  window.addEventListener('keydown',e=>{if(store.isBusy()){e.preventDefault();e.stopImmediatePropagation();}},true);
+}
+(async function bootstrapXLBilling(){
+  const loading=document.createElement('div');loading.id='xl-opening';loading.setAttribute('role','status');loading.style.cssText='position:fixed;inset:0;background:white;z-index:10000;display:grid;place-items:center;font-weight:700';loading.textContent='Opening billing records safely...';document.body.appendChild(loading);
+  const storage={keys:()=>Object.keys(localStorage),getItem:key=>localStorage.getItem(key),setItem:(key,value)=>localStorage.setItem(key,value),removeItem:key=>localStorage.removeItem(key)};
+  window.XLStore=createXLStorage({storage,locks:navigator.locks,crypto,onError:xlStorageMessage,onNotice:()=>xlStorageMessage(new Error('The save completed, but the display needs a reload.')),onBusy:xlSaving,
+    validate:(after,before,options)=>validateXLTransaction(after,before,options),onCommit:detail=>window.dispatchEvent(new CustomEvent('xl:committed',{detail}))});
+  try{await window.XLStore.ready;}catch(e){loading.remove();xlStorageMessage(e);window.XLAppReady=false;return;}
+  for(const source of document.querySelectorAll('script[type="text/xl-app"]')){const script=document.createElement('script');script.textContent=source.textContent;document.body.appendChild(script);}
+  installXLStorageBindings();window.XLAppReady=true;window.dispatchEvent(new Event('xl:ready'));loading.remove();
 })();
 </script>

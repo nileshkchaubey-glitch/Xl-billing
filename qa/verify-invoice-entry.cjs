@@ -5,7 +5,7 @@ const elements=new Map();let settings={shopName:'Test',invNo:10,modules:{packing
 const calls=[];
 function element(id){if(!elements.has(id))elements.set(id,{value:'',checked:false,checkValidity:()=>true,reportValidity(){},focus(){calls.push('focus:'+id)}});return elements.get(id)}
 const context={console,Number,String,Array,Math,document:{getElementById:element},getSettings:()=>structuredClone(settings),DB:{set(k,v){assert.equal(k,'settings');settings=structuredClone(v)}},saleItems:[],loadSettings(){},saveSettings(){},siNum(id,field,value){const it=context.saleItems.find(i=>i.id===id);it[field]=parseFloat(value)||0;it.amt=it.qty*it.rate},siPack(){},setSaleItem(){},saveSaleInvoice(){saved++},calcSaleTotal:()=>{},fp:n=>Number(n).toFixed(2),toast:msg=>calls.push(msg)};
-context.window=context;vm.createContext(context);vm.runInContext(blocks.at(-1),context);
+context.window=context;vm.createContext(context);vm.runInContext(blocks.find(code=>code.includes('(function invoiceFastEntry()')),context);
 const item={id:'a',name:'Cups',quantityMode:'packs',qtyPerPack:100,qty:100,rate:2,amt:200,packCount:'',packType:''};context.saleItems=[item];
 context.siPackCnt('a','3');assert.equal(item.qty,300);assert.equal(item.amt,600);assert.equal(item.packType,'Parcel');assert.equal(element('sfq-a').value,300);
 context.siNum('a','qty','150');assert.equal(item.qty,450);assert.equal(item.amt,900);
