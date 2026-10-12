@@ -207,3 +207,7 @@ The baseline run was the original 15-test suite: 13 failed and 2 characterized w
 Browser engines run here, but no physical Windows/Android/iOS device or printer was tested. HTML validation reports legacy errors and lint reports legacy warnings; these are not hidden. WebKit used browser-local shared libraries and skipped only the static system-library lookup; real browser journeys ran. No performance budget, axe audit, PDF extraction, 365-day soak, historical migration round-trip or complete XSS suite is claimed.
 
 Every minor check appears in [MINOR_CHECKS.md](MINOR_CHECKS.md) with a result and evidence/reason. The baseline storage/export limitations have not been repaired by this hotfix.
+
+## Fresh checkout
+
+Command: `npm ci && npm test && npm run lint && npm run build` in a new detached Git worktree. Exit status 0. Output: `66 passed`; `0 errors, 143 warnings`; `Built dist/index.html: self-contained static copy; no runtime dependencies.` Full captured output: [fresh-checkout.log](../test-results/fresh-checkout.log). The new PIN focus-cycle assertions are included in this final run.

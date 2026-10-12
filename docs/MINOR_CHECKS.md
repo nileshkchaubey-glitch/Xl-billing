@@ -91,7 +91,7 @@ A passing limited test does not prove the complete checklist requirement. Remain
 | C2 | Windows Chrome at 1366x768 and 1920x1080; Android Chrome 360-414 px; iOS Safari. | Not covered by this hotfix; relevant later release/acceptance tests remain pending. | NOT VERIFIED |
 | C3 | Works from `file://` and from the GitHub Pages URL. | file:// offline startup passes in three engines; the live GitHub Pages app was not upgraded/tested | PARTIAL |
 | C4 | Works offline after first load (P2-5). | Not covered by this hotfix; relevant later release/acceptance tests remain pending. | NOT VERIFIED |
-| H1 | `npm ci && npm test` works from a clean clone. | npm test/build run locally; fresh checkout npm ci plus full tests is recorded below after final verification | PARTIAL |
+| H1 | `npm ci && npm test` works from a clean clone. | Fresh detached checkout: npm ci, 66 browser tests + unit/legacy QA, lint and build pass; fresh-checkout.log | VERIFIED |
 | H2 | README with: purpose, how to run, test, build, deploy, backup/restore, architecture, shortcuts. | README covers setup/build/testing and backup cautions; complete shortcut redesign and deploy rehearsal out of scope | PARTIAL |
 | H3 | `docs/OWNER_GUIDE.md` in very simple English with screenshots (daily routine: open app, enter bills, end-of-day backup). | OWNER_GUIDE has synthetic desktop/mobile screenshots; data-safety workflow still incomplete | PARTIAL |
 | H4 | `CHANGELOG.md` with every change. | docs/CHANGELOG.md lists each delivered work item and removals | VERIFIED |

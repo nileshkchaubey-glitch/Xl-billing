@@ -1,0 +1,227 @@
+{
+  "config": {
+    "argv": [
+      "/opt/codex/runtimes/codex-primary-runtime/dependencies/node/bin/node",
+      "/workspace/Xl-billing/node_modules/.bin/playwright",
+      "test",
+      "--project=chromium",
+      "--grep",
+      "P0-2"
+    ],
+    "configFile": "/workspace/Xl-billing/playwright.config.cjs",
+    "rootDir": "/workspace/Xl-billing/test/e2e",
+    "failOnFlakyTests": false,
+    "forbidOnly": false,
+    "fullyParallel": false,
+    "globalSetup": null,
+    "globalTeardown": null,
+    "globalTimeout": 0,
+    "grep": {},
+    "grepInvert": null,
+    "maxFailures": 0,
+    "metadata": {
+      "actualWorkers": 1
+    },
+    "preserveOutput": "always",
+    "projects": [
+      {
+        "outputDir": "/workspace/Xl-billing/test-results/browser",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "chromium",
+        "name": "chromium",
+        "testDir": "/workspace/Xl-billing/test/e2e",
+        "testIgnore": [],
+        "testMatch": [
+          "**/*.@(spec|test).?(c|m)[jt]s?(x)"
+        ],
+        "timeout": 30000
+      },
+      {
+        "outputDir": "/workspace/Xl-billing/test-results/browser",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "firefox",
+        "name": "firefox",
+        "testDir": "/workspace/Xl-billing/test/e2e",
+        "testIgnore": [],
+        "testMatch": [
+          "**/*.@(spec|test).?(c|m)[jt]s?(x)"
+        ],
+        "timeout": 30000
+      },
+      {
+        "outputDir": "/workspace/Xl-billing/test-results/browser",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "webkit",
+        "name": "webkit",
+        "testDir": "/workspace/Xl-billing/test/e2e",
+        "testIgnore": [],
+        "testMatch": [
+          "**/*.@(spec|test).?(c|m)[jt]s?(x)"
+        ],
+        "timeout": 30000
+      }
+    ],
+    "filteredProjects": [
+      {
+        "grep": {},
+        "grepInvert": null,
+        "outputDir": "/workspace/Xl-billing/test-results/browser",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "name": "chromium",
+        "testDir": "/workspace/Xl-billing/test/e2e",
+        "snapshotDir": "/workspace/Xl-billing/test/e2e",
+        "testIgnore": [],
+        "testMatch": "**/*.@(spec|test).?(c|m)[jt]s?(x)",
+        "timeout": 30000,
+        "use": {
+          "baseURL": "http://127.0.0.1:4180",
+          "viewport": {
+            "width": 1366,
+            "height": 768
+          },
+          "timezoneId": "Asia/Kolkata",
+          "screenshot": "only-on-failure",
+          "browserName": "chromium"
+        },
+        "dependencies": [],
+        "ignoreSnapshots": false,
+        "__projectId": "chromium"
+      }
+    ],
+    "quiet": false,
+    "reporter": [
+      [
+        "list",
+        null
+      ],
+      [
+        "json",
+        {
+          "outputFile": "test-results/mutation-B2.json"
+        }
+      ]
+    ],
+    "reportSlowTests": {
+      "max": 5,
+      "threshold": 300000
+    },
+    "shard": null,
+    "tags": [],
+    "updateSnapshots": "default",
+    "updateSourceMethod": "patch",
+    "version": "1.64.0",
+    "workers": 1,
+    "webServer": {
+      "command": "node test/server.cjs",
+      "url": "http://127.0.0.1:4180",
+      "reuseExistingServer": false
+    }
+  },
+  "suites": [
+    {
+      "title": "hotfix.spec.cjs",
+      "file": "hotfix.spec.cjs",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "P0-2 all pages and report tabs render with seeded data",
+          "ok": false,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "failed",
+                  "duration": 271,
+                  "error": {
+                    "message": "Error: page.evaluate: ReferenceError: isCancelled is not defined\n    at http://127.0.0.1:4180/:7029:37\n    at Array.filter (<anonymous>)\n    at window.renderDashboard [as dashboard] (http://127.0.0.1:4180/:7029:27)\n    at nav (http://127.0.0.1:4180/:829:22)\n    at window.nav (http://127.0.0.1:4180/:2230:3)\n    at window.nav (http://127.0.0.1:4180/:3337:3)\n    at window.nav (http://127.0.0.1:4180/:4381:3)\n    at window.nav (http://127.0.0.1:4180/:5741:3)\n    at window.nav (http://127.0.0.1:4180/:7396:3)\n    at window.nav (http://127.0.0.1:4180/:8773:3)",
+                    "stack": "Error: page.evaluate: ReferenceError: isCancelled is not defined\n    at http://127.0.0.1:4180/:7029:37\n    at Array.filter (<anonymous>)\n    at window.renderDashboard [as dashboard] (http://127.0.0.1:4180/:7029:27)\n    at nav (http://127.0.0.1:4180/:829:22)\n    at window.nav (http://127.0.0.1:4180/:2230:3)\n    at window.nav (http://127.0.0.1:4180/:3337:3)\n    at window.nav (http://127.0.0.1:4180/:4381:3)\n    at window.nav (http://127.0.0.1:4180/:5741:3)\n    at window.nav (http://127.0.0.1:4180/:7396:3)\n    at window.nav (http://127.0.0.1:4180/:8773:3)\n    at http://127.0.0.1:4180/:7029:37\n    at window.renderDashboard (http://127.0.0.1:4180/:7029:27)\n    at nav (http://127.0.0.1:4180/:829:22)\n    at window.nav (http://127.0.0.1:4180/:2230:3)\n    at window.nav (http://127.0.0.1:4180/:3337:3)\n    at window.nav (http://127.0.0.1:4180/:4381:3)\n    at window.nav (http://127.0.0.1:4180/:5741:3)\n    at window.nav (http://127.0.0.1:4180/:7396:3)\n    at window.nav (http://127.0.0.1:4180/:8773:3)\n    at /workspace/Xl-billing/test/e2e/hotfix.spec.cjs:21:257",
+                    "location": {
+                      "file": "http://127.0.0.1:4180/",
+                      "column": 37,
+                      "line": 7029
+                    }
+                  },
+                  "errors": [
+                    {
+                      "location": {
+                        "file": "http://127.0.0.1:4180/",
+                        "column": 37,
+                        "line": 7029
+                      },
+                      "message": "Error: page.evaluate: ReferenceError: isCancelled is not defined\n    at http://127.0.0.1:4180/:7029:37\n    at Array.filter (<anonymous>)\n    at window.renderDashboard [as dashboard] (http://127.0.0.1:4180/:7029:27)\n    at nav (http://127.0.0.1:4180/:829:22)\n    at window.nav (http://127.0.0.1:4180/:2230:3)\n    at window.nav (http://127.0.0.1:4180/:3337:3)\n    at window.nav (http://127.0.0.1:4180/:4381:3)\n    at window.nav (http://127.0.0.1:4180/:5741:3)\n    at window.nav (http://127.0.0.1:4180/:7396:3)\n    at window.nav (http://127.0.0.1:4180/:8773:3)\n    at http://127.0.0.1:4180/:7029:37\n    at window.renderDashboard (http://127.0.0.1:4180/:7029:27)\n    at nav (http://127.0.0.1:4180/:829:22)\n    at window.nav (http://127.0.0.1:4180/:2230:3)\n    at window.nav (http://127.0.0.1:4180/:3337:3)\n    at window.nav (http://127.0.0.1:4180/:4381:3)\n    at window.nav (http://127.0.0.1:4180/:5741:3)\n    at window.nav (http://127.0.0.1:4180/:7396:3)\n    at window.nav (http://127.0.0.1:4180/:8773:3)\n    at /workspace/Xl-billing/test/e2e/hotfix.spec.cjs:21:257"
+                    }
+                  ],
+                  "stdout": [],
+                  "stderr": [
+                    {
+                      "text": "Skipping host requirements validation logic because `PLAYWRIGHT_SKIP_VALIDATE_HOST_REQUIREMENTS` env variable is set.\n"
+                    }
+                  ],
+                  "retry": 0,
+                  "startTime": "2026-10-12T05:12:53.422Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "screenshot",
+                      "contentType": "image/png",
+                      "path": "/workspace/Xl-billing/test-results/browser/hotfix-P0-2-all-pages-and--502d0-abs-render-with-seeded-data-chromium/test-failed-1.png"
+                    },
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "/workspace/Xl-billing/test-results/browser/hotfix-P0-2-all-pages-and--502d0-abs-render-with-seeded-data-chromium/error-context.md"
+                    }
+                  ],
+                  "errorLocation": {
+                    "file": "http://127.0.0.1:4180/",
+                    "column": 37,
+                    "line": 7029
+                  }
+                }
+              ],
+              "status": "unexpected"
+            }
+          ],
+          "id": "a508bcc51c6c2b20affb-afd47b22bc70d62e24ac",
+          "file": "hotfix.spec.cjs",
+          "line": 19,
+          "column": 1
+        }
+      ]
+    }
+  ],
+  "errors": [],
+  "stats": {
+    "startTime": "2026-10-12T05:12:52.895Z",
+    "duration": 937.1419999999999,
+    "expected": 0,
+    "skipped": 0,
+    "unexpected": 1,
+    "flaky": 0
+  }
+}

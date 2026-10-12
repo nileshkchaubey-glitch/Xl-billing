@@ -1,0 +1,1085 @@
+{
+  "config": {
+    "argv": [
+      "/opt/codex/runtimes/codex-primary-runtime/dependencies/node/bin/node",
+      "/workspace/Xl-billing/node_modules/.bin/playwright",
+      "test",
+      "--project=chromium"
+    ],
+    "configFile": "/workspace/Xl-billing/playwright.config.cjs",
+    "rootDir": "/workspace/Xl-billing/test/e2e",
+    "failOnFlakyTests": false,
+    "forbidOnly": false,
+    "fullyParallel": false,
+    "globalSetup": null,
+    "globalTeardown": null,
+    "globalTimeout": 0,
+    "grep": {},
+    "grepInvert": null,
+    "maxFailures": 0,
+    "metadata": {
+      "actualWorkers": 1
+    },
+    "preserveOutput": "always",
+    "projects": [
+      {
+        "outputDir": "/workspace/Xl-billing/test-results/browser",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "chromium",
+        "name": "chromium",
+        "testDir": "/workspace/Xl-billing/test/e2e",
+        "testIgnore": [],
+        "testMatch": [
+          "**/*.@(spec|test).?(c|m)[jt]s?(x)"
+        ],
+        "timeout": 30000
+      },
+      {
+        "outputDir": "/workspace/Xl-billing/test-results/browser",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "firefox",
+        "name": "firefox",
+        "testDir": "/workspace/Xl-billing/test/e2e",
+        "testIgnore": [],
+        "testMatch": [
+          "**/*.@(spec|test).?(c|m)[jt]s?(x)"
+        ],
+        "timeout": 30000
+      },
+      {
+        "outputDir": "/workspace/Xl-billing/test-results/browser",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "webkit",
+        "name": "webkit",
+        "testDir": "/workspace/Xl-billing/test/e2e",
+        "testIgnore": [],
+        "testMatch": [
+          "**/*.@(spec|test).?(c|m)[jt]s?(x)"
+        ],
+        "timeout": 30000
+      }
+    ],
+    "filteredProjects": [
+      {
+        "grep": {},
+        "grepInvert": null,
+        "outputDir": "/workspace/Xl-billing/test-results/browser",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "name": "chromium",
+        "testDir": "/workspace/Xl-billing/test/e2e",
+        "snapshotDir": "/workspace/Xl-billing/test/e2e",
+        "testIgnore": [],
+        "testMatch": "**/*.@(spec|test).?(c|m)[jt]s?(x)",
+        "timeout": 30000,
+        "use": {
+          "baseURL": "http://127.0.0.1:4180",
+          "viewport": {
+            "width": 1366,
+            "height": 768
+          },
+          "timezoneId": "Asia/Kolkata",
+          "screenshot": "only-on-failure",
+          "browserName": "chromium"
+        },
+        "dependencies": [],
+        "ignoreSnapshots": false,
+        "__projectId": "chromium"
+      }
+    ],
+    "quiet": false,
+    "reporter": [
+      [
+        "list",
+        null
+      ],
+      [
+        "json",
+        {
+          "outputFile": "test-results/baseline.json"
+        }
+      ]
+    ],
+    "reportSlowTests": {
+      "max": 5,
+      "threshold": 300000
+    },
+    "shard": null,
+    "tags": [],
+    "updateSnapshots": "default",
+    "updateSourceMethod": "patch",
+    "version": "1.64.0",
+    "workers": 1,
+    "webServer": {
+      "command": "node test/server.cjs",
+      "url": "http://127.0.0.1:4180",
+      "reuseExistingServer": false
+    }
+  },
+  "suites": [
+    {
+      "title": "hotfix.spec.cjs",
+      "file": "hotfix.spec.cjs",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "P0-1 invoice: PIN setup, wrong PIN, Enter and audit",
+          "ok": false,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "timedOut",
+                  "duration": 30098,
+                  "error": {
+                    "message": "\u001b[31mTest timeout of 30000ms exceeded.\u001b[39m",
+                    "stack": "\u001b[31mTest timeout of 30000ms exceeded.\u001b[39m"
+                  },
+                  "errors": [
+                    {
+                      "message": "\u001b[31mTest timeout of 30000ms exceeded.\u001b[39m"
+                    },
+                    {
+                      "location": {
+                        "file": "/workspace/Xl-billing/test/e2e/hotfix.spec.cjs",
+                        "column": 90,
+                        "line": 9
+                      },
+                      "message": "Error: locator.fill: Test timeout of 30000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('#del-pin-confirm')\u001b[22m\n\n\n   7 |   await page.evaluate(action);await expect(page.locator('#del-pin-overlay')).toBeVisible();\n   8 |   // First use must configure a new non-default PIN; never delete during setup.\n>  9 |   await page.locator('#del-pin-inp').fill('2468');await page.locator('#del-pin-confirm').fill('2468',{timeout:1000});await page.locator('#del-pin-ok').click();\n     |                                                                                          ^\n  10 |   await expect(page.locator('#del-pin-overlay')).toHaveCount(0);\n  11 |   const s=(await records(page,'settings'));expect(s.deletePin).toBeUndefined();expect(s.deletePinHash).toMatch(/^[a-f0-9]{64}$/);\n  12 |   await page.evaluate(action);await page.locator('#del-pin-inp').fill('1111');await expect(page.locator('#del-pin-ok')).toBeDisabled();await page.locator('#del-pin-inp').press('Enter');expect((await records(page,key)).length).toBe(count+(name==='payment'?0:1));\n    at /workspace/Xl-billing/test/e2e/hotfix.spec.cjs:9:90"
+                    }
+                  ],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-12T04:54:46.783Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "screenshot",
+                      "contentType": "image/png",
+                      "path": "/workspace/Xl-billing/test-results/browser/hotfix-P0-1-invoice-PIN-setup-wrong-PIN-Enter-and-audit-chromium/test-failed-1.png"
+                    },
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "/workspace/Xl-billing/test-results/browser/hotfix-P0-1-invoice-PIN-setup-wrong-PIN-Enter-and-audit-chromium/error-context.md"
+                    }
+                  ]
+                }
+              ],
+              "status": "unexpected"
+            }
+          ],
+          "id": "a508bcc51c6c2b20affb-81600c7b94e9203dd136",
+          "file": "hotfix.spec.cjs",
+          "line": 6,
+          "column": 2
+        },
+        {
+          "title": "P0-1 purchase: PIN setup, wrong PIN, Enter and audit",
+          "ok": false,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "timedOut",
+                  "duration": 30126,
+                  "error": {
+                    "message": "\u001b[31mTest timeout of 30000ms exceeded.\u001b[39m",
+                    "stack": "\u001b[31mTest timeout of 30000ms exceeded.\u001b[39m"
+                  },
+                  "errors": [
+                    {
+                      "message": "\u001b[31mTest timeout of 30000ms exceeded.\u001b[39m"
+                    },
+                    {
+                      "location": {
+                        "file": "/workspace/Xl-billing/test/e2e/hotfix.spec.cjs",
+                        "column": 90,
+                        "line": 9
+                      },
+                      "message": "Error: locator.fill: Test timeout of 30000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('#del-pin-confirm')\u001b[22m\n\n\n   7 |   await page.evaluate(action);await expect(page.locator('#del-pin-overlay')).toBeVisible();\n   8 |   // First use must configure a new non-default PIN; never delete during setup.\n>  9 |   await page.locator('#del-pin-inp').fill('2468');await page.locator('#del-pin-confirm').fill('2468',{timeout:1000});await page.locator('#del-pin-ok').click();\n     |                                                                                          ^\n  10 |   await expect(page.locator('#del-pin-overlay')).toHaveCount(0);\n  11 |   const s=(await records(page,'settings'));expect(s.deletePin).toBeUndefined();expect(s.deletePinHash).toMatch(/^[a-f0-9]{64}$/);\n  12 |   await page.evaluate(action);await page.locator('#del-pin-inp').fill('1111');await expect(page.locator('#del-pin-ok')).toBeDisabled();await page.locator('#del-pin-inp').press('Enter');expect((await records(page,key)).length).toBe(count+(name==='payment'?0:1));\n    at /workspace/Xl-billing/test/e2e/hotfix.spec.cjs:9:90"
+                    }
+                  ],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-12T04:55:18.161Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "screenshot",
+                      "contentType": "image/png",
+                      "path": "/workspace/Xl-billing/test-results/browser/hotfix-P0-1-purchase-PIN-setup-wrong-PIN-Enter-and-audit-chromium/test-failed-1.png"
+                    },
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "/workspace/Xl-billing/test-results/browser/hotfix-P0-1-purchase-PIN-setup-wrong-PIN-Enter-and-audit-chromium/error-context.md"
+                    }
+                  ]
+                }
+              ],
+              "status": "unexpected"
+            }
+          ],
+          "id": "a508bcc51c6c2b20affb-c0bb1961babc83906dcf",
+          "file": "hotfix.spec.cjs",
+          "line": 6,
+          "column": 2
+        },
+        {
+          "title": "P0-1 party: PIN setup, wrong PIN, Enter and audit",
+          "ok": false,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 2,
+                  "parallelIndex": 0,
+                  "status": "timedOut",
+                  "duration": 30120,
+                  "error": {
+                    "message": "\u001b[31mTest timeout of 30000ms exceeded.\u001b[39m",
+                    "stack": "\u001b[31mTest timeout of 30000ms exceeded.\u001b[39m"
+                  },
+                  "errors": [
+                    {
+                      "message": "\u001b[31mTest timeout of 30000ms exceeded.\u001b[39m"
+                    },
+                    {
+                      "location": {
+                        "file": "/workspace/Xl-billing/test/e2e/hotfix.spec.cjs",
+                        "column": 90,
+                        "line": 9
+                      },
+                      "message": "Error: locator.fill: Test timeout of 30000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('#del-pin-confirm')\u001b[22m\n\n\n   7 |   await page.evaluate(action);await expect(page.locator('#del-pin-overlay')).toBeVisible();\n   8 |   // First use must configure a new non-default PIN; never delete during setup.\n>  9 |   await page.locator('#del-pin-inp').fill('2468');await page.locator('#del-pin-confirm').fill('2468',{timeout:1000});await page.locator('#del-pin-ok').click();\n     |                                                                                          ^\n  10 |   await expect(page.locator('#del-pin-overlay')).toHaveCount(0);\n  11 |   const s=(await records(page,'settings'));expect(s.deletePin).toBeUndefined();expect(s.deletePinHash).toMatch(/^[a-f0-9]{64}$/);\n  12 |   await page.evaluate(action);await page.locator('#del-pin-inp').fill('1111');await expect(page.locator('#del-pin-ok')).toBeDisabled();await page.locator('#del-pin-inp').press('Enter');expect((await records(page,key)).length).toBe(count+(name==='payment'?0:1));\n    at /workspace/Xl-billing/test/e2e/hotfix.spec.cjs:9:90"
+                    }
+                  ],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-12T04:55:48.750Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "screenshot",
+                      "contentType": "image/png",
+                      "path": "/workspace/Xl-billing/test-results/browser/hotfix-P0-1-party-PIN-setup-wrong-PIN-Enter-and-audit-chromium/test-failed-1.png"
+                    },
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "/workspace/Xl-billing/test-results/browser/hotfix-P0-1-party-PIN-setup-wrong-PIN-Enter-and-audit-chromium/error-context.md"
+                    }
+                  ]
+                }
+              ],
+              "status": "unexpected"
+            }
+          ],
+          "id": "a508bcc51c6c2b20affb-34d7c1d7c7e8f0dd8972",
+          "file": "hotfix.spec.cjs",
+          "line": 6,
+          "column": 2
+        },
+        {
+          "title": "P0-1 item: PIN setup, wrong PIN, Enter and audit",
+          "ok": false,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 3,
+                  "parallelIndex": 0,
+                  "status": "timedOut",
+                  "duration": 30113,
+                  "error": {
+                    "message": "\u001b[31mTest timeout of 30000ms exceeded.\u001b[39m",
+                    "stack": "\u001b[31mTest timeout of 30000ms exceeded.\u001b[39m"
+                  },
+                  "errors": [
+                    {
+                      "message": "\u001b[31mTest timeout of 30000ms exceeded.\u001b[39m"
+                    },
+                    {
+                      "location": {
+                        "file": "/workspace/Xl-billing/test/e2e/hotfix.spec.cjs",
+                        "column": 90,
+                        "line": 9
+                      },
+                      "message": "Error: locator.fill: Test timeout of 30000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('#del-pin-confirm')\u001b[22m\n\n\n   7 |   await page.evaluate(action);await expect(page.locator('#del-pin-overlay')).toBeVisible();\n   8 |   // First use must configure a new non-default PIN; never delete during setup.\n>  9 |   await page.locator('#del-pin-inp').fill('2468');await page.locator('#del-pin-confirm').fill('2468',{timeout:1000});await page.locator('#del-pin-ok').click();\n     |                                                                                          ^\n  10 |   await expect(page.locator('#del-pin-overlay')).toHaveCount(0);\n  11 |   const s=(await records(page,'settings'));expect(s.deletePin).toBeUndefined();expect(s.deletePinHash).toMatch(/^[a-f0-9]{64}$/);\n  12 |   await page.evaluate(action);await page.locator('#del-pin-inp').fill('1111');await expect(page.locator('#del-pin-ok')).toBeDisabled();await page.locator('#del-pin-inp').press('Enter');expect((await records(page,key)).length).toBe(count+(name==='payment'?0:1));\n    at /workspace/Xl-billing/test/e2e/hotfix.spec.cjs:9:90"
+                    }
+                  ],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-12T04:56:19.323Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "screenshot",
+                      "contentType": "image/png",
+                      "path": "/workspace/Xl-billing/test-results/browser/hotfix-P0-1-item-PIN-setup-wrong-PIN-Enter-and-audit-chromium/test-failed-1.png"
+                    },
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "/workspace/Xl-billing/test-results/browser/hotfix-P0-1-item-PIN-setup-wrong-PIN-Enter-and-audit-chromium/error-context.md"
+                    }
+                  ]
+                }
+              ],
+              "status": "unexpected"
+            }
+          ],
+          "id": "a508bcc51c6c2b20affb-43e92afacbb84b3dc0c7",
+          "file": "hotfix.spec.cjs",
+          "line": 6,
+          "column": 2
+        },
+        {
+          "title": "P0-1 payment: PIN setup, wrong PIN, Enter and audit",
+          "ok": false,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 4,
+                  "parallelIndex": 0,
+                  "status": "failed",
+                  "duration": 5288,
+                  "error": {
+                    "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: locator('#del-pin-overlay')\nExpected: visible\nTimeout: 5000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" locator('#del-pin-overlay') with timeout 5000ms\u001b[22m\n\u001b[2m  - waiting for locator('#del-pin-overlay')\u001b[22m\n",
+                    "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: locator('#del-pin-overlay')\nExpected: visible\nTimeout: 5000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" locator('#del-pin-overlay') with timeout 5000ms\u001b[22m\n\u001b[2m  - waiting for locator('#del-pin-overlay')\u001b[22m\n\n    at /workspace/Xl-billing/test/e2e/hotfix.spec.cjs:7:78",
+                    "location": {
+                      "file": "/workspace/Xl-billing/test/e2e/hotfix.spec.cjs",
+                      "column": 78,
+                      "line": 7
+                    },
+                    "snippet": "   5 | for(const [name,action,key,count]of [['invoice',\"delInvoice('s0')\",'invoices',49],['purchase',\"delPurchase('u1')\",'purchases',0],['party',\"delParty('p2')\",'parties',1],['item',\"delItem('i2')\",'items',1],['payment',\"deletePaymentEntry('s0',0)\",'invoices',50],['retail',\"delRetail('r1')\",'retail',0]]){\n   6 |  test(`P0-1 ${name}: PIN setup, wrong PIN, Enter and audit`,async({page})=>{\n>  7 |   await page.evaluate(action);await expect(page.locator('#del-pin-overlay')).toBeVisible();\n     |                                                                              ^\n   8 |   // First use must configure a new non-default PIN; never delete during setup.\n   9 |   await page.locator('#del-pin-inp').fill('2468');await page.locator('#del-pin-confirm').fill('2468',{timeout:1000});await page.locator('#del-pin-ok').click();\n  10 |   await expect(page.locator('#del-pin-overlay')).toHaveCount(0);"
+                  },
+                  "errors": [
+                    {
+                      "location": {
+                        "file": "/workspace/Xl-billing/test/e2e/hotfix.spec.cjs",
+                        "column": 78,
+                        "line": 7
+                      },
+                      "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: locator('#del-pin-overlay')\nExpected: visible\nTimeout: 5000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" locator('#del-pin-overlay') with timeout 5000ms\u001b[22m\n\u001b[2m  - waiting for locator('#del-pin-overlay')\u001b[22m\n\n\n   5 | for(const [name,action,key,count]of [['invoice',\"delInvoice('s0')\",'invoices',49],['purchase',\"delPurchase('u1')\",'purchases',0],['party',\"delParty('p2')\",'parties',1],['item',\"delItem('i2')\",'items',1],['payment',\"deletePaymentEntry('s0',0)\",'invoices',50],['retail',\"delRetail('r1')\",'retail',0]]){\n   6 |  test(`P0-1 ${name}: PIN setup, wrong PIN, Enter and audit`,async({page})=>{\n>  7 |   await page.evaluate(action);await expect(page.locator('#del-pin-overlay')).toBeVisible();\n     |                                                                              ^\n   8 |   // First use must configure a new non-default PIN; never delete during setup.\n   9 |   await page.locator('#del-pin-inp').fill('2468');await page.locator('#del-pin-confirm').fill('2468',{timeout:1000});await page.locator('#del-pin-ok').click();\n  10 |   await expect(page.locator('#del-pin-overlay')).toHaveCount(0);\n    at /workspace/Xl-billing/test/e2e/hotfix.spec.cjs:7:78"
+                    }
+                  ],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-12T04:56:49.895Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "screenshot",
+                      "contentType": "image/png",
+                      "path": "/workspace/Xl-billing/test-results/browser/hotfix-P0-1-payment-PIN-setup-wrong-PIN-Enter-and-audit-chromium/test-failed-1.png"
+                    },
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "/workspace/Xl-billing/test-results/browser/hotfix-P0-1-payment-PIN-setup-wrong-PIN-Enter-and-audit-chromium/error-context.md"
+                    }
+                  ],
+                  "errorLocation": {
+                    "file": "/workspace/Xl-billing/test/e2e/hotfix.spec.cjs",
+                    "column": 78,
+                    "line": 7
+                  }
+                }
+              ],
+              "status": "unexpected"
+            }
+          ],
+          "id": "a508bcc51c6c2b20affb-a581bdef2ead70a810e4",
+          "file": "hotfix.spec.cjs",
+          "line": 6,
+          "column": 2
+        },
+        {
+          "title": "P0-1 retail: PIN setup, wrong PIN, Enter and audit",
+          "ok": false,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 5,
+                  "parallelIndex": 0,
+                  "status": "failed",
+                  "duration": 5259,
+                  "error": {
+                    "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: locator('#del-pin-overlay')\nExpected: visible\nTimeout: 5000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" locator('#del-pin-overlay') with timeout 5000ms\u001b[22m\n\u001b[2m  - waiting for locator('#del-pin-overlay')\u001b[22m\n",
+                    "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: locator('#del-pin-overlay')\nExpected: visible\nTimeout: 5000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" locator('#del-pin-overlay') with timeout 5000ms\u001b[22m\n\u001b[2m  - waiting for locator('#del-pin-overlay')\u001b[22m\n\n    at /workspace/Xl-billing/test/e2e/hotfix.spec.cjs:7:78",
+                    "location": {
+                      "file": "/workspace/Xl-billing/test/e2e/hotfix.spec.cjs",
+                      "column": 78,
+                      "line": 7
+                    },
+                    "snippet": "   5 | for(const [name,action,key,count]of [['invoice',\"delInvoice('s0')\",'invoices',49],['purchase',\"delPurchase('u1')\",'purchases',0],['party',\"delParty('p2')\",'parties',1],['item',\"delItem('i2')\",'items',1],['payment',\"deletePaymentEntry('s0',0)\",'invoices',50],['retail',\"delRetail('r1')\",'retail',0]]){\n   6 |  test(`P0-1 ${name}: PIN setup, wrong PIN, Enter and audit`,async({page})=>{\n>  7 |   await page.evaluate(action);await expect(page.locator('#del-pin-overlay')).toBeVisible();\n     |                                                                              ^\n   8 |   // First use must configure a new non-default PIN; never delete during setup.\n   9 |   await page.locator('#del-pin-inp').fill('2468');await page.locator('#del-pin-confirm').fill('2468',{timeout:1000});await page.locator('#del-pin-ok').click();\n  10 |   await expect(page.locator('#del-pin-overlay')).toHaveCount(0);"
+                  },
+                  "errors": [
+                    {
+                      "location": {
+                        "file": "/workspace/Xl-billing/test/e2e/hotfix.spec.cjs",
+                        "column": 78,
+                        "line": 7
+                      },
+                      "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: locator('#del-pin-overlay')\nExpected: visible\nTimeout: 5000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" locator('#del-pin-overlay') with timeout 5000ms\u001b[22m\n\u001b[2m  - waiting for locator('#del-pin-overlay')\u001b[22m\n\n\n   5 | for(const [name,action,key,count]of [['invoice',\"delInvoice('s0')\",'invoices',49],['purchase',\"delPurchase('u1')\",'purchases',0],['party',\"delParty('p2')\",'parties',1],['item',\"delItem('i2')\",'items',1],['payment',\"deletePaymentEntry('s0',0)\",'invoices',50],['retail',\"delRetail('r1')\",'retail',0]]){\n   6 |  test(`P0-1 ${name}: PIN setup, wrong PIN, Enter and audit`,async({page})=>{\n>  7 |   await page.evaluate(action);await expect(page.locator('#del-pin-overlay')).toBeVisible();\n     |                                                                              ^\n   8 |   // First use must configure a new non-default PIN; never delete during setup.\n   9 |   await page.locator('#del-pin-inp').fill('2468');await page.locator('#del-pin-confirm').fill('2468',{timeout:1000});await page.locator('#del-pin-ok').click();\n  10 |   await expect(page.locator('#del-pin-overlay')).toHaveCount(0);\n    at /workspace/Xl-billing/test/e2e/hotfix.spec.cjs:7:78"
+                    }
+                  ],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-12T04:56:55.620Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "screenshot",
+                      "contentType": "image/png",
+                      "path": "/workspace/Xl-billing/test-results/browser/hotfix-P0-1-retail-PIN-setup-wrong-PIN-Enter-and-audit-chromium/test-failed-1.png"
+                    },
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "/workspace/Xl-billing/test-results/browser/hotfix-P0-1-retail-PIN-setup-wrong-PIN-Enter-and-audit-chromium/error-context.md"
+                    }
+                  ],
+                  "errorLocation": {
+                    "file": "/workspace/Xl-billing/test/e2e/hotfix.spec.cjs",
+                    "column": 78,
+                    "line": 7
+                  }
+                }
+              ],
+              "status": "unexpected"
+            }
+          ],
+          "id": "a508bcc51c6c2b20affb-ef78dd7e82a3aaf92237",
+          "file": "hotfix.spec.cjs",
+          "line": 6,
+          "column": 2
+        },
+        {
+          "title": "P0-1 dialog escapes labels, traps focus, cancels with Esc",
+          "ok": false,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 6,
+                  "parallelIndex": 0,
+                  "status": "failed",
+                  "duration": 5262,
+                  "error": {
+                    "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoContainText\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m failed\n\nLocator: locator('.pwd-sub')\nExpected substring: \u001b[32m\"<img\"\u001b[39m\nReceived string:    \u001b[31m\" O'Neil \\\"Traders\\\" & CoThis action cannot be undone after confirmation.\"\u001b[39m\nTimeout: 5000ms\n\nCall log:\n\u001b[2m  - Expect \"toContainText\" locator('.pwd-sub') with timeout 5000ms\u001b[22m\n\u001b[2m  - waiting for locator('.pwd-sub')\u001b[22m\n\u001b[2m    14 × locator resolved to <div class=\"pwd-sub\">…</div>\u001b[22m\n\u001b[2m       - unexpected value \" O'Neil \"Traders\" & CoThis action cannot be undone after confirmation.\"\u001b[22m\n",
+                    "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoContainText\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m failed\n\nLocator: locator('.pwd-sub')\nExpected substring: \u001b[32m\"<img\"\u001b[39m\nReceived string:    \u001b[31m\" O'Neil \\\"Traders\\\" & CoThis action cannot be undone after confirmation.\"\u001b[39m\nTimeout: 5000ms\n\nCall log:\n\u001b[2m  - Expect \"toContainText\" locator('.pwd-sub') with timeout 5000ms\u001b[22m\n\u001b[2m  - waiting for locator('.pwd-sub')\u001b[22m\n\u001b[2m    14 × locator resolved to <div class=\"pwd-sub\">…</div>\u001b[22m\n\u001b[2m       - unexpected value \" O'Neil \"Traders\" & CoThis action cannot be undone after confirmation.\"\u001b[22m\n\n    at /workspace/Xl-billing/test/e2e/hotfix.spec.cjs:18:290",
+                    "location": {
+                      "file": "/workspace/Xl-billing/test/e2e/hotfix.spec.cjs",
+                      "column": 290,
+                      "line": 18
+                    },
+                    "snippet": "  16 |  });\n  17 | }\n> 18 | test('P0-1 dialog escapes labels, traps focus, cancels with Esc',async({page})=>{await page.evaluate(()=>withDeletePin('<img src=x onerror=window.__xss=1> O\\'Neil \"Traders\" & Co',()=>{}));expect(await page.evaluate(()=>window.__xss)).toBeUndefined();await expect(page.locator('.pwd-sub')).toContainText('<img');await page.locator('#del-pin-inp').press('Escape');await expect(page.locator('#del-pin-overlay')).toHaveCount(0);});\n     |                                                                                                                                                                                                                                                                                                  ^\n  19 | test('P0-2 all pages and report tabs render with seeded data',async({page})=>{\n  20 |  const errors=[];page.on('pageerror',e=>errors.push(String(e)));page.on('console',m=>{if(m.type()==='error')errors.push(m.text());});\n  21 |  for(const p of ['dashboard','new-sale','sales-list','retail-entry','new-purchase','purchase-list','items','parties','reports','settings','prev-bills','payments','learn','excel-connect','github-guide','pur-bulk','pur-pay','audit-log','txn-log'])await page.evaluate(p=>nav(p),p);"
+                  },
+                  "errors": [
+                    {
+                      "location": {
+                        "file": "/workspace/Xl-billing/test/e2e/hotfix.spec.cjs",
+                        "column": 290,
+                        "line": 18
+                      },
+                      "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoContainText\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m failed\n\nLocator: locator('.pwd-sub')\nExpected substring: \u001b[32m\"<img\"\u001b[39m\nReceived string:    \u001b[31m\" O'Neil \\\"Traders\\\" & CoThis action cannot be undone after confirmation.\"\u001b[39m\nTimeout: 5000ms\n\nCall log:\n\u001b[2m  - Expect \"toContainText\" locator('.pwd-sub') with timeout 5000ms\u001b[22m\n\u001b[2m  - waiting for locator('.pwd-sub')\u001b[22m\n\u001b[2m    14 × locator resolved to <div class=\"pwd-sub\">…</div>\u001b[22m\n\u001b[2m       - unexpected value \" O'Neil \"Traders\" & CoThis action cannot be undone after confirmation.\"\u001b[22m\n\n\n  16 |  });\n  17 | }\n> 18 | test('P0-1 dialog escapes labels, traps focus, cancels with Esc',async({page})=>{await page.evaluate(()=>withDeletePin('<img src=x onerror=window.__xss=1> O\\'Neil \"Traders\" & Co',()=>{}));expect(await page.evaluate(()=>window.__xss)).toBeUndefined();await expect(page.locator('.pwd-sub')).toContainText('<img');await page.locator('#del-pin-inp').press('Escape');await expect(page.locator('#del-pin-overlay')).toHaveCount(0);});\n     |                                                                                                                                                                                                                                                                                                  ^\n  19 | test('P0-2 all pages and report tabs render with seeded data',async({page})=>{\n  20 |  const errors=[];page.on('pageerror',e=>errors.push(String(e)));page.on('console',m=>{if(m.type()==='error')errors.push(m.text());});\n  21 |  for(const p of ['dashboard','new-sale','sales-list','retail-entry','new-purchase','purchase-list','items','parties','reports','settings','prev-bills','payments','learn','excel-connect','github-guide','pur-bulk','pur-pay','audit-log','txn-log'])await page.evaluate(p=>nav(p),p);\n    at /workspace/Xl-billing/test/e2e/hotfix.spec.cjs:18:290"
+                    }
+                  ],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-12T04:57:01.308Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "screenshot",
+                      "contentType": "image/png",
+                      "path": "/workspace/Xl-billing/test-results/browser/hotfix-P0-1-dialog-escapes-9a4ad-raps-focus-cancels-with-Esc-chromium/test-failed-1.png"
+                    },
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "/workspace/Xl-billing/test-results/browser/hotfix-P0-1-dialog-escapes-9a4ad-raps-focus-cancels-with-Esc-chromium/error-context.md"
+                    }
+                  ],
+                  "errorLocation": {
+                    "file": "/workspace/Xl-billing/test/e2e/hotfix.spec.cjs",
+                    "column": 290,
+                    "line": 18
+                  }
+                }
+              ],
+              "status": "unexpected"
+            }
+          ],
+          "id": "a508bcc51c6c2b20affb-3aec6512945f9e7abd58",
+          "file": "hotfix.spec.cjs",
+          "line": 18,
+          "column": 1
+        },
+        {
+          "title": "P0-2 all pages and report tabs render with seeded data",
+          "ok": false,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 7,
+                  "parallelIndex": 0,
+                  "status": "failed",
+                  "duration": 469,
+                  "error": {
+                    "message": "Error: page.evaluate: ReferenceError: isCancelled is not defined\n    at http://127.0.0.1:4180/:8684:27\n    at Array.filter (<anonymous>)\n    at window.renderTxnPage (http://127.0.0.1:4180/:8684:17)\n    at window.nav (http://127.0.0.1:4180/:8607:26)\n    at eval (eval at evaluate (:370:30), <anonymous>:1:6)\n    at UtilityScript.evaluate (<anonymous>:372:16)\n    at UtilityScript.<anonymous> (<anonymous>:1:44)",
+                    "stack": "Error: page.evaluate: ReferenceError: isCancelled is not defined\n    at http://127.0.0.1:4180/:8684:27\n    at Array.filter (<anonymous>)\n    at window.renderTxnPage (http://127.0.0.1:4180/:8684:17)\n    at window.nav (http://127.0.0.1:4180/:8607:26)\n    at eval (eval at evaluate (:370:30), <anonymous>:1:6)\n    at UtilityScript.evaluate (<anonymous>:372:16)\n    at UtilityScript.<anonymous> (<anonymous>:1:44)\n    at http://127.0.0.1:4180/:8684:27\n    at window.renderTxnPage (http://127.0.0.1:4180/:8684:17)\n    at window.nav (http://127.0.0.1:4180/:8607:26)\n    at eval (eval at evaluate (:370:30), <anonymous>:1:6)\n    at UtilityScript.evaluate (<anonymous>:372:16)\n    at UtilityScript.<anonymous> (<anonymous>:1:44)\n    at /workspace/Xl-billing/test/e2e/hotfix.spec.cjs:21:257",
+                    "location": {
+                      "file": "http://127.0.0.1:4180/",
+                      "column": 27,
+                      "line": 8684
+                    }
+                  },
+                  "errors": [
+                    {
+                      "location": {
+                        "file": "http://127.0.0.1:4180/",
+                        "column": 27,
+                        "line": 8684
+                      },
+                      "message": "Error: page.evaluate: ReferenceError: isCancelled is not defined\n    at http://127.0.0.1:4180/:8684:27\n    at Array.filter (<anonymous>)\n    at window.renderTxnPage (http://127.0.0.1:4180/:8684:17)\n    at window.nav (http://127.0.0.1:4180/:8607:26)\n    at eval (eval at evaluate (:370:30), <anonymous>:1:6)\n    at UtilityScript.evaluate (<anonymous>:372:16)\n    at UtilityScript.<anonymous> (<anonymous>:1:44)\n    at http://127.0.0.1:4180/:8684:27\n    at window.renderTxnPage (http://127.0.0.1:4180/:8684:17)\n    at window.nav (http://127.0.0.1:4180/:8607:26)\n    at eval (eval at evaluate (:370:30), <anonymous>:1:6)\n    at UtilityScript.evaluate (<anonymous>:372:16)\n    at UtilityScript.<anonymous> (<anonymous>:1:44)\n    at /workspace/Xl-billing/test/e2e/hotfix.spec.cjs:21:257"
+                    }
+                  ],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-12T04:57:07.044Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "screenshot",
+                      "contentType": "image/png",
+                      "path": "/workspace/Xl-billing/test-results/browser/hotfix-P0-2-all-pages-and--502d0-abs-render-with-seeded-data-chromium/test-failed-1.png"
+                    },
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "/workspace/Xl-billing/test-results/browser/hotfix-P0-2-all-pages-and--502d0-abs-render-with-seeded-data-chromium/error-context.md"
+                    }
+                  ],
+                  "errorLocation": {
+                    "file": "http://127.0.0.1:4180/",
+                    "column": 27,
+                    "line": 8684
+                  }
+                }
+              ],
+              "status": "unexpected"
+            }
+          ],
+          "id": "a508bcc51c6c2b20affb-afd47b22bc70d62e24ac",
+          "file": "hotfix.spec.cjs",
+          "line": 19,
+          "column": 1
+        },
+        {
+          "title": "P0-3 pagination reaches next and last invoice, totals cover all",
+          "ok": false,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 8,
+                  "parallelIndex": 0,
+                  "status": "failed",
+                  "duration": 5670,
+                  "error": {
+                    "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: locator('#sales-table .pgn')\nExpected: visible\nTimeout: 5000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" locator('#sales-table .pgn') with timeout 5000ms\u001b[22m\n\u001b[2m  - waiting for locator('#sales-table .pgn')\u001b[22m\n",
+                    "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: locator('#sales-table .pgn')\nExpected: visible\nTimeout: 5000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" locator('#sales-table .pgn') with timeout 5000ms\u001b[22m\n\u001b[2m  - waiting for locator('#sales-table .pgn')\u001b[22m\n\n    at /workspace/Xl-billing/test/e2e/hotfix.spec.cjs:25:269",
+                    "location": {
+                      "file": "/workspace/Xl-billing/test/e2e/hotfix.spec.cjs",
+                      "column": 269,
+                      "line": 25
+                    },
+                    "snippet": "  23 |  await page.evaluate(()=>openPartyDetail('p1'));await page.evaluate(()=>openSettlementModal('p1','Synthetic Customer'));await page.evaluate(()=>openPayOutModal());await page.waitForTimeout(300);expect(errors).toEqual([]);\n  24 | });\n> 25 | test('P0-3 pagination reaches next and last invoice, totals cover all',async({page})=>{await seed(page,1200);await page.evaluate(()=>nav('sales-list'));await expect(page.locator('#sales-table tbody tr')).toHaveCount(20);await expect(page.locator('#sales-table .pgn')).toBeVisible();await page.locator('#sales-table .pgn-btn').filter({hasText:'Next'}).click();await expect(page.locator('#sales-table .pgn-info')).toContainText('21');await page.evaluate(()=>slNavPage(60));await expect(page.locator('#sales-table')).toContainText('INV-1001');await expect(page.locator('#sl-summary')).toContainText('1,20,000.00');await expect(page.locator('#sales-table th[aria-sort]')).not.toHaveCount(0);});\n     |                                                                                                                                                                                                                                                                             ^\n  26 | test('P0-4 overpayment rejected without invoice or audit writes',async({page})=>{await page.evaluate(()=>openPayModal('s0'));await page.fill('#pay-amount','81');const before=await records(page);await page.evaluate(()=>savePayment());expect(await records(page)).toEqual(before);expect(await records(page,'audit')).toEqual([]);await expect(page.locator('[role=alert]')).toContainText('balance');});\n  27 | test('P0-4 exact payment and delete preserve totals',async({page})=>{await page.evaluate(()=>openPayModal('s0'));await page.fill('#pay-amount','80');await page.evaluate(()=>savePayment());const inv=(await records(page))[0];expect(inv.paid).toBe(100);expect(inv.payments.reduce((s,p)=>s+p.amt,0)).toBe(100);expect(inv.balance).toBe(0);});\n  28 | test('P0-4 purchase overpayment rejected',async({page})=>{await page.evaluate(()=>openPurPayModal('u1'));await page.fill('#pur-pay-amt','481');const before=await records(page,'purchases');await page.evaluate(()=>savePurPayment());expect(await records(page,'purchases')).toEqual(before);});"
+                  },
+                  "errors": [
+                    {
+                      "location": {
+                        "file": "/workspace/Xl-billing/test/e2e/hotfix.spec.cjs",
+                        "column": 269,
+                        "line": 25
+                      },
+                      "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: locator('#sales-table .pgn')\nExpected: visible\nTimeout: 5000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" locator('#sales-table .pgn') with timeout 5000ms\u001b[22m\n\u001b[2m  - waiting for locator('#sales-table .pgn')\u001b[22m\n\n\n  23 |  await page.evaluate(()=>openPartyDetail('p1'));await page.evaluate(()=>openSettlementModal('p1','Synthetic Customer'));await page.evaluate(()=>openPayOutModal());await page.waitForTimeout(300);expect(errors).toEqual([]);\n  24 | });\n> 25 | test('P0-3 pagination reaches next and last invoice, totals cover all',async({page})=>{await seed(page,1200);await page.evaluate(()=>nav('sales-list'));await expect(page.locator('#sales-table tbody tr')).toHaveCount(20);await expect(page.locator('#sales-table .pgn')).toBeVisible();await page.locator('#sales-table .pgn-btn').filter({hasText:'Next'}).click();await expect(page.locator('#sales-table .pgn-info')).toContainText('21');await page.evaluate(()=>slNavPage(60));await expect(page.locator('#sales-table')).toContainText('INV-1001');await expect(page.locator('#sl-summary')).toContainText('1,20,000.00');await expect(page.locator('#sales-table th[aria-sort]')).not.toHaveCount(0);});\n     |                                                                                                                                                                                                                                                                             ^\n  26 | test('P0-4 overpayment rejected without invoice or audit writes',async({page})=>{await page.evaluate(()=>openPayModal('s0'));await page.fill('#pay-amount','81');const before=await records(page);await page.evaluate(()=>savePayment());expect(await records(page)).toEqual(before);expect(await records(page,'audit')).toEqual([]);await expect(page.locator('[role=alert]')).toContainText('balance');});\n  27 | test('P0-4 exact payment and delete preserve totals',async({page})=>{await page.evaluate(()=>openPayModal('s0'));await page.fill('#pay-amount','80');await page.evaluate(()=>savePayment());const inv=(await records(page))[0];expect(inv.paid).toBe(100);expect(inv.payments.reduce((s,p)=>s+p.amt,0)).toBe(100);expect(inv.balance).toBe(0);});\n  28 | test('P0-4 purchase overpayment rejected',async({page})=>{await page.evaluate(()=>openPurPayModal('u1'));await page.fill('#pur-pay-amt','481');const before=await records(page,'purchases');await page.evaluate(()=>savePurPayment());expect(await records(page,'purchases')).toEqual(before);});\n    at /workspace/Xl-billing/test/e2e/hotfix.spec.cjs:25:269"
+                    }
+                  ],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-12T04:57:08.001Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "screenshot",
+                      "contentType": "image/png",
+                      "path": "/workspace/Xl-billing/test-results/browser/hotfix-P0-3-pagination-rea-21a08-st-invoice-totals-cover-all-chromium/test-failed-1.png"
+                    },
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "/workspace/Xl-billing/test-results/browser/hotfix-P0-3-pagination-rea-21a08-st-invoice-totals-cover-all-chromium/error-context.md"
+                    }
+                  ],
+                  "errorLocation": {
+                    "file": "/workspace/Xl-billing/test/e2e/hotfix.spec.cjs",
+                    "column": 269,
+                    "line": 25
+                  }
+                }
+              ],
+              "status": "unexpected"
+            }
+          ],
+          "id": "a508bcc51c6c2b20affb-a4a5b22beb9b4498a822",
+          "file": "hotfix.spec.cjs",
+          "line": 25,
+          "column": 1
+        },
+        {
+          "title": "P0-4 overpayment rejected without invoice or audit writes",
+          "ok": false,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 9,
+                  "parallelIndex": 0,
+                  "status": "failed",
+                  "duration": 403,
+                  "error": {
+                    "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoEqual\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // deep equality\u001b[22m\n\n\u001b[32m- Expected  - 2\u001b[39m\n\u001b[31m+ Received  + 8\u001b[39m\n\n\u001b[33m@@ -1,8 +1,8 @@\u001b[39m\n\u001b[2m  Array [\u001b[22m\n\u001b[2m    Object {\u001b[22m\n\u001b[32m-     \"balance\": 80,\u001b[39m\n\u001b[31m+     \"balance\": 0,\u001b[39m\n\u001b[2m      \"createdAt\": \"2026-10-09T08:00:00Z\",\u001b[22m\n\u001b[2m      \"date\": \"2026-10-09\",\u001b[22m\n\u001b[2m      \"discount\": 0,\u001b[22m\n\u001b[2m      \"dispatchStatus\": \"pending\",\u001b[22m\n\u001b[2m      \"id\": \"s0\",\u001b[22m\n\u001b[33m@@ -17,19 +17,25 @@\u001b[39m\n\u001b[2m          \"rate\": 20,\u001b[22m\n\u001b[2m          \"unit\": \"Pcs\",\u001b[22m\n\u001b[2m        },\u001b[22m\n\u001b[2m      ],\u001b[22m\n\u001b[2m      \"notes\": \"\",\u001b[22m\n\u001b[32m-     \"paid\": 20,\u001b[39m\n\u001b[31m+     \"paid\": 101,\u001b[39m\n\u001b[2m      \"partyId\": \"p1\",\u001b[22m\n\u001b[2m      \"partyName\": \"Synthetic Customer\",\u001b[22m\n\u001b[2m      \"paymentType\": \"Credit\",\u001b[22m\n\u001b[2m      \"payments\": Array [\u001b[22m\n\u001b[2m        Object {\u001b[22m\n\u001b[2m          \"amt\": 20,\u001b[22m\n\u001b[2m          \"date\": \"2026-10-09\",\u001b[22m\n\u001b[2m          \"mode\": \"Cash\",\u001b[22m\n\u001b[31m+         \"note\": \"\",\u001b[39m\n\u001b[31m+       },\u001b[39m\n\u001b[31m+       Object {\u001b[39m\n\u001b[31m+         \"amt\": 81,\u001b[39m\n\u001b[31m+         \"date\": \"2026-10-12\",\u001b[39m\n\u001b[31m+         \"mode\": \"UPI\",\u001b[39m\n\u001b[2m          \"note\": \"\",\u001b[22m\n\u001b[2m        },\u001b[22m\n\u001b[2m      ],\u001b[22m\n\u001b[2m      \"subtotal\": 100,\u001b[22m\n\u001b[2m      \"taxAmt\": 0,\u001b[22m",
+                    "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoEqual\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // deep equality\u001b[22m\n\n\u001b[32m- Expected  - 2\u001b[39m\n\u001b[31m+ Received  + 8\u001b[39m\n\n\u001b[33m@@ -1,8 +1,8 @@\u001b[39m\n\u001b[2m  Array [\u001b[22m\n\u001b[2m    Object {\u001b[22m\n\u001b[32m-     \"balance\": 80,\u001b[39m\n\u001b[31m+     \"balance\": 0,\u001b[39m\n\u001b[2m      \"createdAt\": \"2026-10-09T08:00:00Z\",\u001b[22m\n\u001b[2m      \"date\": \"2026-10-09\",\u001b[22m\n\u001b[2m      \"discount\": 0,\u001b[22m\n\u001b[2m      \"dispatchStatus\": \"pending\",\u001b[22m\n\u001b[2m      \"id\": \"s0\",\u001b[22m\n\u001b[33m@@ -17,19 +17,25 @@\u001b[39m\n\u001b[2m          \"rate\": 20,\u001b[22m\n\u001b[2m          \"unit\": \"Pcs\",\u001b[22m\n\u001b[2m        },\u001b[22m\n\u001b[2m      ],\u001b[22m\n\u001b[2m      \"notes\": \"\",\u001b[22m\n\u001b[32m-     \"paid\": 20,\u001b[39m\n\u001b[31m+     \"paid\": 101,\u001b[39m\n\u001b[2m      \"partyId\": \"p1\",\u001b[22m\n\u001b[2m      \"partyName\": \"Synthetic Customer\",\u001b[22m\n\u001b[2m      \"paymentType\": \"Credit\",\u001b[22m\n\u001b[2m      \"payments\": Array [\u001b[22m\n\u001b[2m        Object {\u001b[22m\n\u001b[2m          \"amt\": 20,\u001b[22m\n\u001b[2m          \"date\": \"2026-10-09\",\u001b[22m\n\u001b[2m          \"mode\": \"Cash\",\u001b[22m\n\u001b[31m+         \"note\": \"\",\u001b[39m\n\u001b[31m+       },\u001b[39m\n\u001b[31m+       Object {\u001b[39m\n\u001b[31m+         \"amt\": 81,\u001b[39m\n\u001b[31m+         \"date\": \"2026-10-12\",\u001b[39m\n\u001b[31m+         \"mode\": \"UPI\",\u001b[39m\n\u001b[2m          \"note\": \"\",\u001b[22m\n\u001b[2m        },\u001b[22m\n\u001b[2m      ],\u001b[22m\n\u001b[2m      \"subtotal\": 100,\u001b[22m\n\u001b[2m      \"taxAmt\": 0,\u001b[22m\n    at /workspace/Xl-billing/test/e2e/hotfix.spec.cjs:26:262",
+                    "location": {
+                      "file": "/workspace/Xl-billing/test/e2e/hotfix.spec.cjs",
+                      "column": 262,
+                      "line": 26
+                    },
+                    "snippet": "  24 | });\n  25 | test('P0-3 pagination reaches next and last invoice, totals cover all',async({page})=>{await seed(page,1200);await page.evaluate(()=>nav('sales-list'));await expect(page.locator('#sales-table tbody tr')).toHaveCount(20);await expect(page.locator('#sales-table .pgn')).toBeVisible();await page.locator('#sales-table .pgn-btn').filter({hasText:'Next'}).click();await expect(page.locator('#sales-table .pgn-info')).toContainText('21');await page.evaluate(()=>slNavPage(60));await expect(page.locator('#sales-table')).toContainText('INV-1001');await expect(page.locator('#sl-summary')).toContainText('1,20,000.00');await expect(page.locator('#sales-table th[aria-sort]')).not.toHaveCount(0);});\n> 26 | test('P0-4 overpayment rejected without invoice or audit writes',async({page})=>{await page.evaluate(()=>openPayModal('s0'));await page.fill('#pay-amount','81');const before=await records(page);await page.evaluate(()=>savePayment());expect(await records(page)).toEqual(before);expect(await records(page,'audit')).toEqual([]);await expect(page.locator('[role=alert]')).toContainText('balance');});\n     |                                                                                                                                                                                                                                                                      ^\n  27 | test('P0-4 exact payment and delete preserve totals',async({page})=>{await page.evaluate(()=>openPayModal('s0'));await page.fill('#pay-amount','80');await page.evaluate(()=>savePayment());const inv=(await records(page))[0];expect(inv.paid).toBe(100);expect(inv.payments.reduce((s,p)=>s+p.amt,0)).toBe(100);expect(inv.balance).toBe(0);});\n  28 | test('P0-4 purchase overpayment rejected',async({page})=>{await page.evaluate(()=>openPurPayModal('u1'));await page.fill('#pur-pay-amt','481');const before=await records(page,'purchases');await page.evaluate(()=>savePurPayment());expect(await records(page,'purchases')).toEqual(before);});\n  29 | test('P0-5 batches and typed numbers never collide',async({page})=>{"
+                  },
+                  "errors": [
+                    {
+                      "location": {
+                        "file": "/workspace/Xl-billing/test/e2e/hotfix.spec.cjs",
+                        "column": 262,
+                        "line": 26
+                      },
+                      "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoEqual\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // deep equality\u001b[22m\n\n\u001b[32m- Expected  - 2\u001b[39m\n\u001b[31m+ Received  + 8\u001b[39m\n\n\u001b[33m@@ -1,8 +1,8 @@\u001b[39m\n\u001b[2m  Array [\u001b[22m\n\u001b[2m    Object {\u001b[22m\n\u001b[32m-     \"balance\": 80,\u001b[39m\n\u001b[31m+     \"balance\": 0,\u001b[39m\n\u001b[2m      \"createdAt\": \"2026-10-09T08:00:00Z\",\u001b[22m\n\u001b[2m      \"date\": \"2026-10-09\",\u001b[22m\n\u001b[2m      \"discount\": 0,\u001b[22m\n\u001b[2m      \"dispatchStatus\": \"pending\",\u001b[22m\n\u001b[2m      \"id\": \"s0\",\u001b[22m\n\u001b[33m@@ -17,19 +17,25 @@\u001b[39m\n\u001b[2m          \"rate\": 20,\u001b[22m\n\u001b[2m          \"unit\": \"Pcs\",\u001b[22m\n\u001b[2m        },\u001b[22m\n\u001b[2m      ],\u001b[22m\n\u001b[2m      \"notes\": \"\",\u001b[22m\n\u001b[32m-     \"paid\": 20,\u001b[39m\n\u001b[31m+     \"paid\": 101,\u001b[39m\n\u001b[2m      \"partyId\": \"p1\",\u001b[22m\n\u001b[2m      \"partyName\": \"Synthetic Customer\",\u001b[22m\n\u001b[2m      \"paymentType\": \"Credit\",\u001b[22m\n\u001b[2m      \"payments\": Array [\u001b[22m\n\u001b[2m        Object {\u001b[22m\n\u001b[2m          \"amt\": 20,\u001b[22m\n\u001b[2m          \"date\": \"2026-10-09\",\u001b[22m\n\u001b[2m          \"mode\": \"Cash\",\u001b[22m\n\u001b[31m+         \"note\": \"\",\u001b[39m\n\u001b[31m+       },\u001b[39m\n\u001b[31m+       Object {\u001b[39m\n\u001b[31m+         \"amt\": 81,\u001b[39m\n\u001b[31m+         \"date\": \"2026-10-12\",\u001b[39m\n\u001b[31m+         \"mode\": \"UPI\",\u001b[39m\n\u001b[2m          \"note\": \"\",\u001b[22m\n\u001b[2m        },\u001b[22m\n\u001b[2m      ],\u001b[22m\n\u001b[2m      \"subtotal\": 100,\u001b[22m\n\u001b[2m      \"taxAmt\": 0,\u001b[22m\n\n  24 | });\n  25 | test('P0-3 pagination reaches next and last invoice, totals cover all',async({page})=>{await seed(page,1200);await page.evaluate(()=>nav('sales-list'));await expect(page.locator('#sales-table tbody tr')).toHaveCount(20);await expect(page.locator('#sales-table .pgn')).toBeVisible();await page.locator('#sales-table .pgn-btn').filter({hasText:'Next'}).click();await expect(page.locator('#sales-table .pgn-info')).toContainText('21');await page.evaluate(()=>slNavPage(60));await expect(page.locator('#sales-table')).toContainText('INV-1001');await expect(page.locator('#sl-summary')).toContainText('1,20,000.00');await expect(page.locator('#sales-table th[aria-sort]')).not.toHaveCount(0);});\n> 26 | test('P0-4 overpayment rejected without invoice or audit writes',async({page})=>{await page.evaluate(()=>openPayModal('s0'));await page.fill('#pay-amount','81');const before=await records(page);await page.evaluate(()=>savePayment());expect(await records(page)).toEqual(before);expect(await records(page,'audit')).toEqual([]);await expect(page.locator('[role=alert]')).toContainText('balance');});\n     |                                                                                                                                                                                                                                                                      ^\n  27 | test('P0-4 exact payment and delete preserve totals',async({page})=>{await page.evaluate(()=>openPayModal('s0'));await page.fill('#pay-amount','80');await page.evaluate(()=>savePayment());const inv=(await records(page))[0];expect(inv.paid).toBe(100);expect(inv.payments.reduce((s,p)=>s+p.amt,0)).toBe(100);expect(inv.balance).toBe(0);});\n  28 | test('P0-4 purchase overpayment rejected',async({page})=>{await page.evaluate(()=>openPurPayModal('u1'));await page.fill('#pur-pay-amt','481');const before=await records(page,'purchases');await page.evaluate(()=>savePurPayment());expect(await records(page,'purchases')).toEqual(before);});\n  29 | test('P0-5 batches and typed numbers never collide',async({page})=>{\n    at /workspace/Xl-billing/test/e2e/hotfix.spec.cjs:26:262"
+                    }
+                  ],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-12T04:57:14.115Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "screenshot",
+                      "contentType": "image/png",
+                      "path": "/workspace/Xl-billing/test-results/browser/hotfix-P0-4-overpayment-re-a271b-out-invoice-or-audit-writes-chromium/test-failed-1.png"
+                    },
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "/workspace/Xl-billing/test-results/browser/hotfix-P0-4-overpayment-re-a271b-out-invoice-or-audit-writes-chromium/error-context.md"
+                    }
+                  ],
+                  "errorLocation": {
+                    "file": "/workspace/Xl-billing/test/e2e/hotfix.spec.cjs",
+                    "column": 262,
+                    "line": 26
+                  }
+                }
+              ],
+              "status": "unexpected"
+            }
+          ],
+          "id": "a508bcc51c6c2b20affb-39a2ef2a645ca90635ec",
+          "file": "hotfix.spec.cjs",
+          "line": 26,
+          "column": 1
+        },
+        {
+          "title": "P0-4 exact payment and delete preserve totals",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 10,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 325,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-12T04:57:14.988Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "a508bcc51c6c2b20affb-ff5052f2c5c4596d7a88",
+          "file": "hotfix.spec.cjs",
+          "line": 27,
+          "column": 1
+        },
+        {
+          "title": "P0-4 purchase overpayment rejected",
+          "ok": false,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 10,
+                  "parallelIndex": 0,
+                  "status": "failed",
+                  "duration": 312,
+                  "error": {
+                    "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoEqual\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // deep equality\u001b[22m\n\n\u001b[32m- Expected  - 2\u001b[39m\n\u001b[31m+ Received  + 8\u001b[39m\n\n\u001b[33m@@ -1,22 +1,28 @@\u001b[39m\n\u001b[2m  Array [\u001b[22m\n\u001b[2m    Object {\u001b[22m\n\u001b[32m-     \"balance\": 480,\u001b[39m\n\u001b[31m+     \"balance\": 0,\u001b[39m\n\u001b[2m      \"billNo\": \"P-1\",\u001b[22m\n\u001b[2m      \"createdAt\": \"2026-10-09T08:00:00Z\",\u001b[22m\n\u001b[2m      \"date\": \"2026-10-09\",\u001b[22m\n\u001b[2m      \"id\": \"u1\",\u001b[22m\n\u001b[2m      \"items\": Array [],\u001b[22m\n\u001b[2m      \"mode\": \"amount\",\u001b[22m\n\u001b[2m      \"notes\": \"\",\u001b[22m\n\u001b[32m-     \"paid\": 20,\u001b[39m\n\u001b[31m+     \"paid\": 501,\u001b[39m\n\u001b[2m      \"partyId\": \"p2\",\u001b[22m\n\u001b[2m      \"partyName\": \"Synthetic Supplier\",\u001b[22m\n\u001b[2m      \"payments\": Array [\u001b[22m\n\u001b[2m        Object {\u001b[22m\n\u001b[2m          \"amt\": 20,\u001b[22m\n\u001b[2m          \"date\": \"2026-10-09\",\u001b[22m\n\u001b[31m+         \"mode\": \"Cash\",\u001b[39m\n\u001b[31m+         \"note\": \"\",\u001b[39m\n\u001b[31m+       },\u001b[39m\n\u001b[31m+       Object {\u001b[39m\n\u001b[31m+         \"amt\": 481,\u001b[39m\n\u001b[31m+         \"date\": \"2026-10-12\",\u001b[39m\n\u001b[2m          \"mode\": \"Cash\",\u001b[22m\n\u001b[2m          \"note\": \"\",\u001b[22m\n\u001b[2m        },\u001b[22m\n\u001b[2m      ],\u001b[22m\n\u001b[2m      \"total\": 500,\u001b[22m",
+                    "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoEqual\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // deep equality\u001b[22m\n\n\u001b[32m- Expected  - 2\u001b[39m\n\u001b[31m+ Received  + 8\u001b[39m\n\n\u001b[33m@@ -1,22 +1,28 @@\u001b[39m\n\u001b[2m  Array [\u001b[22m\n\u001b[2m    Object {\u001b[22m\n\u001b[32m-     \"balance\": 480,\u001b[39m\n\u001b[31m+     \"balance\": 0,\u001b[39m\n\u001b[2m      \"billNo\": \"P-1\",\u001b[22m\n\u001b[2m      \"createdAt\": \"2026-10-09T08:00:00Z\",\u001b[22m\n\u001b[2m      \"date\": \"2026-10-09\",\u001b[22m\n\u001b[2m      \"id\": \"u1\",\u001b[22m\n\u001b[2m      \"items\": Array [],\u001b[22m\n\u001b[2m      \"mode\": \"amount\",\u001b[22m\n\u001b[2m      \"notes\": \"\",\u001b[22m\n\u001b[32m-     \"paid\": 20,\u001b[39m\n\u001b[31m+     \"paid\": 501,\u001b[39m\n\u001b[2m      \"partyId\": \"p2\",\u001b[22m\n\u001b[2m      \"partyName\": \"Synthetic Supplier\",\u001b[22m\n\u001b[2m      \"payments\": Array [\u001b[22m\n\u001b[2m        Object {\u001b[22m\n\u001b[2m          \"amt\": 20,\u001b[22m\n\u001b[2m          \"date\": \"2026-10-09\",\u001b[22m\n\u001b[31m+         \"mode\": \"Cash\",\u001b[39m\n\u001b[31m+         \"note\": \"\",\u001b[39m\n\u001b[31m+       },\u001b[39m\n\u001b[31m+       Object {\u001b[39m\n\u001b[31m+         \"amt\": 481,\u001b[39m\n\u001b[31m+         \"date\": \"2026-10-12\",\u001b[39m\n\u001b[2m          \"mode\": \"Cash\",\u001b[22m\n\u001b[2m          \"note\": \"\",\u001b[22m\n\u001b[2m        },\u001b[22m\n\u001b[2m      ],\u001b[22m\n\u001b[2m      \"total\": 500,\u001b[22m\n    at /workspace/Xl-billing/test/e2e/hotfix.spec.cjs:28:271",
+                    "location": {
+                      "file": "/workspace/Xl-billing/test/e2e/hotfix.spec.cjs",
+                      "column": 271,
+                      "line": 28
+                    },
+                    "snippet": "  26 | test('P0-4 overpayment rejected without invoice or audit writes',async({page})=>{await page.evaluate(()=>openPayModal('s0'));await page.fill('#pay-amount','81');const before=await records(page);await page.evaluate(()=>savePayment());expect(await records(page)).toEqual(before);expect(await records(page,'audit')).toEqual([]);await expect(page.locator('[role=alert]')).toContainText('balance');});\n  27 | test('P0-4 exact payment and delete preserve totals',async({page})=>{await page.evaluate(()=>openPayModal('s0'));await page.fill('#pay-amount','80');await page.evaluate(()=>savePayment());const inv=(await records(page))[0];expect(inv.paid).toBe(100);expect(inv.payments.reduce((s,p)=>s+p.amt,0)).toBe(100);expect(inv.balance).toBe(0);});\n> 28 | test('P0-4 purchase overpayment rejected',async({page})=>{await page.evaluate(()=>openPurPayModal('u1'));await page.fill('#pur-pay-amt','481');const before=await records(page,'purchases');await page.evaluate(()=>savePurPayment());expect(await records(page,'purchases')).toEqual(before);});\n     |                                                                                                                                                                                                                                                                               ^\n  29 | test('P0-5 batches and typed numbers never collide',async({page})=>{\n  30 |  await page.evaluate(()=>{nav('prev-bills');document.getElementById('bulk-party-name').value='Synthetic Customer';document.getElementById('bulk-party-id').value='p1';pbRows=[{id:'old1',date:'2026-10-09',total:100,paid:0,billNo:''}];pbSaveAll();pbRows=[{id:'old2',date:'2026-10-09',total:100,paid:0,billNo:''}];pbSaveAll();});\n  31 |  const invs=await records(page);expect(new Set(invs.map(x=>x.invoiceNo.trim().toLowerCase())).size).toBe(invs.length);"
+                  },
+                  "errors": [
+                    {
+                      "location": {
+                        "file": "/workspace/Xl-billing/test/e2e/hotfix.spec.cjs",
+                        "column": 271,
+                        "line": 28
+                      },
+                      "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoEqual\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // deep equality\u001b[22m\n\n\u001b[32m- Expected  - 2\u001b[39m\n\u001b[31m+ Received  + 8\u001b[39m\n\n\u001b[33m@@ -1,22 +1,28 @@\u001b[39m\n\u001b[2m  Array [\u001b[22m\n\u001b[2m    Object {\u001b[22m\n\u001b[32m-     \"balance\": 480,\u001b[39m\n\u001b[31m+     \"balance\": 0,\u001b[39m\n\u001b[2m      \"billNo\": \"P-1\",\u001b[22m\n\u001b[2m      \"createdAt\": \"2026-10-09T08:00:00Z\",\u001b[22m\n\u001b[2m      \"date\": \"2026-10-09\",\u001b[22m\n\u001b[2m      \"id\": \"u1\",\u001b[22m\n\u001b[2m      \"items\": Array [],\u001b[22m\n\u001b[2m      \"mode\": \"amount\",\u001b[22m\n\u001b[2m      \"notes\": \"\",\u001b[22m\n\u001b[32m-     \"paid\": 20,\u001b[39m\n\u001b[31m+     \"paid\": 501,\u001b[39m\n\u001b[2m      \"partyId\": \"p2\",\u001b[22m\n\u001b[2m      \"partyName\": \"Synthetic Supplier\",\u001b[22m\n\u001b[2m      \"payments\": Array [\u001b[22m\n\u001b[2m        Object {\u001b[22m\n\u001b[2m          \"amt\": 20,\u001b[22m\n\u001b[2m          \"date\": \"2026-10-09\",\u001b[22m\n\u001b[31m+         \"mode\": \"Cash\",\u001b[39m\n\u001b[31m+         \"note\": \"\",\u001b[39m\n\u001b[31m+       },\u001b[39m\n\u001b[31m+       Object {\u001b[39m\n\u001b[31m+         \"amt\": 481,\u001b[39m\n\u001b[31m+         \"date\": \"2026-10-12\",\u001b[39m\n\u001b[2m          \"mode\": \"Cash\",\u001b[22m\n\u001b[2m          \"note\": \"\",\u001b[22m\n\u001b[2m        },\u001b[22m\n\u001b[2m      ],\u001b[22m\n\u001b[2m      \"total\": 500,\u001b[22m\n\n  26 | test('P0-4 overpayment rejected without invoice or audit writes',async({page})=>{await page.evaluate(()=>openPayModal('s0'));await page.fill('#pay-amount','81');const before=await records(page);await page.evaluate(()=>savePayment());expect(await records(page)).toEqual(before);expect(await records(page,'audit')).toEqual([]);await expect(page.locator('[role=alert]')).toContainText('balance');});\n  27 | test('P0-4 exact payment and delete preserve totals',async({page})=>{await page.evaluate(()=>openPayModal('s0'));await page.fill('#pay-amount','80');await page.evaluate(()=>savePayment());const inv=(await records(page))[0];expect(inv.paid).toBe(100);expect(inv.payments.reduce((s,p)=>s+p.amt,0)).toBe(100);expect(inv.balance).toBe(0);});\n> 28 | test('P0-4 purchase overpayment rejected',async({page})=>{await page.evaluate(()=>openPurPayModal('u1'));await page.fill('#pur-pay-amt','481');const before=await records(page,'purchases');await page.evaluate(()=>savePurPayment());expect(await records(page,'purchases')).toEqual(before);});\n     |                                                                                                                                                                                                                                                                               ^\n  29 | test('P0-5 batches and typed numbers never collide',async({page})=>{\n  30 |  await page.evaluate(()=>{nav('prev-bills');document.getElementById('bulk-party-name').value='Synthetic Customer';document.getElementById('bulk-party-id').value='p1';pbRows=[{id:'old1',date:'2026-10-09',total:100,paid:0,billNo:''}];pbSaveAll();pbRows=[{id:'old2',date:'2026-10-09',total:100,paid:0,billNo:''}];pbSaveAll();});\n  31 |  const invs=await records(page);expect(new Set(invs.map(x=>x.invoiceNo.trim().toLowerCase())).size).toBe(invs.length);\n    at /workspace/Xl-billing/test/e2e/hotfix.spec.cjs:28:271"
+                    }
+                  ],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-12T04:57:15.396Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "screenshot",
+                      "contentType": "image/png",
+                      "path": "/workspace/Xl-billing/test-results/browser/hotfix-P0-4-purchase-overpayment-rejected-chromium/test-failed-1.png"
+                    },
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "/workspace/Xl-billing/test-results/browser/hotfix-P0-4-purchase-overpayment-rejected-chromium/error-context.md"
+                    }
+                  ],
+                  "errorLocation": {
+                    "file": "/workspace/Xl-billing/test/e2e/hotfix.spec.cjs",
+                    "column": 271,
+                    "line": 28
+                  }
+                }
+              ],
+              "status": "unexpected"
+            }
+          ],
+          "id": "a508bcc51c6c2b20affb-8b3aff82a16c0e1874a4",
+          "file": "hotfix.spec.cjs",
+          "line": 28,
+          "column": 1
+        },
+        {
+          "title": "P0-5 batches and typed numbers never collide",
+          "ok": false,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 11,
+                  "parallelIndex": 0,
+                  "status": "failed",
+                  "duration": 483,
+                  "error": {
+                    "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\nExpected: \u001b[32m52\u001b[39m\nReceived: \u001b[31m51\u001b[39m",
+                    "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\nExpected: \u001b[32m52\u001b[39m\nReceived: \u001b[31m51\u001b[39m\n    at /workspace/Xl-billing/test/e2e/hotfix.spec.cjs:31:101",
+                    "location": {
+                      "file": "/workspace/Xl-billing/test/e2e/hotfix.spec.cjs",
+                      "column": 101,
+                      "line": 31
+                    },
+                    "snippet": "  29 | test('P0-5 batches and typed numbers never collide',async({page})=>{\n  30 |  await page.evaluate(()=>{nav('prev-bills');document.getElementById('bulk-party-name').value='Synthetic Customer';document.getElementById('bulk-party-id').value='p1';pbRows=[{id:'old1',date:'2026-10-09',total:100,paid:0,billNo:''}];pbSaveAll();pbRows=[{id:'old2',date:'2026-10-09',total:100,paid:0,billNo:''}];pbSaveAll();});\n> 31 |  const invs=await records(page);expect(new Set(invs.map(x=>x.invoiceNo.trim().toLowerCase())).size).toBe(invs.length);\n     |                                                                                                     ^\n  32 |  await page.evaluate(()=>{pbRows=[{id:'old3',date:'2026-10-09',total:100,paid:0,billNo:' inv-1001 '}];pbSaveAll();});expect((await records(page)).length).toBe(invs.length);\n  33 | });\n  34 | test('P1-14 no stray shell text on any page',async({page})=>{expect(await page.locator('body').innerText()).not.toMatch(/\\/home\\/claude|V16_END|cat >>/);});"
+                  },
+                  "errors": [
+                    {
+                      "location": {
+                        "file": "/workspace/Xl-billing/test/e2e/hotfix.spec.cjs",
+                        "column": 101,
+                        "line": 31
+                      },
+                      "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\nExpected: \u001b[32m52\u001b[39m\nReceived: \u001b[31m51\u001b[39m\n\n  29 | test('P0-5 batches and typed numbers never collide',async({page})=>{\n  30 |  await page.evaluate(()=>{nav('prev-bills');document.getElementById('bulk-party-name').value='Synthetic Customer';document.getElementById('bulk-party-id').value='p1';pbRows=[{id:'old1',date:'2026-10-09',total:100,paid:0,billNo:''}];pbSaveAll();pbRows=[{id:'old2',date:'2026-10-09',total:100,paid:0,billNo:''}];pbSaveAll();});\n> 31 |  const invs=await records(page);expect(new Set(invs.map(x=>x.invoiceNo.trim().toLowerCase())).size).toBe(invs.length);\n     |                                                                                                     ^\n  32 |  await page.evaluate(()=>{pbRows=[{id:'old3',date:'2026-10-09',total:100,paid:0,billNo:' inv-1001 '}];pbSaveAll();});expect((await records(page)).length).toBe(invs.length);\n  33 | });\n  34 | test('P1-14 no stray shell text on any page',async({page})=>{expect(await page.locator('body').innerText()).not.toMatch(/\\/home\\/claude|V16_END|cat >>/);});\n    at /workspace/Xl-billing/test/e2e/hotfix.spec.cjs:31:101"
+                    }
+                  ],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-12T04:57:16.116Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "screenshot",
+                      "contentType": "image/png",
+                      "path": "/workspace/Xl-billing/test-results/browser/hotfix-P0-5-batches-and-typed-numbers-never-collide-chromium/test-failed-1.png"
+                    },
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "/workspace/Xl-billing/test-results/browser/hotfix-P0-5-batches-and-typed-numbers-never-collide-chromium/error-context.md"
+                    }
+                  ],
+                  "errorLocation": {
+                    "file": "/workspace/Xl-billing/test/e2e/hotfix.spec.cjs",
+                    "column": 101,
+                    "line": 31
+                  }
+                }
+              ],
+              "status": "unexpected"
+            }
+          ],
+          "id": "a508bcc51c6c2b20affb-9fb4e311895c4a25db57",
+          "file": "hotfix.spec.cjs",
+          "line": 29,
+          "column": 1
+        },
+        {
+          "title": "P1-14 no stray shell text on any page",
+          "ok": false,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 12,
+                  "parallelIndex": 0,
+                  "status": "failed",
+                  "duration": 397,
+                  "error": {
+                    "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mnot\u001b[2m.\u001b[22mtoMatch\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\nExpected pattern: not \u001b[32m/\\/home\\/claude|V16_END|cat >>/\u001b[39m\nReceived string:      \u001b[31m\"🏪\u001b[39m\n\u001b[31mSynthetic XL Shop\u001b[39m\n\u001b[31mBilling\u001b[39m\n\u001b[31m📊\u001b[39m\n\u001b[31mDashboard\u001b[39m\n\u001b[31mSALES\u001b[39m\n\u001b[31m➕\u001b[39m\n\u001b[31mNew Invoice\u001b[39m\n\u001b[31m📋\u001b[39m\n\u001b[31mSale List\u001b[39m\n\u001b[31m📂\u001b[39m\n\u001b[31mImport Old Bills\u001b[39m\n\u001b[31m🏷️\u001b[39m\n\u001b[31mRetail Entry\u001b[39m\n\u001b[31m💸\u001b[39m\n\u001b[31mPayment Out\u001b[39m\n\u001b[31m💰\u001b[39m\n\u001b[31mPayment Ledger\u001b[39m\n\u001b[31mPURCHASE\u001b[39m\n\u001b[31m🛒\u001b[39m\n\u001b[31mNew Purchase\u001b[39m\n\u001b[31m📋\u001b[39m\n\u001b[31mPurchase List\u001b[39m\n\u001b[31m📥\u001b[39m\n\u001b[31mBulk Purchase\u001b[39m\n\u001b[31m💳\u001b[39m\n\u001b[31mPurchase Payments\u001b[39m\n\u001b[31mMASTER\u001b[39m\n\u001b[31m📦\u001b[39m\n\u001b[31mItems\u001b[39m\n\u001b[31m👥\u001b[39m\n\u001b[31mParties\u001b[39m\n\u001b[31mREPORTS & DATA\u001b[39m\n\u001b[31m📈\u001b[39m\n\u001b[31mReports\u001b[39m\n\u001b[31m⚙️\u001b[39m\n\u001b[31mSettings\u001b[39m\n\u001b[31m💾\u001b[39m\n\u001b[31mExport Backup\u001b[39m\n\u001b[31m📤\u001b[39m\n\u001b[31mImport Backup\u001b[39m\n\u001b[31m📖\u001b[39m\n\u001b[31mHow to Customize\u001b[39m\n\u001b[31m📊\u001b[39m\n\u001b[31mExcel / Sheets\u001b[39m\n\u001b[31m⚡\u001b[39m\n\u001b[31mCompact Mode\u001b[39m\n\u001b[31m🐙\u001b[39m\n\u001b[31mGitHub Live Hosting\u001b[39m\n\u001b[31m📜\u001b[39m\n\u001b[31mAudit Log\u001b[39m\n\u001b[31m🔄\u001b[39m\n\u001b[31mAll Transactions\u001b[39m\n\u001b[31m📊 Dashboard\u001b[39m\n\u001b[31m➕ New Invoice\u001b[39m\n\u001b[31m🏷️ Retail Entry\u001b[39m\n\u001b[31mThis Month Sale\u001b[39m\n\u001b[31m₹5,050.00\u001b[39m\n\u001b[31mWholesale\u001b[39m\n\u001b[31m₹5,000.00\u001b[39m\n\u001b[31mPurchase\u001b[39m\n\u001b[31m₹500.00\u001b[39m\n\u001b[31mCash Due\u001b[39m\n\u001b[31m₹0.00\u001b[39m\n\u001b[31mCredit Due\u001b[39m\n\u001b[31m₹4,000.00\u001b[39m\n\u001b[31mPending Dispatch\u001b[39m\n\u001b[31m50\u001b[39m\n\u001b[31mRecent Invoices\u001b[39m\n\u001b[31mView All →\u001b[39m\n\u001b[31mINV-1050 Credit\u001b[39m\n\u001b[31mSynthetic Customer · 09/10/2026\u001b[39m\n\u001b[31m₹100.00\u001b[39m\n\u001b[31m₹80.00 due\u001b[39m\n\u001b[31mINV-1049 Credit\u001b[39m\n\u001b[31mSynthetic Customer · 09/10/2026\u001b[39m\n\u001b[31m₹100.00\u001b[39m\n\u001b[31m₹80.00 due\u001b[39m\n\u001b[31mINV-1048 Credit\u001b[39m\n\u001b[31mSynthetic Customer · 09/10/2026\u001b[39m\n\u001b[31m₹100.00\u001b[39m\n\u001b[31m₹80.00 due\u001b[39m\n\u001b[31mINV-1047 Credit\u001b[39m\n\u001b[31mSynthetic Customer · 09/10/2026\u001b[39m\n\u001b[31m₹100.00\u001b[39m\n\u001b[31m₹80.00 due\u001b[39m\n\u001b[31mINV-1046 Credit\u001b[39m\n\u001b[31mSynthetic Customer · 09/10/2026\u001b[39m\n\u001b[31m₹100.00\u001b[39m\n\u001b[31m₹80.00 due\u001b[39m\n\u001b[31mINV-1045 Credit\u001b[39m\n\u001b[31mSynthetic Customer · 09/10/2026\u001b[39m\n\u001b[31m₹100.00\u001b[39m\n\u001b[31m₹80.00 due\u001b[39m\n\u001b[31mINV-1044 Credit\u001b[39m\n\u001b[31mSynthetic Customer · 09/10/2026\u001b[39m\n\u001b[31m₹100.00\u001b[39m\n\u001b[31m₹80.00 due\u001b[39m\n\u001b[31m📋 Due Collection — ₹4,000.00\u001b[39m\n\u001b[31mSynthetic Customer Credit\u001b[39m\n\u001b[31mINV-1050 · 09/10/2026\u001b[39m\n\u001b[31m₹80.00\u001b[39m\n\u001b[31mPay\u001b[39m\n\u001b[31mSynthetic Customer Credit\u001b[39m\n\u001b[31mINV-1049 · 09/10/2026\u001b[39m\n\u001b[31m₹80.00\u001b[39m\n\u001b[31mPay\u001b[39m\n\u001b[31mSynthetic Customer Credit\u001b[39m\n\u001b[31mINV-1048 · 09/10/2026\u001b[39m\n\u001b[31m₹80.00\u001b[39m\n\u001b[31mPay\u001b[39m\n\u001b[31mSynthetic Customer Credit\u001b[39m\n\u001b[31mINV-1047 · 09/10/2026\u001b[39m\n\u001b[31m₹80.00\u001b[39m\n\u001b[31mPay\u001b[39m\n\u001b[31mSynthetic Customer Credit\u001b[39m\n\u001b[31mINV-1046 · 09/10/2026\u001b[39m\n\u001b[31m₹80.00\u001b[39m\n\u001b[31mPay\u001b[39m\n\u001b[31mSynthetic Customer Credit\u001b[39m\n\u001b[31mINV-1045 · 09/10/2026\u001b[39m\n\u001b[31m₹80.00\u001b[39m\n\u001b[31mPay\u001b[39m\n\u001b[31m📦 Pending Dispatch (50)\u001b[39m\n\u001b[31mSynthetic Customer · INV-1050\u001b[39m\n\u001b[31m✓ Dispatch\u001b[39m\n\u001b[31mSynthetic Customer · INV-1049\u001b[39m\n\u001b[31m✓ Dispatch\u001b[39m\n\u001b[31mSynthetic Customer · INV-1048\u001b[39m\n\u001b[31m✓ Dispatch\u001b[39m\n\u001b[31mSynthetic Customer · INV-1047\u001b[39m\n\u001b[31m✓ Dispatch\u001b[39m\n\u001b[31m\u001b[7mcat >>\u001b[27m /home/claude/v9base.html << 'V16_END' V16_END echo \\\"Done. Lines: $(wc -l < /home/claude/v9base.html)\\\"\"\u001b[39m",
+                    "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mnot\u001b[2m.\u001b[22mtoMatch\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\nExpected pattern: not \u001b[32m/\\/home\\/claude|V16_END|cat >>/\u001b[39m\nReceived string:      \u001b[31m\"🏪\u001b[39m\n\u001b[31mSynthetic XL Shop\u001b[39m\n\u001b[31mBilling\u001b[39m\n\u001b[31m📊\u001b[39m\n\u001b[31mDashboard\u001b[39m\n\u001b[31mSALES\u001b[39m\n\u001b[31m➕\u001b[39m\n\u001b[31mNew Invoice\u001b[39m\n\u001b[31m📋\u001b[39m\n\u001b[31mSale List\u001b[39m\n\u001b[31m📂\u001b[39m\n\u001b[31mImport Old Bills\u001b[39m\n\u001b[31m🏷️\u001b[39m\n\u001b[31mRetail Entry\u001b[39m\n\u001b[31m💸\u001b[39m\n\u001b[31mPayment Out\u001b[39m\n\u001b[31m💰\u001b[39m\n\u001b[31mPayment Ledger\u001b[39m\n\u001b[31mPURCHASE\u001b[39m\n\u001b[31m🛒\u001b[39m\n\u001b[31mNew Purchase\u001b[39m\n\u001b[31m📋\u001b[39m\n\u001b[31mPurchase List\u001b[39m\n\u001b[31m📥\u001b[39m\n\u001b[31mBulk Purchase\u001b[39m\n\u001b[31m💳\u001b[39m\n\u001b[31mPurchase Payments\u001b[39m\n\u001b[31mMASTER\u001b[39m\n\u001b[31m📦\u001b[39m\n\u001b[31mItems\u001b[39m\n\u001b[31m👥\u001b[39m\n\u001b[31mParties\u001b[39m\n\u001b[31mREPORTS & DATA\u001b[39m\n\u001b[31m📈\u001b[39m\n\u001b[31mReports\u001b[39m\n\u001b[31m⚙️\u001b[39m\n\u001b[31mSettings\u001b[39m\n\u001b[31m💾\u001b[39m\n\u001b[31mExport Backup\u001b[39m\n\u001b[31m📤\u001b[39m\n\u001b[31mImport Backup\u001b[39m\n\u001b[31m📖\u001b[39m\n\u001b[31mHow to Customize\u001b[39m\n\u001b[31m📊\u001b[39m\n\u001b[31mExcel / Sheets\u001b[39m\n\u001b[31m⚡\u001b[39m\n\u001b[31mCompact Mode\u001b[39m\n\u001b[31m🐙\u001b[39m\n\u001b[31mGitHub Live Hosting\u001b[39m\n\u001b[31m📜\u001b[39m\n\u001b[31mAudit Log\u001b[39m\n\u001b[31m🔄\u001b[39m\n\u001b[31mAll Transactions\u001b[39m\n\u001b[31m📊 Dashboard\u001b[39m\n\u001b[31m➕ New Invoice\u001b[39m\n\u001b[31m🏷️ Retail Entry\u001b[39m\n\u001b[31mThis Month Sale\u001b[39m\n\u001b[31m₹5,050.00\u001b[39m\n\u001b[31mWholesale\u001b[39m\n\u001b[31m₹5,000.00\u001b[39m\n\u001b[31mPurchase\u001b[39m\n\u001b[31m₹500.00\u001b[39m\n\u001b[31mCash Due\u001b[39m\n\u001b[31m₹0.00\u001b[39m\n\u001b[31mCredit Due\u001b[39m\n\u001b[31m₹4,000.00\u001b[39m\n\u001b[31mPending Dispatch\u001b[39m\n\u001b[31m50\u001b[39m\n\u001b[31mRecent Invoices\u001b[39m\n\u001b[31mView All →\u001b[39m\n\u001b[31mINV-1050 Credit\u001b[39m\n\u001b[31mSynthetic Customer · 09/10/2026\u001b[39m\n\u001b[31m₹100.00\u001b[39m\n\u001b[31m₹80.00 due\u001b[39m\n\u001b[31mINV-1049 Credit\u001b[39m\n\u001b[31mSynthetic Customer · 09/10/2026\u001b[39m\n\u001b[31m₹100.00\u001b[39m\n\u001b[31m₹80.00 due\u001b[39m\n\u001b[31mINV-1048 Credit\u001b[39m\n\u001b[31mSynthetic Customer · 09/10/2026\u001b[39m\n\u001b[31m₹100.00\u001b[39m\n\u001b[31m₹80.00 due\u001b[39m\n\u001b[31mINV-1047 Credit\u001b[39m\n\u001b[31mSynthetic Customer · 09/10/2026\u001b[39m\n\u001b[31m₹100.00\u001b[39m\n\u001b[31m₹80.00 due\u001b[39m\n\u001b[31mINV-1046 Credit\u001b[39m\n\u001b[31mSynthetic Customer · 09/10/2026\u001b[39m\n\u001b[31m₹100.00\u001b[39m\n\u001b[31m₹80.00 due\u001b[39m\n\u001b[31mINV-1045 Credit\u001b[39m\n\u001b[31mSynthetic Customer · 09/10/2026\u001b[39m\n\u001b[31m₹100.00\u001b[39m\n\u001b[31m₹80.00 due\u001b[39m\n\u001b[31mINV-1044 Credit\u001b[39m\n\u001b[31mSynthetic Customer · 09/10/2026\u001b[39m\n\u001b[31m₹100.00\u001b[39m\n\u001b[31m₹80.00 due\u001b[39m\n\u001b[31m📋 Due Collection — ₹4,000.00\u001b[39m\n\u001b[31mSynthetic Customer Credit\u001b[39m\n\u001b[31mINV-1050 · 09/10/2026\u001b[39m\n\u001b[31m₹80.00\u001b[39m\n\u001b[31mPay\u001b[39m\n\u001b[31mSynthetic Customer Credit\u001b[39m\n\u001b[31mINV-1049 · 09/10/2026\u001b[39m\n\u001b[31m₹80.00\u001b[39m\n\u001b[31mPay\u001b[39m\n\u001b[31mSynthetic Customer Credit\u001b[39m\n\u001b[31mINV-1048 · 09/10/2026\u001b[39m\n\u001b[31m₹80.00\u001b[39m\n\u001b[31mPay\u001b[39m\n\u001b[31mSynthetic Customer Credit\u001b[39m\n\u001b[31mINV-1047 · 09/10/2026\u001b[39m\n\u001b[31m₹80.00\u001b[39m\n\u001b[31mPay\u001b[39m\n\u001b[31mSynthetic Customer Credit\u001b[39m\n\u001b[31mINV-1046 · 09/10/2026\u001b[39m\n\u001b[31m₹80.00\u001b[39m\n\u001b[31mPay\u001b[39m\n\u001b[31mSynthetic Customer Credit\u001b[39m\n\u001b[31mINV-1045 · 09/10/2026\u001b[39m\n\u001b[31m₹80.00\u001b[39m\n\u001b[31mPay\u001b[39m\n\u001b[31m📦 Pending Dispatch (50)\u001b[39m\n\u001b[31mSynthetic Customer · INV-1050\u001b[39m\n\u001b[31m✓ Dispatch\u001b[39m\n\u001b[31mSynthetic Customer · INV-1049\u001b[39m\n\u001b[31m✓ Dispatch\u001b[39m\n\u001b[31mSynthetic Customer · INV-1048\u001b[39m\n\u001b[31m✓ Dispatch\u001b[39m\n\u001b[31mSynthetic Customer · INV-1047\u001b[39m\n\u001b[31m✓ Dispatch\u001b[39m\n\u001b[31m\u001b[7mcat >>\u001b[27m /home/claude/v9base.html << 'V16_END' V16_END echo \\\"Done. Lines: $(wc -l < /home/claude/v9base.html)\\\"\"\u001b[39m\n    at /workspace/Xl-billing/test/e2e/hotfix.spec.cjs:34:113",
+                    "location": {
+                      "file": "/workspace/Xl-billing/test/e2e/hotfix.spec.cjs",
+                      "column": 113,
+                      "line": 34
+                    },
+                    "snippet": "  32 |  await page.evaluate(()=>{pbRows=[{id:'old3',date:'2026-10-09',total:100,paid:0,billNo:' inv-1001 '}];pbSaveAll();});expect((await records(page)).length).toBe(invs.length);\n  33 | });\n> 34 | test('P1-14 no stray shell text on any page',async({page})=>{expect(await page.locator('body').innerText()).not.toMatch(/\\/home\\/claude|V16_END|cat >>/);});\n     |                                                                                                                 ^\n  35 | test('characterization: invoice entry, edit, cancel and restore',async({page})=>{\n  36 |  await page.evaluate(()=>{nav('new-sale');document.getElementById('inv-party').value='Synthetic Customer';document.getElementById('inv-party-id').value='p1';saleItems=[{id:'row1',itemId:'i1',name:'Paper Cups',qty:5,rate:20,amt:100,unit:'Pcs',packCount:'',packType:''}];renderSaleItems();document.getElementById('inv-date').value='2026-10-09';document.getElementById('inv-paid').value='0';saveSaleInvoice(false);});\n  37 |  const invs=await records(page);expect(invs.length).toBe(51);const inv=invs.at(-1);expect(inv.total).toBe(100);expect(inv.invoiceNo).toBe('INV-1051');"
+                  },
+                  "errors": [
+                    {
+                      "location": {
+                        "file": "/workspace/Xl-billing/test/e2e/hotfix.spec.cjs",
+                        "column": 113,
+                        "line": 34
+                      },
+                      "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mnot\u001b[2m.\u001b[22mtoMatch\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\nExpected pattern: not \u001b[32m/\\/home\\/claude|V16_END|cat >>/\u001b[39m\nReceived string:      \u001b[31m\"🏪\u001b[39m\n\u001b[31mSynthetic XL Shop\u001b[39m\n\u001b[31mBilling\u001b[39m\n\u001b[31m📊\u001b[39m\n\u001b[31mDashboard\u001b[39m\n\u001b[31mSALES\u001b[39m\n\u001b[31m➕\u001b[39m\n\u001b[31mNew Invoice\u001b[39m\n\u001b[31m📋\u001b[39m\n\u001b[31mSale List\u001b[39m\n\u001b[31m📂\u001b[39m\n\u001b[31mImport Old Bills\u001b[39m\n\u001b[31m🏷️\u001b[39m\n\u001b[31mRetail Entry\u001b[39m\n\u001b[31m💸\u001b[39m\n\u001b[31mPayment Out\u001b[39m\n\u001b[31m💰\u001b[39m\n\u001b[31mPayment Ledger\u001b[39m\n\u001b[31mPURCHASE\u001b[39m\n\u001b[31m🛒\u001b[39m\n\u001b[31mNew Purchase\u001b[39m\n\u001b[31m📋\u001b[39m\n\u001b[31mPurchase List\u001b[39m\n\u001b[31m📥\u001b[39m\n\u001b[31mBulk Purchase\u001b[39m\n\u001b[31m💳\u001b[39m\n\u001b[31mPurchase Payments\u001b[39m\n\u001b[31mMASTER\u001b[39m\n\u001b[31m📦\u001b[39m\n\u001b[31mItems\u001b[39m\n\u001b[31m👥\u001b[39m\n\u001b[31mParties\u001b[39m\n\u001b[31mREPORTS & DATA\u001b[39m\n\u001b[31m📈\u001b[39m\n\u001b[31mReports\u001b[39m\n\u001b[31m⚙️\u001b[39m\n\u001b[31mSettings\u001b[39m\n\u001b[31m💾\u001b[39m\n\u001b[31mExport Backup\u001b[39m\n\u001b[31m📤\u001b[39m\n\u001b[31mImport Backup\u001b[39m\n\u001b[31m📖\u001b[39m\n\u001b[31mHow to Customize\u001b[39m\n\u001b[31m📊\u001b[39m\n\u001b[31mExcel / Sheets\u001b[39m\n\u001b[31m⚡\u001b[39m\n\u001b[31mCompact Mode\u001b[39m\n\u001b[31m🐙\u001b[39m\n\u001b[31mGitHub Live Hosting\u001b[39m\n\u001b[31m📜\u001b[39m\n\u001b[31mAudit Log\u001b[39m\n\u001b[31m🔄\u001b[39m\n\u001b[31mAll Transactions\u001b[39m\n\u001b[31m📊 Dashboard\u001b[39m\n\u001b[31m➕ New Invoice\u001b[39m\n\u001b[31m🏷️ Retail Entry\u001b[39m\n\u001b[31mThis Month Sale\u001b[39m\n\u001b[31m₹5,050.00\u001b[39m\n\u001b[31mWholesale\u001b[39m\n\u001b[31m₹5,000.00\u001b[39m\n\u001b[31mPurchase\u001b[39m\n\u001b[31m₹500.00\u001b[39m\n\u001b[31mCash Due\u001b[39m\n\u001b[31m₹0.00\u001b[39m\n\u001b[31mCredit Due\u001b[39m\n\u001b[31m₹4,000.00\u001b[39m\n\u001b[31mPending Dispatch\u001b[39m\n\u001b[31m50\u001b[39m\n\u001b[31mRecent Invoices\u001b[39m\n\u001b[31mView All →\u001b[39m\n\u001b[31mINV-1050 Credit\u001b[39m\n\u001b[31mSynthetic Customer · 09/10/2026\u001b[39m\n\u001b[31m₹100.00\u001b[39m\n\u001b[31m₹80.00 due\u001b[39m\n\u001b[31mINV-1049 Credit\u001b[39m\n\u001b[31mSynthetic Customer · 09/10/2026\u001b[39m\n\u001b[31m₹100.00\u001b[39m\n\u001b[31m₹80.00 due\u001b[39m\n\u001b[31mINV-1048 Credit\u001b[39m\n\u001b[31mSynthetic Customer · 09/10/2026\u001b[39m\n\u001b[31m₹100.00\u001b[39m\n\u001b[31m₹80.00 due\u001b[39m\n\u001b[31mINV-1047 Credit\u001b[39m\n\u001b[31mSynthetic Customer · 09/10/2026\u001b[39m\n\u001b[31m₹100.00\u001b[39m\n\u001b[31m₹80.00 due\u001b[39m\n\u001b[31mINV-1046 Credit\u001b[39m\n\u001b[31mSynthetic Customer · 09/10/2026\u001b[39m\n\u001b[31m₹100.00\u001b[39m\n\u001b[31m₹80.00 due\u001b[39m\n\u001b[31mINV-1045 Credit\u001b[39m\n\u001b[31mSynthetic Customer · 09/10/2026\u001b[39m\n\u001b[31m₹100.00\u001b[39m\n\u001b[31m₹80.00 due\u001b[39m\n\u001b[31mINV-1044 Credit\u001b[39m\n\u001b[31mSynthetic Customer · 09/10/2026\u001b[39m\n\u001b[31m₹100.00\u001b[39m\n\u001b[31m₹80.00 due\u001b[39m\n\u001b[31m📋 Due Collection — ₹4,000.00\u001b[39m\n\u001b[31mSynthetic Customer Credit\u001b[39m\n\u001b[31mINV-1050 · 09/10/2026\u001b[39m\n\u001b[31m₹80.00\u001b[39m\n\u001b[31mPay\u001b[39m\n\u001b[31mSynthetic Customer Credit\u001b[39m\n\u001b[31mINV-1049 · 09/10/2026\u001b[39m\n\u001b[31m₹80.00\u001b[39m\n\u001b[31mPay\u001b[39m\n\u001b[31mSynthetic Customer Credit\u001b[39m\n\u001b[31mINV-1048 · 09/10/2026\u001b[39m\n\u001b[31m₹80.00\u001b[39m\n\u001b[31mPay\u001b[39m\n\u001b[31mSynthetic Customer Credit\u001b[39m\n\u001b[31mINV-1047 · 09/10/2026\u001b[39m\n\u001b[31m₹80.00\u001b[39m\n\u001b[31mPay\u001b[39m\n\u001b[31mSynthetic Customer Credit\u001b[39m\n\u001b[31mINV-1046 · 09/10/2026\u001b[39m\n\u001b[31m₹80.00\u001b[39m\n\u001b[31mPay\u001b[39m\n\u001b[31mSynthetic Customer Credit\u001b[39m\n\u001b[31mINV-1045 · 09/10/2026\u001b[39m\n\u001b[31m₹80.00\u001b[39m\n\u001b[31mPay\u001b[39m\n\u001b[31m📦 Pending Dispatch (50)\u001b[39m\n\u001b[31mSynthetic Customer · INV-1050\u001b[39m\n\u001b[31m✓ Dispatch\u001b[39m\n\u001b[31mSynthetic Customer · INV-1049\u001b[39m\n\u001b[31m✓ Dispatch\u001b[39m\n\u001b[31mSynthetic Customer · INV-1048\u001b[39m\n\u001b[31m✓ Dispatch\u001b[39m\n\u001b[31mSynthetic Customer · INV-1047\u001b[39m\n\u001b[31m✓ Dispatch\u001b[39m\n\u001b[31m\u001b[7mcat >>\u001b[27m /home/claude/v9base.html << 'V16_END' V16_END echo \\\"Done. Lines: $(wc -l < /home/claude/v9base.html)\\\"\"\u001b[39m\n\n  32 |  await page.evaluate(()=>{pbRows=[{id:'old3',date:'2026-10-09',total:100,paid:0,billNo:' inv-1001 '}];pbSaveAll();});expect((await records(page)).length).toBe(invs.length);\n  33 | });\n> 34 | test('P1-14 no stray shell text on any page',async({page})=>{expect(await page.locator('body').innerText()).not.toMatch(/\\/home\\/claude|V16_END|cat >>/);});\n     |                                                                                                                 ^\n  35 | test('characterization: invoice entry, edit, cancel and restore',async({page})=>{\n  36 |  await page.evaluate(()=>{nav('new-sale');document.getElementById('inv-party').value='Synthetic Customer';document.getElementById('inv-party-id').value='p1';saleItems=[{id:'row1',itemId:'i1',name:'Paper Cups',qty:5,rate:20,amt:100,unit:'Pcs',packCount:'',packType:''}];renderSaleItems();document.getElementById('inv-date').value='2026-10-09';document.getElementById('inv-paid').value='0';saveSaleInvoice(false);});\n  37 |  const invs=await records(page);expect(invs.length).toBe(51);const inv=invs.at(-1);expect(inv.total).toBe(100);expect(inv.invoiceNo).toBe('INV-1051');\n    at /workspace/Xl-billing/test/e2e/hotfix.spec.cjs:34:113"
+                    }
+                  ],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-12T04:57:17.074Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "screenshot",
+                      "contentType": "image/png",
+                      "path": "/workspace/Xl-billing/test-results/browser/hotfix-P1-14-no-stray-shell-text-on-any-page-chromium/test-failed-1.png"
+                    },
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "/workspace/Xl-billing/test-results/browser/hotfix-P1-14-no-stray-shell-text-on-any-page-chromium/error-context.md"
+                    }
+                  ],
+                  "errorLocation": {
+                    "file": "/workspace/Xl-billing/test/e2e/hotfix.spec.cjs",
+                    "column": 113,
+                    "line": 34
+                  }
+                }
+              ],
+              "status": "unexpected"
+            }
+          ],
+          "id": "a508bcc51c6c2b20affb-0cc8f92e86c92d891f64",
+          "file": "hotfix.spec.cjs",
+          "line": 34,
+          "column": 1
+        },
+        {
+          "title": "characterization: invoice entry, edit, cancel and restore",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 13,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 450,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-12T04:57:17.925Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "a508bcc51c6c2b20affb-fa9f4bc421cedbc079b3",
+          "file": "hotfix.spec.cjs",
+          "line": 35,
+          "column": 1
+        }
+      ]
+    }
+  ],
+  "errors": [],
+  "stats": {
+    "startTime": "2026-10-12T04:54:46.191Z",
+    "duration": 152281.984,
+    "expected": 2,
+    "skipped": 0,
+    "unexpected": 13,
+    "flaky": 0
+  }
+}

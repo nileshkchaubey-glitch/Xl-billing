@@ -1,0 +1,2830 @@
+[
+  {
+    "errorCount": 0,
+    "warningCount": 143,
+    "messages": [
+      {
+        "ruleId": "no-redeclare",
+        "severity": 1,
+        "message": "'slPill' is already defined as a built-in global variable.",
+        "line": 117,
+        "column": 5,
+        "messageId": "redeclaredAsBuiltin",
+        "endLine": 117,
+        "endColumn": 11
+      },
+      {
+        "ruleId": "no-redeclare",
+        "severity": 1,
+        "message": "'nav' is already defined as a built-in global variable.",
+        "line": 128,
+        "column": 10,
+        "messageId": "redeclaredAsBuiltin",
+        "endLine": 128,
+        "endColumn": 13
+      },
+      {
+        "ruleId": "no-redeclare",
+        "severity": 1,
+        "message": "'renderDashboard' is already defined as a built-in global variable.",
+        "line": 156,
+        "column": 10,
+        "messageId": "redeclaredAsBuiltin",
+        "endLine": 156,
+        "endColumn": 25
+      },
+      {
+        "ruleId": "no-unused-vars",
+        "severity": 1,
+        "message": "'items' is assigned a value but never used.",
+        "line": 158,
+        "column": 9,
+        "messageId": "unusedVar",
+        "endLine": 158,
+        "endColumn": 14,
+        "suggestions": [
+          {
+            "messageId": "removeVar",
+            "data": {
+              "varName": "items"
+            },
+            "fix": {
+              "range": [
+                10300,
+                10317
+              ],
+              "text": ""
+            },
+            "desc": "Remove unused variable 'items'."
+          }
+        ]
+      },
+      {
+        "ruleId": "no-unused-vars",
+        "severity": 1,
+        "message": "'parties' is assigned a value but never used.",
+        "line": 158,
+        "column": 27,
+        "messageId": "unusedVar",
+        "endLine": 158,
+        "endColumn": 34,
+        "suggestions": [
+          {
+            "messageId": "removeVar",
+            "data": {
+              "varName": "parties"
+            },
+            "fix": {
+              "range": [
+                10316,
+                10338
+              ],
+              "text": ""
+            },
+            "desc": "Remove unused variable 'parties'."
+          }
+        ]
+      },
+      {
+        "ruleId": "no-unused-vars",
+        "severity": 1,
+        "message": "'pending' is assigned a value but never used.",
+        "line": 169,
+        "column": 9,
+        "messageId": "unusedVar",
+        "endLine": 169,
+        "endColumn": 16,
+        "suggestions": [
+          {
+            "messageId": "removeVar",
+            "data": {
+              "varName": "pending"
+            },
+            "fix": {
+              "range": [
+                10931,
+                11017
+              ],
+              "text": ""
+            },
+            "desc": "Remove unused variable 'pending'."
+          }
+        ]
+      },
+      {
+        "ruleId": "no-redeclare",
+        "severity": 1,
+        "message": "'partyAC' is already defined as a built-in global variable.",
+        "line": 232,
+        "column": 10,
+        "messageId": "redeclaredAsBuiltin",
+        "endLine": 232,
+        "endColumn": 17
+      },
+      {
+        "ruleId": "no-unused-vars",
+        "severity": 1,
+        "message": "'partyAC' is defined but never used.",
+        "line": 232,
+        "column": 10,
+        "messageId": "unusedVar",
+        "endLine": 232,
+        "endColumn": 17,
+        "suggestions": [
+          {
+            "messageId": "removeVar",
+            "data": {
+              "varName": "partyAC"
+            },
+            "fix": {
+              "range": [
+                15698,
+                16672
+              ],
+              "text": ""
+            },
+            "desc": "Remove unused variable 'partyAC'."
+          }
+        ]
+      },
+      {
+        "ruleId": "no-redeclare",
+        "severity": 1,
+        "message": "'selectParty' is already defined as a built-in global variable.",
+        "line": 248,
+        "column": 10,
+        "messageId": "redeclaredAsBuiltin",
+        "endLine": 248,
+        "endColumn": 21
+      },
+      {
+        "ruleId": "no-redeclare",
+        "severity": 1,
+        "message": "'quickAddParty' is already defined as a built-in global variable.",
+        "line": 254,
+        "column": 10,
+        "messageId": "redeclaredAsBuiltin",
+        "endLine": 254,
+        "endColumn": 23
+      },
+      {
+        "ruleId": "no-unused-vars",
+        "severity": 1,
+        "message": "'quickAddParty' is defined but never used.",
+        "line": 254,
+        "column": 10,
+        "messageId": "unusedVar",
+        "endLine": 254,
+        "endColumn": 23,
+        "suggestions": [
+          {
+            "messageId": "removeVar",
+            "data": {
+              "varName": "quickAddParty"
+            },
+            "fix": {
+              "range": [
+                16930,
+                17240
+              ],
+              "text": ""
+            },
+            "desc": "Remove unused variable 'quickAddParty'."
+          }
+        ]
+      },
+      {
+        "ruleId": "no-redeclare",
+        "severity": 1,
+        "message": "'initNewSale' is already defined as a built-in global variable.",
+        "line": 275,
+        "column": 10,
+        "messageId": "redeclaredAsBuiltin",
+        "endLine": 275,
+        "endColumn": 21
+      },
+      {
+        "ruleId": "no-redeclare",
+        "severity": 1,
+        "message": "'addSaleItem' is already defined as a built-in global variable.",
+        "line": 299,
+        "column": 10,
+        "messageId": "redeclaredAsBuiltin",
+        "endLine": 299,
+        "endColumn": 21
+      },
+      {
+        "ruleId": "no-redeclare",
+        "severity": 1,
+        "message": "'renderSaleItems' is already defined as a built-in global variable.",
+        "line": 308,
+        "column": 10,
+        "messageId": "redeclaredAsBuiltin",
+        "endLine": 308,
+        "endColumn": 25
+      },
+      {
+        "ruleId": "no-unused-vars",
+        "severity": 1,
+        "message": "'siName' is defined but never used.",
+        "line": 352,
+        "column": 10,
+        "messageId": "unusedVar",
+        "endLine": 352,
+        "endColumn": 16,
+        "suggestions": [
+          {
+            "messageId": "removeVar",
+            "data": {
+              "varName": "siName"
+            },
+            "fix": {
+              "range": [
+                22105,
+                22223
+              ],
+              "text": ""
+            },
+            "desc": "Remove unused variable 'siName'."
+          }
+        ]
+      },
+      {
+        "ruleId": "no-redeclare",
+        "severity": 1,
+        "message": "'siPack' is already defined as a built-in global variable.",
+        "line": 356,
+        "column": 10,
+        "messageId": "redeclaredAsBuiltin",
+        "endLine": 356,
+        "endColumn": 16
+      },
+      {
+        "ruleId": "no-unused-vars",
+        "severity": 1,
+        "message": "'siPack' is defined but never used.",
+        "line": 356,
+        "column": 10,
+        "messageId": "unusedVar",
+        "endLine": 356,
+        "endColumn": 16,
+        "suggestions": [
+          {
+            "messageId": "removeVar",
+            "data": {
+              "varName": "siPack"
+            },
+            "fix": {
+              "range": [
+                22224,
+                22609
+              ],
+              "text": ""
+            },
+            "desc": "Remove unused variable 'siPack'."
+          }
+        ]
+      },
+      {
+        "ruleId": "no-redeclare",
+        "severity": 1,
+        "message": "'siPackCnt' is already defined as a built-in global variable.",
+        "line": 368,
+        "column": 10,
+        "messageId": "redeclaredAsBuiltin",
+        "endLine": 368,
+        "endColumn": 19
+      },
+      {
+        "ruleId": "no-unused-vars",
+        "severity": 1,
+        "message": "'siPackCnt' is defined but never used.",
+        "line": 368,
+        "column": 10,
+        "messageId": "unusedVar",
+        "endLine": 368,
+        "endColumn": 19,
+        "suggestions": [
+          {
+            "messageId": "removeVar",
+            "data": {
+              "varName": "siPackCnt"
+            },
+            "fix": {
+              "range": [
+                22610,
+                22723
+              ],
+              "text": ""
+            },
+            "desc": "Remove unused variable 'siPackCnt'."
+          }
+        ]
+      },
+      {
+        "ruleId": "no-redeclare",
+        "severity": 1,
+        "message": "'siNum' is already defined as a built-in global variable.",
+        "line": 371,
+        "column": 10,
+        "messageId": "redeclaredAsBuiltin",
+        "endLine": 371,
+        "endColumn": 15
+      },
+      {
+        "ruleId": "no-unused-vars",
+        "severity": 1,
+        "message": "'siNum' is defined but never used.",
+        "line": 371,
+        "column": 10,
+        "messageId": "unusedVar",
+        "endLine": 371,
+        "endColumn": 15,
+        "suggestions": [
+          {
+            "messageId": "removeVar",
+            "data": {
+              "varName": "siNum"
+            },
+            "fix": {
+              "range": [
+                22724,
+                22979
+              ],
+              "text": ""
+            },
+            "desc": "Remove unused variable 'siNum'."
+          }
+        ]
+      },
+      {
+        "ruleId": "no-unused-vars",
+        "severity": 1,
+        "message": "'removeSI' is defined but never used.",
+        "line": 378,
+        "column": 10,
+        "messageId": "unusedVar",
+        "endLine": 378,
+        "endColumn": 18,
+        "suggestions": [
+          {
+            "messageId": "removeVar",
+            "data": {
+              "varName": "removeSI"
+            },
+            "fix": {
+              "range": [
+                22980,
+                23072
+              ],
+              "text": ""
+            },
+            "desc": "Remove unused variable 'removeSI'."
+          }
+        ]
+      },
+      {
+        "ruleId": "no-redeclare",
+        "severity": 1,
+        "message": "'showSaleItemAC' is already defined as a built-in global variable.",
+        "line": 383,
+        "column": 10,
+        "messageId": "redeclaredAsBuiltin",
+        "endLine": 383,
+        "endColumn": 24
+      },
+      {
+        "ruleId": "no-redeclare",
+        "severity": 1,
+        "message": "'setSaleItem' is already defined as a built-in global variable.",
+        "line": 395,
+        "column": 10,
+        "messageId": "redeclaredAsBuiltin",
+        "endLine": 395,
+        "endColumn": 21
+      },
+      {
+        "ruleId": "no-redeclare",
+        "severity": 1,
+        "message": "'saveSaleInvoice' is already defined as a built-in global variable.",
+        "line": 428,
+        "column": 10,
+        "messageId": "redeclaredAsBuiltin",
+        "endLine": 428,
+        "endColumn": 25
+      },
+      {
+        "ruleId": "no-unused-vars",
+        "severity": 1,
+        "message": "'resetSaleForm' is defined but never used.",
+        "line": 499,
+        "column": 10,
+        "messageId": "unusedVar",
+        "endLine": 499,
+        "endColumn": 23,
+        "suggestions": [
+          {
+            "messageId": "removeVar",
+            "data": {
+              "varName": "resetSaleForm"
+            },
+            "fix": {
+              "range": [
+                29172,
+                29251
+              ],
+              "text": ""
+            },
+            "desc": "Remove unused variable 'resetSaleForm'."
+          }
+        ]
+      },
+      {
+        "ruleId": "no-unused-vars",
+        "severity": 1,
+        "message": "'s' is assigned a value but never used.",
+        "line": 506,
+        "column": 9,
+        "messageId": "unusedVar",
+        "endLine": 506,
+        "endColumn": 10,
+        "suggestions": [
+          {
+            "messageId": "removeVar",
+            "data": {
+              "varName": "s"
+            },
+            "fix": {
+              "range": [
+                29435,
+                29459
+              ],
+              "text": ""
+            },
+            "desc": "Remove unused variable 's'."
+          }
+        ]
+      },
+      {
+        "ruleId": "no-redeclare",
+        "severity": 1,
+        "message": "'clearSLFilter' is already defined as a built-in global variable.",
+        "line": 550,
+        "column": 10,
+        "messageId": "redeclaredAsBuiltin",
+        "endLine": 550,
+        "endColumn": 23
+      },
+      {
+        "ruleId": "no-unused-vars",
+        "severity": 1,
+        "message": "'clearSLFilter' is defined but never used.",
+        "line": 550,
+        "column": 10,
+        "messageId": "unusedVar",
+        "endLine": 550,
+        "endColumn": 23,
+        "suggestions": [
+          {
+            "messageId": "removeVar",
+            "data": {
+              "varName": "clearSLFilter"
+            },
+            "fix": {
+              "range": [
+                31406,
+                31558
+              ],
+              "text": ""
+            },
+            "desc": "Remove unused variable 'clearSLFilter'."
+          }
+        ]
+      },
+      {
+        "ruleId": "no-redeclare",
+        "severity": 1,
+        "message": "'renderSalesList' is already defined as a built-in global variable.",
+        "line": 554,
+        "column": 10,
+        "messageId": "redeclaredAsBuiltin",
+        "endLine": 554,
+        "endColumn": 25
+      },
+      {
+        "ruleId": "no-unused-vars",
+        "severity": 1,
+        "message": "'editInvoiceFromList' is defined but never used.",
+        "line": 602,
+        "column": 10,
+        "messageId": "unusedVar",
+        "endLine": 602,
+        "endColumn": 29,
+        "suggestions": [
+          {
+            "messageId": "removeVar",
+            "data": {
+              "varName": "editInvoiceFromList"
+            },
+            "fix": {
+              "range": [
+                34987,
+                35060
+              ],
+              "text": ""
+            },
+            "desc": "Remove unused variable 'editInvoiceFromList'."
+          }
+        ]
+      },
+      {
+        "ruleId": "no-redeclare",
+        "severity": 1,
+        "message": "'delInvoice' is already defined as a built-in global variable.",
+        "line": 605,
+        "column": 10,
+        "messageId": "redeclaredAsBuiltin",
+        "endLine": 605,
+        "endColumn": 20
+      },
+      {
+        "ruleId": "no-unused-vars",
+        "severity": 1,
+        "message": "'delInvoice' is defined but never used.",
+        "line": 605,
+        "column": 10,
+        "messageId": "unusedVar",
+        "endLine": 605,
+        "endColumn": 20,
+        "suggestions": [
+          {
+            "messageId": "removeVar",
+            "data": {
+              "varName": "delInvoice"
+            },
+            "fix": {
+              "range": [
+                35061,
+                35260
+              ],
+              "text": ""
+            },
+            "desc": "Remove unused variable 'delInvoice'."
+          }
+        ]
+      },
+      {
+        "ruleId": "no-redeclare",
+        "severity": 1,
+        "message": "'quickDispatch' is already defined as a built-in global variable.",
+        "line": 610,
+        "column": 10,
+        "messageId": "redeclaredAsBuiltin",
+        "endLine": 610,
+        "endColumn": 23
+      },
+      {
+        "ruleId": "no-unused-vars",
+        "severity": 1,
+        "message": "'quickDispatch' is defined but never used.",
+        "line": 610,
+        "column": 10,
+        "messageId": "unusedVar",
+        "endLine": 610,
+        "endColumn": 23,
+        "suggestions": [
+          {
+            "messageId": "removeVar",
+            "data": {
+              "varName": "quickDispatch"
+            },
+            "fix": {
+              "range": [
+                35261,
+                35548
+              ],
+              "text": ""
+            },
+            "desc": "Remove unused variable 'quickDispatch'."
+          }
+        ]
+      },
+      {
+        "ruleId": "no-redeclare",
+        "severity": 1,
+        "message": "'viewInvoice' is already defined as a built-in global variable.",
+        "line": 619,
+        "column": 10,
+        "messageId": "redeclaredAsBuiltin",
+        "endLine": 619,
+        "endColumn": 21
+      },
+      {
+        "ruleId": "no-unused-vars",
+        "severity": 1,
+        "message": "'toggleDispatch' is defined but never used.",
+        "line": 716,
+        "column": 10,
+        "messageId": "unusedVar",
+        "endLine": 716,
+        "endColumn": 24,
+        "suggestions": [
+          {
+            "messageId": "removeVar",
+            "data": {
+              "varName": "toggleDispatch"
+            },
+            "fix": {
+              "range": [
+                43115,
+                43681
+              ],
+              "text": ""
+            },
+            "desc": "Remove unused variable 'toggleDispatch'."
+          }
+        ]
+      },
+      {
+        "ruleId": "no-unused-vars",
+        "severity": 1,
+        "message": "'collectPaymentFromView' is defined but never used.",
+        "line": 725,
+        "column": 10,
+        "messageId": "unusedVar",
+        "endLine": 725,
+        "endColumn": 32,
+        "suggestions": [
+          {
+            "messageId": "removeVar",
+            "data": {
+              "varName": "collectPaymentFromView"
+            },
+            "fix": {
+              "range": [
+                43682,
+                43801
+              ],
+              "text": ""
+            },
+            "desc": "Remove unused variable 'collectPaymentFromView'."
+          }
+        ]
+      },
+      {
+        "ruleId": "no-redeclare",
+        "severity": 1,
+        "message": "'printInvoice' is already defined as a built-in global variable.",
+        "line": 726,
+        "column": 10,
+        "messageId": "redeclaredAsBuiltin",
+        "endLine": 726,
+        "endColumn": 22
+      },
+      {
+        "ruleId": "no-redeclare",
+        "severity": 1,
+        "message": "'openPayModal' is already defined as a built-in global variable.",
+        "line": 744,
+        "column": 10,
+        "messageId": "redeclaredAsBuiltin",
+        "endLine": 744,
+        "endColumn": 22
+      },
+      {
+        "ruleId": "no-redeclare",
+        "severity": 1,
+        "message": "'savePayment' is already defined as a built-in global variable.",
+        "line": 756,
+        "column": 10,
+        "messageId": "redeclaredAsBuiltin",
+        "endLine": 756,
+        "endColumn": 21
+      },
+      {
+        "ruleId": "no-unused-vars",
+        "severity": 1,
+        "message": "'savePayment' is defined but never used.",
+        "line": 756,
+        "column": 10,
+        "messageId": "unusedVar",
+        "endLine": 756,
+        "endColumn": 21,
+        "suggestions": [
+          {
+            "messageId": "removeVar",
+            "data": {
+              "varName": "savePayment"
+            },
+            "fix": {
+              "range": [
+                45786,
+                46630
+              ],
+              "text": ""
+            },
+            "desc": "Remove unused variable 'savePayment'."
+          }
+        ]
+      },
+      {
+        "ruleId": "no-unused-vars",
+        "severity": 1,
+        "message": "'saveRetail' is defined but never used.",
+        "line": 782,
+        "column": 10,
+        "messageId": "unusedVar",
+        "endLine": 782,
+        "endColumn": 20,
+        "suggestions": [
+          {
+            "messageId": "removeVar",
+            "data": {
+              "varName": "saveRetail"
+            },
+            "fix": {
+              "range": [
+                46836,
+                47466
+              ],
+              "text": ""
+            },
+            "desc": "Remove unused variable 'saveRetail'."
+          }
+        ]
+      },
+      {
+        "ruleId": "no-redeclare",
+        "severity": 1,
+        "message": "'delRetail' is already defined as a built-in global variable.",
+        "line": 811,
+        "column": 10,
+        "messageId": "redeclaredAsBuiltin",
+        "endLine": 811,
+        "endColumn": 19
+      },
+      {
+        "ruleId": "no-unused-vars",
+        "severity": 1,
+        "message": "'delRetail' is defined but never used.",
+        "line": 811,
+        "column": 10,
+        "messageId": "unusedVar",
+        "endLine": 811,
+        "endColumn": 19,
+        "suggestions": [
+          {
+            "messageId": "removeVar",
+            "data": {
+              "varName": "delRetail"
+            },
+            "fix": {
+              "range": [
+                48380,
+                48542
+              ],
+              "text": ""
+            },
+            "desc": "Remove unused variable 'delRetail'."
+          }
+        ]
+      },
+      {
+        "ruleId": "no-unused-vars",
+        "severity": 1,
+        "message": "'piName' is defined but never used.",
+        "line": 853,
+        "column": 10,
+        "messageId": "unusedVar",
+        "endLine": 853,
+        "endColumn": 16,
+        "suggestions": [
+          {
+            "messageId": "removeVar",
+            "data": {
+              "varName": "piName"
+            },
+            "fix": {
+              "range": [
+                50740,
+                50842
+              ],
+              "text": ""
+            },
+            "desc": "Remove unused variable 'piName'."
+          }
+        ]
+      },
+      {
+        "ruleId": "no-unused-vars",
+        "severity": 1,
+        "message": "'piNum' is defined but never used.",
+        "line": 854,
+        "column": 10,
+        "messageId": "unusedVar",
+        "endLine": 854,
+        "endColumn": 15,
+        "suggestions": [
+          {
+            "messageId": "removeVar",
+            "data": {
+              "varName": "piNum"
+            },
+            "fix": {
+              "range": [
+                50843,
+                51062
+              ],
+              "text": ""
+            },
+            "desc": "Remove unused variable 'piNum'."
+          }
+        ]
+      },
+      {
+        "ruleId": "no-unused-vars",
+        "severity": 1,
+        "message": "'removePI' is defined but never used.",
+        "line": 855,
+        "column": 10,
+        "messageId": "unusedVar",
+        "endLine": 855,
+        "endColumn": 18,
+        "suggestions": [
+          {
+            "messageId": "removeVar",
+            "data": {
+              "varName": "removePI"
+            },
+            "fix": {
+              "range": [
+                51063,
+                51142
+              ],
+              "text": ""
+            },
+            "desc": "Remove unused variable 'removePI'."
+          }
+        ]
+      },
+      {
+        "ruleId": "no-unused-vars",
+        "severity": 1,
+        "message": "'setPurItem' is defined but never used.",
+        "line": 864,
+        "column": 10,
+        "messageId": "unusedVar",
+        "endLine": 864,
+        "endColumn": 20,
+        "suggestions": [
+          {
+            "messageId": "removeVar",
+            "data": {
+              "varName": "setPurItem"
+            },
+            "fix": {
+              "range": [
+                51805,
+                52183
+              ],
+              "text": ""
+            },
+            "desc": "Remove unused variable 'setPurItem'."
+          }
+        ]
+      },
+      {
+        "ruleId": "no-unused-vars",
+        "severity": 1,
+        "message": "'unit' is defined but never used.",
+        "line": 864,
+        "column": 34,
+        "messageId": "unusedVar",
+        "endLine": 864,
+        "endColumn": 38,
+        "suggestions": [
+          {
+            "messageId": "removeVar",
+            "data": {
+              "varName": "unit"
+            },
+            "fix": {
+              "range": [
+                51837,
+                51842
+              ],
+              "text": ""
+            },
+            "desc": "Remove unused variable 'unit'."
+          }
+        ]
+      },
+      {
+        "ruleId": "no-unused-vars",
+        "severity": 1,
+        "message": "'handlePhoto' is defined but never used.",
+        "line": 881,
+        "column": 10,
+        "messageId": "unusedVar",
+        "endLine": 881,
+        "endColumn": 21,
+        "suggestions": [
+          {
+            "messageId": "removeVar",
+            "data": {
+              "varName": "handlePhoto"
+            },
+            "fix": {
+              "range": [
+                52573,
+                52957
+              ],
+              "text": ""
+            },
+            "desc": "Remove unused variable 'handlePhoto'."
+          }
+        ]
+      },
+      {
+        "ruleId": "no-unused-vars",
+        "severity": 1,
+        "message": "'removePhoto' is defined but never used.",
+        "line": 890,
+        "column": 10,
+        "messageId": "unusedVar",
+        "endLine": 890,
+        "endColumn": 21,
+        "suggestions": [
+          {
+            "messageId": "removeVar",
+            "data": {
+              "varName": "removePhoto"
+            },
+            "fix": {
+              "range": [
+                52958,
+                53196
+              ],
+              "text": ""
+            },
+            "desc": "Remove unused variable 'removePhoto'."
+          }
+        ]
+      },
+      {
+        "ruleId": "no-redeclare",
+        "severity": 1,
+        "message": "'savePurchase' is already defined as a built-in global variable.",
+        "line": 896,
+        "column": 10,
+        "messageId": "redeclaredAsBuiltin",
+        "endLine": 896,
+        "endColumn": 22
+      },
+      {
+        "ruleId": "no-unused-vars",
+        "severity": 1,
+        "message": "'savePurchase' is defined but never used.",
+        "line": 896,
+        "column": 10,
+        "messageId": "unusedVar",
+        "endLine": 896,
+        "endColumn": 22,
+        "suggestions": [
+          {
+            "messageId": "removeVar",
+            "data": {
+              "varName": "savePurchase"
+            },
+            "fix": {
+              "range": [
+                53197,
+                54375
+              ],
+              "text": ""
+            },
+            "desc": "Remove unused variable 'savePurchase'."
+          }
+        ]
+      },
+      {
+        "ruleId": "no-unused-vars",
+        "severity": 1,
+        "message": "'clearPLFilter' is defined but never used.",
+        "line": 919,
+        "column": 10,
+        "messageId": "unusedVar",
+        "endLine": 919,
+        "endColumn": 23,
+        "suggestions": [
+          {
+            "messageId": "removeVar",
+            "data": {
+              "varName": "clearPLFilter"
+            },
+            "fix": {
+              "range": [
+                54376,
+                54524
+              ],
+              "text": ""
+            },
+            "desc": "Remove unused variable 'clearPLFilter'."
+          }
+        ]
+      },
+      {
+        "ruleId": "no-redeclare",
+        "severity": 1,
+        "message": "'renderPurchaseList' is already defined as a built-in global variable.",
+        "line": 920,
+        "column": 10,
+        "messageId": "redeclaredAsBuiltin",
+        "endLine": 920,
+        "endColumn": 28
+      },
+      {
+        "ruleId": "no-redeclare",
+        "severity": 1,
+        "message": "'viewPurchase' is already defined as a built-in global variable.",
+        "line": 951,
+        "column": 10,
+        "messageId": "redeclaredAsBuiltin",
+        "endLine": 951,
+        "endColumn": 22
+      },
+      {
+        "ruleId": "no-unused-vars",
+        "severity": 1,
+        "message": "'viewPurchase' is defined but never used.",
+        "line": 951,
+        "column": 10,
+        "messageId": "unusedVar",
+        "endLine": 951,
+        "endColumn": 22,
+        "suggestions": [
+          {
+            "messageId": "removeVar",
+            "data": {
+              "varName": "viewPurchase"
+            },
+            "fix": {
+              "range": [
+                56514,
+                57870
+              ],
+              "text": ""
+            },
+            "desc": "Remove unused variable 'viewPurchase'."
+          }
+        ]
+      },
+      {
+        "ruleId": "no-redeclare",
+        "severity": 1,
+        "message": "'delPurchase' is already defined as a built-in global variable.",
+        "line": 970,
+        "column": 10,
+        "messageId": "redeclaredAsBuiltin",
+        "endLine": 970,
+        "endColumn": 21
+      },
+      {
+        "ruleId": "no-unused-vars",
+        "severity": 1,
+        "message": "'delPurchase' is defined but never used.",
+        "line": 970,
+        "column": 10,
+        "messageId": "unusedVar",
+        "endLine": 970,
+        "endColumn": 21,
+        "suggestions": [
+          {
+            "messageId": "removeVar",
+            "data": {
+              "varName": "delPurchase"
+            },
+            "fix": {
+              "range": [
+                57871,
+                58034
+              ],
+              "text": ""
+            },
+            "desc": "Remove unused variable 'delPurchase'."
+          }
+        ]
+      },
+      {
+        "ruleId": "no-redeclare",
+        "severity": 1,
+        "message": "'renderItems' is already defined as a built-in global variable.",
+        "line": 975,
+        "column": 10,
+        "messageId": "redeclaredAsBuiltin",
+        "endLine": 975,
+        "endColumn": 21
+      },
+      {
+        "ruleId": "no-unused-vars",
+        "severity": 1,
+        "message": "'openItemModal' is defined but never used.",
+        "line": 995,
+        "column": 10,
+        "messageId": "unusedVar",
+        "endLine": 995,
+        "endColumn": 23,
+        "suggestions": [
+          {
+            "messageId": "removeVar",
+            "data": {
+              "varName": "openItemModal"
+            },
+            "fix": {
+              "range": [
+                59367,
+                60481
+              ],
+              "text": ""
+            },
+            "desc": "Remove unused variable 'openItemModal'."
+          }
+        ]
+      },
+      {
+        "ruleId": "no-redeclare",
+        "severity": 1,
+        "message": "'saveItem' is already defined as a built-in global variable.",
+        "line": 1017,
+        "column": 10,
+        "messageId": "redeclaredAsBuiltin",
+        "endLine": 1017,
+        "endColumn": 18
+      },
+      {
+        "ruleId": "no-unused-vars",
+        "severity": 1,
+        "message": "'saveItem' is defined but never used.",
+        "line": 1017,
+        "column": 10,
+        "messageId": "unusedVar",
+        "endLine": 1017,
+        "endColumn": 18,
+        "suggestions": [
+          {
+            "messageId": "removeVar",
+            "data": {
+              "varName": "saveItem"
+            },
+            "fix": {
+              "range": [
+                60482,
+                61233
+              ],
+              "text": ""
+            },
+            "desc": "Remove unused variable 'saveItem'."
+          }
+        ]
+      },
+      {
+        "ruleId": "no-redeclare",
+        "severity": 1,
+        "message": "'delItem' is already defined as a built-in global variable.",
+        "line": 1026,
+        "column": 10,
+        "messageId": "redeclaredAsBuiltin",
+        "endLine": 1026,
+        "endColumn": 17
+      },
+      {
+        "ruleId": "no-unused-vars",
+        "severity": 1,
+        "message": "'delItem' is defined but never used.",
+        "line": 1026,
+        "column": 10,
+        "messageId": "unusedVar",
+        "endLine": 1026,
+        "endColumn": 17,
+        "suggestions": [
+          {
+            "messageId": "removeVar",
+            "data": {
+              "varName": "delItem"
+            },
+            "fix": {
+              "range": [
+                61234,
+                61374
+              ],
+              "text": ""
+            },
+            "desc": "Remove unused variable 'delItem'."
+          }
+        ]
+      },
+      {
+        "ruleId": "no-redeclare",
+        "severity": 1,
+        "message": "'renderParties' is already defined as a built-in global variable.",
+        "line": 1031,
+        "column": 10,
+        "messageId": "redeclaredAsBuiltin",
+        "endLine": 1031,
+        "endColumn": 23
+      },
+      {
+        "ruleId": "no-redeclare",
+        "severity": 1,
+        "message": "'openPartyModal' is already defined as a built-in global variable.",
+        "line": 1058,
+        "column": 10,
+        "messageId": "redeclaredAsBuiltin",
+        "endLine": 1058,
+        "endColumn": 24
+      },
+      {
+        "ruleId": "no-unused-vars",
+        "severity": 1,
+        "message": "'openPartyModal' is defined but never used.",
+        "line": 1058,
+        "column": 10,
+        "messageId": "unusedVar",
+        "endLine": 1058,
+        "endColumn": 24,
+        "suggestions": [
+          {
+            "messageId": "removeVar",
+            "data": {
+              "varName": "openPartyModal"
+            },
+            "fix": {
+              "range": [
+                63112,
+                64156
+              ],
+              "text": ""
+            },
+            "desc": "Remove unused variable 'openPartyModal'."
+          }
+        ]
+      },
+      {
+        "ruleId": "no-redeclare",
+        "severity": 1,
+        "message": "'saveParty' is already defined as a built-in global variable.",
+        "line": 1078,
+        "column": 10,
+        "messageId": "redeclaredAsBuiltin",
+        "endLine": 1078,
+        "endColumn": 19
+      },
+      {
+        "ruleId": "no-unused-vars",
+        "severity": 1,
+        "message": "'saveParty' is defined but never used.",
+        "line": 1078,
+        "column": 10,
+        "messageId": "unusedVar",
+        "endLine": 1078,
+        "endColumn": 19,
+        "suggestions": [
+          {
+            "messageId": "removeVar",
+            "data": {
+              "varName": "saveParty"
+            },
+            "fix": {
+              "range": [
+                64157,
+                64911
+              ],
+              "text": ""
+            },
+            "desc": "Remove unused variable 'saveParty'."
+          }
+        ]
+      },
+      {
+        "ruleId": "no-redeclare",
+        "severity": 1,
+        "message": "'delParty' is already defined as a built-in global variable.",
+        "line": 1087,
+        "column": 10,
+        "messageId": "redeclaredAsBuiltin",
+        "endLine": 1087,
+        "endColumn": 18
+      },
+      {
+        "ruleId": "no-unused-vars",
+        "severity": 1,
+        "message": "'delParty' is defined but never used.",
+        "line": 1087,
+        "column": 10,
+        "messageId": "unusedVar",
+        "endLine": 1087,
+        "endColumn": 18,
+        "suggestions": [
+          {
+            "messageId": "removeVar",
+            "data": {
+              "varName": "delParty"
+            },
+            "fix": {
+              "range": [
+                64912,
+                65060
+              ],
+              "text": ""
+            },
+            "desc": "Remove unused variable 'delParty'."
+          }
+        ]
+      },
+      {
+        "ruleId": "no-unused-vars",
+        "severity": 1,
+        "message": "'currentRepTab' is assigned a value but never used.",
+        "line": 1092,
+        "column": 5,
+        "messageId": "unusedVar",
+        "endLine": 1092,
+        "endColumn": 18
+      },
+      {
+        "ruleId": "no-redeclare",
+        "severity": 1,
+        "message": "'repTab' is already defined as a built-in global variable.",
+        "line": 1093,
+        "column": 10,
+        "messageId": "redeclaredAsBuiltin",
+        "endLine": 1093,
+        "endColumn": 16
+      },
+      {
+        "ruleId": "no-redeclare",
+        "severity": 1,
+        "message": "'renderSaleRep' is already defined as a built-in global variable.",
+        "line": 1099,
+        "column": 10,
+        "messageId": "redeclaredAsBuiltin",
+        "endLine": 1099,
+        "endColumn": 23
+      },
+      {
+        "ruleId": "no-redeclare",
+        "severity": 1,
+        "message": "'renderPurRep' is already defined as a built-in global variable.",
+        "line": 1149,
+        "column": 10,
+        "messageId": "redeclaredAsBuiltin",
+        "endLine": 1149,
+        "endColumn": 22
+      },
+      {
+        "ruleId": "no-redeclare",
+        "severity": 1,
+        "message": "'renderPartyLedger' is already defined as a built-in global variable.",
+        "line": 1168,
+        "column": 10,
+        "messageId": "redeclaredAsBuiltin",
+        "endLine": 1168,
+        "endColumn": 27
+      },
+      {
+        "ruleId": "no-redeclare",
+        "severity": 1,
+        "message": "'filterLedger' is already defined as a built-in global variable.",
+        "line": 1176,
+        "column": 10,
+        "messageId": "redeclaredAsBuiltin",
+        "endLine": 1176,
+        "endColumn": 22
+      },
+      {
+        "ruleId": "no-unused-vars",
+        "severity": 1,
+        "message": "'filterLedger' is defined but never used.",
+        "line": 1176,
+        "column": 10,
+        "messageId": "unusedVar",
+        "endLine": 1176,
+        "endColumn": 22,
+        "suggestions": [
+          {
+            "messageId": "removeVar",
+            "data": {
+              "varName": "filterLedger"
+            },
+            "fix": {
+              "range": [
+                70579,
+                70767
+              ],
+              "text": ""
+            },
+            "desc": "Remove unused variable 'filterLedger'."
+          }
+        ]
+      },
+      {
+        "ruleId": "no-redeclare",
+        "severity": 1,
+        "message": "'renderItemRep' is already defined as a built-in global variable.",
+        "line": 1197,
+        "column": 10,
+        "messageId": "redeclaredAsBuiltin",
+        "endLine": 1197,
+        "endColumn": 23
+      },
+      {
+        "ruleId": "no-redeclare",
+        "severity": 1,
+        "message": "'renderPendingRep' is already defined as a built-in global variable.",
+        "line": 1215,
+        "column": 10,
+        "messageId": "redeclaredAsBuiltin",
+        "endLine": 1215,
+        "endColumn": 26
+      },
+      {
+        "ruleId": "no-redeclare",
+        "severity": 1,
+        "message": "'renderDispatchRep' is already defined as a built-in global variable.",
+        "line": 1245,
+        "column": 10,
+        "messageId": "redeclaredAsBuiltin",
+        "endLine": 1245,
+        "endColumn": 27
+      },
+      {
+        "ruleId": "no-redeclare",
+        "severity": 1,
+        "message": "'loadSettings' is already defined as a built-in global variable.",
+        "line": 1278,
+        "column": 10,
+        "messageId": "redeclaredAsBuiltin",
+        "endLine": 1278,
+        "endColumn": 22
+      },
+      {
+        "ruleId": "no-unused-vars",
+        "severity": 1,
+        "message": "'i' is defined but never used.",
+        "line": 1314,
+        "column": 17,
+        "messageId": "unusedVar",
+        "endLine": 1314,
+        "endColumn": 18,
+        "suggestions": [
+          {
+            "messageId": "removeVar",
+            "data": {
+              "varName": "i"
+            },
+            "fix": {
+              "range": [
+                79885,
+                79887
+              ],
+              "text": ""
+            },
+            "desc": "Remove unused variable 'i'."
+          }
+        ]
+      },
+      {
+        "ruleId": "no-unused-vars",
+        "severity": 1,
+        "message": "'addCustomField' is defined but never used.",
+        "line": 1322,
+        "column": 10,
+        "messageId": "unusedVar",
+        "endLine": 1322,
+        "endColumn": 24,
+        "suggestions": [
+          {
+            "messageId": "removeVar",
+            "data": {
+              "varName": "addCustomField"
+            },
+            "fix": {
+              "range": [
+                80172,
+                80639
+              ],
+              "text": ""
+            },
+            "desc": "Remove unused variable 'addCustomField'."
+          }
+        ]
+      },
+      {
+        "ruleId": "no-unused-vars",
+        "severity": 1,
+        "message": "'removeCustomField' is defined but never used.",
+        "line": 1334,
+        "column": 10,
+        "messageId": "unusedVar",
+        "endLine": 1334,
+        "endColumn": 27,
+        "suggestions": [
+          {
+            "messageId": "removeVar",
+            "data": {
+              "varName": "removeCustomField"
+            },
+            "fix": {
+              "range": [
+                80640,
+                80835
+              ],
+              "text": ""
+            },
+            "desc": "Remove unused variable 'removeCustomField'."
+          }
+        ]
+      },
+      {
+        "ruleId": "no-redeclare",
+        "severity": 1,
+        "message": "'saveSettings' is already defined as a built-in global variable.",
+        "line": 1354,
+        "column": 10,
+        "messageId": "redeclaredAsBuiltin",
+        "endLine": 1354,
+        "endColumn": 22
+      },
+      {
+        "ruleId": "no-unused-vars",
+        "severity": 1,
+        "message": "'saveSettings' is defined but never used.",
+        "line": 1354,
+        "column": 10,
+        "messageId": "unusedVar",
+        "endLine": 1354,
+        "endColumn": 22,
+        "suggestions": [
+          {
+            "messageId": "removeVar",
+            "data": {
+              "varName": "saveSettings"
+            },
+            "fix": {
+              "range": [
+                81532,
+                82546
+              ],
+              "text": ""
+            },
+            "desc": "Remove unused variable 'saveSettings'."
+          }
+        ]
+      },
+      {
+        "ruleId": "no-unused-vars",
+        "severity": 1,
+        "message": "'exportData' is defined but never used.",
+        "line": 1381,
+        "column": 10,
+        "messageId": "unusedVar",
+        "endLine": 1381,
+        "endColumn": 20,
+        "suggestions": [
+          {
+            "messageId": "removeVar",
+            "data": {
+              "varName": "exportData"
+            },
+            "fix": {
+              "range": [
+                82645,
+                83139
+              ],
+              "text": ""
+            },
+            "desc": "Remove unused variable 'exportData'."
+          }
+        ]
+      },
+      {
+        "ruleId": "no-unused-vars",
+        "severity": 1,
+        "message": "'importData' is defined but never used.",
+        "line": 1390,
+        "column": 10,
+        "messageId": "unusedVar",
+        "endLine": 1390,
+        "endColumn": 20,
+        "suggestions": [
+          {
+            "messageId": "removeVar",
+            "data": {
+              "varName": "importData"
+            },
+            "fix": {
+              "range": [
+                83140,
+                83795
+              ],
+              "text": ""
+            },
+            "desc": "Remove unused variable 'importData'."
+          }
+        ]
+      },
+      {
+        "ruleId": "no-unused-vars",
+        "severity": 1,
+        "message": "'clearAllData' is defined but never used.",
+        "line": 1406,
+        "column": 10,
+        "messageId": "unusedVar",
+        "endLine": 1406,
+        "endColumn": 22,
+        "suggestions": [
+          {
+            "messageId": "removeVar",
+            "data": {
+              "varName": "clearAllData"
+            },
+            "fix": {
+              "range": [
+                83796,
+                84174
+              ],
+              "text": ""
+            },
+            "desc": "Remove unused variable 'clearAllData'."
+          }
+        ]
+      },
+      {
+        "ruleId": "no-unused-vars",
+        "severity": 1,
+        "message": "'e' is defined but never used.",
+        "line": 1475,
+        "column": 11,
+        "messageId": "unusedVar",
+        "endLine": 1475,
+        "endColumn": 12
+      },
+      {
+        "ruleId": "no-unused-vars",
+        "severity": 1,
+        "message": "'_origShowSaleItemAC' is assigned a value but never used.",
+        "line": 1485,
+        "column": 7,
+        "messageId": "unusedVar",
+        "endLine": 1485,
+        "endColumn": 26,
+        "suggestions": [
+          {
+            "messageId": "removeVar",
+            "data": {
+              "varName": "_origShowSaleItemAC"
+            },
+            "fix": {
+              "range": [
+                87434,
+                87484
+              ],
+              "text": ""
+            },
+            "desc": "Remove unused variable '_origShowSaleItemAC'."
+          }
+        ]
+      },
+      {
+        "ruleId": "no-unused-vars",
+        "severity": 1,
+        "message": "'_origSavePayment' is assigned a value but never used.",
+        "line": 1802,
+        "column": 7,
+        "messageId": "unusedVar",
+        "endLine": 1802,
+        "endColumn": 23,
+        "suggestions": [
+          {
+            "messageId": "removeVar",
+            "data": {
+              "varName": "_origSavePayment"
+            },
+            "fix": {
+              "range": [
+                104326,
+                104370
+              ],
+              "text": ""
+            },
+            "desc": "Remove unused variable '_origSavePayment'."
+          }
+        ]
+      },
+      {
+        "ruleId": "no-unused-vars",
+        "severity": 1,
+        "message": "'totalDeducted' is assigned a value but never used.",
+        "line": 1814,
+        "column": 9,
+        "messageId": "unusedVar",
+        "endLine": 1814,
+        "endColumn": 22,
+        "suggestions": [
+          {
+            "messageId": "removeVar",
+            "data": {
+              "varName": "totalDeducted"
+            },
+            "fix": {
+              "range": [
+                105038,
+                105075
+              ],
+              "text": ""
+            },
+            "desc": "Remove unused variable 'totalDeducted'."
+          }
+        ]
+      },
+      {
+        "ruleId": "no-unused-vars",
+        "severity": 1,
+        "message": "'e' is defined but never used.",
+        "line": 1847,
+        "column": 11,
+        "messageId": "unusedVar",
+        "endLine": 1847,
+        "endColumn": 12
+      },
+      {
+        "ruleId": "no-unused-vars",
+        "severity": 1,
+        "message": "'e' is defined but never used.",
+        "line": 1874,
+        "column": 11,
+        "messageId": "unusedVar",
+        "endLine": 1874,
+        "endColumn": 12
+      },
+      {
+        "ruleId": "no-unused-vars",
+        "severity": 1,
+        "message": "'e' is defined but never used.",
+        "line": 1897,
+        "column": 11,
+        "messageId": "unusedVar",
+        "endLine": 1897,
+        "endColumn": 12
+      },
+      {
+        "ruleId": "no-unused-vars",
+        "severity": 1,
+        "message": "'origHandlers' is assigned a value but never used.",
+        "line": 1984,
+        "column": 11,
+        "messageId": "unusedVar",
+        "endLine": 1984,
+        "endColumn": 23,
+        "suggestions": [
+          {
+            "messageId": "removeVar",
+            "data": {
+              "varName": "origHandlers"
+            },
+            "fix": {
+              "range": [
+                113770,
+                113842
+              ],
+              "text": ""
+            },
+            "desc": "Remove unused variable 'origHandlers'."
+          }
+        ]
+      },
+      {
+        "ruleId": "no-unused-vars",
+        "severity": 1,
+        "message": "'origRepTab' is assigned a value but never used.",
+        "line": 1985,
+        "column": 11,
+        "messageId": "unusedVar",
+        "endLine": 1985,
+        "endColumn": 21,
+        "suggestions": [
+          {
+            "messageId": "removeVar",
+            "data": {
+              "varName": "origRepTab"
+            },
+            "fix": {
+              "range": [
+                113847,
+                113880
+              ],
+              "text": ""
+            },
+            "desc": "Remove unused variable 'origRepTab'."
+          }
+        ]
+      },
+      {
+        "ruleId": "no-unused-vars",
+        "severity": 1,
+        "message": "'pbPartyName' is assigned a value but never used.",
+        "line": 2255,
+        "column": 5,
+        "messageId": "unusedVar",
+        "endLine": 2255,
+        "endColumn": 16
+      },
+      {
+        "ruleId": "no-unused-vars",
+        "severity": 1,
+        "message": "'pbPartyId' is assigned a value but never used.",
+        "line": 2256,
+        "column": 5,
+        "messageId": "unusedVar",
+        "endLine": 2256,
+        "endColumn": 14
+      },
+      {
+        "ruleId": "no-unused-vars",
+        "severity": 1,
+        "message": "'pbPartyAC' is defined but never used.",
+        "line": 2270,
+        "column": 10,
+        "messageId": "unusedVar",
+        "endLine": 2270,
+        "endColumn": 19,
+        "suggestions": [
+          {
+            "messageId": "removeVar",
+            "data": {
+              "varName": "pbPartyAC"
+            },
+            "fix": {
+              "range": [
+                128881,
+                129792
+              ],
+              "text": ""
+            },
+            "desc": "Remove unused variable 'pbPartyAC'."
+          }
+        ]
+      },
+      {
+        "ruleId": "no-unused-vars",
+        "severity": 1,
+        "message": "'pbQuickAddParty' is defined but never used.",
+        "line": 2304,
+        "column": 10,
+        "messageId": "unusedVar",
+        "endLine": 2304,
+        "endColumn": 25,
+        "suggestions": [
+          {
+            "messageId": "removeVar",
+            "data": {
+              "varName": "pbQuickAddParty"
+            },
+            "fix": {
+              "range": [
+                130524,
+                130807
+              ],
+              "text": ""
+            },
+            "desc": "Remove unused variable 'pbQuickAddParty'."
+          }
+        ]
+      },
+      {
+        "ruleId": "no-unused-vars",
+        "severity": 1,
+        "message": "'pbDelBill' is defined but never used.",
+        "line": 2334,
+        "column": 10,
+        "messageId": "unusedVar",
+        "endLine": 2334,
+        "endColumn": 19,
+        "suggestions": [
+          {
+            "messageId": "removeVar",
+            "data": {
+              "varName": "pbDelBill"
+            },
+            "fix": {
+              "range": [
+                132153,
+                132399
+              ],
+              "text": ""
+            },
+            "desc": "Remove unused variable 'pbDelBill'."
+          }
+        ]
+      },
+      {
+        "ruleId": "no-unused-vars",
+        "severity": 1,
+        "message": "'pbAddRow' is defined but never used.",
+        "line": 2342,
+        "column": 10,
+        "messageId": "unusedVar",
+        "endLine": 2342,
+        "endColumn": 18,
+        "suggestions": [
+          {
+            "messageId": "removeVar",
+            "data": {
+              "varName": "pbAddRow"
+            },
+            "fix": {
+              "range": [
+                132401,
+                132642
+              ],
+              "text": ""
+            },
+            "desc": "Remove unused variable 'pbAddRow'."
+          }
+        ]
+      },
+      {
+        "ruleId": "no-unused-vars",
+        "severity": 1,
+        "message": "'pbUpdateAllPayTypes' is defined but never used.",
+        "line": 2352,
+        "column": 10,
+        "messageId": "unusedVar",
+        "endLine": 2352,
+        "endColumn": 29,
+        "suggestions": [
+          {
+            "messageId": "removeVar",
+            "data": {
+              "varName": "pbUpdateAllPayTypes"
+            },
+            "fix": {
+              "range": [
+                132644,
+                132739
+              ],
+              "text": ""
+            },
+            "desc": "Remove unused variable 'pbUpdateAllPayTypes'."
+          }
+        ]
+      },
+      {
+        "ruleId": "no-unused-vars",
+        "severity": 1,
+        "message": "'pbClearAll' is defined but never used.",
+        "line": 2357,
+        "column": 10,
+        "messageId": "unusedVar",
+        "endLine": 2357,
+        "endColumn": 20,
+        "suggestions": [
+          {
+            "messageId": "removeVar",
+            "data": {
+              "varName": "pbClearAll"
+            },
+            "fix": {
+              "range": [
+                132741,
+                132951
+              ],
+              "text": ""
+            },
+            "desc": "Remove unused variable 'pbClearAll'."
+          }
+        ]
+      },
+      {
+        "ruleId": "no-unused-vars",
+        "severity": 1,
+        "message": "'pbCalcRow' is defined but never used.",
+        "line": 2425,
+        "column": 10,
+        "messageId": "unusedVar",
+        "endLine": 2425,
+        "endColumn": 19,
+        "suggestions": [
+          {
+            "messageId": "removeVar",
+            "data": {
+              "varName": "pbCalcRow"
+            },
+            "fix": {
+              "range": [
+                136134,
+                136744
+              ],
+              "text": ""
+            },
+            "desc": "Remove unused variable 'pbCalcRow'."
+          }
+        ]
+      },
+      {
+        "ruleId": "no-unused-vars",
+        "severity": 1,
+        "message": "'pbDeleteRow' is defined but never used.",
+        "line": 2455,
+        "column": 10,
+        "messageId": "unusedVar",
+        "endLine": 2455,
+        "endColumn": 21,
+        "suggestions": [
+          {
+            "messageId": "removeVar",
+            "data": {
+              "varName": "pbDeleteRow"
+            },
+            "fix": {
+              "range": [
+                137545,
+                137687
+              ],
+              "text": ""
+            },
+            "desc": "Remove unused variable 'pbDeleteRow'."
+          }
+        ]
+      },
+      {
+        "ruleId": "no-unused-vars",
+        "severity": 1,
+        "message": "'pbNotesKeydown' is defined but never used.",
+        "line": 2462,
+        "column": 10,
+        "messageId": "unusedVar",
+        "endLine": 2462,
+        "endColumn": 24,
+        "suggestions": [
+          {
+            "messageId": "removeVar",
+            "data": {
+              "varName": "pbNotesKeydown"
+            },
+            "fix": {
+              "range": [
+                137733,
+                138070
+              ],
+              "text": ""
+            },
+            "desc": "Remove unused variable 'pbNotesKeydown'."
+          }
+        ]
+      },
+      {
+        "ruleId": "no-unused-vars",
+        "severity": 1,
+        "message": "'pbSaveAll' is defined but never used.",
+        "line": 2475,
+        "column": 10,
+        "messageId": "unusedVar",
+        "endLine": 2475,
+        "endColumn": 19,
+        "suggestions": [
+          {
+            "messageId": "removeVar",
+            "data": {
+              "varName": "pbSaveAll"
+            },
+            "fix": {
+              "range": [
+                138072,
+                140797
+              ],
+              "text": ""
+            },
+            "desc": "Remove unused variable 'pbSaveAll'."
+          }
+        ]
+      },
+      {
+        "ruleId": "no-unused-vars",
+        "severity": 1,
+        "message": "'oldAmt' is assigned a value but never used.",
+        "line": 2718,
+        "column": 9,
+        "messageId": "unusedVar",
+        "endLine": 2718,
+        "endColumn": 15,
+        "suggestions": [
+          {
+            "messageId": "removeVar",
+            "data": {
+              "varName": "oldAmt"
+            },
+            "fix": {
+              "range": [
+                149463,
+                149486
+              ],
+              "text": ""
+            },
+            "desc": "Remove unused variable 'oldAmt'."
+          }
+        ]
+      },
+      {
+        "ruleId": "no-unused-vars",
+        "severity": 1,
+        "message": "'_origPartyAC' is assigned a value but never used.",
+        "line": 2831,
+        "column": 7,
+        "messageId": "unusedVar",
+        "endLine": 2831,
+        "endColumn": 19,
+        "suggestions": [
+          {
+            "messageId": "removeVar",
+            "data": {
+              "varName": "_origPartyAC"
+            },
+            "fix": {
+              "range": [
+                154807,
+                154843
+              ],
+              "text": ""
+            },
+            "desc": "Remove unused variable '_origPartyAC'."
+          }
+        ]
+      },
+      {
+        "ruleId": "no-unused-vars",
+        "severity": 1,
+        "message": "'_origSaveParty' is assigned a value but never used.",
+        "line": 2885,
+        "column": 7,
+        "messageId": "unusedVar",
+        "endLine": 2885,
+        "endColumn": 21,
+        "suggestions": [
+          {
+            "messageId": "removeVar",
+            "data": {
+              "varName": "_origSaveParty"
+            },
+            "fix": {
+              "range": [
+                157187,
+                157227
+              ],
+              "text": ""
+            },
+            "desc": "Remove unused variable '_origSaveParty'."
+          }
+        ]
+      },
+      {
+        "ruleId": "no-unused-vars",
+        "severity": 1,
+        "message": "'_origRenderParties' is assigned a value but never used.",
+        "line": 3209,
+        "column": 9,
+        "messageId": "unusedVar",
+        "endLine": 3209,
+        "endColumn": 27,
+        "suggestions": [
+          {
+            "messageId": "removeVar",
+            "data": {
+              "varName": "_origRenderParties"
+            },
+            "fix": {
+              "range": [
+                173367,
+                173415
+              ],
+              "text": ""
+            },
+            "desc": "Remove unused variable '_origRenderParties'."
+          }
+        ]
+      },
+      {
+        "ruleId": "no-unused-vars",
+        "severity": 1,
+        "message": "'i' is defined but never used.",
+        "line": 3361,
+        "column": 27,
+        "messageId": "unusedVar",
+        "endLine": 3361,
+        "endColumn": 28,
+        "suggestions": [
+          {
+            "messageId": "removeVar",
+            "data": {
+              "varName": "i"
+            },
+            "fix": {
+              "range": [
+                181736,
+                181738
+              ],
+              "text": ""
+            },
+            "desc": "Remove unused variable 'i'."
+          }
+        ]
+      },
+      {
+        "ruleId": "no-unused-vars",
+        "severity": 1,
+        "message": "'_prevSaveParty' is assigned a value but never used.",
+        "line": 3545,
+        "column": 9,
+        "messageId": "unusedVar",
+        "endLine": 3545,
+        "endColumn": 23,
+        "suggestions": [
+          {
+            "messageId": "removeVar",
+            "data": {
+              "varName": "_prevSaveParty"
+            },
+            "fix": {
+              "range": [
+                191754,
+                191794
+              ],
+              "text": ""
+            },
+            "desc": "Remove unused variable '_prevSaveParty'."
+          }
+        ]
+      },
+      {
+        "ruleId": "no-unused-vars",
+        "severity": 1,
+        "message": "'filename' is defined but never used.",
+        "line": 4078,
+        "column": 38,
+        "messageId": "unusedVar",
+        "endLine": 4078,
+        "endColumn": 46,
+        "suggestions": [
+          {
+            "messageId": "removeVar",
+            "data": {
+              "varName": "filename"
+            },
+            "fix": {
+              "range": [
+                217248,
+                217258
+              ],
+              "text": ""
+            },
+            "desc": "Remove unused variable 'filename'."
+          }
+        ]
+      },
+      {
+        "ruleId": "no-unused-vars",
+        "severity": 1,
+        "message": "'e' is defined but never used.",
+        "line": 4154,
+        "column": 11,
+        "messageId": "unusedVar",
+        "endLine": 4154,
+        "endColumn": 12
+      },
+      {
+        "ruleId": "no-unused-vars",
+        "severity": 1,
+        "message": "'obs' is assigned a value but never used.",
+        "line": 4205,
+        "column": 13,
+        "messageId": "unusedVar",
+        "endLine": 4205,
+        "endColumn": 16,
+        "suggestions": [
+          {
+            "messageId": "removeVar",
+            "data": {
+              "varName": "obs"
+            },
+            "fix": {
+              "range": [
+                223729,
+                223980
+              ],
+              "text": ""
+            },
+            "desc": "Remove unused variable 'obs'."
+          }
+        ]
+      },
+      {
+        "ruleId": "no-unused-vars",
+        "severity": 1,
+        "message": "'sbSub' is assigned a value but never used.",
+        "line": 4218,
+        "column": 9,
+        "messageId": "unusedVar",
+        "endLine": 4218,
+        "endColumn": 14,
+        "suggestions": [
+          {
+            "messageId": "removeVar",
+            "data": {
+              "varName": "sbSub"
+            },
+            "fix": {
+              "range": [
+                224155,
+                224203
+              ],
+              "text": ""
+            },
+            "desc": "Remove unused variable 'sbSub'."
+          }
+        ]
+      },
+      {
+        "ruleId": "no-unused-vars",
+        "severity": 1,
+        "message": "'_origRenderSaleItems' is assigned a value but never used.",
+        "line": 4260,
+        "column": 7,
+        "messageId": "unusedVar",
+        "endLine": 4260,
+        "endColumn": 27,
+        "suggestions": [
+          {
+            "messageId": "removeVar",
+            "data": {
+              "varName": "_origRenderSaleItems"
+            },
+            "fix": {
+              "range": [
+                225474,
+                225526
+              ],
+              "text": ""
+            },
+            "desc": "Remove unused variable '_origRenderSaleItems'."
+          }
+        ]
+      },
+      {
+        "ruleId": "no-unused-vars",
+        "severity": 1,
+        "message": "'_origAddSaleItem' is assigned a value but never used.",
+        "line": 4405,
+        "column": 7,
+        "messageId": "unusedVar",
+        "endLine": 4405,
+        "endColumn": 23,
+        "suggestions": [
+          {
+            "messageId": "removeVar",
+            "data": {
+              "varName": "_origAddSaleItem"
+            },
+            "fix": {
+              "range": [
+                232500,
+                232544
+              ],
+              "text": ""
+            },
+            "desc": "Remove unused variable '_origAddSaleItem'."
+          }
+        ]
+      },
+      {
+        "ruleId": "no-unused-vars",
+        "severity": 1,
+        "message": "'showPack' is assigned a value but never used.",
+        "line": 4425,
+        "column": 11,
+        "messageId": "unusedVar",
+        "endLine": 4425,
+        "endColumn": 19,
+        "suggestions": [
+          {
+            "messageId": "removeVar",
+            "data": {
+              "varName": "showPack"
+            },
+            "fix": {
+              "range": [
+                233502,
+                233548
+              ],
+              "text": ""
+            },
+            "desc": "Remove unused variable 'showPack'."
+          }
+        ]
+      },
+      {
+        "ruleId": "no-unused-vars",
+        "severity": 1,
+        "message": "'partyId' is assigned a value but never used.",
+        "line": 4705,
+        "column": 9,
+        "messageId": "unusedVar",
+        "endLine": 4705,
+        "endColumn": 16,
+        "suggestions": [
+          {
+            "messageId": "removeVar",
+            "data": {
+              "varName": "partyId"
+            },
+            "fix": {
+              "range": [
+                245460,
+                245527
+              ],
+              "text": ""
+            },
+            "desc": "Remove unused variable 'partyId'."
+          }
+        ]
+      },
+      {
+        "ruleId": "no-unused-vars",
+        "severity": 1,
+        "message": "'containerId' is defined but never used.",
+        "line": 5573,
+        "column": 57,
+        "messageId": "unusedVar",
+        "endLine": 5573,
+        "endColumn": 68,
+        "suggestions": [
+          {
+            "messageId": "removeVar",
+            "data": {
+              "varName": "containerId"
+            },
+            "fix": {
+              "range": [
+                282389,
+                282402
+              ],
+              "text": ""
+            },
+            "desc": "Remove unused variable 'containerId'."
+          }
+        ]
+      },
+      {
+        "ruleId": "no-unused-vars",
+        "severity": 1,
+        "message": "'s' is assigned a value but never used.",
+        "line": 5633,
+        "column": 9,
+        "messageId": "unusedVar",
+        "endLine": 5633,
+        "endColumn": 10,
+        "suggestions": [
+          {
+            "messageId": "removeVar",
+            "data": {
+              "varName": "s"
+            },
+            "fix": {
+              "range": [
+                284791,
+                284815
+              ],
+              "text": ""
+            },
+            "desc": "Remove unused variable 's'."
+          }
+        ]
+      },
+      {
+        "ruleId": "no-unused-vars",
+        "severity": 1,
+        "message": "'_origRenderPurchaseList' is assigned a value but never used.",
+        "line": 5865,
+        "column": 7,
+        "messageId": "unusedVar",
+        "endLine": 5865,
+        "endColumn": 30,
+        "suggestions": [
+          {
+            "messageId": "removeVar",
+            "data": {
+              "varName": "_origRenderPurchaseList"
+            },
+            "fix": {
+              "range": [
+                296072,
+                296130
+              ],
+              "text": ""
+            },
+            "desc": "Remove unused variable '_origRenderPurchaseList'."
+          }
+        ]
+      },
+      {
+        "ruleId": "no-unused-vars",
+        "severity": 1,
+        "message": "'_origRenderItems' is assigned a value but never used.",
+        "line": 5918,
+        "column": 7,
+        "messageId": "unusedVar",
+        "endLine": 5918,
+        "endColumn": 23,
+        "suggestions": [
+          {
+            "messageId": "removeVar",
+            "data": {
+              "varName": "_origRenderItems"
+            },
+            "fix": {
+              "range": [
+                299155,
+                299199
+              ],
+              "text": ""
+            },
+            "desc": "Remove unused variable '_origRenderItems'."
+          }
+        ]
+      },
+      {
+        "ruleId": "no-unused-vars",
+        "severity": 1,
+        "message": "'_origRenderSaleRep' is assigned a value but never used.",
+        "line": 6200,
+        "column": 7,
+        "messageId": "unusedVar",
+        "endLine": 6200,
+        "endColumn": 25,
+        "suggestions": [
+          {
+            "messageId": "removeVar",
+            "data": {
+              "varName": "_origRenderSaleRep"
+            },
+            "fix": {
+              "range": [
+                316614,
+                316662
+              ],
+              "text": ""
+            },
+            "desc": "Remove unused variable '_origRenderSaleRep'."
+          }
+        ]
+      },
+      {
+        "ruleId": "no-unused-vars",
+        "severity": 1,
+        "message": "'purBulkPartyId' is assigned a value but never used.",
+        "line": 6393,
+        "column": 5,
+        "messageId": "unusedVar",
+        "endLine": 6393,
+        "endColumn": 19
+      },
+      {
+        "ruleId": "no-unused-vars",
+        "severity": 1,
+        "message": "'purBulkPartyName' is assigned a value but never used.",
+        "line": 6394,
+        "column": 5,
+        "messageId": "unusedVar",
+        "endLine": 6394,
+        "endColumn": 21
+      },
+      {
+        "ruleId": "no-unused-vars",
+        "severity": 1,
+        "message": "'purLabel' is assigned a value but never used.",
+        "line": 6430,
+        "column": 11,
+        "messageId": "unusedVar",
+        "endLine": 6430,
+        "endColumn": 19,
+        "suggestions": [
+          {
+            "messageId": "removeVar",
+            "data": {
+              "varName": "purLabel"
+            },
+            "fix": {
+              "range": [
+                327293,
+                327343
+              ],
+              "text": ""
+            },
+            "desc": "Remove unused variable 'purLabel'."
+          }
+        ]
+      },
+      {
+        "ruleId": "no-unused-vars",
+        "severity": 1,
+        "message": "'i' is defined but never used.",
+        "line": 7213,
+        "column": 35,
+        "messageId": "unusedVar",
+        "endLine": 7213,
+        "endColumn": 36,
+        "suggestions": [
+          {
+            "messageId": "removeVar",
+            "data": {
+              "varName": "i"
+            },
+            "fix": {
+              "range": [
+                364583,
+                364585
+              ],
+              "text": ""
+            },
+            "desc": "Remove unused variable 'i'."
+          }
+        ]
+      },
+      {
+        "ruleId": "no-unused-vars",
+        "severity": 1,
+        "message": "'_origSavePurchaseV14' is assigned a value but never used.",
+        "line": 7248,
+        "column": 7,
+        "messageId": "unusedVar",
+        "endLine": 7248,
+        "endColumn": 27,
+        "suggestions": [
+          {
+            "messageId": "removeVar",
+            "data": {
+              "varName": "_origSavePurchaseV14"
+            },
+            "fix": {
+              "range": [
+                365932,
+                365981
+              ],
+              "text": ""
+            },
+            "desc": "Remove unused variable '_origSavePurchaseV14'."
+          }
+        ]
+      },
+      {
+        "ruleId": "no-unused-vars",
+        "severity": 1,
+        "message": "'_origDelPurchaseV15' is assigned a value but never used.",
+        "line": 7441,
+        "column": 7,
+        "messageId": "unusedVar",
+        "endLine": 7441,
+        "endColumn": 26,
+        "suggestions": [
+          {
+            "messageId": "removeVar",
+            "data": {
+              "varName": "_origDelPurchaseV15"
+            },
+            "fix": {
+              "range": [
+                375581,
+                375628
+              ],
+              "text": ""
+            },
+            "desc": "Remove unused variable '_origDelPurchaseV15'."
+          }
+        ]
+      },
+      {
+        "ruleId": "no-unused-vars",
+        "severity": 1,
+        "message": "'discount' is assigned a value but never used.",
+        "line": 7642,
+        "column": 9,
+        "messageId": "unusedVar",
+        "endLine": 7642,
+        "endColumn": 17,
+        "suggestions": [
+          {
+            "messageId": "removeVar",
+            "data": {
+              "varName": "discount"
+            },
+            "fix": {
+              "range": [
+                385214,
+                385296
+              ],
+              "text": ""
+            },
+            "desc": "Remove unused variable 'discount'."
+          }
+        ]
+      },
+      {
+        "ruleId": "no-unused-vars",
+        "severity": 1,
+        "message": "'invNo' is defined but never used.",
+        "line": 7678,
+        "column": 31,
+        "messageId": "unusedVar",
+        "endLine": 7678,
+        "endColumn": 36,
+        "suggestions": [
+          {
+            "messageId": "removeVar",
+            "data": {
+              "varName": "invNo"
+            },
+            "fix": {
+              "range": [
+                387643,
+                387650
+              ],
+              "text": ""
+            },
+            "desc": "Remove unused variable 'invNo'."
+          }
+        ]
+      },
+      {
+        "ruleId": "no-unused-vars",
+        "severity": 1,
+        "message": "'color' is defined but never used.",
+        "line": 7960,
+        "column": 29,
+        "messageId": "unusedVar",
+        "endLine": 7960,
+        "endColumn": 34,
+        "suggestions": [
+          {
+            "messageId": "removeVar",
+            "data": {
+              "varName": "color"
+            },
+            "fix": {
+              "range": [
+                403261,
+                403268
+              ],
+              "text": ""
+            },
+            "desc": "Remove unused variable 'color'."
+          }
+        ]
+      },
+      {
+        "ruleId": "no-unused-vars",
+        "severity": 1,
+        "message": "'e' is defined but never used.",
+        "line": 8067,
+        "column": 11,
+        "messageId": "unusedVar",
+        "endLine": 8067,
+        "endColumn": 12
+      },
+      {
+        "ruleId": "no-unused-vars",
+        "severity": 1,
+        "message": "'i' is defined but never used.",
+        "line": 8156,
+        "column": 70,
+        "messageId": "unusedVar",
+        "endLine": 8156,
+        "endColumn": 71,
+        "suggestions": [
+          {
+            "messageId": "removeVar",
+            "data": {
+              "varName": "i"
+            },
+            "fix": {
+              "range": [
+                414715,
+                414717
+              ],
+              "text": ""
+            },
+            "desc": "Remove unused variable 'i'."
+          }
+        ]
+      }
+    ]
+  }
+]

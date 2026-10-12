@@ -1,0 +1,228 @@
+{
+  "config": {
+    "argv": [
+      "/opt/codex/runtimes/codex-primary-runtime/dependencies/node/bin/node",
+      "/workspace/Xl-billing/node_modules/.bin/playwright",
+      "test",
+      "--project=chromium",
+      "--grep",
+      "P0-4 overpayment rejected"
+    ],
+    "configFile": "/workspace/Xl-billing/playwright.config.cjs",
+    "rootDir": "/workspace/Xl-billing/test/e2e",
+    "failOnFlakyTests": false,
+    "forbidOnly": false,
+    "fullyParallel": false,
+    "globalSetup": null,
+    "globalTeardown": null,
+    "globalTimeout": 0,
+    "grep": {},
+    "grepInvert": null,
+    "maxFailures": 0,
+    "metadata": {
+      "actualWorkers": 1
+    },
+    "preserveOutput": "always",
+    "projects": [
+      {
+        "outputDir": "/workspace/Xl-billing/test-results/browser",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "chromium",
+        "name": "chromium",
+        "testDir": "/workspace/Xl-billing/test/e2e",
+        "testIgnore": [],
+        "testMatch": [
+          "**/*.@(spec|test).?(c|m)[jt]s?(x)"
+        ],
+        "timeout": 30000
+      },
+      {
+        "outputDir": "/workspace/Xl-billing/test-results/browser",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "firefox",
+        "name": "firefox",
+        "testDir": "/workspace/Xl-billing/test/e2e",
+        "testIgnore": [],
+        "testMatch": [
+          "**/*.@(spec|test).?(c|m)[jt]s?(x)"
+        ],
+        "timeout": 30000
+      },
+      {
+        "outputDir": "/workspace/Xl-billing/test-results/browser",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "webkit",
+        "name": "webkit",
+        "testDir": "/workspace/Xl-billing/test/e2e",
+        "testIgnore": [],
+        "testMatch": [
+          "**/*.@(spec|test).?(c|m)[jt]s?(x)"
+        ],
+        "timeout": 30000
+      }
+    ],
+    "filteredProjects": [
+      {
+        "grep": {},
+        "grepInvert": null,
+        "outputDir": "/workspace/Xl-billing/test-results/browser",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "name": "chromium",
+        "testDir": "/workspace/Xl-billing/test/e2e",
+        "snapshotDir": "/workspace/Xl-billing/test/e2e",
+        "testIgnore": [],
+        "testMatch": "**/*.@(spec|test).?(c|m)[jt]s?(x)",
+        "timeout": 30000,
+        "use": {
+          "baseURL": "http://127.0.0.1:4180",
+          "viewport": {
+            "width": 1366,
+            "height": 768
+          },
+          "timezoneId": "Asia/Kolkata",
+          "screenshot": "only-on-failure",
+          "browserName": "chromium"
+        },
+        "dependencies": [],
+        "ignoreSnapshots": false,
+        "__projectId": "chromium"
+      }
+    ],
+    "quiet": false,
+    "reporter": [
+      [
+        "list",
+        null
+      ],
+      [
+        "json",
+        {
+          "outputFile": "test-results/mutation-B4.json"
+        }
+      ]
+    ],
+    "reportSlowTests": {
+      "max": 5,
+      "threshold": 300000
+    },
+    "shard": null,
+    "tags": [],
+    "updateSnapshots": "default",
+    "updateSourceMethod": "patch",
+    "version": "1.64.0",
+    "workers": 1,
+    "webServer": {
+      "command": "node test/server.cjs",
+      "url": "http://127.0.0.1:4180",
+      "reuseExistingServer": false
+    }
+  },
+  "suites": [
+    {
+      "title": "hotfix.spec.cjs",
+      "file": "hotfix.spec.cjs",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "P0-4 overpayment rejected without invoice or audit writes",
+          "ok": false,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "failed",
+                  "duration": 403,
+                  "error": {
+                    "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoEqual\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // deep equality\u001b[22m\n\n\u001b[32m- Expected  - 2\u001b[39m\n\u001b[31m+ Received  + 9\u001b[39m\n\n\u001b[33m@@ -1,8 +1,8 @@\u001b[39m\n\u001b[2m  Array [\u001b[22m\n\u001b[2m    Object {\u001b[22m\n\u001b[32m-     \"balance\": 80,\u001b[39m\n\u001b[31m+     \"balance\": -1,\u001b[39m\n\u001b[2m      \"createdAt\": \"2026-10-09T08:00:00Z\",\u001b[22m\n\u001b[2m      \"date\": \"2026-10-09\",\u001b[22m\n\u001b[2m      \"discount\": 0,\u001b[22m\n\u001b[2m      \"dispatchStatus\": \"pending\",\u001b[22m\n\u001b[2m      \"id\": \"s0\",\u001b[22m\n\u001b[33m@@ -17,26 +17,33 @@\u001b[39m\n\u001b[2m          \"rate\": 20,\u001b[22m\n\u001b[2m          \"unit\": \"Pcs\",\u001b[22m\n\u001b[2m        },\u001b[22m\n\u001b[2m      ],\u001b[22m\n\u001b[2m      \"notes\": \"\",\u001b[22m\n\u001b[32m-     \"paid\": 20,\u001b[39m\n\u001b[31m+     \"paid\": 101,\u001b[39m\n\u001b[2m      \"partyId\": \"p1\",\u001b[22m\n\u001b[2m      \"partyName\": \"Synthetic Customer\",\u001b[22m\n\u001b[2m      \"paymentType\": \"Credit\",\u001b[22m\n\u001b[2m      \"payments\": Array [\u001b[22m\n\u001b[2m        Object {\u001b[22m\n\u001b[2m          \"amt\": 20,\u001b[22m\n\u001b[2m          \"date\": \"2026-10-09\",\u001b[22m\n\u001b[2m          \"mode\": \"Cash\",\u001b[22m\n\u001b[2m          \"note\": \"\",\u001b[22m\n\u001b[2m        },\u001b[22m\n\u001b[31m+       Object {\u001b[39m\n\u001b[31m+         \"amt\": 81,\u001b[39m\n\u001b[31m+         \"date\": \"2026-10-12\",\u001b[39m\n\u001b[31m+         \"mode\": \"UPI\",\u001b[39m\n\u001b[31m+         \"note\": \"\",\u001b[39m\n\u001b[31m+       },\u001b[39m\n\u001b[2m      ],\u001b[22m\n\u001b[2m      \"subtotal\": 100,\u001b[22m\n\u001b[2m      \"taxAmt\": 0,\u001b[22m\n\u001b[2m      \"taxPct\": 0,\u001b[22m\n\u001b[2m      \"total\": 100,\u001b[22m\n\u001b[31m+     \"updatedAt\": \"2026-10-12T05:13:02.347Z\",\u001b[39m\n\u001b[2m    },\u001b[22m\n\u001b[2m    Object {\u001b[22m\n\u001b[2m      \"balance\": 80,\u001b[22m\n\u001b[2m      \"createdAt\": \"2026-10-09T08:00:00Z\",\u001b[22m\n\u001b[2m      \"date\": \"2026-10-09\",\u001b[22m",
+                    "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoEqual\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // deep equality\u001b[22m\n\n\u001b[32m- Expected  - 2\u001b[39m\n\u001b[31m+ Received  + 9\u001b[39m\n\n\u001b[33m@@ -1,8 +1,8 @@\u001b[39m\n\u001b[2m  Array [\u001b[22m\n\u001b[2m    Object {\u001b[22m\n\u001b[32m-     \"balance\": 80,\u001b[39m\n\u001b[31m+     \"balance\": -1,\u001b[39m\n\u001b[2m      \"createdAt\": \"2026-10-09T08:00:00Z\",\u001b[22m\n\u001b[2m      \"date\": \"2026-10-09\",\u001b[22m\n\u001b[2m      \"discount\": 0,\u001b[22m\n\u001b[2m      \"dispatchStatus\": \"pending\",\u001b[22m\n\u001b[2m      \"id\": \"s0\",\u001b[22m\n\u001b[33m@@ -17,26 +17,33 @@\u001b[39m\n\u001b[2m          \"rate\": 20,\u001b[22m\n\u001b[2m          \"unit\": \"Pcs\",\u001b[22m\n\u001b[2m        },\u001b[22m\n\u001b[2m      ],\u001b[22m\n\u001b[2m      \"notes\": \"\",\u001b[22m\n\u001b[32m-     \"paid\": 20,\u001b[39m\n\u001b[31m+     \"paid\": 101,\u001b[39m\n\u001b[2m      \"partyId\": \"p1\",\u001b[22m\n\u001b[2m      \"partyName\": \"Synthetic Customer\",\u001b[22m\n\u001b[2m      \"paymentType\": \"Credit\",\u001b[22m\n\u001b[2m      \"payments\": Array [\u001b[22m\n\u001b[2m        Object {\u001b[22m\n\u001b[2m          \"amt\": 20,\u001b[22m\n\u001b[2m          \"date\": \"2026-10-09\",\u001b[22m\n\u001b[2m          \"mode\": \"Cash\",\u001b[22m\n\u001b[2m          \"note\": \"\",\u001b[22m\n\u001b[2m        },\u001b[22m\n\u001b[31m+       Object {\u001b[39m\n\u001b[31m+         \"amt\": 81,\u001b[39m\n\u001b[31m+         \"date\": \"2026-10-12\",\u001b[39m\n\u001b[31m+         \"mode\": \"UPI\",\u001b[39m\n\u001b[31m+         \"note\": \"\",\u001b[39m\n\u001b[31m+       },\u001b[39m\n\u001b[2m      ],\u001b[22m\n\u001b[2m      \"subtotal\": 100,\u001b[22m\n\u001b[2m      \"taxAmt\": 0,\u001b[22m\n\u001b[2m      \"taxPct\": 0,\u001b[22m\n\u001b[2m      \"total\": 100,\u001b[22m\n\u001b[31m+     \"updatedAt\": \"2026-10-12T05:13:02.347Z\",\u001b[39m\n\u001b[2m    },\u001b[22m\n\u001b[2m    Object {\u001b[22m\n\u001b[2m      \"balance\": 80,\u001b[22m\n\u001b[2m      \"createdAt\": \"2026-10-09T08:00:00Z\",\u001b[22m\n\u001b[2m      \"date\": \"2026-10-09\",\u001b[22m\n    at /workspace/Xl-billing/test/e2e/hotfix.spec.cjs:26:262",
+                    "location": {
+                      "file": "/workspace/Xl-billing/test/e2e/hotfix.spec.cjs",
+                      "column": 262,
+                      "line": 26
+                    },
+                    "snippet": "  24 | });\n  25 | test('P0-3 pagination reaches next and last invoice, totals cover all',async({page})=>{await seed(page,1200);await page.evaluate(()=>nav('sales-list'));await expect(page.locator('#sales-table tbody tr')).toHaveCount(20);await expect(page.locator('#sales-table .pgn')).toBeVisible();await page.locator('#sales-table .pgn-btn').filter({hasText:'Next'}).click();await expect(page.locator('#sales-table .pgn-info')).toContainText('21');await page.evaluate(()=>slNavPage(60));await expect(page.locator('#sales-table')).toContainText('INV-1001');await expect(page.locator('#sl-summary')).toContainText('1,20,000.00');await expect(page.locator('#sales-table th[aria-sort]')).not.toHaveCount(0);});\n> 26 | test('P0-4 overpayment rejected without invoice or audit writes',async({page})=>{await page.evaluate(()=>openPayModal('s0'));await page.fill('#pay-amount','81');const before=await records(page);await page.evaluate(()=>savePayment());expect(await records(page)).toEqual(before);expect(await records(page,'audit')).toEqual([]);await expect(page.locator('[role=alert]')).toContainText('balance');});\n     |                                                                                                                                                                                                                                                                      ^\n  27 | test('P0-4 exact payment and delete preserve totals',async({page})=>{await page.evaluate(()=>openPayModal('s0'));await page.fill('#pay-amount','80');await page.evaluate(()=>savePayment());const inv=(await records(page))[0];expect(inv.paid).toBe(100);expect(inv.payments.reduce((s,p)=>s+p.amt,0)).toBe(100);expect(inv.balance).toBe(0);});\n  28 | test('P0-4 purchase overpayment rejected',async({page})=>{await page.evaluate(()=>openPurPayModal('u1'));await page.fill('#pur-pay-amt','481');const before=await records(page,'purchases');await page.evaluate(()=>savePurPayment());expect(await records(page,'purchases')).toEqual(before);});\n  29 | test('P0-5 batches and typed numbers never collide',async({page})=>{"
+                  },
+                  "errors": [
+                    {
+                      "location": {
+                        "file": "/workspace/Xl-billing/test/e2e/hotfix.spec.cjs",
+                        "column": 262,
+                        "line": 26
+                      },
+                      "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoEqual\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // deep equality\u001b[22m\n\n\u001b[32m- Expected  - 2\u001b[39m\n\u001b[31m+ Received  + 9\u001b[39m\n\n\u001b[33m@@ -1,8 +1,8 @@\u001b[39m\n\u001b[2m  Array [\u001b[22m\n\u001b[2m    Object {\u001b[22m\n\u001b[32m-     \"balance\": 80,\u001b[39m\n\u001b[31m+     \"balance\": -1,\u001b[39m\n\u001b[2m      \"createdAt\": \"2026-10-09T08:00:00Z\",\u001b[22m\n\u001b[2m      \"date\": \"2026-10-09\",\u001b[22m\n\u001b[2m      \"discount\": 0,\u001b[22m\n\u001b[2m      \"dispatchStatus\": \"pending\",\u001b[22m\n\u001b[2m      \"id\": \"s0\",\u001b[22m\n\u001b[33m@@ -17,26 +17,33 @@\u001b[39m\n\u001b[2m          \"rate\": 20,\u001b[22m\n\u001b[2m          \"unit\": \"Pcs\",\u001b[22m\n\u001b[2m        },\u001b[22m\n\u001b[2m      ],\u001b[22m\n\u001b[2m      \"notes\": \"\",\u001b[22m\n\u001b[32m-     \"paid\": 20,\u001b[39m\n\u001b[31m+     \"paid\": 101,\u001b[39m\n\u001b[2m      \"partyId\": \"p1\",\u001b[22m\n\u001b[2m      \"partyName\": \"Synthetic Customer\",\u001b[22m\n\u001b[2m      \"paymentType\": \"Credit\",\u001b[22m\n\u001b[2m      \"payments\": Array [\u001b[22m\n\u001b[2m        Object {\u001b[22m\n\u001b[2m          \"amt\": 20,\u001b[22m\n\u001b[2m          \"date\": \"2026-10-09\",\u001b[22m\n\u001b[2m          \"mode\": \"Cash\",\u001b[22m\n\u001b[2m          \"note\": \"\",\u001b[22m\n\u001b[2m        },\u001b[22m\n\u001b[31m+       Object {\u001b[39m\n\u001b[31m+         \"amt\": 81,\u001b[39m\n\u001b[31m+         \"date\": \"2026-10-12\",\u001b[39m\n\u001b[31m+         \"mode\": \"UPI\",\u001b[39m\n\u001b[31m+         \"note\": \"\",\u001b[39m\n\u001b[31m+       },\u001b[39m\n\u001b[2m      ],\u001b[22m\n\u001b[2m      \"subtotal\": 100,\u001b[22m\n\u001b[2m      \"taxAmt\": 0,\u001b[22m\n\u001b[2m      \"taxPct\": 0,\u001b[22m\n\u001b[2m      \"total\": 100,\u001b[22m\n\u001b[31m+     \"updatedAt\": \"2026-10-12T05:13:02.347Z\",\u001b[39m\n\u001b[2m    },\u001b[22m\n\u001b[2m    Object {\u001b[22m\n\u001b[2m      \"balance\": 80,\u001b[22m\n\u001b[2m      \"createdAt\": \"2026-10-09T08:00:00Z\",\u001b[22m\n\u001b[2m      \"date\": \"2026-10-09\",\u001b[22m\n\n  24 | });\n  25 | test('P0-3 pagination reaches next and last invoice, totals cover all',async({page})=>{await seed(page,1200);await page.evaluate(()=>nav('sales-list'));await expect(page.locator('#sales-table tbody tr')).toHaveCount(20);await expect(page.locator('#sales-table .pgn')).toBeVisible();await page.locator('#sales-table .pgn-btn').filter({hasText:'Next'}).click();await expect(page.locator('#sales-table .pgn-info')).toContainText('21');await page.evaluate(()=>slNavPage(60));await expect(page.locator('#sales-table')).toContainText('INV-1001');await expect(page.locator('#sl-summary')).toContainText('1,20,000.00');await expect(page.locator('#sales-table th[aria-sort]')).not.toHaveCount(0);});\n> 26 | test('P0-4 overpayment rejected without invoice or audit writes',async({page})=>{await page.evaluate(()=>openPayModal('s0'));await page.fill('#pay-amount','81');const before=await records(page);await page.evaluate(()=>savePayment());expect(await records(page)).toEqual(before);expect(await records(page,'audit')).toEqual([]);await expect(page.locator('[role=alert]')).toContainText('balance');});\n     |                                                                                                                                                                                                                                                                      ^\n  27 | test('P0-4 exact payment and delete preserve totals',async({page})=>{await page.evaluate(()=>openPayModal('s0'));await page.fill('#pay-amount','80');await page.evaluate(()=>savePayment());const inv=(await records(page))[0];expect(inv.paid).toBe(100);expect(inv.payments.reduce((s,p)=>s+p.amt,0)).toBe(100);expect(inv.balance).toBe(0);});\n  28 | test('P0-4 purchase overpayment rejected',async({page})=>{await page.evaluate(()=>openPurPayModal('u1'));await page.fill('#pur-pay-amt','481');const before=await records(page,'purchases');await page.evaluate(()=>savePurPayment());expect(await records(page,'purchases')).toEqual(before);});\n  29 | test('P0-5 batches and typed numbers never collide',async({page})=>{\n    at /workspace/Xl-billing/test/e2e/hotfix.spec.cjs:26:262"
+                    }
+                  ],
+                  "stdout": [],
+                  "stderr": [
+                    {
+                      "text": "Skipping host requirements validation logic because `PLAYWRIGHT_SKIP_VALIDATE_HOST_REQUIREMENTS` env variable is set.\n"
+                    }
+                  ],
+                  "retry": 0,
+                  "startTime": "2026-10-12T05:13:02.033Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "screenshot",
+                      "contentType": "image/png",
+                      "path": "/workspace/Xl-billing/test-results/browser/hotfix-P0-4-overpayment-re-a271b-out-invoice-or-audit-writes-chromium/test-failed-1.png"
+                    },
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "/workspace/Xl-billing/test-results/browser/hotfix-P0-4-overpayment-re-a271b-out-invoice-or-audit-writes-chromium/error-context.md"
+                    }
+                  ],
+                  "errorLocation": {
+                    "file": "/workspace/Xl-billing/test/e2e/hotfix.spec.cjs",
+                    "column": 262,
+                    "line": 26
+                  }
+                }
+              ],
+              "status": "unexpected"
+            }
+          ],
+          "id": "a508bcc51c6c2b20affb-39a2ef2a645ca90635ec",
+          "file": "hotfix.spec.cjs",
+          "line": 26,
+          "column": 1
+        }
+      ]
+    }
+  ],
+  "errors": [],
+  "stats": {
+    "startTime": "2026-10-12T05:13:01.545Z",
+    "duration": 1000.2920000000001,
+    "expected": 0,
+    "skipped": 0,
+    "unexpected": 1,
+    "flaky": 0
+  }
+}
