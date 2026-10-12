@@ -75,6 +75,8 @@ jobs:
           for owner_gate_browser in chromium firefox webkit; do
             XL_REVIEW_BROWSER="$owner_gate_browser" node scripts/review-release1.cjs || owner_gate_result=1
             XL_PREMERGE_BROWSER="$owner_gate_browser" node scripts/verify-premerge.cjs || owner_gate_result=1
+            XL_PM_REPORT_BROWSER="$owner_gate_browser" node scripts/verify-pm-reports.cjs || owner_gate_result=1
+            XL_MOBILE_BROWSER="$owner_gate_browser" node scripts/verify-mobile.cjs || owner_gate_result=1
           done
           exit "$owner_gate_result"
       - uses: actions/upload-artifact@v4
