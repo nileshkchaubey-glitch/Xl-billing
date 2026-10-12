@@ -684,6 +684,86 @@ input[type=number]::-webkit-inner-spin-button,input[type=number]::-webkit-outer-
   </div>
 </div>
 
+<script id="xl-record-validation">
+function validateStoredShape(key,value) {
+  if(key==='settings')return !!value&&typeof value==='object'&&!Array.isArray(value)&&(value.customFields===undefined||Array.isArray(value.customFields))&&safeStoredIds(value);
+  if(['items','parties','invoices','purchases','retail','audit'].includes(key))return Array.isArray(value)&&value.every(r=>!!r&&typeof r==='object'&&!Array.isArray(r)&&safeStoredIds(r));
+  return value!==undefined;
+}
+function safeStoredIds(record){
+  for(const key of ['invoiceNo','billNo'])if(record[key]!==undefined&&typeof record[key]!=='string'&&typeof record[key]!=='number')return false;
+  for(const key of ['name','partyName'])if(record[key]!==undefined&&typeof record[key]!=='string')return false;
+  if(record.date!==undefined){const value=record.date;if(typeof value!=='string'||!/^\d{4}-\d{2}-\d{2}$/.test(value))return false;const parsed=new Date(value+'T00:00:00Z');if(!Number.isFinite(parsed.getTime())||parsed.toISOString().slice(0,10)!==value)return false;}
+  for(const key of ['items','payments','discounts'])if(record[key]!==undefined&&!Array.isArray(record[key]))return false;
+  for(const key of ['id','partyId','itemId']){
+    const value=record[key];
+    if(value!==undefined&&value!==null&&value!==''&&(typeof value!=='string'||!/^[A-Za-z0-9._:-]+$/.test(value)))return false;
+  }
+  for(const key of ['total','paid','openingPaid','discount','amount','amt','qty','rate','saleRate','purchaseRate','gst','taxPct','taxAmt','subtotal','openingBal','packCount']){
+    const value=record[key];
+    if(value===undefined||(key==='packCount'&&value===''))continue;
+    if(typeof value==='number'&&Number.isFinite(value))continue;
+    if(typeof value==='string'&&/^[+-]?(?:\d+(?:\.\d*)?|\.\d+)(?:e[+-]?\d+)?$/i.test(value)&&Number.isFinite(Number(value)))continue;
+    return false;
+  }
+  for(const key of ['items','customFields','payments','discounts']){
+    if(Array.isArray(record[key])&&record[key].some(value=>!value||typeof value!=='object'||!safeStoredIds(value)))return false;
+  }
+  return true;
+}
+function normalizedInvoiceNo(value){return String(value||'').trim().toLocaleLowerCase('en');}
+function round2(value){return Math.round((Number(value)+Number.EPSILON)*100)/100;}
+function moneyPaise(value) {
+  const n=Number(value), scaled=n*100;
+  return Number.isFinite(n)&&Number.isSafeInteger(Math.round(scaled)) ? Math.round(scaled) : NaN;
+}
+function financialState(record) {
+  if(!record||typeof record!=='object')return {valid:false,consistent:false};
+  const payments=record.payments===undefined?[]:record.payments;
+  if(!Array.isArray(payments))return {valid:false,consistent:false};
+  const validAmount=n=>typeof n==='number'&&Number.isFinite(n)&&n>=0&&Number.isFinite(moneyPaise(n));
+  if(payments.some(p=>!p||!validAmount(p.amt)))return {valid:false,consistent:false};
+  const savedPaid=record.paid===undefined?0:record.paid;
+  const opening=record.openingPaid===undefined?(payments.length===0?savedPaid:0):record.openingPaid;
+  const total=record.total;
+  if(!validAmount(total)||!validAmount(savedPaid)||!validAmount(opening))return {valid:false,consistent:false};
+  const separate=Object.prototype.hasOwnProperty.call(record,'billNo')||Object.prototype.hasOwnProperty.call(record,'discounts');
+  let discount=0;
+  if(separate){
+    if(record.discounts!==undefined&&!Array.isArray(record.discounts))return {valid:false,consistent:false};
+    const discounts=record.discounts||[];
+    if(discounts.some(p=>!p||!validAmount(p.amt)))return {valid:false,consistent:false};
+    discount=discounts.length?discounts.reduce((sum,p)=>sum+p.amt,0):(record.discount||0);
+    if(!validAmount(discount))return {valid:false,consistent:false};
+    if(discounts.length&&record.discount!==undefined&&moneyPaise(discount)!==moneyPaise(record.discount))return {valid:false,consistent:false};
+  }
+  const paid=round2(opening+payments.reduce((sum,p)=>sum+p.amt,0));
+  const balance=(moneyPaise(total)-moneyPaise(paid)-moneyPaise(discount))/100;
+  return {valid:Number.isFinite(balance)&&balance>=0,consistent:moneyPaise(savedPaid)===moneyPaise(paid),opening,paid,discount,balance};
+}
+function validateXLTransaction(after,before,options={}){
+  const core=['settings','items','parties','invoices','purchases','retail','audit'];
+  for(const key of core){
+    const raw=after['shop4_'+key];if(raw===undefined)continue;
+    let value;try{value=JSON.parse(raw);}catch{throw new Error('Stored '+key+' is not valid JSON. No changes were saved.');}
+    if(!validateStoredShape(key,value))throw new Error('Stored '+key+' has an unsupported shape. Original data was preserved.');
+    if(!Array.isArray(value))continue;
+    const ids=new Set();for(const r of value){if(typeof r.id!=='string'||!r.id||ids.has(r.id))throw new Error('The '+key+' collection has missing or duplicate identifiers. Review it before saving.');ids.add(r.id);}
+    if(!['invoices','purchases'].includes(key))continue;
+    const old=options.restore?[]:(before['shop4_'+key]?JSON.parse(before['shop4_'+key]):[]),oldById=new Map(old.map(r=>[r.id,r]));
+    const numbers=new Set();
+    for(const r of value){
+      const prior=oldById.get(r.id),number=key==='invoices'?normalizedInvoiceNo(r.invoiceNo):normalizedInvoiceNo(r.billNo);
+      if(number&&numbers.has(number)&&(!prior||options.restore))throw new Error('Duplicate bill numbers must be reviewed before this operation.');
+      if(number)numbers.add(number);
+      if(prior&&JSON.stringify(prior)===JSON.stringify(r)&&!options.restore)continue;
+      const state=financialState(r);
+      if(!state.valid||!state.consistent)throw new Error('Bill '+(r.invoiceNo||r.billNo||r.id)+' has conflicting financial history. It was not rewritten.');
+      if(r.balance!==undefined&&r.balance!==null&&moneyPaise(r.balance)!==moneyPaise(state.balance))throw new Error('Bill balance does not match its payments and discounts. No changes were saved.');
+    }
+  }
+}
+</script>
 <script id="xl-storage-core">
 function createXLStorage(options){
   'use strict';
@@ -737,6 +817,7 @@ function createXLStorage(options){
     const raw=read(keys.journal);if(raw===null){observe();return;}
     let journal;
     try{journal=JSON.parse(raw);}catch{throw error('StorageRecoveryError','The recovery journal is unreadable. No records were changed. Keep a private raw recovery export.');}
+    if(journal?.payload?.v===2)return recoverReviewed(journal,raw);
     const p=journal?.payload;
     if(!p||p.v!==1||!Array.isArray(p.changes)||!p.changes.length||p.changes.length>10000||typeof p.beforeSignature!=='string'||typeof p.afterSignature!=='string'||typeof p.afterMeta!=='string'||!(p.beforeMeta===null||typeof p.beforeMeta==='string')||typeof journal.checksum!=='string')throw error('StorageRecoveryError','The recovery journal has an unsupported shape. No records were changed.');
     if(await sha256(JSON.stringify(p))!==journal.checksum)throw error('StorageRecoveryError','The recovery journal checksum does not match. No records were changed.');
@@ -758,8 +839,120 @@ function createXLStorage(options){
     for(const c of changes)applyValue(c.key,committed?c.after:c.before);
     applyValue(keys.meta,committed?p.afterMeta:p.beforeMeta);
     if(read(keys.meta)!==(committed?p.afterMeta:p.beforeMeta)||signature(rawSnapshot())!==(committed?p.afterSignature:p.beforeSignature))throw error('StorageRecoveryError','Recovery verification failed. Keep the original journal for another recovery attempt.');
-    storage.removeItem(keys.journal);if(read(keys.journal)!==null)throw error('StorageRecoveryError','Recovery journal cleanup could not be verified.');observe();
+    observe();storage.removeItem(keys.journal);if(read(keys.journal)!==null)throw error('StorageRecoveryError','Recovery journal cleanup could not be verified.');
   }
+  let exportedRecovery=null,verifiedRecovery=null,recoveryReview=null;
+  const rawState=()=>({records:rawSnapshot(),journal:read(keys.journal),meta:read(keys.meta)});
+  const exact=value=>JSON.stringify(value);
+  function checkRecoveryState(expected){if(exact(rawState())!==exact(expected))throw error('StorageStaleError','Recovery evidence is stale. Stored bytes or credentials changed. Export and review again.');}
+  function validateRawMap(records){
+    if(!records||typeof records!=='object'||Array.isArray(records)||Object.keys(records).length>10000||Object.entries(records).some(([key,value])=>!businessKey(key)||typeof value!=='string'))throw error('StorageRecoveryError','Recovery record map has an unsupported shape or exceeds the recovery limit.');
+  }
+  async function validateRecoveryRecords(records){
+    validateRawMap(records);
+    if(typeof options.validate!=='function')throw error('StorageCapabilityError','Full record validation is unavailable. Recovery cannot modify records.');
+    await options.validate(records,{}, {restore:true,recovery:true});
+  }
+  async function exportRecovery(){
+    if(busy)throw report(error('StorageBusyError','Wait for the current save before exporting recovery evidence.'));
+    exportedRecovery=null;verifiedRecovery=null;recoveryReview=null;
+    const capture=async()=>{
+      const payload=rawState(),checksum=await sha256(exact(payload));checkRecoveryState(payload);
+      const file={format:'xl-billing-raw-recovery',version:1,createdAt:new Date().toISOString(),payload,checksum};
+      exportedRecovery={payload:structuredClone(payload),checksum};return file;
+    };
+    return locks?.request?withLock(capture):capture();
+  }
+  async function verifyRecoveryExport(text){
+    return withLock(async()=>{
+      if(!exportedRecovery)throw error('StorageRecoveryError','Download a fresh recovery export before verifying its saved file.');
+      let file;try{file=JSON.parse(text);}catch{throw error('StorageRecoveryError','The saved recovery file is not valid JSON.');}
+      if(file?.format!=='xl-billing-raw-recovery'||file.version!==1||file.checksum!==exportedRecovery.checksum||exact(file.payload)!==exact(exportedRecovery.payload)||await sha256(exact(file.payload))!==file.checksum)throw error('StorageRecoveryError','The saved recovery file does not match the exported bytes and checksum.');
+      checkRecoveryState(exportedRecovery.payload);verifiedRecovery=structuredClone(exportedRecovery.payload);recoveryReview=null;return true;
+    });
+  }
+  async function previewRecovery(records,kind){
+    return withLock(async()=>{
+      if(!verifiedRecovery)throw error('StorageRecoveryError','A downloaded and verified raw recovery export is required before previewing changes.');
+      checkRecoveryState(verifiedRecovery);
+      if(!['adopt','restore'].includes(kind))throw error('StorageRecoveryError','Unsupported recovery choice.');
+      if(kind==='adopt'&&(verifiedRecovery.journal!==null||exact(Object.fromEntries(Object.keys(records).sort().map(key=>[key,records[key]])))!==exact(verifiedRecovery.records)))throw error('StorageRecoveryError','Adoption requires the exact reviewed external records and no unresolved journal. Restore a validated independent backup instead.');
+      validateRawMap(records);const after=Object.fromEntries(Object.keys(records).sort().map(key=>[key,records[key]]));await validateRecoveryRecords(after);checkRecoveryState(verifiedRecovery);
+      const id=cryptoAPI.randomUUID?cryptoAPI.randomUUID():await sha256(exact(after)+Date.now());
+      recoveryReview={id,kind,before:structuredClone(verifiedRecovery),records:after};return id;
+    });
+  }
+  function recoveryPayload(journal){
+    const p=journal?.payload;
+    if(!p||p.v!==2||p.kind!=='owner-reviewed-recovery'||!p.before||!p.after||typeof p.id!=='string'||![p.before.meta,p.before.journal].every(v=>v===null||typeof v==='string')||typeof p.after.meta!=='string'||p.after.journal!==null)throw error('StorageRecoveryError','The owner-reviewed recovery journal is invalid. All bytes are retained.');
+    validateRawMap(p.before.records);validateRawMap(p.after.records);
+    const m=metadata(p.after.meta);if(m.id!==p.id||m.signature!==signature(p.after.records))throw error('StorageRecoveryError','Recovery target metadata does not match its records.');return p;
+  }
+  function ensureRecoveryValues(p){
+    const current=rawState(),all=new Set([...Object.keys(p.before.records),...Object.keys(p.after.records),...Object.keys(current.records)]);
+    for(const key of all){const v=current.records[key]??null;if(v!==(p.before.records[key]??null)&&v!==(p.after.records[key]??null))throw error('StorageRecoveryError','A foreign change differs from both reviewed recovery states. No guessed rollback will be attempted.');}
+    if(current.meta!==p.before.meta&&current.meta!==p.after.meta)throw error('StorageRecoveryError','Current metadata differs from both reviewed recovery states.');
+  }
+  function applyRecoveryRecords(target,alternate){
+    for(const key of new Set([...Object.keys(target),...Object.keys(alternate)])){
+      const value=target[key]??null,current=read(key);if(current!==value&&current!==(alternate[key]??null))throw error('StorageRecoveryError','A foreign value changed during recovery. Its bytes are preserved.');if(current!==value)applyValue(key,value);
+      if(read(key)!==value)throw error('StorageRecoveryError','Recovery record readback verification failed.');
+    }
+  }
+  async function recoverReviewed(journal,encoded){
+    const p=recoveryPayload(journal);
+    if(await sha256(exact(p))!==journal.checksum)throw error('StorageRecoveryError','Owner-reviewed recovery checksum does not match. Original evidence is retained.');
+    await validateRecoveryRecords(p.after.records);if(read(keys.journal)!==encoded)throw error('StorageRecoveryError','The recovery journal changed before recovery began.');ensureRecoveryValues(p);
+    const committed=read(keys.meta)===p.after.meta,target=committed?p.after:p.before,other=committed?p.before:p.after;
+    applyRecoveryRecords(target.records,other.records);applyValue(keys.meta,target.meta);
+    if(exact(rawSnapshot())!==exact(target.records)||read(keys.meta)!==target.meta)throw error('StorageRecoveryError','Owner-reviewed recovery verification failed. Keep the checked journal.');
+    if(read(keys.journal)!==encoded)throw error('StorageRecoveryError','Recovery journal changed while it was being recovered.');
+    let originalLock=null;
+    if(target.journal===null){
+      if(committed)observe();
+      else {let m=null;try{m=metadata(target.meta);}catch{}if(m&&(m.signature===null||m.signature===signature(target.records)))observe();else originalLock=error('StorageExternalChangeError','The original externally changed or unreadable metadata was restored exactly. Export and review before further changes.');}
+    }
+    applyValue(keys.journal,target.journal);
+    if(read(keys.journal)!==target.journal)throw error('StorageRecoveryError','Recovery journal cleanup could not be verified.');
+    if(target.journal!==null)throw error('StorageRecoveryError','The failed recovery operation was rolled back exactly. The earlier unresolved journal remains; keep its raw export and restore a validated backup.');
+    if(originalLock)throw originalLock;
+  }
+  async function applyRecovery(ticket,authorization={}){
+    if(busy)throw report(error('StorageBusyError','Another operation is in progress.'));
+    if(authorization.confirmed!==true)throw error('StorageRecoveryError','Explicit owner confirmation is required. No changes were applied.');
+    busy=true;notify('onBusy',true,'Reviewed recovery');
+    try{return await withLock(async()=>{
+      if(!verifiedRecovery||!recoveryReview||ticket!==recoveryReview.id)throw error('StorageRecoveryError','Export proof and a fresh recovery preview are required.');
+      const review=recoveryReview;checkRecoveryState(review.before);validateRawMap(review.before.records);await validateRecoveryRecords(review.records);
+      if(typeof options.verifyRecoveryPin!=='function')throw error('StorageCapabilityError','Independent PIN verification is unavailable.');
+      if(!await options.verifyRecoveryPin(review.before.records,authorization.pin))throw error('StorageRecoveryError','The current profile PIN is incorrect. No changes were applied.');
+      checkRecoveryState(review.before);
+      let revision=1;try{revision=metadata(review.before.meta).revision+1;}catch{}
+      if(!Number.isSafeInteger(revision))throw error('StorageRecoveryError','The recovery revision cannot advance safely.');
+      const id=cryptoAPI.randomUUID?cryptoAPI.randomUUID():await sha256(exact(review.records)+Date.now());
+      const after={records:review.records,journal:null,meta:exact({v:1,revision,id,signature:signature(review.records)})};
+      const payload={v:2,kind:'owner-reviewed-recovery',id,label:review.kind,before:review.before,after};
+      const encoded=exact({payload,checksum:await sha256(exact(payload))});checkRecoveryState(review.before);let written=false,confirmedCommit=false;
+      try{
+        storage.setItem(keys.journal,encoded);written=true;if(read(keys.journal)!==encoded)throw error('StorageRecoveryError','Reviewed recovery journal staging failed verification.');
+        ensureRecoveryValues(payload);applyRecoveryRecords(after.records,review.before.records);
+        if(exact(rawSnapshot())!==exact(after.records))throw error('StorageRecoveryError','Recovery target changed before its marker was written.');
+        storage.setItem(keys.meta,after.meta);if(read(keys.meta)!==after.meta)throw error('StorageRecoveryError','Recovery marker failed verification.');
+        observe();confirmedCommit=true;
+        storage.removeItem(keys.journal);if(read(keys.journal)!==null)throw error('StorageRecoveryError','Recovery cleanup failed verification.');
+        blocked=error('StorageReloadRequired','Reviewed recovery was verified. Reload before further billing changes.');exportedRecovery=null;verifiedRecovery=null;recoveryReview=null;notify('onCommit',{label:'Reviewed '+review.kind,revision,id});return true;
+      }catch(e){
+        if(confirmedCommit){const committed=error('StorageCleanupError','The recovery target and commit marker were verified, but journal cleanup could not be confirmed. Do not repeat recovery. Reload and inspect the saved records.');committed.storageOutcome='committed-reload-required';blocked=report(committed);throw committed;}
+        if(written){try{
+          ensureRecoveryValues(payload);applyRecoveryRecords(review.before.records,after.records);applyValue(keys.meta,review.before.meta);
+          if(exact(rawSnapshot())!==exact(review.before.records)||read(keys.meta)!==review.before.meta)throw error('StorageRecoveryError','Recovery rollback verification failed.');
+          applyValue(keys.journal,review.before.journal);if(read(keys.journal)!==review.before.journal)throw error('StorageRecoveryError','Earlier journal could not be restored.');e.storageOutcome='rolled-back';
+        }catch(rollbackError){const pending=error('StorageRecoveryError','Recovery is pending. Do not repeat the operation. Keep the profile and any checked recovery journal; automatic rollback could not be verified.');pending.storageOutcome='recovery-pending';pending.cause=rollbackError;blocked=report(pending);throw pending;}}
+        else e.storageOutcome='not-written';report(e);throw e;
+      }
+    });}catch(e){report(e);throw e;}finally{busy=false;notify('onBusy',false,'Reviewed recovery');}
+  }
+
   const ready=(async()=>{
     try{if(read(keys.journal)!==null)await withLock(recover);else observe();}
     catch(e){blocked=report(e);throw e;}
@@ -781,7 +974,7 @@ function createXLStorage(options){
         checkCurrent();
         const before=rawSnapshot(),beforeMeta=read(keys.meta);
         tx={before,current:{...before},changes:new Map(),failure:null};
-        let result,written=false,payload;
+        let result,written=false,confirmedCommit=false,payload;
         try{
           executing=true;
           const pending=fn();executing=false;result=await pending;
@@ -808,10 +1001,11 @@ function createXLStorage(options){
           if(signature(rawSnapshot())!==afterSignature)throw error('StorageExternalChangeError','The saved snapshot changed before verification finished.');
           storage.setItem(keys.meta,afterMeta);
           if(read(keys.meta)!==afterMeta)throw error('StorageRecoveryError','The commit marker failed readback verification.');
-          storage.removeItem(keys.journal);
+          observe();confirmedCommit=true;storage.removeItem(keys.journal);
           if(read(keys.journal)!==null)throw error('StorageRecoveryError','Journal cleanup could not be verified.');
-          observe();notify('onCommit',{label,revision,id});return result;
+          notify('onCommit',{label,revision,id});return result;
         }catch(e){
+          if(confirmedCommit){const committed=error('StorageCleanupError','The invoice changes and commit marker were verified, but journal cleanup could not be confirmed. Do not repeat the save. Reload and inspect the saved records.');committed.storageOutcome='committed-reload-required';blocked=report(committed);throw committed;}
           if(written){
             try{
               for(const c of [...payload.changes].reverse()){
@@ -821,13 +1015,13 @@ function createXLStorage(options){
               }
               applyValue(keys.meta,payload.beforeMeta);
               if(read(keys.meta)!==payload.beforeMeta||signature(rawSnapshot())!==payload.beforeSignature)throw error('StorageRecoveryError','Rollback readback failed.');
-              storage.removeItem(keys.journal);if(read(keys.journal)!==null)throw error('StorageRecoveryError','Recovery journal cleanup could not be verified.');observe();
+              observe();storage.removeItem(keys.journal);if(read(keys.journal)!==null)throw error('StorageRecoveryError','Recovery journal cleanup could not be verified.');
             }catch(rollbackError){
-              blocked=error('StorageRecoveryError','Save recovery is pending. Do not repeat the operation. Original recovery states are retained in the journal; reload or download a raw recovery export.');
-              blocked.cause=rollbackError;report(blocked);throw blocked;
+              blocked=error('StorageRecoveryError','Save recovery is pending. Do not repeat the operation. Keep the profile and any checked recovery journal; reload or download a raw recovery export.');
+              blocked.cause=rollbackError;blocked.storageOutcome='recovery-pending';report(blocked);throw blocked;
             }
           }
-          report(e);throw e;
+          e.storageOutcome=written?'rolled-back':'not-written';report(e);throw e;
         }finally{executing=false;tx=null;}
       });
     }catch(e){report(e);throw e;}
@@ -837,7 +1031,7 @@ function createXLStorage(options){
     try{if(tx)return tx.current[key]??null;checkCurrent();const value=read(key);checkCurrent();return value;}
     catch(e){report(e);throw e;}
   }
-  return {keys,ready,run,getRaw,setRaw:stage,deleteRaw:key=>stage(key,null),
+  return {keys,ready,run,getRaw,exportRecovery,verifyRecoveryExport,previewRecovery,applyRecovery,setRaw:stage,deleteRaw:key=>stage(key,null),
     isExecuting:()=>executing,isBusy:()=>busy,isActive:()=>!!tx,
     snapshot:()=>{checkCurrent();const value=rawSnapshot();checkCurrent();if(signature(value)!==observedSignature)throw error('StoragePendingError','Snapshot capture overlapped another write. Retry after it finishes.');return value;},recoverySnapshot:rawSnapshot,
     rawRecovery:()=>({records:rawSnapshot(),journal:read(keys.journal),meta:read(keys.meta)}),
@@ -860,28 +1054,8 @@ function storageFailure(key) {
   alert.textContent='Stored '+key+' data cannot be read safely. Billing changes are blocked. Original stored bytes have been preserved. Reload to retry or restore an independent backup.';
   const error=new Error('Stored '+key+' data is unreadable.');error.name='StorageReadError';return error;
 }
-function validateStoredShape(key,value) {
-  if(key==='settings')return !!value&&typeof value==='object'&&!Array.isArray(value)&&safeStoredIds(value);
-  if(['items','parties','invoices','purchases','retail','audit'].includes(key))return Array.isArray(value)&&value.every(r=>!!r&&typeof r==='object'&&!Array.isArray(r)&&safeStoredIds(r));
-  return value!==undefined;
-}
-function safeStoredIds(record){
-  for(const key of ['id','partyId','itemId']){
-    const value=record[key];
-    if(value!==undefined&&value!==null&&value!==''&&(typeof value!=='string'||!/^[A-Za-z0-9._:-]+$/.test(value)))return false;
-  }
-  for(const key of ['total','paid','openingPaid','discount','amount','amt','qty','rate','saleRate','purchaseRate','gst','taxPct','taxAmt','subtotal','openingBal','packCount']){
-    const value=record[key];
-    if(value===undefined||(key==='packCount'&&value===''))continue;
-    if(typeof value==='number'&&Number.isFinite(value))continue;
-    if(typeof value==='string'&&/^[+-]?(?:\d+(?:\.\d*)?|\.\d+)(?:e[+-]?\d+)?$/i.test(value)&&Number.isFinite(Number(value)))continue;
-    return false;
-  }
-  for(const key of ['items','customFields','payments','discounts']){
-    if(Array.isArray(record[key])&&record[key].some(value=>!value||typeof value!=='object'||!safeStoredIds(value)))return false;
-  }
-  return true;
-}
+
+
 const DB = {
   get: k => {
     try{
@@ -921,7 +1095,7 @@ function safeUrl(value){
   return '#';
 }
 
-function normalizedInvoiceNo(value){return String(value||'').trim().toLocaleLowerCase('en');}
+
 function nextInvoiceNumber(prefix,records,start=1){
   const used=new Set(records.map(r=>normalizedInvoiceNo(r.invoiceNo)));
   let next=Number(start);
@@ -932,7 +1106,7 @@ function nextInvoiceNumber(prefix,records,start=1){
   return {number:prefix+next,next:next+1};
 }
 
-function round2(value){return Math.round((Number(value)+Number.EPSILON)*100)/100;}
+
 function paymentError(inputId,message){
   let error=document.getElementById('payment-validation-error');
   if(!error){error=document.createElement('div');error.id='payment-validation-error';error.setAttribute('role','alert');error.style.cssText='color:var(--r);margin:8px 0;font-weight:600';}
@@ -942,38 +1116,12 @@ function paymentError(inputId,message){
   error.textContent=message;toast(message);return false;
 }
 // New inputs use paise; historical totals remain unchanged in storage.
-function moneyPaise(value) {
-  const n=Number(value), scaled=n*100;
-  return Number.isFinite(n)&&Number.isSafeInteger(Math.round(scaled)) ? Math.round(scaled) : NaN;
-}
+
 function parseMoneyInput(value) {
   const n=Number(value), paise=moneyPaise(n);
   return n>=0&&Number.isFinite(paise)&&Math.abs(n*100-paise)<1e-7 ? paise/100 : NaN;
 }
-function financialState(record) {
-  if(!record||typeof record!=='object')return {valid:false,consistent:false};
-  const payments=record.payments===undefined?[]:record.payments;
-  if(!Array.isArray(payments))return {valid:false,consistent:false};
-  const validAmount=n=>typeof n==='number'&&Number.isFinite(n)&&n>=0&&Number.isFinite(moneyPaise(n));
-  if(payments.some(p=>!p||!validAmount(p.amt)))return {valid:false,consistent:false};
-  const savedPaid=record.paid===undefined?0:record.paid;
-  const opening=record.openingPaid===undefined?(payments.length===0?savedPaid:0):record.openingPaid;
-  const total=record.total;
-  if(!validAmount(total)||!validAmount(savedPaid)||!validAmount(opening))return {valid:false,consistent:false};
-  const separate=Object.prototype.hasOwnProperty.call(record,'billNo')||Object.prototype.hasOwnProperty.call(record,'discounts');
-  let discount=0;
-  if(separate){
-    if(record.discounts!==undefined&&!Array.isArray(record.discounts))return {valid:false,consistent:false};
-    const discounts=record.discounts||[];
-    if(discounts.some(p=>!p||!validAmount(p.amt)))return {valid:false,consistent:false};
-    discount=discounts.length?discounts.reduce((sum,p)=>sum+p.amt,0):(record.discount||0);
-    if(!validAmount(discount))return {valid:false,consistent:false};
-    if(discounts.length&&record.discount!==undefined&&moneyPaise(discount)!==moneyPaise(record.discount))return {valid:false,consistent:false};
-  }
-  const paid=round2(opening+payments.reduce((sum,p)=>sum+p.amt,0));
-  const balance=(moneyPaise(total)-moneyPaise(paid)-moneyPaise(discount))/100;
-  return {valid:Number.isFinite(balance)&&balance>=0,consistent:moneyPaise(savedPaid)===moneyPaise(paid),opening,paid,discount,balance};
-}
+
 // Display legacy missing balances without adding fields or rewriting history.
 function billBalance(record){
   const balance=record?.balance;
@@ -10450,13 +10598,65 @@ function installXLAutomaticBackups(){
 function xlDownloadJSON(data,name){
   const blob=new Blob([JSON.stringify(data)],{type:'application/json'}),url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);
 }
-function xlRecoveryControls(){
-  if(document.getElementById('xl-recovery-controls'))return;
-  const row=document.createElement('div');row.id='xl-recovery-controls';row.style.cssText='position:relative;z-index:10002;padding:8px;background:#fff7ed';
-  const exportButton=document.createElement('button');exportButton.id='xl-recovery-export';exportButton.textContent='Download private raw recovery';exportButton.onclick=async()=>{try{const payload=XLStore.rawRecovery(),checksum=await XLStore.checksum(JSON.stringify(payload));xlDownloadJSON({format:'xl-billing-raw-recovery',version:1,createdAt:new Date().toISOString(),payload,checksum},'xl-private-raw-recovery-'+Date.now()+'.json');}catch(e){xlStorageMessage(e);}};
-  const retry=document.createElement('button');retry.textContent='Retry recovery and reload';retry.onclick=async()=>{try{await XLStore.retryRecovery();location.reload();}catch(e){xlStorageMessage(e);}};
-  row.append(exportButton,retry);document.body.prepend(row);
+async function verifyXLRecoveryPin(records,pin,cryptoAPI=crypto){
+  let settings;try{settings=JSON.parse(records.shop4_settings);}catch{throw new Error('The current profile Delete PIN settings cannot be read. Recovery cannot bypass PIN verification.');}
+  if(!settings||typeof settings!=='object'||Array.isArray(settings))throw new Error('The current profile Delete PIN settings are invalid.');
+  if(!/^\d{4,10}$/.test(String(pin))||pin==='1234')return false;
+  if(settings.deletePinHash!==undefined){
+    if(typeof settings.deletePinSalt!=='string'||!settings.deletePinSalt||settings.deletePinSalt.length>1024||!/^[a-f0-9]{64}$/.test(settings.deletePinHash))throw new Error('The current profile Delete PIN hash or salt is invalid.');
+    const bytes=await cryptoAPI.subtle.digest('SHA-256',new TextEncoder().encode(settings.deletePinSalt+':'+pin));
+    return Array.from(new Uint8Array(bytes),b=>b.toString(16).padStart(2,'0')).join('')===settings.deletePinHash;
+  }
+  if(typeof settings.deletePin==='string'&&/^\d{4,10}$/.test(settings.deletePin)&&settings.deletePin!=='1234')return pin===settings.deletePin;
+  throw new Error('A non-default current Delete PIN is required. Locked recovery cannot silently create or bypass it. Keep the recovery export for review.');
 }
+function xlRecoveryDescription(before,after,kind){
+  const validator=createXLBackup({crypto,validate:records=>validateXLTransaction(records,{}, {restore:true})});
+  validator.validate(after);const core=['items','parties','invoices','purchases','retail','audit'];
+  const counts=records=>core.map(key=>key+': '+(Object.hasOwn(records,'shop4_'+key)?JSON.parse(records['shop4_'+key]).length:'not stored')).join(', ');
+  if(kind==='adopt')return 'Validated external records: '+counts(after)+'. Earlier snapshot unavailable: historical before/after differences cannot be determined. Adoption preserves these exact billing bytes and writes reviewed storage metadata. An unresolved journal cannot be adopted.';
+  let reliable=true;try{validator.validate(before);}catch{reliable=false;}
+  let description='Validated backup: '+counts(after)+'. Restore replaces the current captured profile, including settings and private credentials. ';
+  if(!reliable)return description+'Current schema/accounting validation failed. Before counts and record differences are unavailable; no earlier snapshot is inferred. Exact current raw bytes and journal are retained in the verified recovery export.';
+  const canonical=value=>JSON.stringify(value,(_,v)=>v&&typeof v==='object'&&!Array.isArray(v)?Object.fromEntries(Object.keys(v).sort().map(k=>[k,v[k]])):v);
+  description+='Comparison uses the captured current records and the selected backup, not an earlier committed snapshot. ';
+  for(const key of core){
+    const left=new Map((before['shop4_'+key]?JSON.parse(before['shop4_'+key]):[]).map(r=>[r.id,r])),right=new Map((after['shop4_'+key]?JSON.parse(after['shop4_'+key]):[]).map(r=>[r.id,r]));
+    let added=0,removed=0,changed=0;for(const [id,r]of right){if(!left.has(id))added++;else if(canonical(r)!==canonical(left.get(id)))changed++;}for(const id of left.keys())if(!right.has(id))removed++;
+    description+=key+': '+added+' added, '+removed+' removed, '+changed+' changed. ';
+  }
+  return description+'Keys absent from the backup are removed. Confirm that you want this specific replacement.';
+}
+function xlRecoveryControls(show=true){
+  let row=document.getElementById('xl-recovery-controls');
+  if(row){if(show){row.hidden=false;if(window.XLAppReady===false)row.querySelector('details').open=true;}return;}
+  row=document.createElement('section');row.id='xl-recovery-controls';row.hidden=!show;row.style.cssText='position:relative;z-index:10004;padding:14px;background:#fff7ed;border:2px solid #c2410c;color:#431407';
+  const heading=document.createElement('h3');heading.textContent='Private recovery';
+  const exportButton=document.createElement('button');exportButton.id='xl-recovery-export';exportButton.textContent='Download private raw recovery';
+  const retry=document.createElement('button');retry.textContent='Retry recovery and reload';retry.onclick=async()=>{try{await XLStore.retryRecovery();location.reload();}catch(e){status(e.message);}};
+  const reload=document.createElement('button');reload.id='xl-recovery-reload';reload.textContent='Reload application';reload.onclick=()=>location.reload();
+  const details=document.createElement('details');details.open=show&&window.XLAppReady===false;const summary=document.createElement('summary');summary.textContent='Verify a saved recovery export, then review adoption or backup restore';
+  const instructions=document.createElement('p');instructions.textContent='Close older app copies. First download the exact raw recovery file, save it outside this profile and re-select that saved file below. A download request alone does not authorize changes. Recovery validates every bill, requires the current profile PIN and a separate owner confirmation. No earlier snapshot will be fabricated.';
+  const proof=document.createElement('input');proof.id='xl-recovery-proof';proof.type='file';proof.accept='.json,application/json';const proofLabel=document.createElement('label');proofLabel.htmlFor=proof.id;proofLabel.textContent='Verify the raw recovery file you saved';
+  const adopt=document.createElement('button');adopt.id='xl-recovery-adopt';adopt.textContent='Review adoption of the current external records';
+  const backup=document.createElement('input');backup.id='xl-recovery-backup';backup.type='file';backup.accept='.json,application/json';const backupLabel=document.createElement('label');backupLabel.htmlFor=backup.id;backupLabel.textContent='Review a private or compatible legacy backup to restore';
+  const preview=document.createElement('p');preview.id='xl-recovery-preview';
+  const pin=document.createElement('input');pin.id='xl-recovery-pin';pin.type='password';pin.inputMode='numeric';pin.maxLength=10;pin.autocomplete='off';const pinLabel=document.createElement('label');pinLabel.htmlFor=pin.id;pinLabel.textContent='Current profile Delete PIN';
+  const confirm=document.createElement('input');confirm.id='xl-recovery-confirm';confirm.type='checkbox';const confirmLabel=document.createElement('label');confirmLabel.htmlFor=confirm.id;confirmLabel.textContent='I kept the verified recovery export and explicitly approve the displayed recovery choice.';
+  const apply=document.createElement('button');apply.id='xl-recovery-apply';apply.textContent='Apply this reviewed recovery';
+  const output=document.createElement('div');output.id='xl-recovery-error';output.setAttribute('role','alert');output.style.cssText='margin:10px 0;font-weight:600;white-space:pre-wrap';
+  let exported=null,ticket=null,applying=false;
+  function status(message){output.textContent=message;}
+  function resetPreview(){ticket=null;preview.textContent='';pin.value='';confirm.checked=false;}
+  exportButton.onclick=async()=>{resetPreview();exported=null;try{const file=await XLStore.exportRecovery();xlDownloadJSON(file,'xl-private-raw-recovery-'+Date.now()+'.json');exported=file;status('Recovery download requested. Re-select the saved file to verify possession and exact exported bytes before changes.');}catch(e){status(e.message);}};
+  proof.onchange=async()=>{resetPreview();try{const file=proof.files?.[0];if(!file)return;if(file.size>20*1024*1024)throw new Error('Recovery verification supports files up to 20 MiB.');await XLStore.verifyRecoveryExport(await file.text());status('Saved recovery export verified against its checksum and exact current bytes. Choose a recovery preview.');}catch(e){status(e.message);}};
+  async function review(records,kind){resetPreview();const next=await XLStore.previewRecovery(records,kind);const description=xlRecoveryDescription(exported.payload.records,records,kind);ticket=next;preview.textContent=description;status('Full schema and accounting validation passed. Review the preview, enter the current PIN and explicitly confirm.');}
+  adopt.onclick=async()=>{try{await review(exported?.payload.records||{},'adopt');}catch(e){status(e.message);}};
+  backup.onchange=async()=>{try{const file=backup.files?.[0];if(!file)return;if(file.size>20*1024*1024)throw new Error('Backup exceeds the supported 20 MiB limit.');const codec=createXLBackup({crypto,validate:records=>validateXLTransaction(records,{}, {restore:true})});const selected=await codec.decode(await file.text());await review(selected.records,'restore');preview.textContent=(selected.verified?'Private backup SHA-256 checksum verified. ':'Legacy backup has no checksum; schema and accounting validated. ')+preview.textContent;}catch(e){resetPreview();status(e.message);}};
+  apply.onclick=async()=>{if(applying)return;applying=true;apply.disabled=true;try{await XLStore.applyRecovery(ticket,{pin:pin.value,confirmed:confirm.checked});window.XLAppReady=false;for(const shell of document.querySelectorAll('.main,.sb'))shell.inert=true;resetPreview();status('Recovery verified. Original raw export remains your independent recovery copy. Reload before entering further records.');}catch(e){status(e.message+(e.storageOutcome==='rolled-back'?' Exact original bytes were verified restored.':e.storageOutcome==='recovery-pending'?' Keep the checked recovery journal and do not retry the operation.':''));}finally{applying=false;apply.disabled=false;}};
+  details.append(summary,instructions,proofLabel,proof,adopt,backupLabel,backup,preview,pinLabel,pin,confirm,confirmLabel,apply);row.append(heading,exportButton,retry,reload,details,output);document.body.prepend(row);
+}
+
 function installXLBackup(){
   const codec=createXLBackup({crypto,validate:records=>validateXLTransaction(records,{}, {restore:true})});window.XLBackup=codec;let pending=null;
   const message=error=>{let el=document.getElementById('xl-backup-error');if(!el){el=document.createElement('div');el.id='xl-backup-error';el.setAttribute('role','alert');el.style.cssText='position:sticky;top:0;z-index:10003;padding:14px;background:#fef2f2;color:#991b1b';document.body.prepend(el);}el.textContent=error.message||String(error);};
@@ -10494,7 +10694,9 @@ function xlStorageMessage(error){
   if(!box){box=document.createElement('div');box.id='storage-error';box.setAttribute('role','alert');box.style.cssText='position:sticky;top:0;z-index:10001;padding:14px;background:#fef2f2;color:#991b1b;border:2px solid #dc2626';document.body.prepend(box);}
   const quota=error?.name==='QuotaExceededError';
   if(error?.name==='SecurityError')error=new Error('Browser access to billing storage is denied. No new changes were confirmed. Keep the original profile intact.');
-  box.textContent=quota?'Browser storage could not complete this save. Original records were restored. Keep your entries and export an independent backup before retrying.':(error?.message||'Billing changes could not be confirmed. Keep the original records and retry after review.');
+  const outcome=error?.storageOutcome;
+  box.textContent=outcome==='recovery-pending'?'Recovery is pending. Do not repeat the save. Checked original states remain in the journal; keep a raw recovery export and retry recovery.':quota?(outcome==='rolled-back'?'Browser storage could not complete this save. Exact original records and counters were verified restored. Keep your entries and retry after preserving a backup.':outcome==='not-written'?'Browser storage could not stage this save. No invoice or counter changes were applied. Keep your entries and preserve an independent backup.':'Browser storage could not confirm this operation. Keep the profile and export recovery evidence before further changes.'):(error?.message||'Billing changes could not be confirmed. Keep the original records.');
+  box.dataset.outcome=outcome||'unconfirmed';
   box.dataset.kind=error?.name||'StorageError';
   if(window.XLStore)xlRecoveryControls();
 }
@@ -10503,28 +10705,7 @@ function xlSaving(active){
   if(active){if(!box){box=document.createElement('div');box.id='xl-saving';box.setAttribute('role','status');box.style.cssText='position:fixed;inset:0;z-index:10000;background:#ffffffd9;display:grid;place-items:center;font-weight:700';box.textContent='Saving billing changes safely...';document.body.appendChild(box);}}
   else box?.remove();
 }
-function validateXLTransaction(after,before,options={}){
-  const core=['settings','items','parties','invoices','purchases','retail','audit'];
-  for(const key of core){
-    const raw=after['shop4_'+key];if(raw===undefined)continue;
-    let value;try{value=JSON.parse(raw);}catch{throw new Error('Stored '+key+' is not valid JSON. No changes were saved.');}
-    if(!validateStoredShape(key,value))throw new Error('Stored '+key+' has an unsupported shape. Original data was preserved.');
-    if(!Array.isArray(value))continue;
-    const ids=new Set();for(const r of value){if(typeof r.id!=='string'||!r.id||ids.has(r.id))throw new Error('The '+key+' collection has missing or duplicate identifiers. Review it before saving.');ids.add(r.id);}
-    if(!['invoices','purchases'].includes(key))continue;
-    const old=before['shop4_'+key]?JSON.parse(before['shop4_'+key]):[],oldById=new Map(old.map(r=>[r.id,r]));
-    const numbers=new Set();
-    for(const r of value){
-      const prior=oldById.get(r.id),number=key==='invoices'?normalizedInvoiceNo(r.invoiceNo):normalizedInvoiceNo(r.billNo);
-      if(number&&numbers.has(number)&&(!prior||options.restore))throw new Error('Duplicate bill numbers must be reviewed before this operation.');
-      if(number)numbers.add(number);
-      if(prior&&JSON.stringify(prior)===JSON.stringify(r)&&!options.restore)continue;
-      const state=financialState(r);
-      if(!state.valid||!state.consistent)throw new Error('Bill '+(r.invoiceNo||r.billNo||r.id)+' has conflicting financial history. It was not rewritten.');
-      if(r.balance!==undefined&&r.balance!==null&&moneyPaise(r.balance)!==moneyPaise(state.balance))throw new Error('Bill balance does not match its payments and discounts. No changes were saved.');
-    }
-  }
-}
+
 function xlRuntimeSnapshot(){
   return {modules:Object.fromEntries(Object.entries(window.XLDomainState||{}).map(([key,module])=>[key,module.capture()])),saleItems:structuredClone(saleItems),editingInvId,currentViewInvId,purItems:structuredClone(purItems),purMode,purPhotoData,pbRows:structuredClone(pbRows),
     controls:[...document.querySelectorAll('input,textarea,select')].map(el=>({el,value:el.value,checked:el.checked})),
@@ -10576,12 +10757,27 @@ function installXLStorageBindings(){
   window.addEventListener('keydown',e=>{if(store.isBusy()){e.preventDefault();e.stopImmediatePropagation();}},true);
 }
 (async function bootstrapXLBilling(){
+  window.XLAppReady=false;
   const loading=document.createElement('div');loading.id='xl-opening';loading.setAttribute('role','status');loading.style.cssText='position:fixed;inset:0;background:white;z-index:10000;display:grid;place-items:center;font-weight:700';loading.textContent='Opening billing records safely...';document.body.appendChild(loading);
   const storage={keys:()=>Object.keys(localStorage),getItem:key=>localStorage.getItem(key),setItem:(key,value)=>localStorage.setItem(key,value),removeItem:key=>localStorage.removeItem(key)};
   window.XLStore=createXLStorage({storage,locks:navigator.locks,crypto,onError:xlStorageMessage,onNotice:()=>xlStorageMessage(new Error('The save completed, but the display needs a reload.')),onBusy:xlSaving,
-    validate:(after,before,options)=>validateXLTransaction(after,before,options),onCommit:detail=>window.dispatchEvent(new CustomEvent('xl:committed',{detail}))});
-  try{await window.XLStore.ready;}catch(e){loading.remove();xlStorageMessage(e);window.XLAppReady=false;return;}
-  for(const source of document.querySelectorAll('script[type="text/xl-app"]')){const script=document.createElement('script');script.textContent=source.textContent;document.body.appendChild(script);}
-  installXLStorageBindings();installXLBackup();installXLAutomaticBackups();window.XLAppReady=true;window.dispatchEvent(new Event('xl:ready'));loading.remove();
+    validate:(after,before,options)=>{createXLBackup({crypto}).validate(after,false);validateXLTransaction(after,before,options);},verifyRecoveryPin:(records,pin)=>verifyXLRecoveryPin(records,pin),onCommit:detail=>window.dispatchEvent(new CustomEvent('xl:committed',{detail}))});
+  xlRecoveryControls(false);
+  let appError=null;
+  const captureError=event=>{appError=event.error||new Error(event.message||'Application initialization failed.');};
+  try{
+    await window.XLStore.ready;
+    const sources=[...document.querySelectorAll('script[type="text/xl-app"]')];
+    if(!sources.length)throw new Error('Normal application scripts are unavailable. Independent recovery remains available.');
+    window.addEventListener('error',captureError);
+    for(const source of sources){const script=document.createElement('script');script.textContent=source.textContent;document.body.appendChild(script);if(appError)throw appError;}
+    if(typeof window.nav!=='function'||typeof window.saveSaleInvoice!=='function')throw new Error('Normal billing initialization did not finish. Independent recovery remains available.');
+    installXLStorageBindings();installXLBackup();installXLAutomaticBackups();window.dispatchEvent(new Event('xl:ready'));if(appError)throw appError;
+    window.XLAppReady=true;
+  }catch(e){
+    window.XLAppReady=false;xlStorageMessage(e);xlRecoveryControls();
+    for(const shell of document.querySelectorAll('.main,.sb'))shell.inert=true;
+  }finally{window.removeEventListener('error',captureError);loading.remove();}
+
 })();
 </script>
