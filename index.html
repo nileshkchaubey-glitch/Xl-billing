@@ -2319,9 +2319,11 @@ window.savePrevBill = function() {
   if (!date)  { toast('Enter date!'); return; }
   if (!total) { toast('Enter total amount!'); return; }
   if (!pName) { toast('Enter party name!'); return; }
+  if(!Number.isFinite(total)||total<=0||!Number.isFinite(paid)||paid<0||round2(paid)>round2(total)+0.005){paymentError('pb-paid','Paid amount cannot exceed the old bill total.');return;}
+  if(invno&&getInvoices().some(i=>normalizedInvoiceNo(i.invoiceNo)===normalizedInvoiceNo(invno))){paymentError('pb-invno','This invoice number is already used. Enter a unique number.');return;}
   const inv = {
     id: genId(),
-    invoiceNo: invno || ('PB-' + date.replace(/-/g,'')),
+    invoiceNo: invno || nextInvoiceNumber('PB-',getInvoices()).number,
     date, partyId: pId, partyName: pName,
     items: [], subtotal: total, discount: 0, taxPct: 0, taxAmt: 0,
     total, paid, balance: Math.max(0, total - paid),
