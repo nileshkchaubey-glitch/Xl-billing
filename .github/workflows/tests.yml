@@ -57,6 +57,15 @@ jobs:
           cache: npm
       - run: npm ci
       - run: npx playwright install --with-deps chromium firefox webkit
+      - name: Native PDF verification tools
+        run: |
+          if [ ! -x /usr/bin/pdftotext ] || [ ! -x /usr/bin/pdfinfo ]; then
+            sudo apt-get update
+            sudo apt-get install -y poppler-utils
+          fi
+          dpkg-query -W poppler-utils
+          /usr/bin/pdftotext -v
+          /usr/bin/pdfinfo -v
       - run: npm test
       - run: npm run lint
       - run: npm run build
