@@ -1,0 +1,43 @@
+{
+  "workspaceCommit": "5d3fb7991586d7acef84d49cdd26a003b290d912",
+  "sourceRevision": "5d3fb7991586d7acef84d49cdd26a003b290d912",
+  "sourceSha256": "37cb3c09b5d165768666d3ccefae9478b10f08a7dc20f1dcc219cad91e596933",
+  "runnerSha256": "a10d561d26d5d9a314c41960fb741532f0aaa8e35fb77d9027cf0ad3771efb51",
+  "browser": "chromium",
+  "results": [
+    {
+      "id": "audit-search",
+      "status": "FAIL",
+      "safe": false,
+      "observed": {
+        "rows": 0,
+        "pager": "Showing 1–20 of 25"
+      },
+      "pageErrors": []
+    },
+    {
+      "id": "purchase-sort",
+      "status": "FAIL",
+      "safe": false,
+      "observed": {
+        "firstBill": "P-2",
+        "sortableHeaders": 0
+      },
+      "pageErrors": []
+    },
+    {
+      "id": "party-transactions-tab",
+      "status": "FAIL",
+      "safe": false,
+      "observed": {
+        "transactionContentVisible": false
+      },
+      "pageErrors": []
+    }
+  ],
+  "summary": {
+    "pass": 0,
+    "fail": 3,
+    "harnessErrors": 0
+  }
+}
