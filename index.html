@@ -746,7 +746,7 @@ function reconcilePayment(record){record.paid=recordedPaid(record);record.balanc
 
 // List state is session-only: changing a view never rewrites business data.
 window.listState = {};
-function listStateFor(key) { return window.listState[key] ||= {page:1,size:20,col:'date',dir:'desc',filter:''}; }
+function listStateFor(key) { return window.listState[key] ||= {page:1,size:20,col:key==='audit'?'ts':key==='items'||key==='parties'?'updatedAt':'date',dir:'desc',filter:''}; }
 function listView(records,key,filter='') {
   const state=listStateFor(key);
   if(state.filter!==filter){state.page=1;state.filter=filter;}
@@ -762,13 +762,17 @@ function listView(records,key,filter='') {
 }
 function getListStatus(record){return isCancelled(record)?'cancelled':Number(record.balance||0)>0?'due':'paid';}
 window.listGo = function(key,page){const state=listStateFor(key);state.page=page;window[state.render]();};
+window.listOrder = function(key,column,direction){const state=listStateFor(key);state.col=column||state.col;state.dir=direction||state.dir;state.page=1;window[state.render]();};
 window.listResize = function(key,size){const state=listStateFor(key);state.size=Number(size);state.page=1;window[state.render]();};
 function listPager(key,render) {
   const state=listStateFor(key);state.render=render;
+  const fields=key==='payments'?{date:'Date',_invNo:'Invoice number',_party:'Party',amt:'Amount',mode:'Mode'}:key==='audit'?{ts:'Time',type:'Type',label:'Label'}:key==='items'?{updatedAt:'Last updated',name:'Name',saleRate:'Sale rate'}:key==='parties'?{updatedAt:'Last updated',name:'Name',type:'Type'}:{date:'Date',invoiceNo:'Invoice number',partyName:'Party',total:'Total',balance:'Balance',status:'Status'};
   const pages=Math.max(1,Math.ceil((state.total||0)/state.size));
   const start=Math.max(1,Math.min(state.page-3,pages-6));
   return `<div class="pgn"><span class="pgn-info">Showing ${state.total?(state.page-1)*state.size+1:0}–${Math.min(state.page*state.size,state.total||0)} of ${state.total||0}</span>
     <label>Rows <select aria-label="Rows per page" onchange="listResize('${key}',this.value)">${[20,50,100].map(n=>`<option ${state.size===n?'selected':''}>${n}</option>`).join('')}</select></label>
+    <label>Sort <select aria-label="Sort column" onchange="listOrder('${key}',this.value)">${Object.entries(fields).map(([value,label])=>`<option value="${value}" ${state.col===value?'selected':''}>${label}</option>`).join('')}</select></label>
+    <select aria-label="Sort direction" onchange="listOrder('${key}',null,this.value)"><option value="desc" ${state.dir==='desc'?'selected':''}>Descending</option><option value="asc" ${state.dir==='asc'?'selected':''}>Ascending</option></select>
     <div class="pgn-btns"><button class="pgn-btn" ${state.page<=1?'disabled':''} onclick="listGo('${key}',${state.page-1})">← Prev</button>
     ${Array.from({length:Math.min(7,pages)},(_,i)=>start+i).map(n=>`<button class="pgn-btn ${n===state.page?'active':''}" onclick="listGo('${key}',${n})">${n}</button>`).join('')}
     <button class="pgn-btn" ${state.page>=pages?'disabled':''} onclick="listGo('${key}',${state.page+1})">Next →</button></div></div>`;
@@ -8918,7 +8922,7 @@ window.renderTxnPage = function() {
             <td style="color:var(--gray-400);font-size:11.5px">${t.sub||'-'}</td>
           </tr>`).join('')}</tbody>
         </table></div>
-        ${filtered.length>100?`<div style="padding:10px;text-align:center;font-size:12.5px;color:var(--gray-400)">Showing 100 of ${filtered.length} entries. Use filters to narrow down.</div>`:''}
+
       </div>
     </div>`;
 
