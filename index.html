@@ -1162,7 +1162,8 @@ function listView(records,key,filter='') {
   if(state.filter!==filter){state.page=1;state.filter=filter;}
   state.total=records.length;
   state.page=Math.max(1,Math.min(state.page,Math.max(1,Math.ceil(state.total/state.size))));
-  const value=(r,col)=>col==='status'?getListStatus(r):r[col]??'';
+  // Keep the existing selector value compatible, but read the purchase field.
+  const value=(r,col)=>col==='status'?getListStatus(r):r[key==='purchases'&&col==='invoiceNo'?'billNo':col]??'';
   const sorted=records.slice().sort((a,b)=>{
     const x=value(a,state.col),y=value(b,state.col);
     const result=typeof x==='number'&&typeof y==='number'?x-y:String(x).localeCompare(String(y),'en',{numeric:true,sensitivity:'base'});
@@ -1176,7 +1177,7 @@ window.listOrder = function(key,column,direction){const state=listStateFor(key);
 window.listResize = function(key,size){const state=listStateFor(key);state.size=Number(size);state.page=1;window[state.render]();};
 function listPager(key,render) {
   const state=listStateFor(key);state.render=render;
-  const fields=key==='payments'?{date:'Date',_invNo:'Invoice number',_party:'Party',amt:'Amount',mode:'Mode'}:key==='audit'?{ts:'Time',type:'Type',label:'Label'}:key==='items'?{updatedAt:'Last updated',name:'Name',saleRate:'Sale rate'}:key==='parties'?{updatedAt:'Last updated',name:'Name',type:'Type'}:{date:'Date',invoiceNo:'Invoice number',partyName:'Party',total:'Total',balance:'Balance',status:'Status'};
+  const fields=key==='purchases'?{date:'Date',invoiceNo:'Supplier bill number',partyName:'Supplier',total:'Total',paid:'Paid',balance:'Balance',status:'Status'}:key==='payments'?{date:'Date',_invNo:'Invoice number',_party:'Party',amt:'Amount',mode:'Mode'}:key==='audit'?{ts:'Time',type:'Type',label:'Label',user:'User'}:key==='items'?{updatedAt:'Last updated',name:'Name',saleRate:'Sale rate'}:key==='parties'?{updatedAt:'Last updated',name:'Name',type:'Type'}:{date:'Date',invoiceNo:'Invoice number',partyName:'Party',total:'Total',balance:'Balance',status:'Status'};
   const pages=Math.max(1,Math.ceil((state.total||0)/state.size));
   const start=Math.max(1,Math.min(state.page-3,pages-6));
   return `<div class="pgn"><span class="pgn-info">Showing ${state.total?(state.page-1)*state.size+1:0}–${Math.min(state.page*state.size,state.total||0)} of ${escHtml(state.total||0)}</span>
@@ -7423,7 +7424,7 @@ window.openPartyDetail = function(partyId) {
 };
 
 window.pdShowTab = function(tab) {
-  ['inv','pay'].forEach(t=>{
+  ['inv','pay','txn'].forEach(t=>{
     const d = document.getElementById('pd-tab-'+t);
     const h = document.getElementById('pdt-'+t);
     if (d) d.style.display = t===tab?'block':'none';
@@ -8388,6 +8389,7 @@ window.renderPurchaseList = function() {
     </tr></tfoot>
   </table></div>
   ${listPager('purchases','renderPurchaseList')}`;
+  listHeaders('#purchase-table','purchases',[null,'date','partyName','invoiceNo','total','paid','balance','payType',null,null],'renderPurchaseList');
 };
 
 // ════════════════════════════════════════════════════════
@@ -9160,7 +9162,10 @@ window.nav = function(pg) {
 
 window.renderAuditPage = function() {
   const el = document.getElementById('page-audit-log'); if(!el) return;
-  const search=document.getElementById('audit-srch')?.value||'';
+  const previousSearch=document.getElementById('audit-srch');
+  const focused=previousSearch===document.activeElement;
+  const selection=focused?[previousSearch.selectionStart,previousSearch.selectionEnd]:null;
+  const search=previousSearch?.value||'';
   const all=getAuditLog().filter(r=>JSON.stringify(r).toLowerCase().includes(search.toLowerCase()));
   const log=listView(all,'audit',search);
   const typeMap = { create:'at-create', edit:'at-edit', delete:'at-delete', payment:'at-payment', dispatch:'at-dispatch', cancel:'at-cancel', restore:'at-create', sync:'at-dispatch' };
@@ -9170,7 +9175,7 @@ window.renderAuditPage = function() {
     <div class="ph" style="position:sticky;top:0;z-index:50;background:#fff;border-bottom:1px solid var(--gray-200);padding:12px 22px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px">
       <h1>📜 Audit Log</h1>
       <div style="display:flex;gap:8px">
-        <input class="fc fc-sm" id="audit-srch" value="${search.replaceAll('"','&quot;')}" placeholder="Search..." style="width:180px" oninput="renderAuditPage()">
+        <input class="fc fc-sm" id="audit-srch" value="${escHtml(search)}" placeholder="Search..." style="width:180px" oninput="renderAuditPage()">
         <button class="btn btn-out btn-sm" onclick="clearAuditLog()">🗑 Clear Log</button>
       </div>
     </div>
@@ -9186,10 +9191,7 @@ window.renderAuditPage = function() {
             <th>Details</th>
             <th>User</th>
           </tr></thead>
-          <tbody>${log.filter(e=>{
-            const q=(document.getElementById('audit-srch')?.value||'').toLowerCase();
-            return !q||((e.label||'')+(e.details||'')+(e.entityType||'')).toLowerCase().includes(q);
-          }).map(e=>`<tr>
+          <tbody>${log.map(e=>`<tr>
             <td style="color:var(--gray-400);font-size:11.5px;white-space:nowrap;padding:7px 12px">${new Date(e.ts).toLocaleString('en-IN',{timeZone:BUSINESS_TIME_ZONE,day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'})}</td>
             <td><span class="audit-type ${escHtml(typeMap[e.type]||'at-create')}">${escHtml(iconMap[e.type]||'•')} ${escHtml(e.type)}</span></td>
             <td style="color:var(--gray-500);font-size:12px">${escHtml(e.entityType||'-')}</td>
@@ -9202,6 +9204,7 @@ window.renderAuditPage = function() {
     </div>`;
   el.querySelector('.pb').insertAdjacentHTML('beforeend',listPager('audit','renderAuditPage'));
   listHeaders('#page-audit-log','audit',['ts','type','entityType','label','details','user'],'renderAuditPage');
+  if(focused){const input=document.getElementById('audit-srch');input.focus();input.setSelectionRange(...selection);}
 };
 
 // ════════════════════════════════════════════════════════
