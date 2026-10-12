@@ -7,4 +7,5 @@ dist/
 test-results/browser/
 test-results/baseline.html
 playwright-report/
+test-results/review/
 !test-results/*.log

@@ -734,17 +734,62 @@ function paymentError(inputId,message){
   else document.querySelector('main').prepend(error);
   error.textContent=message;toast(message);return false;
 }
-function recordedPaid(record){return round2((record.payments||[]).reduce((sum,p)=>sum+Number(p.amt||0),0));}
+// New inputs use paise; historical totals remain unchanged in storage.
+function moneyPaise(value) {
+  const n=Number(value), scaled=n*100;
+  return Number.isFinite(n)&&Number.isSafeInteger(Math.round(scaled)) ? Math.round(scaled) : NaN;
+}
+function parseMoneyInput(value) {
+  const n=Number(value), paise=moneyPaise(n);
+  return n>=0&&Number.isFinite(paise)&&Math.abs(n*100-paise)<1e-7 ? paise/100 : NaN;
+}
+function financialState(record) {
+  if(!record||typeof record!=='object')return {valid:false,consistent:false};
+  const payments=record.payments===undefined?[]:record.payments;
+  if(!Array.isArray(payments))return {valid:false,consistent:false};
+  const validAmount=n=>typeof n==='number'&&Number.isFinite(n)&&n>=0&&Number.isFinite(moneyPaise(n));
+  if(payments.some(p=>!p||!validAmount(p.amt)))return {valid:false,consistent:false};
+  const savedPaid=record.paid===undefined?0:record.paid;
+  const opening=record.openingPaid===undefined?(payments.length===0?savedPaid:0):record.openingPaid;
+  const total=record.total;
+  if(!validAmount(total)||!validAmount(savedPaid)||!validAmount(opening))return {valid:false,consistent:false};
+  const separate=Object.prototype.hasOwnProperty.call(record,'billNo')||Object.prototype.hasOwnProperty.call(record,'discounts');
+  let discount=0;
+  if(separate){
+    if(record.discounts!==undefined&&!Array.isArray(record.discounts))return {valid:false,consistent:false};
+    const discounts=record.discounts||[];
+    if(discounts.some(p=>!p||!validAmount(p.amt)))return {valid:false,consistent:false};
+    discount=discounts.length?discounts.reduce((sum,p)=>sum+p.amt,0):(record.discount||0);
+    if(!validAmount(discount))return {valid:false,consistent:false};
+    if(discounts.length&&record.discount!==undefined&&moneyPaise(discount)!==moneyPaise(record.discount))return {valid:false,consistent:false};
+  }
+  const paid=round2(opening+payments.reduce((sum,p)=>sum+p.amt,0));
+  const balance=(moneyPaise(total)-moneyPaise(paid)-moneyPaise(discount))/100;
+  return {valid:Number.isFinite(balance)&&balance>=0,consistent:moneyPaise(savedPaid)===moneyPaise(paid),opening,paid,discount,balance};
+}
+function recordedPaid(record){return financialState(record).paid;}
+function preparePaymentHistory(record){
+  const state=financialState(record);
+  if(!state.valid||!state.consistent)throw new Error('The bill has conflicting payment history. No payment was changed.');
+  // An aggregate opening amount has no known receipt date and is not a new receipt.
+  if(state.opening>0&&record.openingPaid===undefined)record.openingPaid=state.opening;
+  if(record.payments===undefined)record.payments=[];
+}
 function allowPayment(record,amount,discount=0,inputId='pay-amount',replacing=0){
-  if(!record || !isActive(record))return paymentError(inputId,'This record is cancelled or deleted.');
-  if(!Number.isFinite(amount)||!Number.isFinite(discount)||amount<0||discount<0||round2(amount+discount)<=0)return paymentError(inputId,'Enter a valid positive payment amount.');
-  const paid=recordedPaid(record);
-  if(!Number.isFinite(paid)||Math.abs(paid-Number(record.paid||0))>0.005)return paymentError(inputId,'Payment history does not match this bill. Review the bill before recording another payment.');
-  const balance=round2(record.total-paid+replacing);
-  if(round2(amount+discount)>balance+0.005)return paymentError(inputId,'Payment plus discount cannot exceed the remaining balance of '+fc(balance)+'.');
+  if(!record||!isActive(record))return paymentError(inputId,'This record is cancelled or deleted.');
+  if(!Number.isFinite(parseMoneyInput(amount))||!Number.isFinite(parseMoneyInput(discount))||moneyPaise(amount)+moneyPaise(discount)<=0)return paymentError(inputId,'Enter positive amounts with at most two decimal places.');
+  const state=financialState(record);
+  if(!state.valid||!state.consistent)return paymentError(inputId,'Payment history does not match this bill. The original record has been preserved for review.');
+  if(!Number.isFinite(replacing)||replacing<0)return paymentError(inputId,'The selected payment is invalid.');
+  const balance=moneyPaise(state.balance)+moneyPaise(replacing);
+  if(moneyPaise(amount)+moneyPaise(discount)>balance)return paymentError(inputId,'Payment plus discount cannot exceed the remaining balance of '+fc(balance/100)+'.');
   document.getElementById('payment-validation-error')?.remove();return true;
 }
-function reconcilePayment(record){record.paid=recordedPaid(record);record.balance=round2(record.total-record.paid);record.updatedAt=new Date().toISOString();}
+function reconcilePayment(record){
+  const state=financialState(record);
+  if(!state.valid)throw new Error('The payment would create an invalid balance. No changes were saved.');
+  record.paid=state.paid;record.balance=state.balance;record.updatedAt=new Date().toISOString();
+}
 
 // List state is session-only: changing a view never rewrites business data.
 window.listState = {};
@@ -1123,7 +1168,7 @@ function saveSaleInvoice(andPrint) {
   const validItems = saleItems.filter(i=>i.name&&i.qty>0);
   if(!validItems.length) { toast('Add at least one item!'); return; }
   const t = calcSaleTotal();
-  const received=Number(document.getElementById('inv-paid').value);
+  const received=parseMoneyInput(document.getElementById('inv-paid').value);
   if(!Number.isFinite(received)||received<0||round2(received)>round2(t.total)+0.005){paymentError('inv-paid','Received amount cannot exceed the invoice total.');return;}
   if(t.disc<0||t.disc>t.sub){paymentError('inv-disc','Discount cannot exceed the subtotal.');return;}
   if(editingInvId){
@@ -1153,10 +1198,12 @@ function saveSaleInvoice(andPrint) {
       dispatchStatus:dispStat, customFieldValues:cfVals,
       updatedAt:new Date().toISOString()
     };
-    // Adjust payments if paid amount changed
+    // Preserve an undated historical opening aggregate on an explicit edit.
     if(t.paid > 0 && !existing.payments?.length) {
-      invs[idx].payments = [{date,amt:t.paid,mode:payType,note:''}];
+      invs[idx].openingPaid=existing.openingPaid??existing.paid;
+      invs[idx].payments=[];
     }
+    reconcilePayment(invs[idx]);
     DB.set('invoices', invs);
     editingInvId = null;
     toast(`Invoice ${existing.invoiceNo} updated! ✓`);
@@ -1441,13 +1488,13 @@ function openPayModal(invId){
 }
 function savePayment(){
   const invId=document.getElementById('pay-inv-id').value;
-  const amt=round2(Number(document.getElementById('pay-amount').value));
+  const amt=parseMoneyInput(document.getElementById('pay-amount').value);
   const mode=document.getElementById('pay-mode').value;
   const note=document.getElementById('pay-note').value.trim();
   if(amt<=0){toast('Enter amount!');return;}
   const invs=getInvoices(); const inv=invs.find(i=>i.id===invId); if(!inv) return;
   if(!allowPayment(inv,amt,0,'pay-amount'))return;
-  if(!inv.payments) inv.payments=[];
+  preparePaymentHistory(inv);
   inv.payments.push({date:today(),amt,mode,note});
   reconcilePayment(inv);
   DB.set('invoices',invs);
@@ -2491,15 +2538,15 @@ window.renderOutstandingRep = function() {
 const _origSavePayment = window.savePayment;
 window.savePayment = function() {
   const invId    = document.getElementById('pay-inv-id').value;
-  const amt      = round2(Number(document.getElementById('pay-amount').value));
-  const discount = round2(Number(document.getElementById('pay-discount').value));
+  const amt      = parseMoneyInput(document.getElementById('pay-amount').value);
+  const discount = parseMoneyInput(document.getElementById('pay-discount').value);
   const mode     = document.getElementById('pay-mode').value;
   const note     = document.getElementById('pay-note').value.trim();
   if (amt <= 0 && discount <= 0) { toast('Enter amount or discount!'); return; }
   const invs = getInvoices();
   const inv  = invs.find(i => i.id === invId); if (!inv) return;
   if(!allowPayment(inv,amt,discount,'pay-amount'))return;
-  if (!inv.payments) inv.payments = [];
+  preparePaymentHistory(inv);
   const totalDeducted = amt + discount;
   if (amt > 0)      inv.payments.push({ date: today(), amt, mode, note });
   if (discount > 0) inv.payments.push({ date: today(), amt: discount, mode: 'Discount', note: 'Settlement discount' });
@@ -3475,8 +3522,8 @@ window.spaSelectInv = function(){
 
 window.saveStandalonePayment = function(){
   const id       = document.getElementById('spa-inv-select').value;
-  const amt      = round2(Number(document.getElementById('spa-amount').value));
-  const discount = round2(Number(document.getElementById('spa-discount').value));
+  const amt      = parseMoneyInput(document.getElementById('spa-amount').value);
+  const discount = parseMoneyInput(document.getElementById('spa-discount').value);
   const mode     = document.getElementById('spa-mode').value;
   const note     = document.getElementById('spa-note').value.trim();
   if(!id){toast('Select an invoice!');return;}
@@ -3484,7 +3531,7 @@ window.saveStandalonePayment = function(){
   const invs = getInvoices();
   const inv  = invs.find(i=>i.id===id); if(!inv) return;
   if(!allowPayment(inv,amt,discount,'spa-amount'))return;
-  if(!inv.payments) inv.payments=[];
+  preparePaymentHistory(inv);
   if(amt>0)      inv.payments.push({date:today(),amt,mode,note});
   if(discount>0) inv.payments.push({date:today(),amt:discount,mode:'Discount',note:'Settlement discount'});
   reconcilePayment(inv);
@@ -3995,7 +4042,7 @@ window.editPayment = function(invId, payIdx){
 };
 
 window.saveEditPayment = function(invId, payIdx){
-  const amt  = round2(Number(document.getElementById('ep-amt').value));
+  const amt  = parseMoneyInput(document.getElementById('ep-amt').value);
   const mode = document.getElementById('ep-mode').value;
   const date = document.getElementById('ep-date').value;
   const note = document.getElementById('ep-note').value.trim();
@@ -7885,7 +7932,7 @@ window.openPurPayModal = function(purId) {
 
 window.savePurPayment = function() {
   const purId = document.getElementById('pur-pay-bill-id').value;
-  const amt   = round2(Number(document.getElementById('pur-pay-amt').value));
+  const amt   = parseMoneyInput(document.getElementById('pur-pay-amt').value);
   const date  = document.getElementById('pur-pay-date').value || today();
   const mode  = document.getElementById('pur-pay-mode').value;
   const note  = document.getElementById('pur-pay-note').value.trim();
@@ -7896,7 +7943,7 @@ window.savePurPayment = function() {
   const pur  = purs.find(p=>p.id===purId); if (!pur) return;
 
   if(!allowPayment(pur,amt,0,'pur-pay-amt'))return;
-  if (!pur.payments) pur.payments = [];
+  preparePaymentHistory(pur);
   pur.payments.push({ date, amt, mode, note });
   reconcilePayment(pur);
   DB.set('purchases', purs);
@@ -8644,31 +8691,31 @@ window.saveSettlement = function(partyId, partyName) {
   const invs  = window._settleInvs || [];
   const mode  = document.getElementById('settle-mode')?.value || 'Cash';
   const date  = document.getElementById('settle-date')?.value || today();
-  const disc = round2(Number(document.getElementById('settle-discount')?.value||0));
+  const disc = parseMoneyInput(document.getElementById('settle-discount')?.value||0);
 
   const allAllocos = [];
   invs.forEach(inv => {
     const inp = document.getElementById('si-'+inv.id);
-    const amt = parseFloat(inp?.value||0);
+    const amt = parseMoneyInput(inp?.value||0);
     if (amt > 0) allAllocos.push({ invId: inv.id, invNo: inv.invoiceNo, amt });
   });
 
   if (!allAllocos.length && disc<=0) { toast('Enter at least one amount!'); return; }
 
   const dbInvs = getInvoices();
-  const rawAmounts=invs.map(inv=>Number(document.getElementById('si-'+inv.id)?.value||0));
+  const rawAmounts=invs.map(inv=>parseMoneyInput(document.getElementById('si-'+inv.id)?.value||0));
   if(rawAmounts.some(n=>!Number.isFinite(n)||n<0)||!Number.isFinite(disc)||disc<0){paymentError('settle-discount','Enter valid non-negative amounts.');return;}
   for(const row of allAllocos){const record=dbInvs.find(i=>i.id===row.invId);if(!allowPayment(record,round2(row.amt),0,'si-'+row.invId))return;}
-  const received=round2(Number(document.getElementById('settle-total-inp')?.value||0));
+  const received=parseMoneyInput(document.getElementById('settle-total-inp')?.value||0);
   const allocated=round2(allAllocos.reduce((sum,r)=>sum+r.amt,0));
-  if(received>0&&Math.abs(received-allocated)>0.005){paymentError('settle-total-inp','Total received must match the allocated payments.');return;}
-  const discountRecord=dbInvs.find(i=>(i.partyId===partyId||i.partyName===partyName)&&isActive(i)&&round2(i.total-recordedPaid(i)-(allAllocos.find(r=>r.invId===i.id)?.amt||0))>0);
-  if(disc>0&&(!discountRecord||disc>round2(discountRecord.total-recordedPaid(discountRecord)-(allAllocos.find(r=>r.invId===discountRecord.id)?.amt||0))+0.005)){paymentError('settle-discount','Discount cannot exceed the remaining balance.');return;}
+  if(!Number.isFinite(received)||(received>0&&moneyPaise(received)!==moneyPaise(allocated))){paymentError('settle-total-inp','Total received must match the allocated payments.');return;}
+  const discountRecord=dbInvs.find(i=>(i.partyId===partyId||i.partyName===partyName)&&isActive(i)&&financialState(i).balance-(allAllocos.find(r=>r.invId===i.id)?.amt||0)>0);
+  if(disc>0&&(!discountRecord||!allowPayment(discountRecord,allAllocos.find(r=>r.invId===discountRecord.id)?.amt||0,disc,'settle-discount')))return;
   let totalApplied = 0;
 
   allAllocos.forEach(({invId, invNo, amt}) => {
     const inv = dbInvs.find(i=>i.id===invId); if(!inv) return;
-    if (!inv.payments) inv.payments = [];
+    preparePaymentHistory(inv);
     inv.payments.push({ date, amt:round2(amt), mode, note: `Settlement` });
     reconcilePayment(inv);
     totalApplied += amt;
@@ -8678,7 +8725,7 @@ window.saveSettlement = function(partyId, partyName) {
   if (disc > 0) {
     const firstUnpaid = discountRecord;
     if (firstUnpaid) {
-      if (!firstUnpaid.payments) firstUnpaid.payments = [];
+      preparePaymentHistory(firstUnpaid);
       firstUnpaid.payments.push({ date, amt: disc, mode: 'Discount', note: 'Settlement discount' });
       reconcilePayment(firstUnpaid);
     }
@@ -9588,7 +9635,7 @@ window.poutToggleFull = function(bid, checked) {
 };
 
 window.poutAutoAllocate = function() {
-  const total = parseFloat(document.getElementById('pout-amount')?.value)||0;
+  const total = parseMoneyInput(document.getElementById('pout-amount')?.value||0);
   document.getElementById('pout-total-show').textContent = fc(total);
   if (!total || !window._poutBills.length) { poutRecalc(); return; }
 
@@ -9610,7 +9657,7 @@ window.poutRecalc = function() {
   document.querySelectorAll('.pout-inp').forEach(inp => {
     allocated += parseFloat(inp.value)||0;
   });
-  const total = parseFloat(document.getElementById('pout-amount')?.value)||0;
+  const total = parseMoneyInput(document.getElementById('pout-amount')?.value||0);
   const unalloc = total - allocated;
 
   const el = document.getElementById('pout-allocated');
@@ -9624,7 +9671,7 @@ window.poutRecalc = function() {
 window.savePoutPayment = function() {
   const partyId   = document.getElementById('pout-party-id').value;
   const partyName = document.getElementById('pout-party').value.trim();
-  const totalAmt  = parseFloat(document.getElementById('pout-amount')?.value)||0;
+  const totalAmt  = parseMoneyInput(document.getElementById('pout-amount')?.value||0);
   const date      = document.getElementById('pout-date')?.value || today();
   const mode      = document.getElementById('pout-mode')?.value || 'Cash';
   const note      = document.getElementById('pout-note')?.value.trim() || '';
@@ -9636,7 +9683,7 @@ window.savePoutPayment = function() {
   const allocations = [];
   (window._poutBills||[]).forEach(bill => {
     const inp = document.getElementById('pi-'+bill.id);
-    const amt = parseFloat(inp?.value||0);
+    const amt = parseMoneyInput(inp?.value||0);
     if (amt > 0) allocations.push({ billId: bill.id, amt });
   });
 
@@ -9646,7 +9693,7 @@ window.savePoutPayment = function() {
 
   // Apply payments to purchase bills
   const purs = getPurchases();
-  const rawAmounts=(window._poutBills||[]).map(b=>Number(document.getElementById('pi-'+b.id)?.value||0));
+  const rawAmounts=(window._poutBills||[]).map(b=>parseMoneyInput(document.getElementById('pi-'+b.id)?.value||0));
   if(!Number.isFinite(totalAmt)||rawAmounts.some(n=>!Number.isFinite(n)||n<0)){paymentError('pout-amount','Enter valid positive payment amounts.');return;}
   const allocated=round2(allocations.reduce((sum,row)=>sum+row.amt,0));
   if(Math.abs(round2(totalAmt)-allocated)>0.005){paymentError('pout-amount','Payment amount must match the bill allocations.');return;}
@@ -9654,7 +9701,7 @@ window.savePoutPayment = function() {
   let totalApplied = 0;
   allocations.forEach(({billId, amt}) => {
     const pur = purs.find(p=>p.id===billId); if(!pur) return;
-    if (!pur.payments) pur.payments = [];
+    preparePaymentHistory(pur);
     pur.payments.push({ date, amt:round2(amt), mode, note: note || `Payment Out` });
     reconcilePayment(pur);
     totalApplied += amt;
