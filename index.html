@@ -1381,7 +1381,7 @@ function createFinancialReview(kind,partyId,partyName,records){
 }
 function financialReviewRecords(review,token,kind,partyId,partyName,records,inputId){
   const message='The selected party or financial records changed. Reopen the payment review before saving. No payment was changed.';
-  if(!review||review.token!==token||review.kind!==kind||!partyId||review.partyId!==partyId||review.partyName!==partyName||new Set(review.records.map(r=>r.id)).size!==review.records.length){paymentError(inputId,message);return null;}
+  if(!review||review.token!==token||review.kind!==kind||!partyId||review.partyId!==partyId||String(review.partyName).trim()!==String(partyName).trim()||new Set(review.records.map(r=>r.id)).size!==review.records.length){paymentError(inputId,message);return null;}
   const current=[];
   for(const evidence of review.records){
     const matches=records.filter(record=>record.id===evidence.id),record=matches[0],state=financialState(record);
@@ -10129,7 +10129,10 @@ window.printFromList = function(id) {
 // Party autocomplete for payment out
 window.poutPartyAC = function(val) {
   const list = document.getElementById('ac-pout-party');
-  document.getElementById('pout-party-id').value = '';
+  document.getElementById('pout-party-id').value='';
+  window._poutBills=[];window._poutReview=null;
+  document.getElementById('pout-bills-wrap').textContent='Select a supplier again to review its bills. No association is inferred from typed text.';
+  poutRecalc();
   if (!val) { list.style.display='none'; return; }
   const q = val.toLowerCase();
   const res = getParties().filter(p =>
@@ -10154,10 +10157,11 @@ window._poutBills = [];
 
 window.poutLoadBills = function(partyId, partyName) {
   const bills = getPurchases()
-    .filter(p => (p.partyId===partyId||p.partyName===partyName) && (billBalance(p)||0)>0)
+    .filter(p=>!!partyId&&p.partyId===partyId&&isActive(p)&&billBalance(p)>0)
     .slice().sort((a,b) => (a.date||'').localeCompare(b.date||'')); // oldest first (FIFO)
 
-  window._poutBills = bills;
+  window._poutBills=bills;
+  window._poutReview=createFinancialReview('payment-out',partyId,partyName,bills);
 
   const wrap = document.getElementById('pout-bills-wrap');
   if (!bills.length) {
@@ -10248,7 +10252,7 @@ window.poutRecalc = function() {
   if (et) et.textContent = fc(total);
 };
 
-window.savePoutPayment = function() {
+window.savePoutPayment = function(reviewToken) {
   const partyId   = document.getElementById('pout-party-id').value;
   const partyName = document.getElementById('pout-party').value.trim();
   const totalAmt  = parseMoneyInput(document.getElementById('pout-amount')?.value||0);
@@ -10256,14 +10260,18 @@ window.savePoutPayment = function() {
   const mode      = document.getElementById('pout-mode')?.value || 'Cash';
   const note      = document.getElementById('pout-note')?.value.trim() || '';
 
-  if (!partyName) { toast('Select a supplier!'); return; }
+  const modal=document.getElementById('pay-out-modal');
+  if(!partyId||!partyName||!modal?.classList.contains('show')){paymentError('pout-party','Select a supplier and review its bills before saving.');return;}
+  const purs=getPurchases();
+  const bills=financialReviewRecords(window._poutReview,reviewToken,'payment-out',partyId,partyName,purs,'pout-party');
+  if(!bills)return;
   if (totalAmt <= 0) { toast('Enter payment amount!'); return; }
 
   // Collect allocations
   const allocations = [];
-  (window._poutBills||[]).forEach(bill => {
+  bills.forEach(bill => {
     const inp = document.getElementById('pi-'+bill.id);
-    const amt = parseMoneyInput(inp?.value||0);
+    const amt=parseMoneyInput(inp&&modal.contains(inp)?inp.value:NaN);
     if (amt > 0) allocations.push({ billId: bill.id, amt });
   });
 
@@ -10272,8 +10280,7 @@ window.savePoutPayment = function() {
   }
 
   // Apply payments to purchase bills
-  const purs = getPurchases();
-  const rawAmounts=(window._poutBills||[]).map(b=>parseMoneyInput(document.getElementById('pi-'+b.id)?.value||0));
+  const rawAmounts=bills.map(b=>{const input=document.getElementById('pi-'+b.id);return parseMoneyInput(input&&modal.contains(input)?input.value:NaN);});
   if(!Number.isFinite(totalAmt)||rawAmounts.some(n=>!Number.isFinite(n)||n<0)){paymentError('pout-amount','Enter valid positive payment amounts.');return;}
   const allocated=round2(allocations.reduce((sum,row)=>sum+row.amt,0));
   if(Math.abs(round2(totalAmt)-allocated)>0.005){paymentError('pout-amount','Payment amount must match the bill allocations.');return;}
@@ -10312,7 +10319,7 @@ window.openPayOutModal = function() {
   document.getElementById('pout-allocated').textContent = '₹0.00';
   document.getElementById('pout-unalloc').textContent = '₹0.00';
   document.getElementById('pout-total-show').textContent = '₹0.00';
-  window._poutBills = [];
+  window._poutBills=[];window._poutReview=null;
   document.getElementById('pay-out-modal').classList.add('show');
   setTimeout(()=>document.getElementById('pout-party')?.focus(), 80);
 };
@@ -11032,7 +11039,7 @@ function installXLStorageBindings(){
     window[name]=function(...args){if(store.isActive()&&!playing){defer(original,this,args);return;}return original.apply(this,args);};
   }
   const mutationNames=['quickAddParty','saveSaleInvoice','quickDispatch','toggleDispatch','savePayment','saveRetail','savePurchase','saveItem','saveParty','addCustomField','removeCustomField','saveSettings','saveQuickItem','savePrevBill','cloudPull','cloudPush','createNewBin','pbQuickAddParty','pbSaveAll','saveStandalonePayment','saveEditPayment','saveQuickParty','xlProcessCSV','saveGsUrl','savePrintSettings','savePrintSettingsUI','cancelInvoice','restoreInvoice','saveQuickPhone','purBulkQuickAdd','purBulkSaveAll','savePurPayment','saveSettlement','savePoutPayment','toggleSlCol','toggleCompactMode','gsPull','gsPush'];
-  for(const name of mutationNames){const original=window[name];if(typeof original!=='function')continue;window[name]=function(...args){const callArgs=name==='saveSettlement'&&args[2]===undefined?[args[0],args[1],window._settleReview?.token]:args;return window.XLRunAction(name,()=>original.apply(this,callArgs));};}
+  for(const name of mutationNames){const original=window[name];if(typeof original!=='function')continue;window[name]=function(...args){const callArgs=name==='saveSettlement'&&args[2]===undefined?[args[0],args[1],window._settleReview?.token]:name==='savePoutPayment'&&args[0]===undefined?[window._poutReview?.token]:args;return window.XLRunAction(name,()=>original.apply(this,callArgs));};}
   const pin=window.withDeletePin;
   window.withDeletePin=function(label,callback,changePin){return pin(label,()=>window.XLRunAction(label,callback,true),changePin);};
   const remove=Element.prototype.remove;
