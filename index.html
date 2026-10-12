@@ -708,6 +708,11 @@ const getInvoices  = () => DB.get('invoices')  || [];
 const getPurchases = () => DB.get('purchases') || [];
 const getRetail    = () => DB.get('retail')    || [];
 
+// Shared record predicates are available to every script block.
+function isCancelled(record) { return !!record && (record.status === 'cancelled' || record.dispatchStatus === 'cancelled'); }
+function isDeleted(record) { return !!record && !!record.deletedAt; }
+function isActive(record) { return !!record && !isCancelled(record) && !isDeleted(record); }
+
 const genId   = () => Date.now().toString(36) + Math.random().toString(36).slice(2,5);
 const today   = () => new Date().toISOString().slice(0,10);
 const fmtDate = d => { if(!d) return '-'; const[y,m,dd]=d.split('-'); return `${dd}/${m}/${y}`; };
@@ -5305,6 +5310,7 @@ code.inline{background:var(--gray-100);padding:2px 6px;border-radius:4px;font-fa
 // ═══════════════════════════════════════════════════════════
 // PRINT SETTINGS — default values
 // ═══════════════════════════════════════════════════════════
+window.getPrintSettings = getPrintSettings;
 function getPrintSettings(){
   const def = {
     showSrNo:      true,
@@ -6324,11 +6330,14 @@ const PAGE_SIZE = 20;
 
 // Page state for each list
 const pgState = { sales:1, purchases:1, items:1, parties:1 };
+window.pgState = pgState;
+window.PAGE_SIZE = PAGE_SIZE;
+window.renderPageBtns = renderPageBtns;
 
 // ════════════════════════════════════════════════════════
 // HELPERS
 // ════════════════════════════════════════════════════════
-function isCancelled(inv) { return inv.status === 'cancelled' || inv.dispatchStatus === 'cancelled'; }
+
 
 function getInvoiceStatus(inv) {
   if (isCancelled(inv)) return 'cancelled';
@@ -8190,6 +8199,7 @@ tr.soft-deleted td{opacity:.45;text-decoration:line-through}
 // ════════════════════════════════════════════════════════
 const getAuditLog = () => DB.get('audit') || [];
 
+window.auditLog = auditLog;
 function auditLog(type, entityType, entityId, label, details) {
   // type: create|edit|delete|payment|dispatch|cancel|restore|sync
   const log = getAuditLog();
@@ -9117,22 +9127,21 @@ window.renderSalesList = function() {
     (i.partyName+i.invoiceNo+(i.notes||'')).toLowerCase().includes(srch));
 
   // Pill filters — accurate status logic
-  const isCan = i => i.status === 'cancelled' || i.dispatchStatus === 'cancelled';
   switch (pill) {
-    case 'cash-due':         f = f.filter(i => !isCan(i) && i.paymentType === 'Cash'   && (i.balance||0) > 0); break;
-    case 'credit-due':       f = f.filter(i => !isCan(i) && i.paymentType === 'Credit' && (i.balance||0) > 0); break;
-    case 'pending-dispatch': f = f.filter(i => !isCan(i) && i.dispatchStatus === 'pending');   break;
-    case 'dispatched':       f = f.filter(i => !isCan(i) && i.dispatchStatus === 'dispatched'); break;
-    case 'draft':            f = f.filter(i => !isCan(i) && i.dispatchStatus === 'draft');      break;
-    case 'paid':             f = f.filter(i => !isCan(i) && (i.balance||0) <= 0 && i.total > 0); break;
-    case 'cancelled':        f = f.filter(i =>  isCan(i)); break;
+    case 'cash-due':         f = f.filter(i => !isCancelled(i) && i.paymentType === 'Cash'   && (i.balance||0) > 0); break;
+    case 'credit-due':       f = f.filter(i => !isCancelled(i) && i.paymentType === 'Credit' && (i.balance||0) > 0); break;
+    case 'pending-dispatch': f = f.filter(i => !isCancelled(i) && i.dispatchStatus === 'pending');   break;
+    case 'dispatched':       f = f.filter(i => !isCancelled(i) && i.dispatchStatus === 'dispatched'); break;
+    case 'draft':            f = f.filter(i => !isCancelled(i) && i.dispatchStatus === 'draft');      break;
+    case 'paid':             f = f.filter(i => !isCancelled(i) && (i.balance||0) <= 0 && i.total > 0); break;
+    case 'cancelled':        f = f.filter(i =>  isCancelled(i)); break;
     default: break; // 'all' — show everything including cancelled
   }
 
   f = f.slice().reverse(); // newest first
 
   // Summary — exclude cancelled from totals
-  const active = f.filter(i => !isCan(i));
+  const active = f.filter(i => !isCancelled(i));
   const tT = active.reduce((a,i) => a+(i.total||0), 0);
   const tP = active.reduce((a,i) => a+(i.paid||0),  0);
   const tB = active.reduce((a,i) => a+(i.balance||0), 0);
@@ -9161,7 +9170,7 @@ window.renderSalesList = function() {
 
   // 3-dot menu builder
   const dotMenu = inv => {
-    const can = isCan(inv);
+    const can = isCancelled(inv);
     return `
       <div class="dot-menu-wrap">
         <button class="dot-btn" onclick="v16DotToggle('v16dm-${inv.id}',event)">⋮</button>
@@ -9185,7 +9194,7 @@ window.renderSalesList = function() {
   };
 
   const statusBadgeLocal = inv => {
-    if (isCan(inv))                           return '<span class="status-cancelled">✕ Cancelled</span>';
+    if (isCancelled(inv))                           return '<span class="status-cancelled">✕ Cancelled</span>';
     if ((inv.balance||0) <= 0 && inv.total>0) return '<span class="status-paid">✓ Paid</span>';
     if (inv.paymentType==='Cash'   && (inv.balance||0)>0) return '<span class="status-cashdue">💵 Cash Due</span>';
     if (inv.paymentType==='Credit' && (inv.balance||0)>0) return '<span class="status-creditdue">📋 Credit Due</span>';
@@ -9204,7 +9213,7 @@ window.renderSalesList = function() {
       <th class="no-print" style="text-align:right">Actions</th>
     </tr></thead>
     <tbody>${pageRows.map((inv, idx) => {
-      const can = isCan(inv);
+      const can = isCancelled(inv);
       const rowNum = (pg-1)*pgSize + idx + 1;
       return `<tr ondblclick="viewInvoice('${inv.id}')" ${can ? 'style="background:#fef2f2"' : ''}>
         <td style="color:var(--gray-400);font-size:11px">${rowNum}</td>
@@ -9224,7 +9233,7 @@ window.renderSalesList = function() {
       </tr>`;
     }).join('')}</tbody>
     <tfoot><tr>
-      <td colspan="4">Total ${f.length} ${f.filter(i=>isCan(i)).length>0?`(${f.filter(i=>isCan(i)).length} cancelled)`:''}</td>
+      <td colspan="4">Total ${f.length} ${f.filter(i=>isCancelled(i)).length>0?`(${f.filter(i=>isCancelled(i)).length} cancelled)`:''}</td>
       <td style="text-align:right">${fc(tT)}</td>
       <td style="text-align:right;color:var(--r)">${fc(tB)}</td>
       <td colspan="3"></td>
