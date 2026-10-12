@@ -713,6 +713,27 @@ function isCancelled(record) { return !!record && (record.status === 'cancelled'
 function isDeleted(record) { return !!record && !!record.deletedAt; }
 function isActive(record) { return !!record && !isCancelled(record) && !isDeleted(record); }
 
+function round2(value){return Math.round((Number(value)+Number.EPSILON)*100)/100;}
+function paymentError(inputId,message){
+  let error=document.getElementById('payment-validation-error');
+  if(!error){error=document.createElement('div');error.id='payment-validation-error';error.setAttribute('role','alert');error.style.cssText='color:var(--r);margin:8px 0;font-weight:600';}
+  const input=document.getElementById(inputId);
+  if(input){input.insertAdjacentElement('afterend',error);input.setAttribute('aria-invalid','true');input.focus();}
+  else document.querySelector('main').prepend(error);
+  error.textContent=message;toast(message);return false;
+}
+function recordedPaid(record){return round2((record.payments||[]).reduce((sum,p)=>sum+Number(p.amt||0),0));}
+function allowPayment(record,amount,discount=0,inputId='pay-amount',replacing=0){
+  if(!record || !isActive(record))return paymentError(inputId,'This record is cancelled or deleted.');
+  if(!Number.isFinite(amount)||!Number.isFinite(discount)||amount<0||discount<0||round2(amount+discount)<=0)return paymentError(inputId,'Enter a valid positive payment amount.');
+  const paid=recordedPaid(record);
+  if(!Number.isFinite(paid)||Math.abs(paid-Number(record.paid||0))>0.005)return paymentError(inputId,'Payment history does not match this bill. Review the bill before recording another payment.');
+  const balance=round2(record.total-paid+replacing);
+  if(round2(amount+discount)>balance+0.005)return paymentError(inputId,'Payment plus discount cannot exceed the remaining balance of '+fc(balance)+'.');
+  document.getElementById('payment-validation-error')?.remove();return true;
+}
+function reconcilePayment(record){record.paid=recordedPaid(record);record.balance=round2(record.total-record.paid);record.updatedAt=new Date().toISOString();}
+
 // List state is session-only: changing a view never rewrites business data.
 window.listState = {};
 function listStateFor(key) { return window.listState[key] ||= {page:1,size:20,col:'date',dir:'desc',filter:''}; }
@@ -1086,6 +1107,14 @@ function saveSaleInvoice(andPrint) {
   const validItems = saleItems.filter(i=>i.name&&i.qty>0);
   if(!validItems.length) { toast('Add at least one item!'); return; }
   const t = calcSaleTotal();
+  const received=Number(document.getElementById('inv-paid').value);
+  if(!Number.isFinite(received)||received<0||round2(received)>round2(t.total)+0.005){paymentError('inv-paid','Received amount cannot exceed the invoice total.');return;}
+  if(t.disc<0||t.disc>t.sub){paymentError('inv-disc','Discount cannot exceed the subtotal.');return;}
+  if(editingInvId){
+    const prior=getInvoices().find(i=>i.id===editingInvId);
+    if(!prior||!isActive(prior)){paymentError('inv-paid','Cancelled or deleted invoices cannot be edited.');return;}
+    if(round2(t.total)<recordedPaid(prior)-0.005 || Math.abs(received-recordedPaid(prior))>0.005){paymentError('inv-paid','Keep recorded payments unchanged. Change payments through the payment history.');return;}
+  }
   const s = getSettings();
   // Collect custom field values
   const cfVals = {};
@@ -1396,14 +1425,15 @@ function openPayModal(invId){
 }
 function savePayment(){
   const invId=document.getElementById('pay-inv-id').value;
-  const amt=parseFloat(document.getElementById('pay-amount').value)||0;
+  const amt=round2(Number(document.getElementById('pay-amount').value));
   const mode=document.getElementById('pay-mode').value;
   const note=document.getElementById('pay-note').value.trim();
   if(amt<=0){toast('Enter amount!');return;}
   const invs=getInvoices(); const inv=invs.find(i=>i.id===invId); if(!inv) return;
+  if(!allowPayment(inv,amt,0,'pay-amount'))return;
   if(!inv.payments) inv.payments=[];
   inv.payments.push({date:today(),amt,mode,note});
-  inv.paid=(inv.paid||0)+amt; inv.balance=Math.max(0,(inv.total||0)-inv.paid);
+  reconcilePayment(inv);
   DB.set('invoices',invs);
   closeModal('pay-modal');
   toast(`${fc(amt)} payment saved! Balance: ${fc(inv.balance)} ✓`);
@@ -2443,19 +2473,19 @@ window.renderOutstandingRep = function() {
 const _origSavePayment = window.savePayment;
 window.savePayment = function() {
   const invId    = document.getElementById('pay-inv-id').value;
-  const amt      = parseFloat(document.getElementById('pay-amount').value)   || 0;
-  const discount = parseFloat(document.getElementById('pay-discount').value) || 0;
+  const amt      = round2(Number(document.getElementById('pay-amount').value));
+  const discount = round2(Number(document.getElementById('pay-discount').value));
   const mode     = document.getElementById('pay-mode').value;
   const note     = document.getElementById('pay-note').value.trim();
   if (amt <= 0 && discount <= 0) { toast('Enter amount or discount!'); return; }
   const invs = getInvoices();
   const inv  = invs.find(i => i.id === invId); if (!inv) return;
+  if(!allowPayment(inv,amt,discount,'pay-amount'))return;
   if (!inv.payments) inv.payments = [];
   const totalDeducted = amt + discount;
   if (amt > 0)      inv.payments.push({ date: today(), amt, mode, note });
   if (discount > 0) inv.payments.push({ date: today(), amt: discount, mode: 'Discount', note: 'Settlement discount' });
-  inv.paid    = (inv.paid || 0) + totalDeducted;
-  inv.balance = Math.max(0, (inv.total || 0) - inv.paid);
+  reconcilePayment(inv);
   DB.set('invoices', invs);
   closeModal('pay-modal');
   toast(`Payment saved! Received: ${fc(amt)} + Discount: ${fc(discount)} | Balance: ${fc(inv.balance)} ✓`);
@@ -3122,6 +3152,9 @@ function pbSaveAll() {
   const validRows = pbRows.filter(r => r.total && parseFloat(r.total) > 0);
   if (!validRows.length) { toast('Enter at least one bill with amount!'); return; }
 
+  if(validRows.some(r=>!Number.isFinite(Number(r.total))||!Number.isFinite(Number(r.paid||0))||Number(r.paid||0)<0||round2(r.paid||0)>round2(r.total)+0.005)){
+    paymentError('bulk-party-name','Paid amount cannot exceed the old bill total.');return;
+  }
   const invs = getInvoices();
   let count = 0;
   validRows.forEach((r, i) => {
@@ -3411,20 +3444,21 @@ window.spaSelectInv = function(){
 
 window.saveStandalonePayment = function(){
   const id       = document.getElementById('spa-inv-select').value;
-  const amt      = parseFloat(document.getElementById('spa-amount').value)||0;
-  const discount = parseFloat(document.getElementById('spa-discount').value)||0;
+  const amt      = round2(Number(document.getElementById('spa-amount').value));
+  const discount = round2(Number(document.getElementById('spa-discount').value));
   const mode     = document.getElementById('spa-mode').value;
   const note     = document.getElementById('spa-note').value.trim();
   if(!id){toast('Select an invoice!');return;}
   if(amt<=0&&discount<=0){toast('Enter amount or discount!');return;}
   const invs = getInvoices();
   const inv  = invs.find(i=>i.id===id); if(!inv) return;
+  if(!allowPayment(inv,amt,discount,'spa-amount'))return;
   if(!inv.payments) inv.payments=[];
   if(amt>0)      inv.payments.push({date:today(),amt,mode,note});
   if(discount>0) inv.payments.push({date:today(),amt:discount,mode:'Discount',note:'Settlement discount'});
-  inv.paid    = inv.payments.reduce((a,p)=>a+p.amt,0);
-  inv.balance = Math.max(0,(inv.total||0)-inv.paid);
+  reconcilePayment(inv);
   DB.set('invoices',invs);
+  if(typeof auditLog==='function')auditLog('payment','invoice',id,inv.invoiceNo,'Standalone payment recorded');
   closeModal('standalone-pay-modal');
   toast(`Payment saved! Balance: ${fc(inv.balance)} ✓`);
   renderPaymentLedger();
@@ -3930,17 +3964,18 @@ window.editPayment = function(invId, payIdx){
 };
 
 window.saveEditPayment = function(invId, payIdx){
-  const amt  = parseFloat(document.getElementById('ep-amt').value)||0;
+  const amt  = round2(Number(document.getElementById('ep-amt').value));
   const mode = document.getElementById('ep-mode').value;
   const date = document.getElementById('ep-date').value;
   const note = document.getElementById('ep-note').value.trim();
   if(amt<=0){ toast('Enter valid amount!'); return; }
   const invs = getInvoices();
   const inv  = invs.find(i=>i.id===invId); if(!inv) return;
+  if(!inv.payments?.[payIdx] || !allowPayment(inv,amt,0,'ep-amt',Number(inv.payments[payIdx].amt||0)))return;
   inv.payments[payIdx] = {date, amt, mode, note};
-  inv.paid    = inv.payments.reduce((a,p)=>a+p.amt, 0);
-  inv.balance = Math.max(0,(inv.total||0)-inv.paid);
+  reconcilePayment(inv);
   DB.set('invoices', invs);
+  if(typeof auditLog==='function')auditLog('edit','payment',invId,inv.invoiceNo,'Payment edited');
   document.getElementById('edit-pay-modal')?.remove();
   toast('Payment updated! ✓');
   renderPaymentLedger();
@@ -7817,7 +7852,7 @@ window.openPurPayModal = function(purId) {
 
 window.savePurPayment = function() {
   const purId = document.getElementById('pur-pay-bill-id').value;
-  const amt   = parseFloat(document.getElementById('pur-pay-amt').value)||0;
+  const amt   = round2(Number(document.getElementById('pur-pay-amt').value));
   const date  = document.getElementById('pur-pay-date').value || today();
   const mode  = document.getElementById('pur-pay-mode').value;
   const note  = document.getElementById('pur-pay-note').value.trim();
@@ -7827,10 +7862,10 @@ window.savePurPayment = function() {
   const purs = getPurchases();
   const pur  = purs.find(p=>p.id===purId); if (!pur) return;
 
+  if(!allowPayment(pur,amt,0,'pur-pay-amt'))return;
   if (!pur.payments) pur.payments = [];
   pur.payments.push({ date, amt, mode, note });
-  pur.paid    = (pur.paid||0) + amt;
-  pur.balance = Math.max(0, (pur.total||0) - pur.paid);
+  reconcilePayment(pur);
   DB.set('purchases', purs);
 
   closeModal('pur-pay-modal');
@@ -8425,41 +8460,25 @@ window.delRetail = function(id) {
 // ════════════════════════════════════════════════════════
 const _origSaveSaleInvoiceV15 = window.saveSaleInvoice;
 window.saveSaleInvoice = function(andPrint) {
-  const isEdit = !!editingInvId;
+  const editId=editingInvId, before=JSON.stringify(getInvoices());
   _origSaveSaleInvoiceV15(andPrint);
-  // After save, log it (invoice was just saved)
-  setTimeout(()=>{
-    const invs = getInvoices();
-    const inv = isEdit ? invs.find(i=>i.id===editingInvId) : [...invs].reverse()[0];
-    if (inv) auditLog(isEdit?'edit':'create','invoice',inv.id,`${inv.invoiceNo} — ${inv.partyName}`,`Total: ${fc(inv.total)}, Pay: ${inv.paymentType}`);
-  }, 200);
+  const invs=getInvoices();if(JSON.stringify(invs)===before)return;
+  const inv=editId?invs.find(i=>i.id===editId):invs.at(-1);
+  if(inv)auditLog(editId?'edit':'create','invoice',inv.id,inv.invoiceNo,'Invoice saved');
 };
-
-// ════════════════════════════════════════════════════════
-// AUDIT payment saves
-// ════════════════════════════════════════════════════════
 const _origSavePaymentV15 = window.savePayment;
 window.savePayment = function() {
-  const invId = document.getElementById('pay-inv-id')?.value;
-  const amt   = parseFloat(document.getElementById('pay-amount')?.value)||0;
-  const inv   = getInvoices().find(i=>i.id===invId);
+  const id=document.getElementById('pay-inv-id')?.value,before=JSON.stringify(getInvoices());
   _origSavePaymentV15();
-  if(inv && amt>0) auditLog('payment','invoice',invId,`${inv.invoiceNo} — ${inv.partyName}`,`Paid: ${fc(amt)}`);
+  if(JSON.stringify(getInvoices())!==before)auditLog('payment','invoice',id,'Payment saved','');
 };
-
 const _origSavePurPaymentV15 = window.savePurPayment;
 window.savePurPayment = function() {
-  const purId = document.getElementById('pur-pay-bill-id')?.value;
-  const amt   = parseFloat(document.getElementById('pur-pay-amt')?.value)||0;
-  const pur   = getPurchases().find(p=>p.id===purId);
+  const id=document.getElementById('pur-pay-bill-id')?.value,before=JSON.stringify(getPurchases());
   _origSavePurPaymentV15();
-  if(pur && amt>0) auditLog('payment','purchase',purId,`${pur.billNo||'-'} — ${pur.partyName}`,`Paid: ${fc(amt)}`);
+  if(JSON.stringify(getPurchases())!==before)auditLog('payment','purchase',id,'Supplier payment saved','');
 };
 
-// ════════════════════════════════════════════════════════
-// INVOICE-WISE SETTLEMENT PAYMENT MODAL
-// One payment allocated across multiple invoices of a party
-// ════════════════════════════════════════════════════════
 window.openSettlementModal = function(partyId, partyName) {
   const invs = getInvoices().filter(i => (i.partyId===partyId||i.partyName===partyName) && !isCancelled(i) && (i.balance||0)>0);
   if (!invs.length) { toast('No pending invoices for this party.'); return; }
@@ -8592,7 +8611,7 @@ window.saveSettlement = function(partyId, partyName) {
   const invs  = window._settleInvs || [];
   const mode  = document.getElementById('settle-mode')?.value || 'Cash';
   const date  = document.getElementById('settle-date')?.value || today();
-  const disc  = parseFloat(document.getElementById('settle-discount')?.value)||0;
+  const disc = round2(Number(document.getElementById('settle-discount')?.value||0));
 
   const allAllocos = [];
   invs.forEach(inv => {
@@ -8604,25 +8623,31 @@ window.saveSettlement = function(partyId, partyName) {
   if (!allAllocos.length && disc<=0) { toast('Enter at least one amount!'); return; }
 
   const dbInvs = getInvoices();
+  const rawAmounts=invs.map(inv=>Number(document.getElementById('si-'+inv.id)?.value||0));
+  if(rawAmounts.some(n=>!Number.isFinite(n)||n<0)||!Number.isFinite(disc)||disc<0){paymentError('settle-discount','Enter valid non-negative amounts.');return;}
+  for(const row of allAllocos){const record=dbInvs.find(i=>i.id===row.invId);if(!allowPayment(record,round2(row.amt),0,'si-'+row.invId))return;}
+  const received=round2(Number(document.getElementById('settle-total-inp')?.value||0));
+  const allocated=round2(allAllocos.reduce((sum,r)=>sum+r.amt,0));
+  if(received>0&&Math.abs(received-allocated)>0.005){paymentError('settle-total-inp','Total received must match the allocated payments.');return;}
+  const discountRecord=dbInvs.find(i=>(i.partyId===partyId||i.partyName===partyName)&&isActive(i)&&round2(i.total-recordedPaid(i)-(allAllocos.find(r=>r.invId===i.id)?.amt||0))>0);
+  if(disc>0&&(!discountRecord||disc>round2(discountRecord.total-recordedPaid(discountRecord)-(allAllocos.find(r=>r.invId===discountRecord.id)?.amt||0))+0.005)){paymentError('settle-discount','Discount cannot exceed the remaining balance.');return;}
   let totalApplied = 0;
 
   allAllocos.forEach(({invId, invNo, amt}) => {
     const inv = dbInvs.find(i=>i.id===invId); if(!inv) return;
     if (!inv.payments) inv.payments = [];
-    inv.payments.push({ date, amt, mode, note: `Settlement` });
-    inv.paid    = (inv.paid||0) + amt;
-    inv.balance = Math.max(0, (inv.total||0) - inv.paid);
+    inv.payments.push({ date, amt:round2(amt), mode, note: `Settlement` });
+    reconcilePayment(inv);
     totalApplied += amt;
   });
 
   // Apply discount to first unpaid invoice
   if (disc > 0) {
-    const firstUnpaid = dbInvs.find(i=>(i.partyId===partyId||i.partyName===partyName)&&!isCancelled(i)&&(i.balance||0)>0);
+    const firstUnpaid = discountRecord;
     if (firstUnpaid) {
       if (!firstUnpaid.payments) firstUnpaid.payments = [];
       firstUnpaid.payments.push({ date, amt: disc, mode: 'Discount', note: 'Settlement discount' });
-      firstUnpaid.paid    = (firstUnpaid.paid||0) + disc;
-      firstUnpaid.balance = Math.max(0, (firstUnpaid.total||0) - firstUnpaid.paid);
+      reconcilePayment(firstUnpaid);
     }
   }
 
@@ -9588,13 +9613,17 @@ window.savePoutPayment = function() {
 
   // Apply payments to purchase bills
   const purs = getPurchases();
+  const rawAmounts=(window._poutBills||[]).map(b=>Number(document.getElementById('pi-'+b.id)?.value||0));
+  if(!Number.isFinite(totalAmt)||rawAmounts.some(n=>!Number.isFinite(n)||n<0)){paymentError('pout-amount','Enter valid positive payment amounts.');return;}
+  const allocated=round2(allocations.reduce((sum,row)=>sum+row.amt,0));
+  if(Math.abs(round2(totalAmt)-allocated)>0.005){paymentError('pout-amount','Payment amount must match the bill allocations.');return;}
+  for(const row of allocations){const record=purs.find(p=>p.id===row.billId);if(!allowPayment(record,round2(row.amt),0,'pi-'+row.billId))return;}
   let totalApplied = 0;
   allocations.forEach(({billId, amt}) => {
     const pur = purs.find(p=>p.id===billId); if(!pur) return;
     if (!pur.payments) pur.payments = [];
-    pur.payments.push({ date, amt, mode, note: note || `Payment Out` });
-    pur.paid    = (pur.paid||0) + amt;
-    pur.balance = Math.max(0, (pur.total||0) - pur.paid);
+    pur.payments.push({ date, amt:round2(amt), mode, note: note || `Payment Out` });
+    reconcilePayment(pur);
     totalApplied += amt;
   });
   DB.set('purchases', purs);
