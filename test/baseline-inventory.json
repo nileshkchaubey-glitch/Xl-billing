@@ -1,0 +1,3487 @@
+{
+  "blocks": 16,
+  "functions": {
+    "toast": [
+      {
+        "line": 723,
+        "kind": "declaration"
+      }
+    ],
+    "nav": [
+      {
+        "line": 732,
+        "kind": "declaration"
+      },
+      {
+        "line": 2140,
+        "kind": "window assignment"
+      },
+      {
+        "line": 3227,
+        "kind": "window assignment"
+      },
+      {
+        "line": 4264,
+        "kind": "window assignment"
+      },
+      {
+        "line": 5623,
+        "kind": "window assignment"
+      },
+      {
+        "line": 7276,
+        "kind": "window assignment"
+      },
+      {
+        "line": 8604,
+        "kind": "window assignment"
+      }
+    ],
+    "renderDashboard": [
+      {
+        "line": 760,
+        "kind": "declaration"
+      },
+      {
+        "line": 6904,
+        "kind": "window assignment"
+      }
+    ],
+    "ptBadge": [
+      {
+        "line": 826,
+        "kind": "declaration"
+      }
+    ],
+    "dispBadge": [
+      {
+        "line": 827,
+        "kind": "declaration"
+      }
+    ],
+    "partyAC": [
+      {
+        "line": 836,
+        "kind": "declaration"
+      },
+      {
+        "line": 3426,
+        "kind": "window assignment"
+      },
+      {
+        "line": 4099,
+        "kind": "window assignment"
+      },
+      {
+        "line": 5850,
+        "kind": "window assignment"
+      }
+    ],
+    "selectParty": [
+      {
+        "line": 852,
+        "kind": "declaration"
+      },
+      {
+        "line": 3506,
+        "kind": "window assignment"
+      },
+      {
+        "line": 4122,
+        "kind": "window assignment"
+      },
+      {
+        "line": 4314,
+        "kind": "window assignment"
+      },
+      {
+        "line": 7059,
+        "kind": "window assignment"
+      }
+    ],
+    "quickAddParty": [
+      {
+        "line": 858,
+        "kind": "declaration"
+      },
+      {
+        "line": 4068,
+        "kind": "window assignment"
+      }
+    ],
+    "showLastRate": [
+      {
+        "line": 864,
+        "kind": "declaration"
+      }
+    ],
+    "initNewSale": [
+      {
+        "line": 879,
+        "kind": "declaration"
+      },
+      {
+        "line": 4253,
+        "kind": "window assignment"
+      },
+      {
+        "line": 5013,
+        "kind": "window assignment"
+      }
+    ],
+    "addSaleItem": [
+      {
+        "line": 903,
+        "kind": "declaration"
+      },
+      {
+        "line": 5094,
+        "kind": "window assignment"
+      }
+    ],
+    "renderSaleItems": [
+      {
+        "line": 912,
+        "kind": "declaration"
+      },
+      {
+        "line": 4949,
+        "kind": "window assignment"
+      },
+      {
+        "line": 5348,
+        "kind": "window assignment"
+      },
+      {
+        "line": 6120,
+        "kind": "window assignment"
+      }
+    ],
+    "siName": [
+      {
+        "line": 956,
+        "kind": "declaration"
+      }
+    ],
+    "siPack": [
+      {
+        "line": 960,
+        "kind": "declaration"
+      },
+      {
+        "line": 9941,
+        "kind": "window assignment"
+      }
+    ],
+    "siPackCnt": [
+      {
+        "line": 972,
+        "kind": "declaration"
+      },
+      {
+        "line": 9935,
+        "kind": "window assignment"
+      }
+    ],
+    "siNum": [
+      {
+        "line": 975,
+        "kind": "declaration"
+      },
+      {
+        "line": 9924,
+        "kind": "window assignment"
+      }
+    ],
+    "removeSI": [
+      {
+        "line": 982,
+        "kind": "declaration"
+      }
+    ],
+    "showSaleItemAC": [
+      {
+        "line": 987,
+        "kind": "declaration"
+      },
+      {
+        "line": 2084,
+        "kind": "window assignment"
+      },
+      {
+        "line": 5869,
+        "kind": "window assignment"
+      }
+    ],
+    "setSaleItem": [
+      {
+        "line": 999,
+        "kind": "declaration"
+      },
+      {
+        "line": 5083,
+        "kind": "window assignment"
+      },
+      {
+        "line": 5982,
+        "kind": "window assignment"
+      },
+      {
+        "line": 6235,
+        "kind": "window assignment"
+      },
+      {
+        "line": 9948,
+        "kind": "window assignment"
+      }
+    ],
+    "calcSaleTotal": [
+      {
+        "line": 1011,
+        "kind": "declaration"
+      }
+    ],
+    "saveSaleInvoice": [
+      {
+        "line": 1032,
+        "kind": "declaration"
+      },
+      {
+        "line": 3389,
+        "kind": "window assignment"
+      },
+      {
+        "line": 8315,
+        "kind": "window assignment"
+      },
+      {
+        "line": 9956,
+        "kind": "window assignment"
+      }
+    ],
+    "resetSaleForm": [
+      {
+        "line": 1095,
+        "kind": "declaration"
+      }
+    ],
+    "editInvoice": [
+      {
+        "line": 1097,
+        "kind": "declaration"
+      }
+    ],
+    "cancelEdit": [
+      {
+        "line": 1128,
+        "kind": "declaration"
+      }
+    ],
+    "setSLPill": [
+      {
+        "line": 1141,
+        "kind": "declaration"
+      }
+    ],
+    "clearSLFilter": [
+      {
+        "line": 1146,
+        "kind": "declaration"
+      },
+      {
+        "line": 9083,
+        "kind": "window assignment"
+      }
+    ],
+    "renderSalesList": [
+      {
+        "line": 1150,
+        "kind": "declaration"
+      },
+      {
+        "line": 4345,
+        "kind": "window assignment"
+      },
+      {
+        "line": 5226,
+        "kind": "window assignment"
+      },
+      {
+        "line": 6455,
+        "kind": "window assignment"
+      },
+      {
+        "line": 9102,
+        "kind": "window assignment"
+      }
+    ],
+    "editInvoiceFromList": [
+      {
+        "line": 1198,
+        "kind": "declaration"
+      }
+    ],
+    "delInvoice": [
+      {
+        "line": 1201,
+        "kind": "declaration"
+      },
+      {
+        "line": 8264,
+        "kind": "window assignment"
+      }
+    ],
+    "quickDispatch": [
+      {
+        "line": 1206,
+        "kind": "declaration"
+      },
+      {
+        "line": 7101,
+        "kind": "window assignment"
+      }
+    ],
+    "viewInvoice": [
+      {
+        "line": 1215,
+        "kind": "declaration"
+      },
+      {
+        "line": 5107,
+        "kind": "window assignment"
+      },
+      {
+        "line": 5204,
+        "kind": "window assignment"
+      },
+      {
+        "line": 6565,
+        "kind": "window assignment"
+      }
+    ],
+    "toggleDispatch": [
+      {
+        "line": 1312,
+        "kind": "declaration"
+      }
+    ],
+    "collectPaymentFromView": [
+      {
+        "line": 1321,
+        "kind": "declaration"
+      }
+    ],
+    "printInvoice": [
+      {
+        "line": 1322,
+        "kind": "declaration"
+      },
+      {
+        "line": 5580,
+        "kind": "window assignment"
+      },
+      {
+        "line": 6421,
+        "kind": "window assignment"
+      }
+    ],
+    "openPayModal": [
+      {
+        "line": 1340,
+        "kind": "declaration"
+      },
+      {
+        "line": 6596,
+        "kind": "window assignment"
+      }
+    ],
+    "savePayment": [
+      {
+        "line": 1352,
+        "kind": "declaration"
+      },
+      {
+        "line": 2399,
+        "kind": "window assignment"
+      },
+      {
+        "line": 8330,
+        "kind": "window assignment"
+      }
+    ],
+    "renderRetailEntry": [
+      {
+        "line": 1373,
+        "kind": "declaration"
+      }
+    ],
+    "saveRetail": [
+      {
+        "line": 1377,
+        "kind": "declaration"
+      }
+    ],
+    "renderRetailTable": [
+      {
+        "line": 1390,
+        "kind": "declaration"
+      }
+    ],
+    "delRetail": [
+      {
+        "line": 1406,
+        "kind": "declaration"
+      }
+    ],
+    "initNewPurchase": [
+      {
+        "line": 1414,
+        "kind": "declaration"
+      }
+    ],
+    "setPurMode": [
+      {
+        "line": 1424,
+        "kind": "declaration"
+      }
+    ],
+    "addPurItem": [
+      {
+        "line": 1432,
+        "kind": "declaration"
+      }
+    ],
+    "renderPurItems": [
+      {
+        "line": 1433,
+        "kind": "declaration"
+      }
+    ],
+    "piName": [
+      {
+        "line": 1448,
+        "kind": "declaration"
+      }
+    ],
+    "piNum": [
+      {
+        "line": 1449,
+        "kind": "declaration"
+      }
+    ],
+    "removePI": [
+      {
+        "line": 1450,
+        "kind": "declaration"
+      }
+    ],
+    "showPurItemAC": [
+      {
+        "line": 1451,
+        "kind": "declaration"
+      }
+    ],
+    "setPurItem": [
+      {
+        "line": 1459,
+        "kind": "declaration"
+      }
+    ],
+    "calcPurTotal": [
+      {
+        "line": 1467,
+        "kind": "declaration"
+      }
+    ],
+    "handlePhoto": [
+      {
+        "line": 1476,
+        "kind": "declaration"
+      }
+    ],
+    "removePhoto": [
+      {
+        "line": 1485,
+        "kind": "declaration"
+      }
+    ],
+    "savePurchase": [
+      {
+        "line": 1491,
+        "kind": "declaration"
+      },
+      {
+        "line": 8077,
+        "kind": "window assignment"
+      }
+    ],
+    "clearPLFilter": [
+      {
+        "line": 1514,
+        "kind": "declaration"
+      }
+    ],
+    "renderPurchaseList": [
+      {
+        "line": 1515,
+        "kind": "declaration"
+      },
+      {
+        "line": 6656,
+        "kind": "window assignment"
+      },
+      {
+        "line": 7809,
+        "kind": "window assignment"
+      }
+    ],
+    "viewPurchase": [
+      {
+        "line": 1546,
+        "kind": "declaration"
+      },
+      {
+        "line": 8004,
+        "kind": "window assignment"
+      }
+    ],
+    "delPurchase": [
+      {
+        "line": 1565,
+        "kind": "declaration"
+      },
+      {
+        "line": 8279,
+        "kind": "window assignment"
+      }
+    ],
+    "renderItems": [
+      {
+        "line": 1570,
+        "kind": "declaration"
+      },
+      {
+        "line": 6708,
+        "kind": "window assignment"
+      }
+    ],
+    "openItemModal": [
+      {
+        "line": 1590,
+        "kind": "declaration"
+      }
+    ],
+    "saveItem": [
+      {
+        "line": 1612,
+        "kind": "declaration"
+      },
+      {
+        "line": 8970,
+        "kind": "window assignment"
+      }
+    ],
+    "delItem": [
+      {
+        "line": 1621,
+        "kind": "declaration"
+      },
+      {
+        "line": 8301,
+        "kind": "window assignment"
+      }
+    ],
+    "renderParties": [
+      {
+        "line": 1626,
+        "kind": "declaration"
+      },
+      {
+        "line": 3804,
+        "kind": "window assignment"
+      },
+      {
+        "line": 6742,
+        "kind": "window assignment"
+      },
+      {
+        "line": 8979,
+        "kind": "window assignment"
+      }
+    ],
+    "openPartyModal": [
+      {
+        "line": 1653,
+        "kind": "declaration"
+      },
+      {
+        "line": 3454,
+        "kind": "window assignment"
+      },
+      {
+        "line": 4167,
+        "kind": "window assignment"
+      }
+    ],
+    "saveParty": [
+      {
+        "line": 1673,
+        "kind": "declaration"
+      },
+      {
+        "line": 3480,
+        "kind": "window assignment"
+      },
+      {
+        "line": 4135,
+        "kind": "window assignment"
+      }
+    ],
+    "delParty": [
+      {
+        "line": 1682,
+        "kind": "declaration"
+      },
+      {
+        "line": 8291,
+        "kind": "window assignment"
+      }
+    ],
+    "repTab": [
+      {
+        "line": 1688,
+        "kind": "declaration"
+      },
+      {
+        "line": 2324,
+        "kind": "window assignment"
+      },
+      {
+        "line": 6986,
+        "kind": "window assignment"
+      },
+      {
+        "line": 8761,
+        "kind": "window assignment"
+      },
+      {
+        "line": 9769,
+        "kind": "window assignment"
+      }
+    ],
+    "renderSaleRep": [
+      {
+        "line": 1694,
+        "kind": "declaration"
+      },
+      {
+        "line": 6992,
+        "kind": "window assignment"
+      }
+    ],
+    "renderPurRep": [
+      {
+        "line": 1744,
+        "kind": "declaration"
+      },
+      {
+        "line": 8803,
+        "kind": "window assignment"
+      }
+    ],
+    "renderPartyLedger": [
+      {
+        "line": 1763,
+        "kind": "declaration"
+      },
+      {
+        "line": 9705,
+        "kind": "window assignment"
+      }
+    ],
+    "filterLedger": [
+      {
+        "line": 1771,
+        "kind": "declaration"
+      },
+      {
+        "line": 9757,
+        "kind": "window assignment"
+      }
+    ],
+    "buildLedger": [
+      {
+        "line": 1772,
+        "kind": "declaration"
+      },
+      {
+        "line": 9719,
+        "kind": "declaration"
+      }
+    ],
+    "renderItemRep": [
+      {
+        "line": 1792,
+        "kind": "declaration"
+      },
+      {
+        "line": 9564,
+        "kind": "window assignment"
+      }
+    ],
+    "renderPendingRep": [
+      {
+        "line": 1810,
+        "kind": "declaration"
+      },
+      {
+        "line": 8766,
+        "kind": "window assignment"
+      }
+    ],
+    "renderDispatchRep": [
+      {
+        "line": 1840,
+        "kind": "declaration"
+      },
+      {
+        "line": 9670,
+        "kind": "window assignment"
+      }
+    ],
+    "fmtMonth": [
+      {
+        "line": 1868,
+        "kind": "declaration"
+      }
+    ],
+    "loadSettings": [
+      {
+        "line": 1873,
+        "kind": "declaration"
+      },
+      {
+        "line": 2622,
+        "kind": "window assignment"
+      },
+      {
+        "line": 5572,
+        "kind": "window assignment"
+      },
+      {
+        "line": 8935,
+        "kind": "window assignment"
+      },
+      {
+        "line": 9894,
+        "kind": "window assignment"
+      }
+    ],
+    "renderModuleToggles": [
+      {
+        "line": 1884,
+        "kind": "declaration"
+      }
+    ],
+    "renderCustomFieldsList": [
+      {
+        "line": 1905,
+        "kind": "declaration"
+      }
+    ],
+    "addCustomField": [
+      {
+        "line": 1917,
+        "kind": "declaration"
+      }
+    ],
+    "removeCustomField": [
+      {
+        "line": 1929,
+        "kind": "declaration"
+      }
+    ],
+    "renderCustomFieldInputs": [
+      {
+        "line": 1936,
+        "kind": "declaration"
+      }
+    ],
+    "saveSettings": [
+      {
+        "line": 1949,
+        "kind": "declaration"
+      },
+      {
+        "line": 2632,
+        "kind": "window assignment"
+      },
+      {
+        "line": 8953,
+        "kind": "window assignment"
+      },
+      {
+        "line": 9901,
+        "kind": "window assignment"
+      }
+    ],
+    "exportData": [
+      {
+        "line": 1976,
+        "kind": "declaration"
+      }
+    ],
+    "importData": [
+      {
+        "line": 1985,
+        "kind": "declaration"
+      }
+    ],
+    "clearAllData": [
+      {
+        "line": 2001,
+        "kind": "declaration"
+      }
+    ],
+    "closeModal": [
+      {
+        "line": 2011,
+        "kind": "declaration"
+      }
+    ],
+    "confirmDel": [
+      {
+        "line": 2012,
+        "kind": "declaration"
+      }
+    ],
+    "runMigrations": [
+      {
+        "line": 2053,
+        "kind": "declaration"
+      }
+    ],
+    "quickCreateItem": [
+      {
+        "line": 2102,
+        "kind": "window assignment"
+      }
+    ],
+    "saveQuickItem": [
+      {
+        "line": 2114,
+        "kind": "window assignment"
+      }
+    ],
+    "renderPrevBillsPage": [
+      {
+        "line": 2145,
+        "kind": "window assignment"
+      },
+      {
+        "line": 2654,
+        "kind": "window assignment"
+      }
+    ],
+    "savePrevBill": [
+      {
+        "line": 2224,
+        "kind": "window assignment"
+      }
+    ],
+    "renderPrevBillsTable": [
+      {
+        "line": 2257,
+        "kind": "window assignment"
+      },
+      {
+        "line": 3130,
+        "kind": "window assignment"
+      }
+    ],
+    "downloadCSVTemplate": [
+      {
+        "line": 2275,
+        "kind": "window assignment"
+      }
+    ],
+    "importCSV": [
+      {
+        "line": 2284,
+        "kind": "window assignment"
+      }
+    ],
+    "renderOutstandingRep": [
+      {
+        "line": 2329,
+        "kind": "window assignment"
+      },
+      {
+        "line": 9782,
+        "kind": "window assignment"
+      }
+    ],
+    "cloudPush": [
+      {
+        "line": 2425,
+        "kind": "window assignment"
+      }
+    ],
+    "cloudPull": [
+      {
+        "line": 2446,
+        "kind": "window assignment"
+      }
+    ],
+    "createNewBin": [
+      {
+        "line": 2473,
+        "kind": "window assignment"
+      }
+    ],
+    "pbNewRow": [
+      {
+        "line": 2854,
+        "kind": "declaration"
+      }
+    ],
+    "pbPartyAC": [
+      {
+        "line": 2866,
+        "kind": "declaration"
+      }
+    ],
+    "pbSelectParty": [
+      {
+        "line": 2885,
+        "kind": "declaration"
+      }
+    ],
+    "pbQuickAddParty": [
+      {
+        "line": 2900,
+        "kind": "declaration"
+      }
+    ],
+    "pbShowPartyHistory": [
+      {
+        "line": 2907,
+        "kind": "declaration"
+      }
+    ],
+    "pbDelBill": [
+      {
+        "line": 2930,
+        "kind": "declaration"
+      }
+    ],
+    "pbAddRow": [
+      {
+        "line": 2938,
+        "kind": "declaration"
+      }
+    ],
+    "pbUpdateAllPayTypes": [
+      {
+        "line": 2948,
+        "kind": "declaration"
+      }
+    ],
+    "pbClearAll": [
+      {
+        "line": 2953,
+        "kind": "declaration"
+      }
+    ],
+    "pbRenderRows": [
+      {
+        "line": 2962,
+        "kind": "declaration"
+      }
+    ],
+    "pbUpdate": [
+      {
+        "line": 3016,
+        "kind": "declaration"
+      }
+    ],
+    "pbCalcRow": [
+      {
+        "line": 3021,
+        "kind": "declaration"
+      }
+    ],
+    "pbUpdateTotals": [
+      {
+        "line": 3035,
+        "kind": "declaration"
+      }
+    ],
+    "pbDeleteRow": [
+      {
+        "line": 3051,
+        "kind": "declaration"
+      }
+    ],
+    "pbNotesKeydown": [
+      {
+        "line": 3058,
+        "kind": "declaration"
+      }
+    ],
+    "pbSaveAll": [
+      {
+        "line": 3071,
+        "kind": "declaration"
+      }
+    ],
+    "switchPBMode": [
+      {
+        "line": 3115,
+        "kind": "window assignment"
+      }
+    ],
+    "getAllPayments": [
+      {
+        "line": 3201,
+        "kind": "window assignment"
+      },
+      {
+        "line": 3986,
+        "kind": "window assignment"
+      }
+    ],
+    "renderPaymentLedger": [
+      {
+        "line": 3233,
+        "kind": "window assignment"
+      },
+      {
+        "line": 3902,
+        "kind": "window assignment"
+      }
+    ],
+    "editPayment": [
+      {
+        "line": 3304,
+        "kind": "window assignment"
+      },
+      {
+        "line": 3842,
+        "kind": "window assignment"
+      }
+    ],
+    "deletePayment": [
+      {
+        "line": 3326,
+        "kind": "window assignment"
+      }
+    ],
+    "openStandalonePayModal": [
+      {
+        "line": 3340,
+        "kind": "window assignment"
+      },
+      {
+        "line": 4009,
+        "kind": "window assignment"
+      }
+    ],
+    "spaSelectInv": [
+      {
+        "line": 3352,
+        "kind": "window assignment"
+      }
+    ],
+    "saveStandalonePayment": [
+      {
+        "line": 3364,
+        "kind": "window assignment"
+      }
+    ],
+    "renderLearnPage": [
+      {
+        "line": 3530,
+        "kind": "window assignment"
+      }
+    ],
+    "saveEditPayment": [
+      {
+        "line": 3884,
+        "kind": "window assignment"
+      }
+    ],
+    "clearPayFilters": [
+      {
+        "line": 3981,
+        "kind": "window assignment"
+      }
+    ],
+    "ensureQuickPartyModal": [
+      {
+        "line": 4038,
+        "kind": "declaration"
+      }
+    ],
+    "showInvoicePartyInfo": [
+      {
+        "line": 4057,
+        "kind": "declaration"
+      }
+    ],
+    "saveQuickParty": [
+      {
+        "line": 4082,
+        "kind": "window assignment"
+      }
+    ],
+    "addDescriptionField": [
+      {
+        "line": 4158,
+        "kind": "declaration"
+      }
+    ],
+    "loadSlCols": [
+      {
+        "line": 4245,
+        "kind": "declaration"
+      }
+    ],
+    "saveSlCols": [
+      {
+        "line": 4246,
+        "kind": "declaration"
+      }
+    ],
+    "showLast5Rates": [
+      {
+        "line": 4276,
+        "kind": "declaration"
+      }
+    ],
+    "ensureLast5Panel": [
+      {
+        "line": 4320,
+        "kind": "declaration"
+      }
+    ],
+    "slSetSort": [
+      {
+        "line": 4482,
+        "kind": "window assignment"
+      }
+    ],
+    "toggleSlCol": [
+      {
+        "line": 4489,
+        "kind": "window assignment"
+      }
+    ],
+    "renderPagination": [
+      {
+        "line": 4496,
+        "kind": "declaration"
+      }
+    ],
+    "slGoPage": [
+      {
+        "line": 4509,
+        "kind": "window assignment"
+      }
+    ],
+    "toggleDotMenu": [
+      {
+        "line": 4512,
+        "kind": "window assignment"
+      }
+    ],
+    "closeDotMenus": [
+      {
+        "line": 4519,
+        "kind": "window assignment"
+      }
+    ],
+    "delInvoiceSafe": [
+      {
+        "line": 4524,
+        "kind": "window assignment"
+      },
+      {
+        "line": 8273,
+        "kind": "window assignment"
+      }
+    ],
+    "printFromList": [
+      {
+        "line": 4532,
+        "kind": "window assignment"
+      },
+      {
+        "line": 9251,
+        "kind": "window assignment"
+      }
+    ],
+    "renderExcelPage": [
+      {
+        "line": 4540,
+        "kind": "window assignment"
+      }
+    ],
+    "exportToCSV": [
+      {
+        "line": 4667,
+        "kind": "window assignment"
+      }
+    ],
+    "xlImportFile": [
+      {
+        "line": 4702,
+        "kind": "window assignment"
+      }
+    ],
+    "xlHandleDrop": [
+      {
+        "line": 4713,
+        "kind": "window assignment"
+      }
+    ],
+    "xlProcessCSV": [
+      {
+        "line": 4722,
+        "kind": "window assignment"
+      }
+    ],
+    "saveGsUrl": [
+      {
+        "line": 4780,
+        "kind": "window assignment"
+      }
+    ],
+    "gsPush": [
+      {
+        "line": 4785,
+        "kind": "window assignment"
+      },
+      {
+        "line": 8855,
+        "kind": "window assignment"
+      }
+    ],
+    "gsPull": [
+      {
+        "line": 4800,
+        "kind": "window assignment"
+      },
+      {
+        "line": 8886,
+        "kind": "window assignment"
+      }
+    ],
+    "copyGsCode": [
+      {
+        "line": 4801,
+        "kind": "window assignment"
+      }
+    ],
+    "toggleCompactMode": [
+      {
+        "line": 4810,
+        "kind": "window assignment"
+      }
+    ],
+    "getItemRates": [
+      {
+        "line": 4921,
+        "kind": "declaration"
+      }
+    ],
+    "siField": [
+      {
+        "line": 5019,
+        "kind": "window assignment"
+      }
+    ],
+    "siMoveUp": [
+      {
+        "line": 5024,
+        "kind": "window assignment"
+      }
+    ],
+    "siMoveDown": [
+      {
+        "line": 5029,
+        "kind": "window assignment"
+      }
+    ],
+    "siShowRates": [
+      {
+        "line": 5036,
+        "kind": "window assignment"
+      }
+    ],
+    "showI5Pop": [
+      {
+        "line": 5049,
+        "kind": "declaration"
+      }
+    ],
+    "siApplyRate": [
+      {
+        "line": 5072,
+        "kind": "window assignment"
+      }
+    ],
+    "printInvoiceA5": [
+      {
+        "line": 5161,
+        "kind": "window assignment"
+      }
+    ],
+    "getPrintSettings": [
+      {
+        "line": 5308,
+        "kind": "declaration"
+      }
+    ],
+    "savePrintSettings": [
+      {
+        "line": 5331,
+        "kind": "declaration"
+      }
+    ],
+    "siRatePopup": [
+      {
+        "line": 5430,
+        "kind": "window assignment"
+      },
+      {
+        "line": 6002,
+        "kind": "window assignment"
+      }
+    ],
+    "siHidePopup": [
+      {
+        "line": 5466,
+        "kind": "window assignment"
+      }
+    ],
+    "closeAllRatePopups": [
+      {
+        "line": 5474,
+        "kind": "declaration"
+      }
+    ],
+    "renderPrintSettingsUI": [
+      {
+        "line": 5537,
+        "kind": "declaration"
+      }
+    ],
+    "savePrintSettingsUI": [
+      {
+        "line": 5556,
+        "kind": "window assignment"
+      }
+    ],
+    "renderGitHubGuide": [
+      {
+        "line": 5628,
+        "kind": "window assignment"
+      }
+    ],
+    "acSetup": [
+      {
+        "line": 5798,
+        "kind": "declaration"
+      }
+    ],
+    "acHighlight": [
+      {
+        "line": 5834,
+        "kind": "declaration"
+      }
+    ],
+    "getItemInfo": [
+      {
+        "line": 5889,
+        "kind": "declaration"
+      }
+    ],
+    "showItemInfoPanel": [
+      {
+        "line": 5919,
+        "kind": "declaration"
+      }
+    ],
+    "isCancelled": [
+      {
+        "line": 6331,
+        "kind": "declaration"
+      }
+    ],
+    "getInvoiceStatus": [
+      {
+        "line": 6333,
+        "kind": "declaration"
+      }
+    ],
+    "statusBadge": [
+      {
+        "line": 6341,
+        "kind": "declaration"
+      }
+    ],
+    "sanitizeFilename": [
+      {
+        "line": 6355,
+        "kind": "declaration"
+      }
+    ],
+    "renderPageBtns": [
+      {
+        "line": 6363,
+        "kind": "declaration"
+      }
+    ],
+    "cancelInvoice": [
+      {
+        "line": 6390,
+        "kind": "window assignment"
+      }
+    ],
+    "restoreInvoice": [
+      {
+        "line": 6405,
+        "kind": "window assignment"
+      }
+    ],
+    "slNavPage": [
+      {
+        "line": 6453,
+        "kind": "window assignment"
+      },
+      {
+        "line": 9097,
+        "kind": "window assignment"
+      }
+    ],
+    "deletePaymentEntry": [
+      {
+        "line": 6636,
+        "kind": "window assignment"
+      }
+    ],
+    "plNavPage": [
+      {
+        "line": 6653,
+        "kind": "window assignment"
+      }
+    ],
+    "itemNavPage": [
+      {
+        "line": 6705,
+        "kind": "window assignment"
+      }
+    ],
+    "partyNavPage": [
+      {
+        "line": 6740,
+        "kind": "window assignment"
+      }
+    ],
+    "openPartyDetail": [
+      {
+        "line": 6789,
+        "kind": "window assignment"
+      },
+      {
+        "line": 8529,
+        "kind": "window assignment"
+      }
+    ],
+    "pdShowTab": [
+      {
+        "line": 6887,
+        "kind": "window assignment"
+      }
+    ],
+    "saveQuickPhone": [
+      {
+        "line": 7085,
+        "kind": "window assignment"
+      }
+    ],
+    "purBulkNewRow": [
+      {
+        "line": 7219,
+        "kind": "declaration"
+      }
+    ],
+    "purBulkCalcBal": [
+      {
+        "line": 7230,
+        "kind": "declaration"
+      }
+    ],
+    "renderPurBulkPage": [
+      {
+        "line": 7285,
+        "kind": "window assignment"
+      }
+    ],
+    "purbPartyAC": [
+      {
+        "line": 7412,
+        "kind": "window assignment"
+      }
+    ],
+    "purBulkSelectParty": [
+      {
+        "line": 7433,
+        "kind": "window assignment"
+      }
+    ],
+    "purBulkQuickAdd": [
+      {
+        "line": 7459,
+        "kind": "window assignment"
+      }
+    ],
+    "purBulkRenderRows": [
+      {
+        "line": 7467,
+        "kind": "window assignment"
+      }
+    ],
+    "purBulkUpdate": [
+      {
+        "line": 7519,
+        "kind": "window assignment"
+      }
+    ],
+    "purBulkCalcRowDOM": [
+      {
+        "line": 7523,
+        "kind": "window assignment"
+      }
+    ],
+    "purBulkUpdateTotals": [
+      {
+        "line": 7538,
+        "kind": "window assignment"
+      }
+    ],
+    "purBulkAddRow": [
+      {
+        "line": 7555,
+        "kind": "window assignment"
+      }
+    ],
+    "purBulkDelRow": [
+      {
+        "line": 7565,
+        "kind": "window assignment"
+      }
+    ],
+    "purBulkClear": [
+      {
+        "line": 7571,
+        "kind": "window assignment"
+      }
+    ],
+    "purBulkNotesKey": [
+      {
+        "line": 7580,
+        "kind": "window assignment"
+      }
+    ],
+    "purBulkSaveAll": [
+      {
+        "line": 7588,
+        "kind": "window assignment"
+      }
+    ],
+    "purBulkShowHistory": [
+      {
+        "line": 7627,
+        "kind": "window assignment"
+      }
+    ],
+    "openPurPayModal": [
+      {
+        "line": 7719,
+        "kind": "window assignment"
+      }
+    ],
+    "savePurPayment": [
+      {
+        "line": 7765,
+        "kind": "window assignment"
+      },
+      {
+        "line": 8339,
+        "kind": "window assignment"
+      }
+    ],
+    "delPurPayEntry": [
+      {
+        "line": 7794,
+        "kind": "window assignment"
+      }
+    ],
+    "renderPurPayPage": [
+      {
+        "line": 7893,
+        "kind": "window assignment"
+      }
+    ],
+    "auditLog": [
+      {
+        "line": 8193,
+        "kind": "declaration"
+      }
+    ],
+    "getDeletePin": [
+      {
+        "line": 8215,
+        "kind": "declaration"
+      }
+    ],
+    "_delPinCb": [
+      {
+        "line": 8243,
+        "kind": "window assignment"
+      }
+    ],
+    "withDeletePin": [
+      {
+        "line": 8219,
+        "kind": "window assignment"
+      }
+    ],
+    "v15CheckPin": [
+      {
+        "line": 8246,
+        "kind": "window assignment"
+      }
+    ],
+    "v15PinConfirm": [
+      {
+        "line": 8255,
+        "kind": "window assignment"
+      }
+    ],
+    "openSettlementModal": [
+      {
+        "line": 8351,
+        "kind": "window assignment"
+      }
+    ],
+    "settleAutoFill": [
+      {
+        "line": 8451,
+        "kind": "window assignment"
+      }
+    ],
+    "settleRecalc": [
+      {
+        "line": 8465,
+        "kind": "window assignment"
+      }
+    ],
+    "saveSettlement": [
+      {
+        "line": 8479,
+        "kind": "window assignment"
+      }
+    ],
+    "buildPartyTxnLog": [
+      {
+        "line": 8579,
+        "kind": "declaration"
+      }
+    ],
+    "renderAuditPage": [
+      {
+        "line": 8632,
+        "kind": "window assignment"
+      }
+    ],
+    "renderTxnPage": [
+      {
+        "line": 8677,
+        "kind": "window assignment"
+      }
+    ],
+    "v16DotToggle": [
+      {
+        "line": 9241,
+        "kind": "window assignment"
+      }
+    ],
+    "v16DotClose": [
+      {
+        "line": 9248,
+        "kind": "window assignment"
+      }
+    ],
+    "poutPartyAC": [
+      {
+        "line": 9347,
+        "kind": "window assignment"
+      }
+    ],
+    "poutSelectParty": [
+      {
+        "line": 9363,
+        "kind": "window assignment"
+      }
+    ],
+    "poutLoadBills": [
+      {
+        "line": 9372,
+        "kind": "window assignment"
+      }
+    ],
+    "poutToggleFull": [
+      {
+        "line": 9426,
+        "kind": "window assignment"
+      }
+    ],
+    "poutAutoAllocate": [
+      {
+        "line": 9434,
+        "kind": "window assignment"
+      }
+    ],
+    "poutRecalc": [
+      {
+        "line": 9452,
+        "kind": "window assignment"
+      }
+    ],
+    "savePoutPayment": [
+      {
+        "line": 9468,
+        "kind": "window assignment"
+      }
+    ],
+    "openPayOutModal": [
+      {
+        "line": 9516,
+        "kind": "window assignment"
+      }
+    ],
+    "itemRepToggle": [
+      {
+        "line": 9654,
+        "kind": "window assignment"
+      }
+    ],
+    "saleEntryOptions": [
+      {
+        "line": 9866,
+        "kind": "window assignment"
+      }
+    ],
+    "saleEntryEscape": [
+      {
+        "line": 9870,
+        "kind": "window assignment"
+      }
+    ],
+    "labelSaleEntryRows": [
+      {
+        "line": 9872,
+        "kind": "window assignment"
+      }
+    ],
+    "updateQuantity": [
+      {
+        "line": 9907,
+        "kind": "declaration"
+      }
+    ]
+  },
+  "pages": [
+    "page-dashboard",
+    "page-new-sale",
+    "page-sales-list",
+    "page-retail-entry",
+    "page-new-purchase",
+    "page-purchase-list",
+    "page-items",
+    "page-parties",
+    "page-reports",
+    "page-settings",
+    "page-mypage"
+  ],
+  "modals": [
+    "item-modal",
+    "party-modal",
+    "inv-view-modal",
+    "pur-view-modal",
+    "pay-modal",
+    "del-modal"
+  ],
+  "handlers": [
+    {
+      "line": 192,
+      "body": "nav('dashboard')"
+    },
+    {
+      "line": 194,
+      "body": "nav('new-sale')"
+    },
+    {
+      "line": 195,
+      "body": "nav('sales-list')"
+    },
+    {
+      "line": 196,
+      "body": "nav('retail-entry')"
+    },
+    {
+      "line": 198,
+      "body": "nav('new-purchase')"
+    },
+    {
+      "line": 199,
+      "body": "nav('purchase-list')"
+    },
+    {
+      "line": 201,
+      "body": "nav('items')"
+    },
+    {
+      "line": 202,
+      "body": "nav('parties')"
+    },
+    {
+      "line": 204,
+      "body": "nav('reports')"
+    },
+    {
+      "line": 205,
+      "body": "nav('settings')"
+    },
+    {
+      "line": 206,
+      "body": "exportData()"
+    },
+    {
+      "line": 207,
+      "body": "document.getElementById('import-file').click()"
+    },
+    {
+      "line": 208,
+      "body": "importData(this)"
+    },
+    {
+      "line": 214,
+      "body": "nav('dashboard')"
+    },
+    {
+      "line": 215,
+      "body": "nav('new-sale')"
+    },
+    {
+      "line": 216,
+      "body": "nav('retail-entry')"
+    },
+    {
+      "line": 217,
+      "body": "nav('reports')"
+    },
+    {
+      "line": 218,
+      "body": "nav('settings')"
+    },
+    {
+      "line": 227,
+      "body": "nav('new-sale')"
+    },
+    {
+      "line": 228,
+      "body": "nav('retail-entry')"
+    },
+    {
+      "line": 239,
+      "body": "cancelEdit()"
+    },
+    {
+      "line": 240,
+      "body": "nav('sales-list')"
+    },
+    {
+      "line": 247,
+      "body": "cancelEdit()"
+    },
+    {
+      "line": 267,
+      "body": "partyAC('inv-party','inv-party-id',this.value)"
+    },
+    {
+      "line": 293,
+      "body": "addSaleItem()"
+    },
+    {
+      "line": 305,
+      "body": "addSaleItem()"
+    },
+    {
+      "line": 313,
+      "body": "calcSaleTotal()"
+    },
+    {
+      "line": 315,
+      "body": "calcSaleTotal()"
+    },
+    {
+      "line": 320,
+      "body": "calcSaleTotal()"
+    },
+    {
+      "line": 334,
+      "body": "saveSaleInvoice(false)"
+    },
+    {
+      "line": 335,
+      "body": "saveSaleInvoice(true)"
+    },
+    {
+      "line": 336,
+      "body": "resetSaleForm()"
+    },
+    {
+      "line": 346,
+      "body": "nav('new-sale')"
+    },
+    {
+      "line": 351,
+      "body": "renderSalesList()"
+    },
+    {
+      "line": 352,
+      "body": "renderSalesList()"
+    },
+    {
+      "line": 353,
+      "body": "renderSalesList()"
+    },
+    {
+      "line": 354,
+      "body": "clearSLFilter()"
+    },
+    {
+      "line": 357,
+      "body": "setSLPill('all')"
+    },
+    {
+      "line": 358,
+      "body": "setSLPill('cash-due')"
+    },
+    {
+      "line": 359,
+      "body": "setSLPill('credit-due')"
+    },
+    {
+      "line": 360,
+      "body": "setSLPill('pending-dispatch')"
+    },
+    {
+      "line": 361,
+      "body": "setSLPill('dispatched')"
+    },
+    {
+      "line": 362,
+      "body": "setSLPill('draft')"
+    },
+    {
+      "line": 363,
+      "body": "setSLPill('paid')"
+    },
+    {
+      "line": 374,
+      "body": "nav('reports')"
+    },
+    {
+      "line": 390,
+      "body": "saveRetail()"
+    },
+    {
+      "line": 399,
+      "body": "nav('purchase-list')"
+    },
+    {
+      "line": 405,
+      "body": "partyAC('pur-party','pur-party-id',this.value)"
+    },
+    {
+      "line": 416,
+      "body": "setPurMode('amount')"
+    },
+    {
+      "line": 417,
+      "body": "setPurMode('items')"
+    },
+    {
+      "line": 430,
+      "body": "addPurItem()"
+    },
+    {
+      "line": 436,
+      "body": "addPurItem()"
+    },
+    {
+      "line": 440,
+      "body": "calcPurTotal()"
+    },
+    {
+      "line": 447,
+      "body": "document.getElementById('pur-photo-input').click()"
+    },
+    {
+      "line": 452,
+      "body": "handlePhoto(this)"
+    },
+    {
+      "line": 455,
+      "body": "removePhoto()"
+    },
+    {
+      "line": 458,
+      "body": "savePurchase()"
+    },
+    {
+      "line": 464,
+      "body": "nav('new-purchase')"
+    },
+    {
+      "line": 468,
+      "body": "renderPurchaseList()"
+    },
+    {
+      "line": 469,
+      "body": "renderPurchaseList()"
+    },
+    {
+      "line": 470,
+      "body": "renderPurchaseList()"
+    },
+    {
+      "line": 471,
+      "body": "clearPLFilter()"
+    },
+    {
+      "line": 481,
+      "body": "openItemModal()"
+    },
+    {
+      "line": 483,
+      "body": "renderItems()"
+    },
+    {
+      "line": 490,
+      "body": "openPartyModal()"
+    },
+    {
+      "line": 492,
+      "body": "renderParties()"
+    },
+    {
+      "line": 502,
+      "body": "repTab('sale')"
+    },
+    {
+      "line": 503,
+      "body": "repTab('pur')"
+    },
+    {
+      "line": 504,
+      "body": "repTab('party')"
+    },
+    {
+      "line": 505,
+      "body": "repTab('item')"
+    },
+    {
+      "line": 506,
+      "body": "repTab('pending')"
+    },
+    {
+      "line": 507,
+      "body": "repTab('dispatch')"
+    },
+    {
+      "line": 567,
+      "body": "addCustomField()"
+    },
+    {
+      "line": 580,
+      "body": "exportData()"
+    },
+    {
+      "line": 581,
+      "body": "document.getElementById('import-file').click()"
+    },
+    {
+      "line": 582,
+      "body": "clearAllData()"
+    },
+    {
+      "line": 585,
+      "body": "saveSettings()"
+    },
+    {
+      "line": 595,
+      "body": "closeModal('item-modal')"
+    },
+    {
+      "line": 613,
+      "body": "closeModal('item-modal')"
+    },
+    {
+      "line": 613,
+      "body": "saveItem()"
+    },
+    {
+      "line": 619,
+      "body": "closeModal('party-modal')"
+    },
+    {
+      "line": 635,
+      "body": "closeModal('party-modal')"
+    },
+    {
+      "line": 635,
+      "body": "saveParty()"
+    },
+    {
+      "line": 645,
+      "body": "printInvoice()"
+    },
+    {
+      "line": 646,
+      "body": "collectPaymentFromView()"
+    },
+    {
+      "line": 647,
+      "body": "editInvoice()"
+    },
+    {
+      "line": 648,
+      "body": "toggleDispatch()"
+    },
+    {
+      "line": 649,
+      "body": "closeModal('inv-view-modal')"
+    },
+    {
+      "line": 658,
+      "body": "closeModal('pur-view-modal')"
+    },
+    {
+      "line": 665,
+      "body": "closeModal('pay-modal')"
+    },
+    {
+      "line": 675,
+      "body": "closeModal('pay-modal')"
+    },
+    {
+      "line": 675,
+      "body": "savePayment()"
+    },
+    {
+      "line": 681,
+      "body": "closeModal('del-modal')"
+    },
+    {
+      "line": 683,
+      "body": "closeModal('del-modal')"
+    },
+    {
+      "line": 789,
+      "body": "nav('sales-list')"
+    },
+    {
+      "line": 792,
+      "body": "viewInvoice('${i.id}')"
+    },
+    {
+      "line": 810,
+      "body": "openPayModal('${i.id}')"
+    },
+    {
+      "line": 818,
+      "body": "quickDispatch('${i.id}')"
+    },
+    {
+      "line": 843,
+      "body": "selectParty('${inputId}','${hiddenId}','${p.id}','${esc(p.name)}','${listId}')"
+    },
+    {
+      "line": 847,
+      "body": "quickAddParty('${inputId}','${hiddenId}','${listId}','${esc(val)}')"
+    },
+    {
+      "line": 921,
+      "body": "siName('${it.id}',this.value)"
+    },
+    {
+      "line": 925,
+      "body": "siPack('${it.id}',this.value)"
+    },
+    {
+      "line": 938,
+      "body": "siPackCnt('${it.id}',this.value)"
+    },
+    {
+      "line": 942,
+      "body": "siNum('${it.id}','qty',this.value)"
+    },
+    {
+      "line": 945,
+      "body": "siNum('${it.id}','rate',this.value)"
+    },
+    {
+      "line": 950,
+      "body": "removeSI('${it.id}')"
+    },
+    {
+      "line": 992,
+      "body": "setSaleItem('${id}','${i.id}','${esc(i.name)}','${i.saleRate||0}','${i.unit||'Pcs'}')"
+    },
+    {
+      "line": 995,
+      "body": "document.getElementById('ac-sn-${id}').style.display='none'"
+    },
+    {
+      "line": 1179,
+      "body": "viewInvoice('${i.id}')"
+    },
+    {
+      "line": 1188,
+      "body": "viewInvoice('${i.id}')"
+    },
+    {
+      "line": 1189,
+      "body": "editInvoiceFromList('${i.id}')"
+    },
+    {
+      "line": 1190,
+      "body": "openPayModal('${i.id}')"
+    },
+    {
+      "line": 1191,
+      "body": "quickDispatch('${i.id}')"
+    },
+    {
+      "line": 1192,
+      "body": "delInvoice('${i.id}')"
+    },
+    {
+      "line": 1401,
+      "body": "delRetail('${r.id}')"
+    },
+    {
+      "line": 1438,
+      "body": "piName('${it.id}',this.value)"
+    },
+    {
+      "line": 1441,
+      "body": "piNum('${it.id}','qty',this.value)"
+    },
+    {
+      "line": 1442,
+      "body": "piNum('${it.id}','rate',this.value)"
+    },
+    {
+      "line": 1444,
+      "body": "removePI('${it.id}')"
+    },
+    {
+      "line": 1455,
+      "body": "setPurItem('${id}','${esc(i.name)}','${i.purchaseRate||0}','${i.unit||'Pcs'}')"
+    },
+    {
+      "line": 1539,
+      "body": "viewPurchase('${p.id}')"
+    },
+    {
+      "line": 1540,
+      "body": "delPurchase('${p.id}')"
+    },
+    {
+      "line": 1583,
+      "body": "openItemModal('${i.id}')"
+    },
+    {
+      "line": 1584,
+      "body": "delItem('${i.id}')"
+    },
+    {
+      "line": 1645,
+      "body": "openPartyModal('${p.id}')"
+    },
+    {
+      "line": 1646,
+      "body": "delParty('${p.id}')"
+    },
+    {
+      "line": 1767,
+      "body": "filterLedger(this.value)"
+    },
+    {
+      "line": 1818,
+      "body": "viewInvoice('${i.id}')"
+    },
+    {
+      "line": 1823,
+      "body": "openPayModal('${i.id}')"
+    },
+    {
+      "line": 1848,
+      "body": "viewInvoice('${i.id}')"
+    },
+    {
+      "line": 1853,
+      "body": "quickDispatch('${i.id}');renderDispatchRep()"
+    },
+    {
+      "line": 1913,
+      "body": "removeCustomField('${cf.id}')"
+    },
+    {
+      "line": 2090,
+      "body": "setSaleItem('${id}','${i.id}','${esc(i.name)}','${i.saleRate||0}','${i.unit||'Pcs'}')"
+    },
+    {
+      "line": 2094,
+      "body": "quickCreateItem('${id}','${esc(val)}')"
+    },
+    {
+      "line": 2151,
+      "body": "nav('sales-list')"
+    },
+    {
+      "line": 2171,
+      "body": "partyAC('pb-party','pb-party-id',this.value)"
+    },
+    {
+      "line": 2198,
+      "body": "savePrevBill()"
+    },
+    {
+      "line": 2208,
+      "body": "downloadCSVTemplate()"
+    },
+    {
+      "line": 2211,
+      "body": "importCSV(this)"
+    },
+    {
+      "line": 2270,
+      "body": "delInvoice('${i.id}');renderPrevBillsTable()"
+    },
+    {
+      "line": 2378,
+      "body": "viewInvoice('${i.id}')"
+    },
+    {
+      "line": 2386,
+      "body": "openPayModal('${i.id}')"
+    },
+    {
+      "line": 2530,
+      "body": "closeModal('quick-item-modal')"
+    },
+    {
+      "line": 2547,
+      "body": "closeModal('quick-item-modal')"
+    },
+    {
+      "line": 2547,
+      "body": "saveQuickItem()"
+    },
+    {
+      "line": 2606,
+      "body": "createNewBin()"
+    },
+    {
+      "line": 2607,
+      "body": "cloudPush()"
+    },
+    {
+      "line": 2608,
+      "body": "cloudPull()"
+    },
+    {
+      "line": 2661,
+      "body": "switchPBMode('party')"
+    },
+    {
+      "line": 2662,
+      "body": "switchPBMode('single')"
+    },
+    {
+      "line": 2663,
+      "body": "nav('sales-list')"
+    },
+    {
+      "line": 2680,
+      "body": "switchPBMode('party')"
+    },
+    {
+      "line": 2681,
+      "body": "switchPBMode('single')"
+    },
+    {
+      "line": 2682,
+      "body": "switchPBMode('csv')"
+    },
+    {
+      "line": 2695,
+      "body": "pbPartyAC(this.value)"
+    },
+    {
+      "line": 2702,
+      "body": "pbUpdateAllPayTypes(this.value)"
+    },
+    {
+      "line": 2716,
+      "body": "pbAddRow()"
+    },
+    {
+      "line": 2727,
+      "body": "pbAddRow()"
+    },
+    {
+      "line": 2728,
+      "body": "pbClearAll()"
+    },
+    {
+      "line": 2768,
+      "body": "pbSaveAll()"
+    },
+    {
+      "line": 2785,
+      "body": "partyAC('pb-party','pb-party-id',this.value)"
+    },
+    {
+      "line": 2810,
+      "body": "savePrevBill()"
+    },
+    {
+      "line": 2822,
+      "body": "downloadCSVTemplate()"
+    },
+    {
+      "line": 2825,
+      "body": "importCSV(this)"
+    },
+    {
+      "line": 2875,
+      "body": "pbSelectParty('${p.id}','${esc(p.name)}')"
+    },
+    {
+      "line": 2879,
+      "body": "pbQuickAddParty('${esc(val)}')"
+    },
+    {
+      "line": 2923,
+      "body": "pbDelBill('${i.id}','${esc(id||'')}','${esc(name)}')"
+    },
+    {
+      "line": 2969,
+      "body": "pbUpdate('${r.id}','date',this.value)"
+    },
+    {
+      "line": 2974,
+      "body": "pbUpdate('${r.id}','billNo',this.value)"
+    },
+    {
+      "line": 2979,
+      "body": "pbUpdate('${r.id}','total',this.value)"
+    },
+    {
+      "line": 2979,
+      "body": "pbCalcRow('${r.id}')"
+    },
+    {
+      "line": 2984,
+      "body": "pbUpdate('${r.id}','paid',this.value)"
+    },
+    {
+      "line": 2984,
+      "body": "pbCalcRow('${r.id}')"
+    },
+    {
+      "line": 2993,
+      "body": "pbUpdate('${r.id}','payType',this.value)"
+    },
+    {
+      "line": 3003,
+      "body": "pbUpdate('${r.id}','notes',this.value)"
+    },
+    {
+      "line": 3004,
+      "body": "pbNotesKeydown(event,'${r.id}')"
+    },
+    {
+      "line": 3008,
+      "body": "pbDeleteRow('${r.id}')"
+    },
+    {
+      "line": 3160,
+      "body": "viewInvoice('${b.id}')"
+    },
+    {
+      "line": 3161,
+      "body": "openPayModal('${b.id}')"
+    },
+    {
+      "line": 3162,
+      "body": "pbDelBill('${b.id}','','${esc(b.partyName)}')"
+    },
+    {
+      "line": 3246,
+      "body": "openStandalonePayModal()"
+    },
+    {
+      "line": 3247,
+      "body": "renderPaymentLedger()"
+    },
+    {
+      "line": 3248,
+      "body": "renderPaymentLedger()"
+    },
+    {
+      "line": 3282,
+      "body": "viewInvoice('${p._invId}')"
+    },
+    {
+      "line": 3292,
+      "body": "editPayment('${p._invId}',${p._payIdx})"
+    },
+    {
+      "line": 3293,
+      "body": "deletePayment('${p._invId}',${p._payIdx})"
+    },
+    {
+      "line": 3438,
+      "body": "selectParty('${inputId}','${hiddenId}','${p.id}','${esc(p.name)}','${listId}')"
+    },
+    {
+      "line": 3446,
+      "body": "quickAddParty('${inputId}','${hiddenId}','${listId}','${esc(val)}')"
+    },
+    {
+      "line": 3535,
+      "body": "nav('settings')"
+    },
+    {
+      "line": 3660,
+      "body": "nav('mypage')"
+    },
+    {
+      "line": 3757,
+      "body": "closeModal('standalone-pay-modal')"
+    },
+    {
+      "line": 3761,
+      "body": "spaSelectInv()"
+    },
+    {
+      "line": 3778,
+      "body": "closeModal('standalone-pay-modal')"
+    },
+    {
+      "line": 3779,
+      "body": "saveStandalonePayment()"
+    },
+    {
+      "line": 3825,
+      "body": "openPartyModal('${p.id}')"
+    },
+    {
+      "line": 3826,
+      "body": "delParty('${p.id}')"
+    },
+    {
+      "line": 3855,
+      "body": "document.getElementById('edit-pay-modal').remove()"
+    },
+    {
+      "line": 3876,
+      "body": "document.getElementById('edit-pay-modal').remove()"
+    },
+    {
+      "line": 3877,
+      "body": "saveEditPayment('${invId}',${payIdx})"
+    },
+    {
+      "line": 3923,
+      "body": "openStandalonePayModal()"
+    },
+    {
+      "line": 3926,
+      "body": "renderPaymentLedger()"
+    },
+    {
+      "line": 3930,
+      "body": "renderPaymentLedger()"
+    },
+    {
+      "line": 3932,
+      "body": "clearPayFilters()"
+    },
+    {
+      "line": 3959,
+      "body": "viewInvoice('${p._invId}')"
+    },
+    {
+      "line": 3970,
+      "body": "editPayment('${p._invId}',${p._payIdx})"
+    },
+    {
+      "line": 3971,
+      "body": "deletePayment('${p._invId}',${p._payIdx})"
+    },
+    {
+      "line": 4044,
+      "body": "closeModal('quick-party-modal')"
+    },
+    {
+      "line": 4051,
+      "body": "closeModal('quick-party-modal')"
+    },
+    {
+      "line": 4051,
+      "body": "saveQuickParty()"
+    },
+    {
+      "line": 4111,
+      "body": "selectParty('${inputId}','${hiddenId}','${p.id}','${esc(p.name)}','${listId}')"
+    },
+    {
+      "line": 4115,
+      "body": "quickAddParty('${inputId}','${hiddenId}','${listId}','${esc(val)}')"
+    },
+    {
+      "line": 4405,
+      "body": "slSetSort('${col}')"
+    },
+    {
+      "line": 4411,
+      "body": "toggleDotMenu('dm-${i.id}',event)"
+    },
+    {
+      "line": 4413,
+      "body": "viewInvoice('${i.id}');closeDotMenus()"
+    },
+    {
+      "line": 4414,
+      "body": "editInvoiceFromList('${i.id}');closeDotMenus()"
+    },
+    {
+      "line": 4415,
+      "body": "openPayModal('${i.id}');closeDotMenus()"
+    },
+    {
+      "line": 4416,
+      "body": "printFromList('${i.id}');closeDotMenus()"
+    },
+    {
+      "line": 4417,
+      "body": "quickDispatch('${i.id}');closeDotMenus()"
+    },
+    {
+      "line": 4419,
+      "body": "delInvoiceSafe('${i.id}');closeDotMenus()"
+    },
+    {
+      "line": 4430,
+      "body": "toggleSlCol('${k}')"
+    },
+    {
+      "line": 4449,
+      "body": "viewInvoice('${i.id}')"
+    },
+    {
+      "line": 4459,
+      "body": "viewInvoice('${i.id}')"
+    },
+    {
+      "line": 4460,
+      "body": "openPayModal('${i.id}')"
+    },
+    {
+      "line": 4500,
+      "body": "slGoPage(${p})"
+    },
+    {
+      "line": 4506,
+      "body": "slGoPage(+this.value)"
+    },
+    {
+      "line": 4545,
+      "body": "nav('settings')"
+    },
+    {
+      "line": 4553,
+      "body": "exportToCSV('invoices')"
+    },
+    {
+      "line": 4554,
+      "body": "exportToCSV('purchases')"
+    },
+    {
+      "line": 4555,
+      "body": "exportToCSV('parties')"
+    },
+    {
+      "line": 4556,
+      "body": "exportToCSV('items')"
+    },
+    {
+      "line": 4557,
+      "body": "exportToCSV('retail')"
+    },
+    {
+      "line": 4571,
+      "body": "document.getElementById('xl-file-input').click()"
+    },
+    {
+      "line": 4572,
+      "body": "event.preventDefault();this.classList.add('drag')"
+    },
+    {
+      "line": 4573,
+      "body": "this.classList.remove('drag')"
+    },
+    {
+      "line": 4574,
+      "body": "xlHandleDrop(event)"
+    },
+    {
+      "line": 4579,
+      "body": "xlImportFile(this)"
+    },
+    {
+      "line": 4598,
+      "body": "gsPush()"
+    },
+    {
+      "line": 4599,
+      "body": "gsPull()"
+    },
+    {
+      "line": 4600,
+      "body": "saveGsUrl()"
+    },
+    {
+      "line": 4608,
+      "body": "copyGsCode()"
+    },
+    {
+      "line": 4772,
+      "body": "renderExcelPage()"
+    },
+    {
+      "line": 4961,
+      "body": "siName('${it.id}',this.value)"
+    },
+    {
+      "line": 4962,
+      "body": "siShowRates('${it.id}')"
+    },
+    {
+      "line": 4968,
+      "body": "siField('${it.id}','colour',this.value)"
+    },
+    {
+      "line": 4971,
+      "body": "siPack('${it.id}',this.value)"
+    },
+    {
+      "line": 4983,
+      "body": "siPackCnt('${it.id}',this.value)"
+    },
+    {
+      "line": 4986,
+      "body": "siNum('${it.id}','qty',this.value)"
+    },
+    {
+      "line": 4990,
+      "body": "siNum('${it.id}','rate',this.value)"
+    },
+    {
+      "line": 4991,
+      "body": "siShowRates('${it.id}')"
+    },
+    {
+      "line": 5002,
+      "body": "siMoveUp('${it.id}')"
+    },
+    {
+      "line": 5003,
+      "body": "siMoveDown('${it.id}')"
+    },
+    {
+      "line": 5006,
+      "body": "removeSI('${it.id}')"
+    },
+    {
+      "line": 5059,
+      "body": "siApplyRate('${rowId}',${r.rate})"
+    },
+    {
+      "line": 5366,
+      "body": "siName('${it.id}',this.value)"
+    },
+    {
+      "line": 5367,
+      "body": "siRatePopup('${it.id}')"
+    },
+    {
+      "line": 5375,
+      "body": "siField('${it.id}','colour',this.value)"
+    },
+    {
+      "line": 5378,
+      "body": "siPack('${it.id}',this.value)"
+    },
+    {
+      "line": 5388,
+      "body": "siPackCnt('${it.id}',this.value)"
+    },
+    {
+      "line": 5392,
+      "body": "siNum('${it.id}','qty',this.value)"
+    },
+    {
+      "line": 5398,
+      "body": "siNum('${it.id}','rate',this.value)"
+    },
+    {
+      "line": 5399,
+      "body": "siRatePopup('${it.id}')"
+    },
+    {
+      "line": 5400,
+      "body": "siHidePopup('${it.id}')"
+    },
+    {
+      "line": 5410,
+      "body": "siMoveUp('${it.id}')"
+    },
+    {
+      "line": 5412,
+      "body": "siMoveDown('${it.id}')"
+    },
+    {
+      "line": 5417,
+      "body": "removeSI('${it.id}')"
+    },
+    {
+      "line": 5458,
+      "body": "siApplyRate('${id}',${r.rate})"
+    },
+    {
+      "line": 5512,
+      "body": "savePrintSettingsUI()"
+    },
+    {
+      "line": 5633,
+      "body": "nav('settings')"
+    },
+    {
+      "line": 5960,
+      "body": "siApplyRate('${rowId}',${lastSale.rate})"
+    },
+    {
+      "line": 6056,
+      "body": "siApplyRate('${id}',${r.rate})"
+    },
+    {
+      "line": 6150,
+      "body": "siName('${it.id}',this.value)"
+    },
+    {
+      "line": 6151,
+      "body": "siRatePopup('${it.id}')"
+    },
+    {
+      "line": 6162,
+      "body": "siField('${it.id}','colour',this.value)"
+    },
+    {
+      "line": 6165,
+      "body": "siPack('${it.id}',this.value)"
+    },
+    {
+      "line": 6177,
+      "body": "siPackCnt('${it.id}',this.value)"
+    },
+    {
+      "line": 6182,
+      "body": "siNum('${it.id}','qty',this.value)"
+    },
+    {
+      "line": 6190,
+      "body": "siNum('${it.id}','rate',this.value)"
+    },
+    {
+      "line": 6191,
+      "body": "siRatePopup('${it.id}')"
+    },
+    {
+      "line": 6192,
+      "body": "siHidePopup('${it.id}')"
+    },
+    {
+      "line": 6202,
+      "body": "siMoveUp('${it.id}')"
+    },
+    {
+      "line": 6204,
+      "body": "siMoveDown('${it.id}')"
+    },
+    {
+      "line": 6209,
+      "body": "removeSI('${it.id}')"
+    },
+    {
+      "line": 6371,
+      "body": "${onNav}(${currentPage-1})"
+    },
+    {
+      "line": 6380,
+      "body": "${onNav}(${p})"
+    },
+    {
+      "line": 6382,
+      "body": "${onNav}(${currentPage+1})"
+    },
+    {
+      "line": 6513,
+      "body": "viewInvoice('${i.id}')"
+    },
+    {
+      "line": 6515,
+      "body": "viewInvoice('${i.id}')"
+    },
+    {
+      "line": 6524,
+      "body": "viewInvoice('${i.id}')"
+    },
+    {
+      "line": 6525,
+      "body": "restoreInvoice('${i.id}')"
+    },
+    {
+      "line": 6527,
+      "body": "viewInvoice('${i.id}')"
+    },
+    {
+      "line": 6528,
+      "body": "openPayModal('${i.id}')"
+    },
+    {
+      "line": 6529,
+      "body": "editInvoiceFromList('${i.id}')"
+    },
+    {
+      "line": 6530,
+      "body": "quickDispatch('${i.id}')"
+    },
+    {
+      "line": 6531,
+      "body": "cancelInvoice('${i.id}')"
+    },
+    {
+      "line": 6627,
+      "body": "deletePaymentEntry('${invId}',${i})"
+    },
+    {
+      "line": 6684,
+      "body": "viewPurchase('${p.id}')"
+    },
+    {
+      "line": 6693,
+      "body": "viewPurchase('${p.id}')"
+    },
+    {
+      "line": 6694,
+      "body": "delPurchase('${p.id}')"
+    },
+    {
+      "line": 6720,
+      "body": "openItemModal('${it.id}')"
+    },
+    {
+      "line": 6728,
+      "body": "openItemModal('${it.id}')"
+    },
+    {
+      "line": 6729,
+      "body": "delItem('${it.id}')"
+    },
+    {
+      "line": 6765,
+      "body": "openPartyDetail('${p.id}')"
+    },
+    {
+      "line": 6775,
+      "body": "openPartyDetail('${p.id}')"
+    },
+    {
+      "line": 6776,
+      "body": "openPartyModal('${p.id}')"
+    },
+    {
+      "line": 6777,
+      "body": "delParty('${p.id}')"
+    },
+    {
+      "line": 6819,
+      "body": "nav('new-sale');closeModal('party-detail-modal');setTimeout(()=>{document.getElementById('inv-party').value='${p.name}';document.getElementById('inv-party-id').value='${p.id}';showLastRate('${p.id}');},200)"
+    },
+    {
+      "line": 6820,
+      "body": "openPartyModal('${p.id}');closeModal('party-detail-modal')"
+    },
+    {
+      "line": 6821,
+      "body": "closeModal('party-detail-modal')"
+    },
+    {
+      "line": 6843,
+      "body": "pdShowTab('inv')"
+    },
+    {
+      "line": 6844,
+      "body": "pdShowTab('pay')"
+    },
+    {
+      "line": 6859,
+      "body": "closeModal('party-detail-modal');viewInvoice('${i.id}')"
+    },
+    {
+      "line": 6860,
+      "body": "closeModal('party-detail-modal');openPayModal('${i.id}')"
+    },
+    {
+      "line": 6863,
+      "body": "closeModal('party-detail-modal');nav('sales-list');setTimeout(()=>{document.getElementById('sl-srch').value='${p.name}';renderSalesList();},200)"
+    },
+    {
+      "line": 6938,
+      "body": "nav('sales-list')"
+    },
+    {
+      "line": 6941,
+      "body": "viewInvoice('${i.id}')"
+    },
+    {
+      "line": 6941,
+      "body": "viewInvoice('${i.id}')"
+    },
+    {
+      "line": 6964,
+      "body": "openPayModal('${i.id}')"
+    },
+    {
+      "line": 6973,
+      "body": "quickDispatch('${i.id}')"
+    },
+    {
+      "line": 6977,
+      "body": "nav('sales-list');setSLPill('cancelled')"
+    },
+    {
+      "line": 7072,
+      "body": "if(event.key==='Enter')saveQuickPhone('${id}')"
+    },
+    {
+      "line": 7073,
+      "body": "saveQuickPhone('${id}')"
+    },
+    {
+      "line": 7293,
+      "body": "nav('new-purchase')"
+    },
+    {
+      "line": 7294,
+      "body": "nav('purchase-list')"
+    },
+    {
+      "line": 7319,
+      "body": "purBulkSelectParty('${p.id}','${esc(p.name)}')"
+    },
+    {
+      "line": 7329,
+      "body": "purbPartyAC(this.value)"
+    },
+    {
+      "line": 7344,
+      "body": "purBulkAddRow()"
+    },
+    {
+      "line": 7355,
+      "body": "purBulkAddRow()"
+    },
+    {
+      "line": 7356,
+      "body": "purBulkClear()"
+    },
+    {
+      "line": 7395,
+      "body": "purBulkSaveAll()"
+    },
+    {
+      "line": 7423,
+      "body": "purBulkSelectParty('${p.id}','${esc(p.name)}')"
+    },
+    {
+      "line": 7427,
+      "body": "purBulkQuickAdd('${esc(val)}')"
+    },
+    {
+      "line": 7474,
+      "body": "purBulkUpdate('${r.id}','date',this.value)"
+    },
+    {
+      "line": 7478,
+      "body": "purBulkUpdate('${r.id}','billNo',this.value)"
+    },
+    {
+      "line": 7482,
+      "body": "purBulkUpdate('${r.id}','total',this.value)"
+    },
+    {
+      "line": 7483,
+      "body": "purBulkCalcRowDOM('${r.id}')"
+    },
+    {
+      "line": 7488,
+      "body": "purBulkUpdate('${r.id}','paid',this.value)"
+    },
+    {
+      "line": 7489,
+      "body": "purBulkCalcRowDOM('${r.id}')"
+    },
+    {
+      "line": 7497,
+      "body": "purBulkUpdate('${r.id}','payType',this.value)"
+    },
+    {
+      "line": 7507,
+      "body": "purBulkUpdate('${r.id}','notes',this.value)"
+    },
+    {
+      "line": 7508,
+      "body": "purBulkNotesKey(event,'${r.id}')"
+    },
+    {
+      "line": 7512,
+      "body": "purBulkDelRow('${r.id}')"
+    },
+    {
+      "line": 7656,
+      "body": "viewPurchase('${b.id}')"
+    },
+    {
+      "line": 7657,
+      "body": "openPurPayModal('${b.id}')"
+    },
+    {
+      "line": 7658,
+      "body": "delPurchase('${b.id}');purBulkShowHistory('${partyId}','${esc(partyName)}')"
+    },
+    {
+      "line": 7678,
+      "body": "closeModal('pur-pay-modal')"
+    },
+    {
+      "line": 7711,
+      "body": "closeModal('pur-pay-modal')"
+    },
+    {
+      "line": 7712,
+      "body": "savePurPayment()"
+    },
+    {
+      "line": 7755,
+      "body": "delPurPayEntry('${purId}',${i})"
+    },
+    {
+      "line": 7837,
+      "body": "renderPurchaseList()"
+    },
+    {
+      "line": 7862,
+      "body": "viewPurchase('${p.id}')"
+    },
+    {
+      "line": 7874,
+      "body": "viewPurchase('${p.id}')"
+    },
+    {
+      "line": 7875,
+      "body": "openPurPayModal('${p.id}')"
+    },
+    {
+      "line": 7876,
+      "body": "delPurchase('${p.id}')"
+    },
+    {
+      "line": 7924,
+      "body": "nav('purchase-list')"
+    },
+    {
+      "line": 7957,
+      "body": "openPurPayModal('${p.id}')"
+    },
+    {
+      "line": 7987,
+      "body": "viewPurchase('${p._purId}')"
+    },
+    {
+      "line": 7988,
+      "body": "delPurPayEntry('${p._purId}',${p._idx});renderPurPayPage()"
+    },
+    {
+      "line": 8024,
+      "body": "openPurPayModal('${p.id}')"
+    },
+    {
+      "line": 8231,
+      "body": "v15CheckPin(this,${JSON.stringify(getDeletePin())})"
+    },
+    {
+      "line": 8233,
+      "body": "document.getElementById('del-pin-overlay').remove()"
+    },
+    {
+      "line": 8234,
+      "body": "v15PinConfirm(${JSON.stringify(getDeletePin())})"
+    },
+    {
+      "line": 8369,
+      "body": "closeModal('settlement-modal')"
+    },
+    {
+      "line": 8382,
+      "body": "settleAutoFill(this.value)"
+    },
+    {
+      "line": 8408,
+      "body": "settleRecalc()"
+    },
+    {
+      "line": 8428,
+      "body": "settleRecalc()"
+    },
+    {
+      "line": 8441,
+      "body": "closeModal('settlement-modal')"
+    },
+    {
+      "line": 8442,
+      "body": "saveSettlement('${partyId}','${partyName}')"
+    },
+    {
+      "line": 8642,
+      "body": "renderAuditPage()"
+    },
+    {
+      "line": 8643,
+      "body": "if(confirm('Clear audit log?')){DB.del('audit');renderAuditPage();}"
+    },
+    {
+      "line": 8718,
+      "body": "renderTxnPage()"
+    },
+    {
+      "line": 8719,
+      "body": "renderTxnPage()"
+    },
+    {
+      "line": 8742,
+      "body": "viewInvoice('${t.invId}')"
+    },
+    {
+      "line": 8775,
+      "body": "viewInvoice('${i.id}')"
+    },
+    {
+      "line": 8776,
+      "body": "viewInvoice('${i.id}')"
+    },
+    {
+      "line": 8782,
+      "body": "openPayModal('${i.id}')"
+    },
+    {
+      "line": 8783,
+      "body": "openSettlementModal('${i.partyId||''}','${esc(i.partyName||'')}')"
+    },
+    {
+      "line": 9167,
+      "body": "v16DotToggle('v16dm-${inv.id}',event)"
+    },
+    {
+      "line": 9169,
+      "body": "viewInvoice('${inv.id}');v16DotClose()"
+    },
+    {
+      "line": 9171,
+      "body": "editInvoiceFromList('${inv.id}');v16DotClose()"
+    },
+    {
+      "line": 9172,
+      "body": "openPayModal('${inv.id}');v16DotClose()"
+    },
+    {
+      "line": 9173,
+      "body": "printFromList('${inv.id}');v16DotClose()"
+    },
+    {
+      "line": 9174,
+      "body": "quickDispatch('${inv.id}');v16DotClose()"
+    },
+    {
+      "line": 9175,
+      "body": "cancelInvoice('${inv.id}');v16DotClose()"
+    },
+    {
+      "line": 9177,
+      "body": "delInvoice('${inv.id}');v16DotClose()"
+    },
+    {
+      "line": 9179,
+      "body": "restoreInvoice('${inv.id}');v16DotClose()"
+    },
+    {
+      "line": 9181,
+      "body": "delInvoice('${inv.id}');v16DotClose()"
+    },
+    {
+      "line": 9209,
+      "body": "viewInvoice('${inv.id}')"
+    },
+    {
+      "line": 9212,
+      "body": "viewInvoice('${inv.id}')"
+    },
+    {
+      "line": 9220,
+      "body": "viewInvoice('${inv.id}')"
+    },
+    {
+      "line": 9221,
+      "body": "openPayModal('${inv.id}')"
+    },
+    {
+      "line": 9267,
+      "body": "closeModal('pay-out-modal')"
+    },
+    {
+      "line": 9278,
+      "body": "poutPartyAC(this.value)"
+    },
+    {
+      "line": 9286,
+      "body": "poutAutoAllocate()"
+    },
+    {
+      "line": 9338,
+      "body": "closeModal('pay-out-modal')"
+    },
+    {
+      "line": 9339,
+      "body": "savePoutPayment()"
+    },
+    {
+      "line": 9356,
+      "body": "poutSelectParty('${p.id}','${esc(p.name)}')"
+    },
+    {
+      "line": 9411,
+      "body": "poutRecalc()"
+    },
+    {
+      "line": 9415,
+      "body": "poutToggleFull('${b.id}',this.checked)"
+    },
+    {
+      "line": 9598,
+      "body": "renderItemRep()"
+    },
+    {
+      "line": 9615,
+      "body": "itemRepToggle('ir-${i}')"
+    },
+    {
+      "line": 9680,
+      "body": "viewInvoice('${i.id}')"
+    },
+    {
+      "line": 9681,
+      "body": "viewInvoice('${i.id}')"
+    },
+    {
+      "line": 9687,
+      "body": "quickDispatch('${i.id}');renderDispatchRep()"
+    },
+    {
+      "line": 9713,
+      "body": "filterLedger(this.value)"
+    },
+    {
+      "line": 9739,
+      "body": "openPartyDetail('${p.id}')"
+    },
+    {
+      "line": 9748,
+      "body": "openPartyDetail('${p.id}')"
+    },
+    {
+      "line": 9749,
+      "body": "openSettlementModal('${p.id}','${esc(p.name)}')"
+    },
+    {
+      "line": 9818,
+      "body": "openSettlementModal('','${esc(p.name)}')"
+    },
+    {
+      "line": 9826,
+      "body": "viewInvoice('${i.id}')"
+    },
+    {
+      "line": 9827,
+      "body": "viewInvoice('${i.id}')"
+    },
+    {
+      "line": 9833,
+      "body": "openPayModal('${i.id}')"
+    }
+  ],
+  "keys": [
+    "settings",
+    "items",
+    "parties",
+    "invoices",
+    "purchases",
+    "retail",
+    "shop4_app_version",
+    "v8_slcols",
+    "v8_compact",
+    "audit"
+  ],
+  "errors": []
+}

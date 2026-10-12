@@ -1,0 +1,2 @@
+const http=require('node:http'),fs=require('node:fs'),path=require('node:path');
+http.createServer((req,res)=>{if(req.url==='/favicon.ico'){res.writeHead(204);return res.end();}if(req.url!=='/'){res.writeHead(404);return res.end();}res.setHeader('Content-Type','text/html; charset=utf-8');res.end(fs.readFileSync(process.env.XL_HTML||path.join(__dirname,'../index.html')));}).listen(4180,'127.0.0.1');

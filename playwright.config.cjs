@@ -1,0 +1,2 @@
+const {defineConfig}=require('@playwright/test');
+module.exports=defineConfig({testDir:'./test/e2e',timeout:30000,fullyParallel:false,workers:1,reporter:[['list'],['json',{outputFile:process.env.XL_REPORT||'test-results/e2e.json'}]],outputDir:'test-results/browser',use:{baseURL:'http://127.0.0.1:4180',viewport:{width:1366,height:768},timezoneId:'Asia/Kolkata',screenshot:'only-on-failure'},projects:['chromium','firefox','webkit'].map(name=>({name,use:{browserName:name}})),webServer:{command:'node test/server.cjs',url:'http://127.0.0.1:4180',reuseExistingServer:false}});

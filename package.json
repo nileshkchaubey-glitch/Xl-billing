@@ -1,0 +1,30 @@
+{
+  "name": "xl-billing",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Local development environment for Xl-billing",
+  "scripts": {
+    "dev": "vite --host 0.0.0.0",
+    "build": "node scripts/build.cjs",
+    "preview": "vite preview --host 0.0.0.0",
+    "test": "node qa/verify-invoice-entry.cjs && node --test test/unit/*.test.cjs && playwright test",
+    "e2e": "playwright test",
+    "lint": "node scripts/lint.cjs",
+    "inventory": "node scripts/inventory.cjs",
+    "test:baseline": "node scripts/baseline.cjs"
+  },
+  "engines": {
+    "node": ">=22.12.0"
+  },
+  "devDependencies": {
+    "@eslint/js": "^10.0.1",
+    "@playwright/test": "^1.64.0",
+    "acorn": "^8.19.0",
+    "acorn-walk": "^8.3.5",
+    "eslint": "^10.12.0",
+    "fast-check": "^4.10.2",
+    "globals": "^17.13.0",
+    "html-validate": "^11.16.2",
+    "vite": "^8.3.4"
+  }
+}
