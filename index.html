@@ -793,6 +793,168 @@ function validateXLTransaction(after,before,options={}){
   }
 }
 </script>
+<script id="xl-csv-core">
+// Local CSV row transfer. Complete Private Backup remains the recovery format.
+function createXLCSV(options){
+  'use strict';
+  options=options||{};
+  const columns={
+    invoices:['invoiceNo','date','partyName','paymentType','subtotal','discount','taxPct','taxAmt','total','paid','balance','dispatchStatus','notes','createdAt','id','partyId','openingPaid'],
+    purchases:['id','date','partyName','billNo','mode','total','paid','balance','notes','createdAt','partyId','discount','subtotal','taxPct','taxAmt','openingPaid'],
+    parties:['name','phone','type','area','description','address','gstin','openingBal','id'],
+    items:['name','unit','saleRate','purchaseRate','gst','hsn','id'],
+    retail:['date','amount','notes','id']
+  };
+  const normalize=header=>header.trim().toLowerCase().replace(/[ _-]/g,'');
+  const fail=message=>{throw new Error('CSV rejected: '+message+' No records were imported.');};
+  const collections=options.collections||{};
+  function parse(text){
+    if(typeof text!=='string'||text.length>20*1024*1024)fail('The file is invalid or exceeds the 20 MiB limit.');
+    text=text.replace(/^\ufeff/,'');
+    const rows=[];let row=[],cell='',quoted=false,closed=false,started=false;
+    const endCell=()=>{row.push(cell);cell='';closed=false;started=false;};
+    const endRow=()=>{endCell();rows.push(row);row=[];};
+    for(let i=0;i<text.length;i++){
+      const ch=text[i];
+      if(quoted){if(ch==='"'){if(text[i+1]==='"'){cell+='"';i++;}else{quoted=false;closed=true;}}else cell+=ch;continue;}
+      if(ch===','){endCell();continue;}
+      if(ch==='\r'||ch==='\n'){endRow();if(ch==='\r'&&text[i+1]==='\n')i++;continue;}
+      if(closed)fail('Unexpected text after a closing quote.');
+      if(ch==='"'){if(started)fail('A quote inside a field must be escaped and the field quoted.');quoted=true;started=true;continue;}
+      cell+=ch;started=true;
+    }
+    if(quoted)fail('A quoted field is not closed.');
+    if(started||closed||cell||row.length)endRow();
+    return rows;
+  }
+  function stringify(rows){return rows.map(row=>row.map(value=>{
+    const text=String(value??'');return /[",\r\n]/.test(text)?'"'+text.replace(/"/g,'""')+'"':text;
+  }).join(',')).join('\r\n');}
+  // Every string cell in an XL-CSV-1 row has one literal apostrophe prefix.
+  // The marker makes removal reversible; unmarked legacy apostrophes are data.
+  const scalar=value=>value===null||value===undefined?'':typeof value==='string'?"'"+value:String(value);
+  function exportRows(type,records){
+    if(!columns[type]||!Array.isArray(records))fail('Unsupported export collection.');
+    const headers=[...columns[type],'xlCSV','recordJSON'];
+    return stringify([headers,...records.map(record=>[...columns[type].map(key=>scalar(record[key])),'XL-CSV-1:'+type,"'"+JSON.stringify(record)])]);
+  }
+  function number(value,label,precision=2,negative=false){
+    const text=typeof value==='number'?String(value):value;
+    if(typeof text!=='string'||!new RegExp('^[+-]?(?:\\d+(?:\\.\\d{1,'+precision+'})?|\\.\\d{1,'+precision+'})$').test(text))fail(label+' must be an explicit finite decimal with at most '+precision+' decimal places.');
+    const n=Number(text),scale=10**precision;
+    if(!Number.isFinite(n)||!Number.isSafeInteger(Math.round(n*scale))||(!negative&&n<0))fail(label+' is outside its supported range.');
+    return n;
+  }
+  const cents=value=>Math.round(value*100);
+  function date(value,label){
+    if(typeof value!=='string'||!/^\d{4}-\d{2}-\d{2}$/.test(value))fail(label+' must use YYYY-MM-DD.');
+    const d=new Date(value+'T00:00:00Z');if(!Number.isFinite(d.getTime())||d.toISOString().slice(0,10)!==value)fail(label+' is not a valid calendar date.');return value;
+  }
+  const identity=value=>typeof value==='string'&&/^[A-Za-z0-9._:-]+$/.test(value);
+  function validateRecord(type,r){
+    if(!r||typeof r!=='object'||Array.isArray(r)||!identity(r.id))fail('A row has an invalid record identifier.');
+    for(const key of ['partyId','itemId'])if(r[key]!==undefined&&r[key]!==''&&!identity(r[key]))fail(key+' is invalid.');
+    if(r.date!==undefined)date(r.date,'date');
+    for(const key of ['name','partyName'])if(r[key]!==undefined&&typeof r[key]!=='string')fail(key+' must be text.');
+    for(const key of ['total','paid','openingPaid','discount','amount','amt','rate','saleRate','purchaseRate','gst','taxPct','taxAmt','subtotal','balance'])if(r[key]!==undefined)number(r[key],key);
+    if(r.openingBal!==undefined)number(r.openingBal,'openingBal',2,true);
+    if(r.qty!==undefined)number(r.qty,'qty',6);
+    for(const key of ['payments','discounts','items']){
+      if(r[key]!==undefined&&!Array.isArray(r[key]))fail(key+' must be a supported array.');
+      for(const entry of r[key]||[]){
+        if(!entry||typeof entry!=='object'||Array.isArray(entry))fail('Invalid '+key+' entry.');
+        for(const field of ['amt','amount','rate'])if(entry[field]!==undefined)number(entry[field],key+'.'+field);
+        if(entry.qty!==undefined)number(entry.qty,key+'.qty',6);
+        if(entry.date!==undefined)date(entry.date,key+'.date');
+        if(entry.itemId&&(!identity(entry.itemId)||!(collections.items||[]).some(item=>item.id===entry.itemId)))fail('An item relationship does not exist in this installation. Import its matching master first.');
+        if(key!=='items'&&entry.amt===undefined)fail(key+' contains an unsupported amount.');
+        if(entry.amt!==undefined&&entry.amount!==undefined&&cents(Number(entry.amt))!==cents(Number(entry.amount)))fail('Conflicting saved line amount aliases.');
+      }
+    }
+    if(r.partyId&&!(collections.parties||[]).some(party=>party.id===r.partyId))fail('A party relationship does not exist in this installation. Import its matching master first.');
+    if(type==='invoices'||type==='purchases'){
+      const bill=type==='invoices'?r.invoiceNo:r.billNo;
+      if((typeof bill!=='string'&&typeof bill!=='number')||!String(bill).trim())fail('A bill number is required; CSV never reserves or changes invoice counters.');
+      date(r.date,'bill date');number(r.total,'total');
+      const paid=r.paid===undefined?0:number(r.paid,'paid'),payments=r.payments||[];
+      const opening=r.openingPaid===undefined?(payments.length===0?paid:0):number(r.openingPaid,'openingPaid');
+      if(cents(opening)+payments.reduce((sum,p)=>sum+cents(number(p.amt,'payment amount')),0)!==cents(paid))fail('Saved paid conflicts with its opening receipt or payment history.');
+      const separate=type==='purchases'||r.discounts!==undefined;
+      const discounts=r.discounts||[],discount=separate?(discounts.length?discounts.reduce((sum,p)=>sum+cents(number(p.amt,'settlement discount')),0):cents(number(r.discount??0,'discount'))):0;
+      if(separate&&discounts.length&&r.discount!==undefined&&cents(number(r.discount,'discount'))!==discount)fail('Saved discount conflicts with its history.');
+      const balance=cents(Number(r.total))-cents(paid)-discount;
+      if(balance<0||r.balance!==undefined&&cents(number(r.balance,'balance'))!==balance)fail('Paid, discounts and balance do not reconcile with the total.');
+      if(type==='invoices'&&r.subtotal!==undefined&&cents(number(r.subtotal,'subtotal'))-cents(number(r.discount??0,'discount'))+cents(number(r.taxAmt??0,'taxAmt'))!==cents(Number(r.total)))fail('Subtotal, discount, tax and total do not reconcile.');
+    }
+    if(['items','parties'].includes(type)&&(typeof r.name!=='string'||!r.name.trim()))fail('A master name is required.');
+    if(type==='retail'){date(r.date,'retail date');number(r.amount,'retail amount');}
+  }
+  function build(text,target){
+    const lines=parse(text);if(lines.length<2)fail('The file contains no data rows.');
+    const headers=lines[0].map(normalize);
+    if(headers.some(h=>!h)||new Set(headers).size!==headers.length)fail('Headers are missing or duplicated.');
+    const rows=lines.slice(1).filter(row=>!(row.length===1&&row[0]==='')).map((cells,index)=>{
+      if(cells.length!==headers.length)fail('Row '+(index+2)+' has the wrong number of columns.');
+      return Object.fromEntries(headers.map((key,i)=>[key,cells[i]]));
+    });
+    if(!rows.length)fail('The file contains no data rows.');
+    let type,own=headers.includes('xlcsv')||headers.includes('recordjson');
+    if(own){
+      if(!headers.includes('xlcsv')||!headers.includes('recordjson'))fail('An own-export marker or source record is missing.');
+      const marker=rows[0].xlcsv;if(!/^XL-CSV-1:(invoices|purchases|parties|items|retail)$/.test(marker))fail('The versioned CSV schema is unsupported.');
+      type=marker.split(':')[1];if(rows.some(row=>row.xlcsv!==marker))fail('A file mixes different versioned schemas.');
+      const expected=[...columns[type].map(normalize),'xlcsv','recordjson'];
+      if(headers.length!==expected.length||expected.some(h=>!headers.includes(h)))fail('The own-export schema has changed or is incomplete.');
+    }else{
+      const kinds=[];
+      if(headers.includes('invoiceno'))kinds.push('invoices');
+      if(headers.includes('billno'))kinds.push('purchases');
+      if(headers.includes('name')&&(headers.includes('salerate')||headers.includes('purchaserate')))kinds.push('items');
+      if(headers.includes('name')&&headers.includes('phone'))kinds.push('parties');
+      if(headers.includes('date')&&headers.includes('amount')&&!headers.includes('partyname')&&!headers.includes('invoiceno')&&!headers.includes('billno'))kinds.push('retail');
+      if(kinds.length!==1)fail('The legacy CSV schema is unknown or ambiguous. Use a supported template or a Complete Private Backup.');
+      type=kinds[0];
+      const allowed=columns[type].map(normalize);if(type==='invoices')allowed.push('amount');
+      if(headers.some(h=>!allowed.includes(h)))fail('A column cannot be preserved by this legacy summary schema. Use a Complete Private Backup for full history.');
+      if(type==='invoices'&&headers.includes('total')&&headers.includes('amount'))fail('Both total and its amount alias are declared.');
+    }
+    if(target&&type!==target)fail('This screen accepts '+target+' only.');
+    const records=rows.map((row,index)=>{
+      let r;
+      if(own){
+        if(!row.recordjson.startsWith("'"))fail('The source record literal encoding is missing.');
+        try{r=JSON.parse(row.recordjson.slice(1));}catch{fail('Row '+(index+2)+' has an invalid source record.');}
+        if(!r||typeof r!=='object'||Array.isArray(r))fail('A source record is not an object.');
+        if(columns[type].some(key=>row[normalize(key)]!==scalar(r[key])))fail('Readable columns differ from their source record. Edit a legacy template for summary imports; do not alter own-export source columns.');
+      }else{
+        const value=(key,fallback)=>headers.includes(normalize(key))?row[normalize(key)]:fallback;
+        const numeric=(key,fallback=0,negative=false)=>number(value(key,String(fallback)),key,2,negative);
+        r={id:value('id','')||options.genId()};
+        if(type==='items')Object.assign(r,{name:value('name',''),unit:value('unit','Pcs'),saleRate:numeric('saleRate'),purchaseRate:numeric('purchaseRate'),gst:numeric('gst'),hsn:value('hsn',''),updatedAt:options.today()});
+        if(type==='parties')Object.assign(r,{name:value('name',''),phone:value('phone',''),type:value('type','both'),area:value('area',''),description:value('description',''),address:value('address',''),gstin:value('gstin',''),openingBal:numeric('openingBal',0,true),updatedAt:options.today()});
+        if(type==='retail')Object.assign(r,{date:date(value('date',''),'date'),amount:numeric('amount'),notes:value('notes','')});
+        if(type==='invoices'||type==='purchases'){
+          const total=number(value('total',value('amount','')),'total'),paid=numeric('paid'),discount=numeric('discount'),taxAmt=numeric('taxAmt');
+          if(!headers.includes('subtotal')&&(discount!==0||taxAmt!==0)&&type==='invoices')fail('A discounted or taxed summary must declare its original subtotal.');
+          if(type==='invoices'&&numeric('taxPct')!==0&&!headers.includes('taxamt'))fail('A taxed summary must declare its original tax amount.');
+          const partyId=value('partyId',''),partyName=value('partyName','');
+          if(!partyName.trim())fail('A party name is required.');
+          if(partyId){const party=(collections.parties||[]).find(p=>p.id===partyId);if(!party||party.name!==partyName)fail('The explicit party identifier and name do not match. No identity was guessed.');}
+          Object.assign(r,{date:date(value('date',''),'date'),partyId,partyName,total,paid,openingPaid:paid,payments:[],balance:numeric('balance',(cents(total)-cents(paid)-(type==='purchases'?cents(discount):0))/100),notes:value('notes',''),createdAt:value('createdAt','')||options.now(),isManual:true});
+          if(headers.includes('openingpaid')&&numeric('openingPaid')!==paid)fail('A legacy summary cannot represent additional receipt history.');
+          if(type==='invoices')Object.assign(r,{invoiceNo:value('invoiceNo',''),items:[],subtotal:numeric('subtotal',total),discount,taxPct:numeric('taxPct'),taxAmt,paymentType:value('paymentType','Cash'),dispatchStatus:value('dispatchStatus','dispatched')});
+          else{Object.assign(r,{billNo:value('billNo',''),mode:value('mode','Cash'),discount,discounts:[]});for(const key of ['subtotal','taxPct','taxAmt'])if(headers.includes(normalize(key)))r[key]=numeric(key);}
+        }
+      }
+      validateRecord(type,r);return r;
+    });
+    const existing=collections[type]||[],ids=new Set(existing.map(r=>r.id)),numbers=new Set(type==='invoices'?existing.map(r=>String(r.invoiceNo||'').trim().toLowerCase()):[]);
+    for(const r of records){if(ids.has(r.id))fail('A record identifier already exists or is repeated in this file.');ids.add(r.id);if(type==='invoices'){const n=String(r.invoiceNo).trim().toLowerCase();if(numbers.has(n))fail('An invoice number already exists or is repeated in this file.');numbers.add(n);}}
+    return {type,records,warning:own?'':'Legacy CSV imports summary records only. Paid is retained as an opening receipt; missing payment events, line details and master relationships are not reconstructed. CSV is not a recovery backup.'};
+  }
+  return {parse,stringify,export:exportRows,build};
+}
+</script>
 <script id="xl-storage-core">
 function createXLStorage(options){
   'use strict';
@@ -2844,35 +3006,13 @@ window.importCSV = function(input) {
   const file = input.files[0]; if (!file) return;
   const reader = new FileReader();
   reader.onload = e => window.XLRunAction('Import previous bills CSV',()=>{
-    const lines = e.target.result.split('\n').filter(l => l.trim());
-    if (lines.length < 2) { toast('CSV is empty!'); return; }
-    const headers = lines[0].split(',').map(h => h.trim().toLowerCase());
-    let count = 0;
-    const invs = getInvoices();
-    lines.slice(1).forEach(line => {
-      const cols = line.split(',').map(c => c.trim().replace(/^"|"$/g,''));
-      const row = {};
-      headers.forEach((h,i) => row[h] = cols[i]||'');
-      const total = parseFloat(row.total)||0;
-      const paid  = parseFloat(row.paid)||0;
-      if (!row.date || !total) return;
-      invs.push({
-        id: genId(), invoiceNo: row.invoiceno||row.invoiceno||('CSV-'+Date.now()+count),
-        date: row.date, partyId: '', partyName: row.partyname||'Cash',
-        items: [], subtotal: total, discount: 0, taxPct: 0, taxAmt: 0,
-        total, paid, balance: Math.max(0, total-paid),
-        paymentType: row.paymenttype||'Cash', dispatchStatus: 'dispatched',
-        notes: (row.notes||'') + ' [CSV Import]', isManual: true,
-        payments: paid>0?[{date:row.date,amt:paid,mode:row.paymenttype||'Cash',note:'CSV import'}]:[],
-        createdAt: new Date().toISOString()
-      });
-      count++;
-    });
-    DB.set('invoices', invs);
-    document.getElementById('csv-import-result').textContent = `✓ ${count} bills imported successfully!`;
+    const plan=xlCSVService().build(e.target.result,'invoices');
+    DB.set('invoices',[...getInvoices(),...plan.records]);
+    document.getElementById('csv-import-result').textContent = `✓ ${plan.records.length} bills imported successfully! ${plan.warning}`;
     renderPrevBillsTable();
     input.value = '';
   });
+  reader.onerror=()=>toast('CSV could not be read. No records were imported.');
   reader.readAsText(file);
 };
 
@@ -5144,7 +5284,7 @@ window.renderExcelPage = function(){
           <button class="btn btn-out btn-sm" onclick="exportToCSV('retail')">📋 Export Retail CSV</button>
         </div>
         <div style="margin-top:10px;font-size:12.5px;color:var(--gray-500)">
-          💡 CSV files open directly in Excel. Double-click the file or select "Open With Excel".
+          CSV exports use literal text cells to prevent spreadsheet formulas. Keep all columns together for lossless supported row imports. CSV transfers rows; use Complete Private Backup for recovery.
         </div>
       </div>
 
@@ -5236,7 +5376,7 @@ function doGet(e) {
       <div class="card" style="background:linear-gradient(135deg,#eff6ff,#fff)">
         <div style="font-weight:700;font-size:14px;margin-bottom:10px;color:var(--b)">💡 Excel Workflow Tips</div>
         <div style="font-size:13px;color:var(--gray-600);line-height:1.9">
-          ✅ <strong>Daily backup:</strong> Export Invoices CSV → Save in OneDrive/Drive<br>
+          ✅ <strong>Daily backup:</strong> Use Complete Private Backup and keep a verified copy outside this browser<br>
           ✅ <strong>Old bills import:</strong> Fill CSV template → Upload here<br>
           ✅ <strong>Google Sheets:</strong> Live data in Sheets — share with accountant!<br>
           ✅ <strong>Pivot Table:</strong> Import the CSV into Excel → Create reports with a PivotTable
@@ -5250,39 +5390,17 @@ function doGet(e) {
   if(urlEl && s.gsUrl) urlEl.value = s.gsUrl;
 };
 
-// CSV Export
+// Both import screens use the same all-or-none preflight before their single write.
+window.xlCSVService=function(){
+  return createXLCSV({collections:{invoices:getInvoices(),purchases:getPurchases(),items:getItems(),parties:getParties(),retail:getRetail()},genId,today,now:()=>new Date().toISOString()});
+};
 window.exportToCSV = function(type){
-  let data = [], filename = '', headers = [];
-  if(type==='invoices'){
-    data = getInvoices();
-    headers = ['invoiceNo','date','partyName','paymentType','subtotal','discount','taxPct','taxAmt','total','paid','balance','dispatchStatus','notes','createdAt'];
-    filename = `invoices-${today()}.csv`;
-  } else if(type==='purchases'){
-    data = getPurchases();
-    headers = ['id','date','partyName','billNo','mode','total','paid','balance','notes','createdAt'];
-    filename = `purchases-${today()}.csv`;
-  } else if(type==='parties'){
-    data = getParties();
-    headers = ['name','phone','type','area','description','address','gstin','openingBal'];
-    filename = `parties-${today()}.csv`;
-  } else if(type==='items'){
-    data = getItems();
-    headers = ['name','unit','saleRate','purchaseRate','gst','hsn'];
-    filename = `items-${today()}.csv`;
-  } else if(type==='retail'){
-    data = getRetail();
-    headers = ['date','amount','notes'];
-    filename = `retail-${today()}.csv`;
-  }
-  const rows = [headers, ...data.map(r => headers.map(h => {
-    const v = r[h]; if(v===null||v===undefined) return '';
-    if(typeof v === 'string' && v.includes(',')) return `"${v.replace(/"/g,'""')}"`;
-    return v;
-  }))];
-  const csv = rows.map(r => r.join(',')).join('\n');
-  const blob = new Blob(['\ufeff'+csv], {type:'text/csv;charset=utf-8'});
-  const a = document.createElement('a'); a.href=URL.createObjectURL(blob); a.download=filename; a.click();
-  toast(`${type} CSV exported! ✓`);
+  const getters={invoices:getInvoices,purchases:getPurchases,parties:getParties,items:getItems,retail:getRetail};
+  if(!getters[type])throw new Error('Unsupported CSV export collection.');
+  const csv=xlCSVService().export(type,getters[type]());
+  const blob=new Blob(['\ufeff'+csv],{type:'text/csv;charset=utf-8'});
+  const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=type+'-'+today()+'.csv';a.click();
+  toast(type+' CSV exported. Use Complete Private Backup for recovery.');
 };
 
 // CSV Import (detect type from headers)
@@ -5307,60 +5425,12 @@ window.xlHandleDrop = function(e){
 };
 
 window.xlProcessCSV = function(text, filename){
-  const lines = text.replace(/\r/g,'').split('\n').filter(l=>l.trim());
-  if(lines.length<2){ toast('CSV is empty!'); return; }
-  const headers = lines[0].split(',').map(h=>h.trim().toLowerCase().replace(/[^a-z0-9]/g,''));
-  const rows = lines.slice(1).map(line=>{
-    const cols=[]; let cur='', inQ=false;
-    for(const ch of line){ if(ch==='"') inQ=!inQ; else if(ch===','&&!inQ){cols.push(cur.trim());cur='';} else cur+=ch; }
-    cols.push(cur.trim());
-    const row={}; headers.forEach((h,i)=>row[h]=cols[i]||''); return row;
-  }).filter(r=>Object.values(r).some(v=>v));
-
-  const res = document.getElementById('xl-import-result');
-  let type='unknown', count=0;
-
-  // Auto-detect type
-  if(headers.includes('invoiceno')||headers.includes('partyname')&&headers.includes('total')&&headers.includes('date')){
-    type='invoices';
-    const invs=getInvoices();
-    rows.forEach(row=>{
-      const total=parseFloat(row.total||row.amount)||0;
-      if(!row.date||!total) return;
-      invs.push({
-        id:genId(), invoiceNo:row.invoiceno||row.billno||('IMP-'+Date.now()+count),
-        date:row.date, partyId:'', partyName:row.partyname||'Cash',
-        items:[], subtotal:total, discount:parseFloat(row.discount)||0,
-        taxPct:parseFloat(row.taxpct)||0, taxAmt:parseFloat(row.taxamt)||0,
-        total, paid:parseFloat(row.paid)||0, balance:Math.max(0,total-(parseFloat(row.paid)||0)),
-        paymentType:row.paymenttype||'Cash', dispatchStatus:row.dispatchstatus||'dispatched',
-        notes:(row.notes||'')+' [CSV Import]', isManual:true,
-        payments:[], createdAt:new Date().toISOString()
-      }); count++;
-    });
-    DB.set('invoices',invs);
-  } else if(headers.includes('name')&&headers.includes('salerate')||headers.includes('purchaserate')){
-    type='items';
-    const items=getItems();
-    rows.forEach(row=>{ if(!row.name) return;
-      items.push({id:genId(),name:row.name,unit:row.unit||'Pcs',saleRate:parseFloat(row.salerate)||0,purchaseRate:parseFloat(row.purchaserate)||0,gst:parseFloat(row.gst)||0,hsn:row.hsn||'',updatedAt:today()}); count++;
-    });
-    DB.set('items',items);
-  } else if(headers.includes('name')&&headers.includes('phone')){
-    type='parties';
-    const parties=getParties();
-    rows.forEach(row=>{ if(!row.name) return;
-      parties.push({id:genId(),name:row.name,phone:row.phone||'',type:row.type||'both',area:row.area||'',description:row.description||'',address:row.address||'',gstin:row.gstin||'',openingBal:parseFloat(row.openingbal)||0,updatedAt:today()}); count++;
-    });
-    DB.set('parties',parties);
-  }
-
-  if(count>0){
-    res.innerHTML=`<span style="color:var(--g)">✓ ${count} ${type} imported successfully! <button class="btn btn-out btn-xs" onclick="renderExcelPage()">Refresh</button></span>`;
-    toast(`${count} ${type} imported! ✓`);
-  } else {
-    res.innerHTML=`<span style="color:var(--r)">Could not detect data type. Check CSV headers match the exported format.</span>`;
-  }
+  const plan=xlCSVService().build(text);
+  const getters={invoices:getInvoices,purchases:getPurchases,parties:getParties,items:getItems,retail:getRetail};
+  DB.set(plan.type,[...getters[plan.type](),...plan.records]);
+  const res=document.getElementById('xl-import-result');
+  if(res)res.textContent='✓ '+plan.records.length+' '+plan.type+' imported successfully! '+plan.warning;
+  toast(plan.records.length+' '+plan.type+' imported. CSV is not a recovery backup.');
 };
 
 // Google Sheets push/pull
