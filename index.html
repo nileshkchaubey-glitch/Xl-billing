@@ -5727,38 +5727,85 @@ window.printInvoiceA5 = function(){
   const s = getSettings();
   const el = document.getElementById('printable-inv'); if(!el) return;
   const content = el.innerHTML;
-
-  const w = window.open('','_blank');
-  w.document.write(`<!DOCTYPE html><html><head><title>${escHtml(s.shopName||'Invoice')}</title><meta charset="UTF-8">
-<style>
+  function showNotice(message){
+    let notice = document.getElementById('a5-print-notice');
+    if(!notice){
+      notice = document.createElement('div');
+      notice.id = 'a5-print-notice';
+      notice.setAttribute('role','status');
+      notice.style.cssText='margin:10px 0;padding:10px 12px;border:1px solid #d97706;border-radius:6px;background:#fffbeb;color:#92400e;font-size:13px';
+      el.parentElement.insertBefore(notice,el);
+    }
+    notice.textContent = message;
+    notice.hidden = !message;
+  }
+  // The cut line occupies no extra height. Two 148mm copies leave 1mm for
+  // browser page rounding; both content dimensions are checked before printing.
+  const styles = `
 *{box-sizing:border-box;margin:0;padding:0}
-@page { size: A4 portrait; margin: 0; }
-body { font-family:'Segoe UI',Arial,sans-serif; font-size:11px; color:#1f2937; }
-.a4-wrap { width:210mm; min-height:297mm; display:flex; flex-direction:column; }
-.a5-half {
-  width:210mm; height:148.5mm;
-  padding:8mm 10mm;
-  box-sizing:border-box;
-  border-bottom:1px dashed #d1d5db;
-  overflow:hidden;
-  page-break-inside:avoid;
-}
-.a5-half:last-child{ border-bottom:none; }
+@page { size:A4 portrait; margin:0; }
+body{font-family:'Segoe UI',Arial,sans-serif;font-size:11px;color:#1f2937}
+.a4-wrap{width:210mm;height:296mm;position:relative}
+.a5-half{width:210mm;height:148mm;padding:8mm 10mm;break-inside:avoid;page-break-inside:avoid;overflow:visible}
+.a5-half:first-child{border-bottom:1px dashed #d1d5db}
+.cut-line{position:absolute;top:148mm;left:0;right:0;text-align:center;color:#9ca3af;font-size:9px;letter-spacing:2px;transform:translateY(-50%);background:#fff;width:100px;margin:auto}
 table{width:100%;border-collapse:collapse}
 th{background:#f3f4f6;padding:5px 7px;text-align:left;font-size:9.5px;font-weight:700;color:#6b7280;border-bottom:1px solid #e5e7eb}
-td{padding:5px 7px;border-bottom:1px solid #f3f4f6;font-size:10px}
+td{padding:5px 7px;border-bottom:1px solid #f3f4f6;font-size:10px;overflow-wrap:anywhere}
 tr:last-child td{border-bottom:none}
 .tot-row{display:flex;justify-content:space-between;padding:2px 0;color:#4b5563;font-size:10.5px}
 .tot-row.grand{font-size:12px;font-weight:700;color:#1f2937;border-top:1px solid #d1d5db;padding-top:5px;margin-top:3px}
 .no-print{display:none}
-.cut-line{text-align:center;color:#9ca3af;font-size:9px;letter-spacing:2px;padding:2px 0}
-</style></head><body>
-<div class="a4-wrap">
-  <div class="a5-half">${content}</div>
-  <div class="cut-line">✂ ─────────────────────────────────── ✂</div>
-  <div class="a5-half">${content}</div>
-</div>
-</body></html>`);
+`;
+  let frame, fits;
+  try{
+    // A separate document prevents application styles from changing the test.
+    // This is a read-only layout measurement, not a persisted invoice rewrite.
+    frame = document.createElement('iframe');
+    frame.setAttribute('aria-hidden','true');
+    frame.tabIndex = -1;
+    frame.style.cssText='position:fixed;left:-10000px;top:0;width:210mm;height:148mm;visibility:hidden;border:0;pointer-events:none';
+    document.body.appendChild(frame);
+    const measured = frame.contentDocument;
+    if(!measured) throw new Error('Print layout document unavailable');
+    measured.open();
+    measured.write(`<!DOCTYPE html><html><head><meta charset="UTF-8"><style>${styles}</style></head><body><div class="a5-half">${content}</div></body></html>`);
+    measured.close();
+    const half = measured.querySelector('.a5-half');
+    if(!half || half.clientHeight===0 || half.clientWidth===0) throw new Error('Print layout could not be measured');
+    fits = half.scrollHeight<=half.clientHeight && half.scrollWidth<=half.clientWidth;
+  }catch{
+    showNotice('A5 printing could not verify that every line and total fits. Printing was stopped. Use the A4 Print button or try again.');
+    return;
+  }finally{
+    frame?.remove();
+  }
+  let printStyles = styles;
+  let body;
+  if(fits){
+    showNotice('');
+    body = `<body data-print-layout="a5-two-up"><div class="a4-wrap"><div class="a5-half">${content}</div><div class="cut-line">CUT HERE</div><div class="a5-half">${content}</div></div>`;
+  }else{
+    const message='This invoice exceeds a half A4 page. A4 layout will be used so every line and total is included.';
+    showNotice(message);
+    // Oversized invoices use one complete A4 copy with normal page flow. No
+    // fixed-height container or hidden overflow can remove financial content.
+    printStyles += `
+@page { size:A4 portrait; margin:10mm; }
+body{width:190mm;margin:0 auto}
+thead{display:table-header-group}
+tr{break-inside:avoid;page-break-inside:avoid}
+.print-layout-notice{padding:10px;margin-bottom:10px;border:1px solid #d97706;background:#fffbeb;color:#92400e}
+@media print{.print-layout-notice{display:none}}
+`;
+    body = `<body data-print-layout="a4-fallback"><div class="print-layout-notice" role="status">${escHtml(message)}</div>${content}`;
+  }
+  const w = window.open('','_blank');
+  if(!w){
+    showNotice('The print window was blocked. Allow popups and try again; no invoice data was changed.');
+    return;
+  }
+  w.document.write(`<!DOCTYPE html><html><head><title>${escHtml(s.shopName||'Invoice')}</title><meta charset="UTF-8"><style>${printStyles}</style></head>${body}</body></html>`);
   w.document.close(); w.focus();
   setTimeout(()=>w.print(), 300);
 };
