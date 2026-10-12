@@ -1159,6 +1159,18 @@ function billBalance(record){
   return round2(Number(record?.total)-Number(record?.paid||0)-discount);
 }
 function recordedPaid(record){return financialState(record).paid;}
+// Report classification never changes the stored settlement or its accounting balance.
+function paymentReportKind(payment){
+  const mode=String(payment?.mode||'Cash').trim().toLowerCase();
+  if(mode==='discount')return 'discount';
+  if(['credit','credit note','adjustment','write-off','write off','noncash','non-cash'].includes(mode))return 'noncash';
+  if(['cash','upi','neft','rtgs','neft/rtgs','imps','cheque','card','bank transfer','online'].includes(mode))return 'payment';
+  return 'unclassified';
+}
+function reportMoneySum(rows,amount=row=>row.amt){
+  return rows.reduce((sum,row)=>sum+moneyPaise(amount(row)),0)/100;
+}
+function invoiceOpeningSettled(record){return financialState(record).opening;}
 function preparePaymentHistory(record){
   const state=financialState(record);
   if(!state.valid||!state.consistent)throw new Error('The bill has conflicting payment history. No payment was changed.');
@@ -4468,8 +4480,10 @@ window.renderPaymentLedger = function(){
   if(fDate)  pays = pays.filter(p => p.date === fDate);
   if(fParty) pays = pays.filter(p => p._party.toLowerCase().includes(fParty));
 
-  const tTotal    = pays.filter(p=>p.type==='payment').reduce((a,p)=>a+p.amt, 0);
-  const tDiscount = pays.filter(p=>p.type==='discount').reduce((a,p)=>a+p.amt, 0);
+  const tTotal    = reportMoneySum(pays.filter(p=>p.type==='payment'));
+  const tDiscount = reportMoneySum(pays.filter(p=>p.type==='discount'));
+  const tNoncash  = reportMoneySum(pays.filter(p=>p.type==='noncash'));
+  const tUnknown  = reportMoneySum(pays.filter(p=>p.type==='unclassified'));
 
   const count=pays.length;
   pays=listView(pays,'payments',[fDate,fParty].join('|'));
@@ -4497,12 +4511,15 @@ window.renderPaymentLedger = function(){
       <div class="sg" style="grid-template-columns:repeat(auto-fit,minmax(140px,1fr));margin-bottom:16px">
         <div class="sc"><div class="sc-lbl">Total Received</div><div class="sc-val g">${fc(tTotal)}</div></div>
         <div class="sc"><div class="sc-lbl">Discounts Given</div><div class="sc-val o">${fc(tDiscount)}</div></div>
+        <div class="sc"><div class="sc-lbl">Other Noncash Settlements</div><div class="sc-val o">${fc(tNoncash)}</div></div>
+        <div class="sc"><div class="sc-lbl">Unclassified Payments</div><div class="sc-val o">${fc(tUnknown)}</div></div>
         <div class="sc"><div class="sc-lbl">Entries Shown</div><div class="sc-val b">${count}</div></div>
       </div>
+      <p style="font-size:12px;color:var(--gray-500);margin-bottom:12px">Received includes recorded Cash, UPI, bank, card and cheque receipts, including retained receipts on cancelled invoices. Discounts and credits are noncash. Unknown modes need review. Undated opening settlement amounts are excluded from dated receipt totals. Cheque clearance and refunds are not inferred.</p>
       ${Object.keys(byDate).length===0 ? `<div class="empty"><div class="ic">💰</div>No payments found</div>` :
         Object.keys(byDate).map(date=>{
           const dp = byDate[date];
-          const dayTotal = dp.filter(p=>p.type==='payment').reduce((a,p)=>a+p.amt,0);
+          const dayTotal = reportMoneySum(dp.filter(p=>p.type==='payment'));
           return `
           <div class="pay-card">
             <div class="pay-card-hdr">
@@ -4518,6 +4535,7 @@ window.renderPaymentLedger = function(){
                   </div>
                   <div style="font-size:11.5px;color:var(--gray-500)">
                     Invoice: <span style="color:var(--b);font-weight:600;cursor:pointer" onclick="viewInvoice('${escHtml(p._invId)}')">${escHtml(p._invNo)}</span>
+                    ${p._cancelled?' · Cancelled invoice; receipt retained':''}
                     &nbsp;·&nbsp; Total: ${fc(p._invTotal)}
                     &nbsp;·&nbsp; Remaining: <span style="color:${escHtml(p._invBal>0?'var(--r)':'var(--g)')}">
                       ${p._invBal>0 ? fc(p._invBal) : 'Paid ✓'}
@@ -4557,11 +4575,12 @@ window.getAllPayments = function(){
         _party:  inv.partyName||'Cash',
         _invTotal:inv.total||0,
         _invBal: billBalance(inv)||0,
+        _cancelled:isCancelled(inv),
         date:    p.date,
         amt:     p.amt||0,
         mode:    p.mode||'Cash',
         note:    p.note||'',
-        type:    p.mode==='Discount'?'discount':'payment'
+        type:    paymentReportKind(p)
       });
     });
   });
@@ -7439,10 +7458,12 @@ window.openPartyDetail = function(partyId) {
         <!-- Stats row -->
         <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:16px">
           <div class="pd-stat"><div class="pd-stat-val" style="color:var(--g)">${fc(tSale)}</div><div class="pd-stat-lbl">Total Sale</div></div>
-          <div class="pd-stat"><div class="pd-stat-val" style="color:var(--b)">${fc(tPaid)}</div><div class="pd-stat-lbl">Total Paid</div></div>
-          <div class="pd-stat"><div class="pd-stat-val" style="color:${escHtml(tBal>0?'var(--r)':'var(--g)')}">${fc(tBal)}</div><div class="pd-stat-lbl">Outstanding</div></div>
+          <div class="pd-stat"><div class="pd-stat-val" style="color:var(--b)">${fc(tPaid)}</div><div class="pd-stat-lbl">Active Invoice Settled</div></div>
+          <div class="pd-stat"><div class="pd-stat-val" style="color:${escHtml(tBal>0?'var(--r)':'var(--g)')}">${fc(tBal)}</div><div class="pd-stat-lbl">Invoice Outstanding</div></div>
           <div class="pd-stat"><div class="pd-stat-val" style="color:var(--gray-600)">${escHtml(invs.length)}</div><div class="pd-stat-lbl">Invoices</div></div>
         </div>
+
+        <div id="party-opening-policy" style="font-size:12px;color:var(--gray-500);margin-bottom:12px">Recorded party opening balance: ${fc(p.openingBal||0)}. It is not included in invoice outstanding; its receivable/payable sign and settlement treatment require owner policy. Active Invoice Settled includes opening settlements and noncash discounts/credits, and is not a cash-received total.</div>
 
         <!-- Contact Info -->
         <div style="display:flex;gap:14px;margin-bottom:14px;flex-wrap:wrap;font-size:13px">
@@ -7535,6 +7556,10 @@ window.renderDashboard = function() {
   const pendDisp   = activeInvs.filter(i=>((i.dispatchStatus||'pending')||'pending')==='pending').length;
   const cancelled  = invs.filter(i=>isCancelled(i)).length;
   const rI = [...activeInvs].reverse().slice(0,7);
+  const monthlyPayments=getAllPayments().filter(p=>(p.date||'').startsWith(ym));
+  const monthlyReceipts=reportMoneySum(monthlyPayments.filter(p=>p.type==='payment'));
+  const monthlyNoncash=reportMoneySum(monthlyPayments.filter(p=>['discount','noncash'].includes(p.type)));
+  const monthlyUnknown=reportMoneySum(monthlyPayments.filter(p=>p.type==='unclassified'));
 
   document.getElementById('dash-body').innerHTML = `
     <div class="sg" style="grid-template-columns:repeat(auto-fit,minmax(140px,1fr))">
@@ -7544,7 +7569,11 @@ window.renderDashboard = function() {
       <div class="sc"><div class="sc-lbl">Cash Due</div><div class="sc-val r">${fc(cashDue)}</div></div>
       <div class="sc"><div class="sc-lbl">Credit Due</div><div class="sc-val" style="color:var(--o)">${fc(creditDue)}</div></div>
       <div class="sc"><div class="sc-lbl">Pending Dispatch</div><div class="sc-val p">${pendDisp}</div></div>
+      <div class="sc"><div class="sc-lbl">Invoice Receipts (Month)</div><div class="sc-val g">${fc(monthlyReceipts)}</div></div>
+      <div class="sc"><div class="sc-lbl">Invoice Noncash Settlements (Month)</div><div class="sc-val o">${fc(monthlyNoncash)}</div></div>
+      <div class="sc"><div class="sc-lbl">Unclassified Invoice Payments (Month)</div><div class="sc-val o">${fc(monthlyUnknown)}</div></div>
     </div>
+    <p style="font-size:12px;color:var(--gray-500);margin:0 0 12px">Sales and invoice dues exclude cancelled invoices. Dated invoice receipts include retained payments on cancelled invoices; discounts/credits and unknown modes are separate. Undated opening settlements and retail sales totals are not inferred to be dated invoice cash receipts.</p>
     <div class="fr2">
       <div class="card">
         <div style="font-weight:700;font-size:14px;margin-bottom:10px;display:flex;justify-content:space-between;align-items:center">
@@ -9290,37 +9319,54 @@ window.renderTxnPage = function() {
   const srch = document.getElementById('txn-srch')?.value?.toLowerCase()||'';
   const filter = document.getElementById('txn-type-filter')?.value||'all';
 
-  // Build unified transaction list
+  // Keep accrual rows, actual cash receipts and noncash settlements distinct.
+  // A cancellation does not imply a refund or erase an existing cash receipt.
   const txns = [];
-  getInvoices().filter(i=>!isCancelled(i)).forEach(inv=>{
-    txns.push({ date:inv.date, type:'sale', icon:'📄', party:inv.partyName||'Cash',
-      label:`${inv.invoiceNo} — Sale`, sub:`${(inv.paymentType||'Cash')}`, amount:inv.total, color:'var(--g)', invId:inv.id });
-    (inv.payments||[]).forEach(p=>{
-      txns.push({ date:p.date, type:'pay-in', icon:'💳', party:inv.partyName||'Cash',
-        label:`Payment — ${inv.invoiceNo}`, sub:`${p.mode} ${p.note?'· '+p.note:''}`, amount:p.amt, color:'var(--b)', invId:inv.id });
+  const invoiceRecords=getInvoices(),purchaseRecords=getPurchases();
+  const appendPayments=(record,outgoing=false)=>{
+    (record.payments||[]).forEach(p=>{
+      const kind=paymentReportKind(p),direction=outgoing?'out':'in';
+      const type=kind==='payment'?'pay-'+direction:kind==='unclassified'?'unknown-'+direction:'settle-'+direction;
+      const number=outgoing?(record.billNo||'Bill'):record.invoiceNo;
+      const label=kind==='payment'?(outgoing?'Payment Out':'Payment'):kind==='unclassified'?'Unclassified Payment':'Noncash Settlement';
+      const retained=isCancelled(record)?' · Cancelled invoice; receipt retained':'';
+      txns.push({date:p.date,type,icon:kind==='payment'?(outgoing?'💸':'💳'):'🧾',party:record.partyName||(outgoing?'Supplier':'Cash'),
+        label:label+' — '+number,sub:String(p.mode||'Cash')+(p.note?' · '+p.note:'')+retained,
+        amount:Number(p.amt),color:kind==='payment'?(outgoing?'var(--p)':'var(--b)'):'var(--o)',invId:outgoing?undefined:record.id});
     });
+  };
+  invoiceRecords.forEach(inv=>{
+    if(isActive(inv))txns.push({date:inv.date,type:'sale',icon:'📄',party:inv.partyName||'Cash',
+      label:inv.invoiceNo+' — Sale',sub:inv.paymentType||'Cash',amount:Number(inv.total),color:'var(--g)',invId:inv.id});
+    appendPayments(inv);
   });
-  getPurchases().forEach(pur=>{
-    txns.push({ date:pur.date, type:'purchase', icon:'🛒', party:pur.partyName||'Supplier',
-      label:`${pur.billNo||'Bill'} — Purchase`, sub:`${pur.payType||'Cash'}`, amount:pur.total, color:'var(--o)' });
-    (pur.payments||[]).forEach(p=>{
-      txns.push({ date:p.date, type:'pay-out', icon:'💸', party:pur.partyName||'Supplier',
-        label:`Payment Out — ${pur.billNo||'-'}`, sub:`${p.mode} ${p.note?'· '+p.note:''}`, amount:p.amt, color:'var(--p)' });
-    });
+  purchaseRecords.forEach(pur=>{
+    if(isActive(pur))txns.push({date:pur.date,type:'purchase',icon:'🛒',party:pur.partyName||'Supplier',
+      label:(pur.billNo||'Bill')+' — Purchase',sub:pur.payType||'Cash',amount:Number(pur.total),color:'var(--o)'});
+    appendPayments(pur,true);
+    // Supplier discounts are stored separately from paid amounts in this format.
+    (pur.discounts||[]).forEach(p=>txns.push({date:p.date,type:'settle-out',icon:'🧾',party:pur.partyName||'Supplier',
+      label:'Supplier Discount — '+(pur.billNo||'Bill'),sub:'Discount'+(p.note?' · '+p.note:''),amount:Number(p.amt),color:'var(--o)'}));
+    if(!pur.discounts?.length&&Number(pur.discount||0)>0)txns.push({date:'',type:'settle-out',icon:'🧾',party:pur.partyName||'Supplier',
+      label:'Undated Supplier Discount — '+(pur.billNo||'Bill'),sub:'Historical aggregate; receipt date unknown',amount:Number(pur.discount),color:'var(--o)'});
   });
-  getRetail().forEach(r=>{
-    txns.push({ date:r.date, type:'retail', icon:'🏷️', party:'Retail',
-      label:`Retail Sale`, sub:r.notes||'', amount:r.amount, color:'var(--c)' });
-  });
-
+  getRetail().forEach(r=>txns.push({date:r.date,type:'retail',icon:'🏷️',party:'Retail',label:'Retail Sale',
+    sub:r.notes||'',amount:Number(r.amount),color:'var(--c)'}));
   txns.sort((a,b)=>(b.date||'').localeCompare(a.date||''));
 
   let filtered = txns;
-  if (srch) filtered = filtered.filter(t=>(t.party+t.label+t.sub).toLowerCase().includes(srch));
-  if (filter!=='all') filtered = filtered.filter(t=>t.type===filter);
-
-  const totalIn  = filtered.filter(t=>['sale','pay-in','retail'].includes(t.type)).reduce((a,t)=>a+t.amount,0);
-  const totalOut = filtered.filter(t=>['purchase','pay-out'].includes(t.type)).reduce((a,t)=>a+t.amount,0);
+  if(srch)filtered=filtered.filter(t=>(t.party+t.label+t.sub).toLowerCase().includes(srch));
+  if(filter!=='all')filtered=filtered.filter(t=>t.type===filter);
+  const totalIn=reportMoneySum(filtered.filter(t=>t.type==='pay-in'),t=>t.amount);
+  const totalOut=reportMoneySum(filtered.filter(t=>t.type==='pay-out'),t=>t.amount);
+  const activeSales=reportMoneySum(filtered.filter(t=>t.type==='sale'),t=>t.amount);
+  const purchaseTotal=reportMoneySum(filtered.filter(t=>t.type==='purchase'),t=>t.amount);
+  const retailTotal=reportMoneySum(filtered.filter(t=>t.type==='retail'),t=>t.amount);
+  const noncash=reportMoneySum(filtered.filter(t=>t.type.startsWith('settle-')),t=>t.amount);
+  const unknown=reportMoneySum(filtered.filter(t=>t.type.startsWith('unknown-')),t=>t.amount);
+  const openingRecords=filter==='all'?invoiceRecords.concat(purchaseRecords).filter(r=>!srch||
+    ((r.partyName||'')+(r.invoiceNo||r.billNo||'')+'opening settlement').toLowerCase().includes(srch)):[];
+  const openingSettled=reportMoneySum(openingRecords,invoiceOpeningSettled);
 
   const visible=listView(filtered,'transactions',[srch,filter].join('|'));
   el.innerHTML = `
@@ -9335,16 +9381,27 @@ window.renderTxnPage = function() {
           <option value="purchase" ${escHtml(filter==='purchase'?'selected':'')}>🛒 Purchase</option>
           <option value="pay-out" ${escHtml(filter==='pay-out'?'selected':'')}>💸 Payment Out</option>
           <option value="retail" ${escHtml(filter==='retail'?'selected':'')}>🏷️ Retail</option>
+          <option value="settle-in" ${escHtml(filter==='settle-in'?'selected':'')}>Noncash Settlement In</option>
+          <option value="settle-out" ${escHtml(filter==='settle-out'?'selected':'')}>Noncash Settlement Out</option>
+          <option value="unknown-in" ${escHtml(filter==='unknown-in'?'selected':'')}>Unclassified In</option>
+          <option value="unknown-out" ${escHtml(filter==='unknown-out'?'selected':'')}>Unclassified Out</option>
         </select>
       </div>
     </div>
     <div class="pb" style="padding:18px 22px">
       <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px;margin-bottom:14px">
-        <div class="sc"><div class="sc-lbl">Total IN (Sale+Payment)</div><div class="sc-val g">${fc(totalIn)}</div></div>
-        <div class="sc"><div class="sc-lbl">Total OUT (Purchase+Pay)</div><div class="sc-val r">${fc(totalOut)}</div></div>
-        <div class="sc"><div class="sc-lbl">Net</div><div class="sc-val ${escHtml(totalIn-totalOut>=0?'g':'r')}">${fc(totalIn-totalOut)}</div></div>
+        <div class="sc"><div class="sc-lbl">Recorded Cash In</div><div class="sc-val g">${fc(totalIn)}</div></div>
+        <div class="sc"><div class="sc-lbl">Recorded Cash Out</div><div class="sc-val r">${fc(totalOut)}</div></div>
+        <div class="sc"><div class="sc-lbl">Recorded Cash Net</div><div class="sc-val ${escHtml(totalIn-totalOut>=0?'g':'r')}">${fc(round2(totalIn-totalOut))}</div></div>
+        <div class="sc"><div class="sc-lbl">Active Invoice Sales</div><div class="sc-val g">${fc(activeSales)}</div></div>
+        <div class="sc"><div class="sc-lbl">Active Purchases</div><div class="sc-val o">${fc(purchaseTotal)}</div></div>
+        <div class="sc"><div class="sc-lbl">Retail Sales</div><div class="sc-val b">${fc(retailTotal)}</div></div>
+        <div class="sc"><div class="sc-lbl">Noncash Settlements</div><div class="sc-val o">${fc(noncash)}</div></div>
+        <div class="sc"><div class="sc-lbl">Unclassified Payments</div><div class="sc-val o">${fc(unknown)}</div></div>
+        <div class="sc"><div class="sc-lbl">Undated Opening Settled</div><div class="sc-val o">${fc(openingSettled)}</div></div>
         <div class="sc"><div class="sc-lbl">Entries Shown</div><div class="sc-val b">${escHtml(filtered.length)}</div></div>
       </div>
+      <p style="font-size:12px;color:var(--gray-500);margin-bottom:12px">Recorded cash includes actual Cash, UPI, bank, card and cheque payment entries, including retained receipts on cancelled invoices. Sales, purchases and retail sales are separate accrual/activity totals and are not added to cash. Noncash discounts/credits and unclassified modes are excluded from cash. Undated opening settlements have no inferred receipt date. Cash net is not profit; cheque clearance and refunds are not inferred.</p>
       <div class="card" style="padding:0">
         <div style="overflow-x:auto"><table style="width:100%;border-collapse:collapse;font-size:13px">
           <thead><tr>

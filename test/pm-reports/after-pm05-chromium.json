@@ -1,0 +1,147 @@
+{
+  "tested_commit": "2de6af38394a72564706c58c7c4fa79daf15f288",
+  "source_sha256": "b79e9a05c03b5ba1dde6e75a4fce19610634e30329e9421efb3fd42cfb4bd1a8",
+  "runner_sha256": "46ea5c0d53ce3ab0f5eb8fe4d2a0134abf3f0ff1cd39d402eea24378e3073c1c",
+  "browser": "chromium",
+  "synthetic_only": true,
+  "summary": {
+    "pass": 3,
+    "fail": 1,
+    "harness_errors": 0
+  },
+  "results": [
+    {
+      "id": "cash-noncash-cancelled-reconciliation",
+      "status": "PASS",
+      "pass": true,
+      "expected": "Dated actual invoice cash 55 includes retained cancelled receipt 20; supplier cash 20; discounts/credits 40 include supplier separate discount 10; unknown 5 and undated opening 7 are not fabricated cash",
+      "observed": {
+        "ledger": {
+          "Total Received": "₹55.00",
+          "Discounts Given": "₹10.00",
+          "Other Noncash Settlements": "₹5.00",
+          "Unclassified Payments": "₹3.00",
+          "Entries Shown": "8"
+        },
+        "all": {
+          "Recorded Cash In": "₹55.00",
+          "Recorded Cash Out": "₹20.00",
+          "Recorded Cash Net": "₹35.00",
+          "Active Invoice Sales": "₹100.00",
+          "Active Purchases": "₹500.00",
+          "Retail Sales": "₹50.00",
+          "Noncash Settlements": "₹40.00",
+          "Unclassified Payments": "₹5.00",
+          "Undated Opening Settled": "₹7.00",
+          "Entries Shown": "16"
+        },
+        "cashIn": {
+          "Recorded Cash In": "₹55.00",
+          "Recorded Cash Out": "₹0.00",
+          "Recorded Cash Net": "₹55.00",
+          "Active Invoice Sales": "₹0.00",
+          "Active Purchases": "₹0.00",
+          "Retail Sales": "₹0.00",
+          "Noncash Settlements": "₹0.00",
+          "Unclassified Payments": "₹0.00",
+          "Undated Opening Settled": "₹0.00",
+          "Entries Shown": "5"
+        },
+        "cashOut": {
+          "Recorded Cash In": "₹0.00",
+          "Recorded Cash Out": "₹20.00",
+          "Recorded Cash Net": "₹-20.00",
+          "Active Invoice Sales": "₹0.00",
+          "Active Purchases": "₹0.00",
+          "Retail Sales": "₹0.00",
+          "Noncash Settlements": "₹0.00",
+          "Unclassified Payments": "₹0.00",
+          "Undated Opening Settled": "₹0.00",
+          "Entries Shown": "1"
+        },
+        "rows": "\n            1\n            09/10/2026\n            Synthetic Customer\n            💳 Payment — INV-1001\n            ₹20.00\n            pay-in\n            Cash · Synthetic Cash\n          \n            2\n            09/10/2026\n            Synthetic Customer\n            💳 Payment — INV-1001\n            ₹5.00\n            pay-in\n            UPI · Synthetic UPI\n          \n            3\n            09/10/2026\n            Synthetic Customer\n            💳 Payment — INV-1001\n            ₹5.00\n            pay-in\n            NEFT · Synthetic NEFT\n          \n            4\n            09/10/2026\n            Synthetic Customer\n            💳 Payment — INV-1001\n            ₹5.00\n            pay-in\n            Cheque · Synthetic Cheque\n          \n            5\n            09/10/2026\n            Synthetic Customer\n            💳 Payment — INV-1002\n            ₹20.00\n            pay-in\n            Cash · Cancelled invoice; receipt retained\n          "
+      },
+      "bytes_preserved": true
+    },
+    {
+      "id": "dashboard-accrual-cash-opening-policy",
+      "status": "PASS",
+      "pass": true,
+      "expected": "Active wholesale 100 plus retail sales 50; receipts 55 and noncash 15 remain separate; due 40 excludes cancelled accrual; party opening 25 is preserved and clearly requires owner policy",
+      "observed": {
+        "dashboard": {
+          "This Month Sale": "₹150.00",
+          "Wholesale": "₹100.00",
+          "Purchase": "₹500.00",
+          "Cash Due": "₹0.00",
+          "Credit Due": "₹40.00",
+          "Pending Dispatch": "1",
+          "Invoice Receipts (Month)": "₹55.00",
+          "Invoice Noncash Settlements (Month)": "₹15.00",
+          "Unclassified Invoice Payments (Month)": "₹3.00"
+        },
+        "labels": [
+          "Total Sale",
+          "Active Invoice Settled",
+          "Invoice Outstanding",
+          "Invoices"
+        ],
+        "values": [
+          "₹100.00",
+          "₹60.00",
+          "₹40.00",
+          "2"
+        ],
+        "note": "Recorded party opening balance: ₹25.00. It is not included in invoice outstanding; its receivable/payable sign and settlement treatment require owner policy. Active Invoice Settled includes opening settlements and noncash discounts/credits, and is not a cash-received total."
+      },
+      "bytes_preserved": true
+    },
+    {
+      "id": "undated-opening-and-paise-summary",
+      "status": "PASS",
+      "pass": true,
+      "expected": "0.10 + 0.20 dated receipts = 0.30; explicit and history-free aggregate opening 40 stays separate without inventing receipt dates",
+      "observed": {
+        "Recorded Cash In": "₹0.30",
+        "Recorded Cash Out": "₹20.00",
+        "Recorded Cash Net": "₹-19.70",
+        "Active Invoice Sales": "₹200.00",
+        "Active Purchases": "₹500.00",
+        "Retail Sales": "₹50.00",
+        "Noncash Settlements": "₹0.00",
+        "Unclassified Payments": "₹0.00",
+        "Undated Opening Settled": "₹40.00",
+        "Entries Shown": "7"
+      },
+      "bytes_preserved": true
+    },
+    {
+      "id": "legacy-item-party-view-print-aliases",
+      "status": "FAIL",
+      "pass": false,
+      "expected": "Active legacy amount 6 + modern amt 4 = 10 in item and party drilldown; cancelled 100 excluded; invoice and A4 printable amount remain 6 without normalization",
+      "observed": {
+        "cells": [
+          "▶",
+          "Synthetic Legacy",
+          "3",
+          "2",
+          "₹4.00",
+          "1"
+        ],
+        "drill": "\n                  \n                    Synthetic Customer\n                    Last: 09/10/2026\n                  \n                  \n                    Qty: 3\n                    Rate: ₹4.00\n                    ₹4.00\n                  \n                ",
+        "view": [
+          "1",
+          "1",
+          "Synthetic Legacy Pcs",
+          "\n              ",
+          "2",
+          "₹3.00",
+          "₹6.00"
+        ],
+        "printed_legacy_amount": true
+      },
+      "bytes_preserved": true
+    }
+  ]
+}
