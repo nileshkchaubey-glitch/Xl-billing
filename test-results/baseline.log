@@ -1,0 +1,591 @@
+
+Running 15 tests using 1 worker
+
+  ✘   1 [chromium] › test/e2e/hotfix.spec.cjs:6:2 › P0-1 invoice: PIN setup, wrong PIN, Enter and audit (30.1s)
+  ✘   2 [chromium] › test/e2e/hotfix.spec.cjs:6:2 › P0-1 purchase: PIN setup, wrong PIN, Enter and audit (30.1s)
+  ✘   3 [chromium] › test/e2e/hotfix.spec.cjs:6:2 › P0-1 party: PIN setup, wrong PIN, Enter and audit (30.1s)
+  ✘   4 [chromium] › test/e2e/hotfix.spec.cjs:6:2 › P0-1 item: PIN setup, wrong PIN, Enter and audit (30.1s)
+  ✘   5 [chromium] › test/e2e/hotfix.spec.cjs:6:2 › P0-1 payment: PIN setup, wrong PIN, Enter and audit (5.3s)
+  ✘   6 [chromium] › test/e2e/hotfix.spec.cjs:6:2 › P0-1 retail: PIN setup, wrong PIN, Enter and audit (5.3s)
+  ✘   7 [chromium] › test/e2e/hotfix.spec.cjs:18:1 › P0-1 dialog escapes labels, traps focus, cancels with Esc (5.3s)
+  ✘   8 [chromium] › test/e2e/hotfix.spec.cjs:19:1 › P0-2 all pages and report tabs render with seeded data (469ms)
+  ✘   9 [chromium] › test/e2e/hotfix.spec.cjs:25:1 › P0-3 pagination reaches next and last invoice, totals cover all (5.7s)
+  ✘  10 [chromium] › test/e2e/hotfix.spec.cjs:26:1 › P0-4 overpayment rejected without invoice or audit writes (403ms)
+  ✓  11 [chromium] › test/e2e/hotfix.spec.cjs:27:1 › P0-4 exact payment and delete preserve totals (325ms)
+  ✘  12 [chromium] › test/e2e/hotfix.spec.cjs:28:1 › P0-4 purchase overpayment rejected (312ms)
+  ✘  13 [chromium] › test/e2e/hotfix.spec.cjs:29:1 › P0-5 batches and typed numbers never collide (483ms)
+  ✘  14 [chromium] › test/e2e/hotfix.spec.cjs:34:1 › P1-14 no stray shell text on any page (397ms)
+  ✓  15 [chromium] › test/e2e/hotfix.spec.cjs:35:1 › characterization: invoice entry, edit, cancel and restore (450ms)
+
+
+  1) [chromium] › test/e2e/hotfix.spec.cjs:6:2 › P0-1 invoice: PIN setup, wrong PIN, Enter and audit 
+
+    Test timeout of 30000ms exceeded.
+
+    Error: locator.fill: Test timeout of 30000ms exceeded.
+    Call log:
+      - waiting for locator('#del-pin-confirm')
+
+
+       7 |   await page.evaluate(action);await expect(page.locator('#del-pin-overlay')).toBeVisible();
+       8 |   // First use must configure a new non-default PIN; never delete during setup.
+    >  9 |   await page.locator('#del-pin-inp').fill('2468');await page.locator('#del-pin-confirm').fill('2468',{timeout:1000});await page.locator('#del-pin-ok').click();
+         |                                                                                          ^
+      10 |   await expect(page.locator('#del-pin-overlay')).toHaveCount(0);
+      11 |   const s=(await records(page,'settings'));expect(s.deletePin).toBeUndefined();expect(s.deletePinHash).toMatch(/^[a-f0-9]{64}$/);
+      12 |   await page.evaluate(action);await page.locator('#del-pin-inp').fill('1111');await expect(page.locator('#del-pin-ok')).toBeDisabled();await page.locator('#del-pin-inp').press('Enter');expect((await records(page,key)).length).toBe(count+(name==='payment'?0:1));
+        at /workspace/Xl-billing/test/e2e/hotfix.spec.cjs:9:90
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/browser/hotfix-P0-1-invoice-PIN-setup-wrong-PIN-Enter-and-audit-chromium/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/browser/hotfix-P0-1-invoice-PIN-setup-wrong-PIN-Enter-and-audit-chromium/error-context.md
+
+  2) [chromium] › test/e2e/hotfix.spec.cjs:6:2 › P0-1 purchase: PIN setup, wrong PIN, Enter and audit 
+
+    Test timeout of 30000ms exceeded.
+
+    Error: locator.fill: Test timeout of 30000ms exceeded.
+    Call log:
+      - waiting for locator('#del-pin-confirm')
+
+
+       7 |   await page.evaluate(action);await expect(page.locator('#del-pin-overlay')).toBeVisible();
+       8 |   // First use must configure a new non-default PIN; never delete during setup.
+    >  9 |   await page.locator('#del-pin-inp').fill('2468');await page.locator('#del-pin-confirm').fill('2468',{timeout:1000});await page.locator('#del-pin-ok').click();
+         |                                                                                          ^
+      10 |   await expect(page.locator('#del-pin-overlay')).toHaveCount(0);
+      11 |   const s=(await records(page,'settings'));expect(s.deletePin).toBeUndefined();expect(s.deletePinHash).toMatch(/^[a-f0-9]{64}$/);
+      12 |   await page.evaluate(action);await page.locator('#del-pin-inp').fill('1111');await expect(page.locator('#del-pin-ok')).toBeDisabled();await page.locator('#del-pin-inp').press('Enter');expect((await records(page,key)).length).toBe(count+(name==='payment'?0:1));
+        at /workspace/Xl-billing/test/e2e/hotfix.spec.cjs:9:90
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/browser/hotfix-P0-1-purchase-PIN-setup-wrong-PIN-Enter-and-audit-chromium/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/browser/hotfix-P0-1-purchase-PIN-setup-wrong-PIN-Enter-and-audit-chromium/error-context.md
+
+  3) [chromium] › test/e2e/hotfix.spec.cjs:6:2 › P0-1 party: PIN setup, wrong PIN, Enter and audit ─
+
+    Test timeout of 30000ms exceeded.
+
+    Error: locator.fill: Test timeout of 30000ms exceeded.
+    Call log:
+      - waiting for locator('#del-pin-confirm')
+
+
+       7 |   await page.evaluate(action);await expect(page.locator('#del-pin-overlay')).toBeVisible();
+       8 |   // First use must configure a new non-default PIN; never delete during setup.
+    >  9 |   await page.locator('#del-pin-inp').fill('2468');await page.locator('#del-pin-confirm').fill('2468',{timeout:1000});await page.locator('#del-pin-ok').click();
+         |                                                                                          ^
+      10 |   await expect(page.locator('#del-pin-overlay')).toHaveCount(0);
+      11 |   const s=(await records(page,'settings'));expect(s.deletePin).toBeUndefined();expect(s.deletePinHash).toMatch(/^[a-f0-9]{64}$/);
+      12 |   await page.evaluate(action);await page.locator('#del-pin-inp').fill('1111');await expect(page.locator('#del-pin-ok')).toBeDisabled();await page.locator('#del-pin-inp').press('Enter');expect((await records(page,key)).length).toBe(count+(name==='payment'?0:1));
+        at /workspace/Xl-billing/test/e2e/hotfix.spec.cjs:9:90
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/browser/hotfix-P0-1-party-PIN-setup-wrong-PIN-Enter-and-audit-chromium/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/browser/hotfix-P0-1-party-PIN-setup-wrong-PIN-Enter-and-audit-chromium/error-context.md
+
+  4) [chromium] › test/e2e/hotfix.spec.cjs:6:2 › P0-1 item: PIN setup, wrong PIN, Enter and audit ──
+
+    Test timeout of 30000ms exceeded.
+
+    Error: locator.fill: Test timeout of 30000ms exceeded.
+    Call log:
+      - waiting for locator('#del-pin-confirm')
+
+
+       7 |   await page.evaluate(action);await expect(page.locator('#del-pin-overlay')).toBeVisible();
+       8 |   // First use must configure a new non-default PIN; never delete during setup.
+    >  9 |   await page.locator('#del-pin-inp').fill('2468');await page.locator('#del-pin-confirm').fill('2468',{timeout:1000});await page.locator('#del-pin-ok').click();
+         |                                                                                          ^
+      10 |   await expect(page.locator('#del-pin-overlay')).toHaveCount(0);
+      11 |   const s=(await records(page,'settings'));expect(s.deletePin).toBeUndefined();expect(s.deletePinHash).toMatch(/^[a-f0-9]{64}$/);
+      12 |   await page.evaluate(action);await page.locator('#del-pin-inp').fill('1111');await expect(page.locator('#del-pin-ok')).toBeDisabled();await page.locator('#del-pin-inp').press('Enter');expect((await records(page,key)).length).toBe(count+(name==='payment'?0:1));
+        at /workspace/Xl-billing/test/e2e/hotfix.spec.cjs:9:90
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/browser/hotfix-P0-1-item-PIN-setup-wrong-PIN-Enter-and-audit-chromium/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/browser/hotfix-P0-1-item-PIN-setup-wrong-PIN-Enter-and-audit-chromium/error-context.md
+
+  5) [chromium] › test/e2e/hotfix.spec.cjs:6:2 › P0-1 payment: PIN setup, wrong PIN, Enter and audit 
+
+    Error: expect(locator).toBeVisible() failed
+
+    Locator: locator('#del-pin-overlay')
+    Expected: visible
+    Timeout: 5000ms
+    Error: element(s) not found
+
+    Call log:
+      - Expect "toBeVisible" locator('#del-pin-overlay') with timeout 5000ms
+      - waiting for locator('#del-pin-overlay')
+
+
+       5 | for(const [name,action,key,count]of [['invoice',"delInvoice('s0')",'invoices',49],['purchase',"delPurchase('u1')",'purchases',0],['party',"delParty('p2')",'parties',1],['item',"delItem('i2')",'items',1],['payment',"deletePaymentEntry('s0',0)",'invoices',50],['retail',"delRetail('r1')",'retail',0]]){
+       6 |  test(`P0-1 ${name}: PIN setup, wrong PIN, Enter and audit`,async({page})=>{
+    >  7 |   await page.evaluate(action);await expect(page.locator('#del-pin-overlay')).toBeVisible();
+         |                                                                              ^
+       8 |   // First use must configure a new non-default PIN; never delete during setup.
+       9 |   await page.locator('#del-pin-inp').fill('2468');await page.locator('#del-pin-confirm').fill('2468',{timeout:1000});await page.locator('#del-pin-ok').click();
+      10 |   await expect(page.locator('#del-pin-overlay')).toHaveCount(0);
+        at /workspace/Xl-billing/test/e2e/hotfix.spec.cjs:7:78
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/browser/hotfix-P0-1-payment-PIN-setup-wrong-PIN-Enter-and-audit-chromium/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/browser/hotfix-P0-1-payment-PIN-setup-wrong-PIN-Enter-and-audit-chromium/error-context.md
+
+  6) [chromium] › test/e2e/hotfix.spec.cjs:6:2 › P0-1 retail: PIN setup, wrong PIN, Enter and audit 
+
+    Error: expect(locator).toBeVisible() failed
+
+    Locator: locator('#del-pin-overlay')
+    Expected: visible
+    Timeout: 5000ms
+    Error: element(s) not found
+
+    Call log:
+      - Expect "toBeVisible" locator('#del-pin-overlay') with timeout 5000ms
+      - waiting for locator('#del-pin-overlay')
+
+
+       5 | for(const [name,action,key,count]of [['invoice',"delInvoice('s0')",'invoices',49],['purchase',"delPurchase('u1')",'purchases',0],['party',"delParty('p2')",'parties',1],['item',"delItem('i2')",'items',1],['payment',"deletePaymentEntry('s0',0)",'invoices',50],['retail',"delRetail('r1')",'retail',0]]){
+       6 |  test(`P0-1 ${name}: PIN setup, wrong PIN, Enter and audit`,async({page})=>{
+    >  7 |   await page.evaluate(action);await expect(page.locator('#del-pin-overlay')).toBeVisible();
+         |                                                                              ^
+       8 |   // First use must configure a new non-default PIN; never delete during setup.
+       9 |   await page.locator('#del-pin-inp').fill('2468');await page.locator('#del-pin-confirm').fill('2468',{timeout:1000});await page.locator('#del-pin-ok').click();
+      10 |   await expect(page.locator('#del-pin-overlay')).toHaveCount(0);
+        at /workspace/Xl-billing/test/e2e/hotfix.spec.cjs:7:78
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/browser/hotfix-P0-1-retail-PIN-setup-wrong-PIN-Enter-and-audit-chromium/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/browser/hotfix-P0-1-retail-PIN-setup-wrong-PIN-Enter-and-audit-chromium/error-context.md
+
+  7) [chromium] › test/e2e/hotfix.spec.cjs:18:1 › P0-1 dialog escapes labels, traps focus, cancels with Esc 
+
+    Error: expect(locator).toContainText(expected) failed
+
+    Locator: locator('.pwd-sub')
+    Expected substring: "<img"
+    Received string:    " O'Neil \"Traders\" & CoThis action cannot be undone after confirmation."
+    Timeout: 5000ms
+
+    Call log:
+      - Expect "toContainText" locator('.pwd-sub') with timeout 5000ms
+      - waiting for locator('.pwd-sub')
+        14 × locator resolved to <div class="pwd-sub">…</div>
+           - unexpected value " O'Neil "Traders" & CoThis action cannot be undone after confirmation."
+
+
+      16 |  });
+      17 | }
+    > 18 | test('P0-1 dialog escapes labels, traps focus, cancels with Esc',async({page})=>{await page.evaluate(()=>withDeletePin('<img src=x onerror=window.__xss=1> O\'Neil "Traders" & Co',()=>{}));expect(await page.evaluate(()=>window.__xss)).toBeUndefined();await expect(page.locator('.pwd-sub')).toContainText('<img');await page.locator('#del-pin-inp').press('Escape');await expect(page.locator('#del-pin-overlay')).toHaveCount(0);});
+         |                                                                                                                                                                                                                                                                                                  ^
+      19 | test('P0-2 all pages and report tabs render with seeded data',async({page})=>{
+      20 |  const errors=[];page.on('pageerror',e=>errors.push(String(e)));page.on('console',m=>{if(m.type()==='error')errors.push(m.text());});
+      21 |  for(const p of ['dashboard','new-sale','sales-list','retail-entry','new-purchase','purchase-list','items','parties','reports','settings','prev-bills','payments','learn','excel-connect','github-guide','pur-bulk','pur-pay','audit-log','txn-log'])await page.evaluate(p=>nav(p),p);
+        at /workspace/Xl-billing/test/e2e/hotfix.spec.cjs:18:290
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/browser/hotfix-P0-1-dialog-escapes-9a4ad-raps-focus-cancels-with-Esc-chromium/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/browser/hotfix-P0-1-dialog-escapes-9a4ad-raps-focus-cancels-with-Esc-chromium/error-context.md
+
+  8) [chromium] › test/e2e/hotfix.spec.cjs:19:1 › P0-2 all pages and report tabs render with seeded data 
+
+    Error: page.evaluate: ReferenceError: isCancelled is not defined
+        at http://127.0.0.1:4180/:8684:27
+        at Array.filter (<anonymous>)
+        at window.renderTxnPage (http://127.0.0.1:4180/:8684:17)
+        at window.nav (http://127.0.0.1:4180/:8607:26)
+        at eval (eval at evaluate (:370:30), <anonymous>:1:6)
+        at UtilityScript.evaluate (<anonymous>:372:16)
+        at UtilityScript.<anonymous> (<anonymous>:1:44)
+        at http://127.0.0.1:4180/:8684:27
+        at window.renderTxnPage (http://127.0.0.1:4180/:8684:17)
+        at window.nav (http://127.0.0.1:4180/:8607:26)
+        at eval (eval at evaluate (:370:30), <anonymous>:1:6)
+        at UtilityScript.evaluate (<anonymous>:372:16)
+        at UtilityScript.<anonymous> (<anonymous>:1:44)
+        at /workspace/Xl-billing/test/e2e/hotfix.spec.cjs:21:257
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/browser/hotfix-P0-2-all-pages-and--502d0-abs-render-with-seeded-data-chromium/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/browser/hotfix-P0-2-all-pages-and--502d0-abs-render-with-seeded-data-chromium/error-context.md
+
+  9) [chromium] › test/e2e/hotfix.spec.cjs:25:1 › P0-3 pagination reaches next and last invoice, totals cover all 
+
+    Error: expect(locator).toBeVisible() failed
+
+    Locator: locator('#sales-table .pgn')
+    Expected: visible
+    Timeout: 5000ms
+    Error: element(s) not found
+
+    Call log:
+      - Expect "toBeVisible" locator('#sales-table .pgn') with timeout 5000ms
+      - waiting for locator('#sales-table .pgn')
+
+
+      23 |  await page.evaluate(()=>openPartyDetail('p1'));await page.evaluate(()=>openSettlementModal('p1','Synthetic Customer'));await page.evaluate(()=>openPayOutModal());await page.waitForTimeout(300);expect(errors).toEqual([]);
+      24 | });
+    > 25 | test('P0-3 pagination reaches next and last invoice, totals cover all',async({page})=>{await seed(page,1200);await page.evaluate(()=>nav('sales-list'));await expect(page.locator('#sales-table tbody tr')).toHaveCount(20);await expect(page.locator('#sales-table .pgn')).toBeVisible();await page.locator('#sales-table .pgn-btn').filter({hasText:'Next'}).click();await expect(page.locator('#sales-table .pgn-info')).toContainText('21');await page.evaluate(()=>slNavPage(60));await expect(page.locator('#sales-table')).toContainText('INV-1001');await expect(page.locator('#sl-summary')).toContainText('1,20,000.00');await expect(page.locator('#sales-table th[aria-sort]')).not.toHaveCount(0);});
+         |                                                                                                                                                                                                                                                                             ^
+      26 | test('P0-4 overpayment rejected without invoice or audit writes',async({page})=>{await page.evaluate(()=>openPayModal('s0'));await page.fill('#pay-amount','81');const before=await records(page);await page.evaluate(()=>savePayment());expect(await records(page)).toEqual(before);expect(await records(page,'audit')).toEqual([]);await expect(page.locator('[role=alert]')).toContainText('balance');});
+      27 | test('P0-4 exact payment and delete preserve totals',async({page})=>{await page.evaluate(()=>openPayModal('s0'));await page.fill('#pay-amount','80');await page.evaluate(()=>savePayment());const inv=(await records(page))[0];expect(inv.paid).toBe(100);expect(inv.payments.reduce((s,p)=>s+p.amt,0)).toBe(100);expect(inv.balance).toBe(0);});
+      28 | test('P0-4 purchase overpayment rejected',async({page})=>{await page.evaluate(()=>openPurPayModal('u1'));await page.fill('#pur-pay-amt','481');const before=await records(page,'purchases');await page.evaluate(()=>savePurPayment());expect(await records(page,'purchases')).toEqual(before);});
+        at /workspace/Xl-billing/test/e2e/hotfix.spec.cjs:25:269
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/browser/hotfix-P0-3-pagination-rea-21a08-st-invoice-totals-cover-all-chromium/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/browser/hotfix-P0-3-pagination-rea-21a08-st-invoice-totals-cover-all-chromium/error-context.md
+
+  10) [chromium] › test/e2e/hotfix.spec.cjs:26:1 › P0-4 overpayment rejected without invoice or audit writes 
+
+    Error: expect(received).toEqual(expected) // deep equality
+
+    - Expected  - 2
+    + Received  + 8
+
+    @@ -1,8 +1,8 @@
+      Array [
+        Object {
+    -     "balance": 80,
+    +     "balance": 0,
+          "createdAt": "2026-10-09T08:00:00Z",
+          "date": "2026-10-09",
+          "discount": 0,
+          "dispatchStatus": "pending",
+          "id": "s0",
+    @@ -17,19 +17,25 @@
+              "rate": 20,
+              "unit": "Pcs",
+            },
+          ],
+          "notes": "",
+    -     "paid": 20,
+    +     "paid": 101,
+          "partyId": "p1",
+          "partyName": "Synthetic Customer",
+          "paymentType": "Credit",
+          "payments": Array [
+            Object {
+              "amt": 20,
+              "date": "2026-10-09",
+              "mode": "Cash",
+    +         "note": "",
+    +       },
+    +       Object {
+    +         "amt": 81,
+    +         "date": "2026-10-12",
+    +         "mode": "UPI",
+              "note": "",
+            },
+          ],
+          "subtotal": 100,
+          "taxAmt": 0,
+
+      24 | });
+      25 | test('P0-3 pagination reaches next and last invoice, totals cover all',async({page})=>{await seed(page,1200);await page.evaluate(()=>nav('sales-list'));await expect(page.locator('#sales-table tbody tr')).toHaveCount(20);await expect(page.locator('#sales-table .pgn')).toBeVisible();await page.locator('#sales-table .pgn-btn').filter({hasText:'Next'}).click();await expect(page.locator('#sales-table .pgn-info')).toContainText('21');await page.evaluate(()=>slNavPage(60));await expect(page.locator('#sales-table')).toContainText('INV-1001');await expect(page.locator('#sl-summary')).toContainText('1,20,000.00');await expect(page.locator('#sales-table th[aria-sort]')).not.toHaveCount(0);});
+    > 26 | test('P0-4 overpayment rejected without invoice or audit writes',async({page})=>{await page.evaluate(()=>openPayModal('s0'));await page.fill('#pay-amount','81');const before=await records(page);await page.evaluate(()=>savePayment());expect(await records(page)).toEqual(before);expect(await records(page,'audit')).toEqual([]);await expect(page.locator('[role=alert]')).toContainText('balance');});
+         |                                                                                                                                                                                                                                                                      ^
+      27 | test('P0-4 exact payment and delete preserve totals',async({page})=>{await page.evaluate(()=>openPayModal('s0'));await page.fill('#pay-amount','80');await page.evaluate(()=>savePayment());const inv=(await records(page))[0];expect(inv.paid).toBe(100);expect(inv.payments.reduce((s,p)=>s+p.amt,0)).toBe(100);expect(inv.balance).toBe(0);});
+      28 | test('P0-4 purchase overpayment rejected',async({page})=>{await page.evaluate(()=>openPurPayModal('u1'));await page.fill('#pur-pay-amt','481');const before=await records(page,'purchases');await page.evaluate(()=>savePurPayment());expect(await records(page,'purchases')).toEqual(before);});
+      29 | test('P0-5 batches and typed numbers never collide',async({page})=>{
+        at /workspace/Xl-billing/test/e2e/hotfix.spec.cjs:26:262
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/browser/hotfix-P0-4-overpayment-re-a271b-out-invoice-or-audit-writes-chromium/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/browser/hotfix-P0-4-overpayment-re-a271b-out-invoice-or-audit-writes-chromium/error-context.md
+
+  11) [chromium] › test/e2e/hotfix.spec.cjs:28:1 › P0-4 purchase overpayment rejected ──────────────
+
+    Error: expect(received).toEqual(expected) // deep equality
+
+    - Expected  - 2
+    + Received  + 8
+
+    @@ -1,22 +1,28 @@
+      Array [
+        Object {
+    -     "balance": 480,
+    +     "balance": 0,
+          "billNo": "P-1",
+          "createdAt": "2026-10-09T08:00:00Z",
+          "date": "2026-10-09",
+          "id": "u1",
+          "items": Array [],
+          "mode": "amount",
+          "notes": "",
+    -     "paid": 20,
+    +     "paid": 501,
+          "partyId": "p2",
+          "partyName": "Synthetic Supplier",
+          "payments": Array [
+            Object {
+              "amt": 20,
+              "date": "2026-10-09",
+    +         "mode": "Cash",
+    +         "note": "",
+    +       },
+    +       Object {
+    +         "amt": 481,
+    +         "date": "2026-10-12",
+              "mode": "Cash",
+              "note": "",
+            },
+          ],
+          "total": 500,
+
+      26 | test('P0-4 overpayment rejected without invoice or audit writes',async({page})=>{await page.evaluate(()=>openPayModal('s0'));await page.fill('#pay-amount','81');const before=await records(page);await page.evaluate(()=>savePayment());expect(await records(page)).toEqual(before);expect(await records(page,'audit')).toEqual([]);await expect(page.locator('[role=alert]')).toContainText('balance');});
+      27 | test('P0-4 exact payment and delete preserve totals',async({page})=>{await page.evaluate(()=>openPayModal('s0'));await page.fill('#pay-amount','80');await page.evaluate(()=>savePayment());const inv=(await records(page))[0];expect(inv.paid).toBe(100);expect(inv.payments.reduce((s,p)=>s+p.amt,0)).toBe(100);expect(inv.balance).toBe(0);});
+    > 28 | test('P0-4 purchase overpayment rejected',async({page})=>{await page.evaluate(()=>openPurPayModal('u1'));await page.fill('#pur-pay-amt','481');const before=await records(page,'purchases');await page.evaluate(()=>savePurPayment());expect(await records(page,'purchases')).toEqual(before);});
+         |                                                                                                                                                                                                                                                                               ^
+      29 | test('P0-5 batches and typed numbers never collide',async({page})=>{
+      30 |  await page.evaluate(()=>{nav('prev-bills');document.getElementById('bulk-party-name').value='Synthetic Customer';document.getElementById('bulk-party-id').value='p1';pbRows=[{id:'old1',date:'2026-10-09',total:100,paid:0,billNo:''}];pbSaveAll();pbRows=[{id:'old2',date:'2026-10-09',total:100,paid:0,billNo:''}];pbSaveAll();});
+      31 |  const invs=await records(page);expect(new Set(invs.map(x=>x.invoiceNo.trim().toLowerCase())).size).toBe(invs.length);
+        at /workspace/Xl-billing/test/e2e/hotfix.spec.cjs:28:271
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/browser/hotfix-P0-4-purchase-overpayment-rejected-chromium/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/browser/hotfix-P0-4-purchase-overpayment-rejected-chromium/error-context.md
+
+  12) [chromium] › test/e2e/hotfix.spec.cjs:29:1 › P0-5 batches and typed numbers never collide ────
+
+    Error: expect(received).toBe(expected) // Object.is equality
+
+    Expected: 52
+    Received: 51
+
+      29 | test('P0-5 batches and typed numbers never collide',async({page})=>{
+      30 |  await page.evaluate(()=>{nav('prev-bills');document.getElementById('bulk-party-name').value='Synthetic Customer';document.getElementById('bulk-party-id').value='p1';pbRows=[{id:'old1',date:'2026-10-09',total:100,paid:0,billNo:''}];pbSaveAll();pbRows=[{id:'old2',date:'2026-10-09',total:100,paid:0,billNo:''}];pbSaveAll();});
+    > 31 |  const invs=await records(page);expect(new Set(invs.map(x=>x.invoiceNo.trim().toLowerCase())).size).toBe(invs.length);
+         |                                                                                                     ^
+      32 |  await page.evaluate(()=>{pbRows=[{id:'old3',date:'2026-10-09',total:100,paid:0,billNo:' inv-1001 '}];pbSaveAll();});expect((await records(page)).length).toBe(invs.length);
+      33 | });
+      34 | test('P1-14 no stray shell text on any page',async({page})=>{expect(await page.locator('body').innerText()).not.toMatch(/\/home\/claude|V16_END|cat >>/);});
+        at /workspace/Xl-billing/test/e2e/hotfix.spec.cjs:31:101
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/browser/hotfix-P0-5-batches-and-typed-numbers-never-collide-chromium/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/browser/hotfix-P0-5-batches-and-typed-numbers-never-collide-chromium/error-context.md
+
+  13) [chromium] › test/e2e/hotfix.spec.cjs:34:1 › P1-14 no stray shell text on any page ───────────
+
+    Error: expect(received).not.toMatch(expected)
+
+    Expected pattern: not /\/home\/claude|V16_END|cat >>/
+    Received string:      "🏪
+    Synthetic XL Shop
+    Billing
+    📊
+    Dashboard
+    SALES
+    ➕
+    New Invoice
+    📋
+    Sale List
+    📂
+    Import Old Bills
+    🏷️
+    Retail Entry
+    💸
+    Payment Out
+    💰
+    Payment Ledger
+    PURCHASE
+    🛒
+    New Purchase
+    📋
+    Purchase List
+    📥
+    Bulk Purchase
+    💳
+    Purchase Payments
+    MASTER
+    📦
+    Items
+    👥
+    Parties
+    REPORTS & DATA
+    📈
+    Reports
+    ⚙️
+    Settings
+    💾
+    Export Backup
+    📤
+    Import Backup
+    📖
+    How to Customize
+    📊
+    Excel / Sheets
+    ⚡
+    Compact Mode
+    🐙
+    GitHub Live Hosting
+    📜
+    Audit Log
+    🔄
+    All Transactions
+    📊 Dashboard
+    ➕ New Invoice
+    🏷️ Retail Entry
+    This Month Sale
+    ₹5,050.00
+    Wholesale
+    ₹5,000.00
+    Purchase
+    ₹500.00
+    Cash Due
+    ₹0.00
+    Credit Due
+    ₹4,000.00
+    Pending Dispatch
+    50
+    Recent Invoices
+    View All →
+    INV-1050 Credit
+    Synthetic Customer · 09/10/2026
+    ₹100.00
+    ₹80.00 due
+    INV-1049 Credit
+    Synthetic Customer · 09/10/2026
+    ₹100.00
+    ₹80.00 due
+    INV-1048 Credit
+    Synthetic Customer · 09/10/2026
+    ₹100.00
+    ₹80.00 due
+    INV-1047 Credit
+    Synthetic Customer · 09/10/2026
+    ₹100.00
+    ₹80.00 due
+    INV-1046 Credit
+    Synthetic Customer · 09/10/2026
+    ₹100.00
+    ₹80.00 due
+    INV-1045 Credit
+    Synthetic Customer · 09/10/2026
+    ₹100.00
+    ₹80.00 due
+    INV-1044 Credit
+    Synthetic Customer · 09/10/2026
+    ₹100.00
+    ₹80.00 due
+    📋 Due Collection — ₹4,000.00
+    Synthetic Customer Credit
+    INV-1050 · 09/10/2026
+    ₹80.00
+    Pay
+    Synthetic Customer Credit
+    INV-1049 · 09/10/2026
+    ₹80.00
+    Pay
+    Synthetic Customer Credit
+    INV-1048 · 09/10/2026
+    ₹80.00
+    Pay
+    Synthetic Customer Credit
+    INV-1047 · 09/10/2026
+    ₹80.00
+    Pay
+    Synthetic Customer Credit
+    INV-1046 · 09/10/2026
+    ₹80.00
+    Pay
+    Synthetic Customer Credit
+    INV-1045 · 09/10/2026
+    ₹80.00
+    Pay
+    📦 Pending Dispatch (50)
+    Synthetic Customer · INV-1050
+    ✓ Dispatch
+    Synthetic Customer · INV-1049
+    ✓ Dispatch
+    Synthetic Customer · INV-1048
+    ✓ Dispatch
+    Synthetic Customer · INV-1047
+    ✓ Dispatch
+    cat >> /home/claude/v9base.html << 'V16_END' V16_END echo \"Done. Lines: $(wc -l < /home/claude/v9base.html)\""
+
+      32 |  await page.evaluate(()=>{pbRows=[{id:'old3',date:'2026-10-09',total:100,paid:0,billNo:' inv-1001 '}];pbSaveAll();});expect((await records(page)).length).toBe(invs.length);
+      33 | });
+    > 34 | test('P1-14 no stray shell text on any page',async({page})=>{expect(await page.locator('body').innerText()).not.toMatch(/\/home\/claude|V16_END|cat >>/);});
+         |                                                                                                                 ^
+      35 | test('characterization: invoice entry, edit, cancel and restore',async({page})=>{
+      36 |  await page.evaluate(()=>{nav('new-sale');document.getElementById('inv-party').value='Synthetic Customer';document.getElementById('inv-party-id').value='p1';saleItems=[{id:'row1',itemId:'i1',name:'Paper Cups',qty:5,rate:20,amt:100,unit:'Pcs',packCount:'',packType:''}];renderSaleItems();document.getElementById('inv-date').value='2026-10-09';document.getElementById('inv-paid').value='0';saveSaleInvoice(false);});
+      37 |  const invs=await records(page);expect(invs.length).toBe(51);const inv=invs.at(-1);expect(inv.total).toBe(100);expect(inv.invoiceNo).toBe('INV-1051');
+        at /workspace/Xl-billing/test/e2e/hotfix.spec.cjs:34:113
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/browser/hotfix-P1-14-no-stray-shell-text-on-any-page-chromium/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/browser/hotfix-P1-14-no-stray-shell-text-on-any-page-chromium/error-context.md
+
+  13 failed
+    [chromium] › test/e2e/hotfix.spec.cjs:6:2 › P0-1 invoice: PIN setup, wrong PIN, Enter and audit 
+    [chromium] › test/e2e/hotfix.spec.cjs:6:2 › P0-1 purchase: PIN setup, wrong PIN, Enter and audit 
+    [chromium] › test/e2e/hotfix.spec.cjs:6:2 › P0-1 party: PIN setup, wrong PIN, Enter and audit ──
+    [chromium] › test/e2e/hotfix.spec.cjs:6:2 › P0-1 item: PIN setup, wrong PIN, Enter and audit ───
+    [chromium] › test/e2e/hotfix.spec.cjs:6:2 › P0-1 payment: PIN setup, wrong PIN, Enter and audit 
+    [chromium] › test/e2e/hotfix.spec.cjs:6:2 › P0-1 retail: PIN setup, wrong PIN, Enter and audit ─
+    [chromium] › test/e2e/hotfix.spec.cjs:18:1 › P0-1 dialog escapes labels, traps focus, cancels with Esc 
+    [chromium] › test/e2e/hotfix.spec.cjs:19:1 › P0-2 all pages and report tabs render with seeded data 
+    [chromium] › test/e2e/hotfix.spec.cjs:25:1 › P0-3 pagination reaches next and last invoice, totals cover all 
+    [chromium] › test/e2e/hotfix.spec.cjs:26:1 › P0-4 overpayment rejected without invoice or audit writes 
+    [chromium] › test/e2e/hotfix.spec.cjs:28:1 › P0-4 purchase overpayment rejected ────────────────
+    [chromium] › test/e2e/hotfix.spec.cjs:29:1 › P0-5 batches and typed numbers never collide ──────
+    [chromium] › test/e2e/hotfix.spec.cjs:34:1 › P1-14 no stray shell text on any page ─────────────
+  2 passed (2.5m)
+(node:1790) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:1907) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:2049) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:2128) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:2211) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:2287) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:2381) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:2457) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:2532) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:2617) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:2692) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:2780) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:2856) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:2933) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)

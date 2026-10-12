@@ -1,0 +1,9 @@
+
+Running 1 test using 1 worker
+
+(node:10322) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+Skipping host requirements validation logic because `PLAYWRIGHT_SKIP_VALIDATE_HOST_REQUIREMENTS` env variable is set.
+  ✓  1 [webkit] › test/e2e/hotfix.spec.cjs:19:1 › P0-2 all pages and report tabs render with seeded data (1.7s)
+
+  1 passed (3.8s)

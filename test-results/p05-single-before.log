@@ -1,0 +1,61 @@
+
+Running 1 test using 1 worker
+
+(node:12558) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+Skipping host requirements validation logic because `PLAYWRIGHT_SKIP_VALIDATE_HOST_REQUIREMENTS` env variable is set.
+  ✘  1 [chromium] › test/e2e/hotfix.spec.cjs:59:1 › P0-5 single old bill rejects an existing typed invoice number (461ms)
+
+
+  1) [chromium] › test/e2e/hotfix.spec.cjs:59:1 › P0-5 single old bill rejects an existing typed invoice number 
+
+    Error: expect(received).toEqual(expected) // deep equality
+
+    - Expected  -  0
+    + Received  + 21
+
+    @@ -1847,6 +1847,27 @@
+          "subtotal": 100,
+          "taxAmt": 0,
+          "taxPct": 0,
+          "total": 100,
+        },
+    +   Object {
+    +     "balance": 100,
+    +     "createdAt": "2026-10-12T05:11:08.501Z",
+    +     "date": "2026-10-09",
+    +     "discount": 0,
+    +     "dispatchStatus": "dispatched",
+    +     "id": "mv4snu1hzrp",
+    +     "invoiceNo": "inv-1001",
+    +     "isManual": true,
+    +     "items": Array [],
+    +     "notes": "[Previous Bill]",
+    +     "paid": 0,
+    +     "partyId": "",
+    +     "partyName": "Synthetic Customer",
+    +     "paymentType": "Cash",
+    +     "payments": Array [],
+    +     "subtotal": 100,
+    +     "taxAmt": 0,
+    +     "taxPct": 0,
+    +     "total": 100,
+    +   },
+      ]
+
+      58 | });
+      59 | test('P0-5 single old bill rejects an existing typed invoice number',async({page})=>{
+    > 60 |  const before=await records(page);await page.evaluate(()=>{nav('prev-bills');document.getElementById('pb-invno').value=' inv-1001 ';document.getElementById('pb-date').value='2026-10-09';document.getElementById('pb-party').value='Synthetic Customer';document.getElementById('pb-total').value='100';document.getElementById('pb-paid').value='0';savePrevBill();});expect(await records(page)).toEqual(before);
+         |                                                                                                                                                                                                                                                                                                                                                                                                     ^
+      61 | });
+      62 |
+        at /workspace/Xl-billing/test/e2e/hotfix.spec.cjs:60:389
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/browser/hotfix-P0-5-single-old-bil-19328-isting-typed-invoice-number-chromium/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/browser/hotfix-P0-5-single-old-bil-19328-isting-typed-invoice-number-chromium/error-context.md
+
+  1 failed
+    [chromium] › test/e2e/hotfix.spec.cjs:59:1 › P0-5 single old bill rejects an existing typed invoice number 

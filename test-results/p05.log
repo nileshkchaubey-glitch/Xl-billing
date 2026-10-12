@@ -1,0 +1,9 @@
+
+Running 2 tests using 1 worker
+
+(node:4167) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓  1 [chromium] › test/e2e/hotfix.spec.cjs:29:1 › P0-5 batches and typed numbers never collide (357ms)
+  ✓  2 [chromium] › test/e2e/hotfix.spec.cjs:35:1 › characterization: invoice entry, edit, cancel and restore (325ms)
+
+  2 passed (1.3s)

@@ -1,0 +1,51 @@
+
+Running 8 tests using 1 worker
+
+(node:3065) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓  1 [chromium] › test/e2e/hotfix.spec.cjs:6:2 › P0-1 invoice: PIN setup, wrong PIN, Enter and audit (437ms)
+  ✓  2 [chromium] › test/e2e/hotfix.spec.cjs:6:2 › P0-1 purchase: PIN setup, wrong PIN, Enter and audit (316ms)
+  ✓  3 [chromium] › test/e2e/hotfix.spec.cjs:6:2 › P0-1 party: PIN setup, wrong PIN, Enter and audit (324ms)
+  ✓  4 [chromium] › test/e2e/hotfix.spec.cjs:6:2 › P0-1 item: PIN setup, wrong PIN, Enter and audit (346ms)
+  ✓  5 [chromium] › test/e2e/hotfix.spec.cjs:6:2 › P0-1 payment: PIN setup, wrong PIN, Enter and audit (405ms)
+  ✓  6 [chromium] › test/e2e/hotfix.spec.cjs:6:2 › P0-1 retail: PIN setup, wrong PIN, Enter and audit (311ms)
+  ✘  7 [chromium] › test/e2e/hotfix.spec.cjs:18:1 › P0-1 dialog escapes labels, traps focus, cancels with Esc (5.2s)
+(node:3207) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓  8 [chromium] › test/e2e/hotfix.spec.cjs:19:1 › P0-2 all pages and report tabs render with seeded data (832ms)
+
+
+  1) [chromium] › test/e2e/hotfix.spec.cjs:18:1 › P0-1 dialog escapes labels, traps focus, cancels with Esc 
+
+    Error: expect(locator).toContainText(expected) failed
+
+    Locator: locator('.pwd-sub')
+    Expected substring: "<img"
+    Received string:    "Save a new PIN first. Then choose Delete again. The default PIN cannot delete records."
+    Timeout: 5000ms
+
+    Call log:
+      - Expect "toContainText" locator('.pwd-sub') with timeout 5000ms
+      - waiting for locator('.pwd-sub')
+        14 × locator resolved to <div class="pwd-sub">Save a new PIN first. Then choose Delete again. T…</div>
+           - unexpected value "Save a new PIN first. Then choose Delete again. The default PIN cannot delete records."
+
+
+      16 |  });
+      17 | }
+    > 18 | test('P0-1 dialog escapes labels, traps focus, cancels with Esc',async({page})=>{await page.evaluate(()=>withDeletePin('<img src=x onerror=window.__xss=1> O\'Neil "Traders" & Co',()=>{}));expect(await page.evaluate(()=>window.__xss)).toBeUndefined();await expect(page.locator('.pwd-sub')).toContainText('<img');await page.locator('#del-pin-inp').press('Escape');await expect(page.locator('#del-pin-overlay')).toHaveCount(0);});
+         |                                                                                                                                                                                                                                                                                                  ^
+      19 | test('P0-2 all pages and report tabs render with seeded data',async({page})=>{
+      20 |  const errors=[];page.on('pageerror',e=>errors.push(String(e)));page.on('console',m=>{if(m.type()==='error')errors.push(m.text());});
+      21 |  for(const p of ['dashboard','new-sale','sales-list','retail-entry','new-purchase','purchase-list','items','parties','reports','settings','prev-bills','payments','learn','excel-connect','github-guide','pur-bulk','pur-pay','audit-log','txn-log'])await page.evaluate(p=>nav(p),p);
+        at /workspace/Xl-billing/test/e2e/hotfix.spec.cjs:18:290
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/browser/hotfix-P0-1-dialog-escapes-9a4ad-raps-focus-cancels-with-Esc-chromium/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/browser/hotfix-P0-1-dialog-escapes-9a4ad-raps-focus-cancels-with-Esc-chromium/error-context.md
+
+  1 failed
+    [chromium] › test/e2e/hotfix.spec.cjs:18:1 › P0-1 dialog escapes labels, traps focus, cancels with Esc 
+  7 passed (9.4s)

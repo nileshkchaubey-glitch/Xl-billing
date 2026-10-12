@@ -1,0 +1,5 @@
+
+> xl-billing@1.0.0 htmlcheck
+> node scripts/htmlcheck.cjs
+
+144 HTML validation errors; 0 warnings; see test-results/html-validation.json

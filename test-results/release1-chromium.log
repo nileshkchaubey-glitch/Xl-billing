@@ -1,0 +1,22 @@
+
+Running 15 tests using 1 worker
+
+(node:4950) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓   1 [chromium] › test/e2e/hotfix.spec.cjs:6:2 › P0-1 invoice: PIN setup, wrong PIN, Enter and audit (481ms)
+  ✓   2 [chromium] › test/e2e/hotfix.spec.cjs:6:2 › P0-1 purchase: PIN setup, wrong PIN, Enter and audit (380ms)
+  ✓   3 [chromium] › test/e2e/hotfix.spec.cjs:6:2 › P0-1 party: PIN setup, wrong PIN, Enter and audit (337ms)
+  ✓   4 [chromium] › test/e2e/hotfix.spec.cjs:6:2 › P0-1 item: PIN setup, wrong PIN, Enter and audit (361ms)
+  ✓   5 [chromium] › test/e2e/hotfix.spec.cjs:6:2 › P0-1 payment: PIN setup, wrong PIN, Enter and audit (407ms)
+  ✓   6 [chromium] › test/e2e/hotfix.spec.cjs:6:2 › P0-1 retail: PIN setup, wrong PIN, Enter and audit (338ms)
+  ✓   7 [chromium] › test/e2e/hotfix.spec.cjs:18:1 › P0-1 dialog escapes labels, traps focus, cancels with Esc (252ms)
+  ✓   8 [chromium] › test/e2e/hotfix.spec.cjs:19:1 › P0-2 all pages and report tabs render with seeded data (736ms)
+  ✓   9 [chromium] › test/e2e/hotfix.spec.cjs:25:1 › P0-3 pagination reaches next and last invoice, totals cover all (792ms)
+  ✓  10 [chromium] › test/e2e/hotfix.spec.cjs:26:1 › P0-4 overpayment rejected without invoice or audit writes (307ms)
+  ✓  11 [chromium] › test/e2e/hotfix.spec.cjs:27:1 › P0-4 exact payment and delete preserve totals (275ms)
+  ✓  12 [chromium] › test/e2e/hotfix.spec.cjs:28:1 › P0-4 purchase overpayment rejected (279ms)
+  ✓  13 [chromium] › test/e2e/hotfix.spec.cjs:29:1 › P0-5 batches and typed numbers never collide (317ms)
+  ✓  14 [chromium] › test/e2e/hotfix.spec.cjs:34:1 › P1-14 no stray shell text on any page (234ms)
+  ✓  15 [chromium] › test/e2e/hotfix.spec.cjs:35:1 › characterization: invoice entry, edit, cancel and restore (351ms)
+
+  15 passed (6.7s)

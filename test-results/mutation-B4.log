@@ -1,0 +1,79 @@
+
+Running 1 test using 1 worker
+
+  ✘  1 [chromium] › test/e2e/hotfix.spec.cjs:26:1 › P0-4 overpayment rejected without invoice or audit writes (403ms)
+
+
+  1) [chromium] › test/e2e/hotfix.spec.cjs:26:1 › P0-4 overpayment rejected without invoice or audit writes 
+
+    Error: expect(received).toEqual(expected) // deep equality
+
+    - Expected  - 2
+    + Received  + 9
+
+    @@ -1,8 +1,8 @@
+      Array [
+        Object {
+    -     "balance": 80,
+    +     "balance": -1,
+          "createdAt": "2026-10-09T08:00:00Z",
+          "date": "2026-10-09",
+          "discount": 0,
+          "dispatchStatus": "pending",
+          "id": "s0",
+    @@ -17,26 +17,33 @@
+              "rate": 20,
+              "unit": "Pcs",
+            },
+          ],
+          "notes": "",
+    -     "paid": 20,
+    +     "paid": 101,
+          "partyId": "p1",
+          "partyName": "Synthetic Customer",
+          "paymentType": "Credit",
+          "payments": Array [
+            Object {
+              "amt": 20,
+              "date": "2026-10-09",
+              "mode": "Cash",
+              "note": "",
+            },
+    +       Object {
+    +         "amt": 81,
+    +         "date": "2026-10-12",
+    +         "mode": "UPI",
+    +         "note": "",
+    +       },
+          ],
+          "subtotal": 100,
+          "taxAmt": 0,
+          "taxPct": 0,
+          "total": 100,
+    +     "updatedAt": "2026-10-12T05:13:02.347Z",
+        },
+        Object {
+          "balance": 80,
+          "createdAt": "2026-10-09T08:00:00Z",
+          "date": "2026-10-09",
+
+      24 | });
+      25 | test('P0-3 pagination reaches next and last invoice, totals cover all',async({page})=>{await seed(page,1200);await page.evaluate(()=>nav('sales-list'));await expect(page.locator('#sales-table tbody tr')).toHaveCount(20);await expect(page.locator('#sales-table .pgn')).toBeVisible();await page.locator('#sales-table .pgn-btn').filter({hasText:'Next'}).click();await expect(page.locator('#sales-table .pgn-info')).toContainText('21');await page.evaluate(()=>slNavPage(60));await expect(page.locator('#sales-table')).toContainText('INV-1001');await expect(page.locator('#sl-summary')).toContainText('1,20,000.00');await expect(page.locator('#sales-table th[aria-sort]')).not.toHaveCount(0);});
+    > 26 | test('P0-4 overpayment rejected without invoice or audit writes',async({page})=>{await page.evaluate(()=>openPayModal('s0'));await page.fill('#pay-amount','81');const before=await records(page);await page.evaluate(()=>savePayment());expect(await records(page)).toEqual(before);expect(await records(page,'audit')).toEqual([]);await expect(page.locator('[role=alert]')).toContainText('balance');});
+         |                                                                                                                                                                                                                                                                      ^
+      27 | test('P0-4 exact payment and delete preserve totals',async({page})=>{await page.evaluate(()=>openPayModal('s0'));await page.fill('#pay-amount','80');await page.evaluate(()=>savePayment());const inv=(await records(page))[0];expect(inv.paid).toBe(100);expect(inv.payments.reduce((s,p)=>s+p.amt,0)).toBe(100);expect(inv.balance).toBe(0);});
+      28 | test('P0-4 purchase overpayment rejected',async({page})=>{await page.evaluate(()=>openPurPayModal('u1'));await page.fill('#pur-pay-amt','481');const before=await records(page,'purchases');await page.evaluate(()=>savePurPayment());expect(await records(page,'purchases')).toEqual(before);});
+      29 | test('P0-5 batches and typed numbers never collide',async({page})=>{
+        at /workspace/Xl-billing/test/e2e/hotfix.spec.cjs:26:262
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/browser/hotfix-P0-4-overpayment-re-a271b-out-invoice-or-audit-writes-chromium/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/browser/hotfix-P0-4-overpayment-re-a271b-out-invoice-or-audit-writes-chromium/error-context.md
+
+  1 failed
+    [chromium] › test/e2e/hotfix.spec.cjs:26:1 › P0-4 overpayment rejected without invoice or audit writes 
+(node:13136) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+Skipping host requirements validation logic because `PLAYWRIGHT_SKIP_VALIDATE_HOST_REQUIREMENTS` env variable is set.

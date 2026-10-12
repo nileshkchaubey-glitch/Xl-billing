@@ -1,0 +1,41 @@
+
+Running 1 test using 1 worker
+
+  ✘  1 [chromium] › test/e2e/hotfix.spec.cjs:19:1 › P0-2 all pages and report tabs render with seeded data (271ms)
+
+
+  1) [chromium] › test/e2e/hotfix.spec.cjs:19:1 › P0-2 all pages and report tabs render with seeded data 
+
+    Error: page.evaluate: ReferenceError: isCancelled is not defined
+        at http://127.0.0.1:4180/:7029:37
+        at Array.filter (<anonymous>)
+        at window.renderDashboard [as dashboard] (http://127.0.0.1:4180/:7029:27)
+        at nav (http://127.0.0.1:4180/:829:22)
+        at window.nav (http://127.0.0.1:4180/:2230:3)
+        at window.nav (http://127.0.0.1:4180/:3337:3)
+        at window.nav (http://127.0.0.1:4180/:4381:3)
+        at window.nav (http://127.0.0.1:4180/:5741:3)
+        at window.nav (http://127.0.0.1:4180/:7396:3)
+        at window.nav (http://127.0.0.1:4180/:8773:3)
+        at http://127.0.0.1:4180/:7029:37
+        at window.renderDashboard (http://127.0.0.1:4180/:7029:27)
+        at nav (http://127.0.0.1:4180/:829:22)
+        at window.nav (http://127.0.0.1:4180/:2230:3)
+        at window.nav (http://127.0.0.1:4180/:3337:3)
+        at window.nav (http://127.0.0.1:4180/:4381:3)
+        at window.nav (http://127.0.0.1:4180/:5741:3)
+        at window.nav (http://127.0.0.1:4180/:7396:3)
+        at window.nav (http://127.0.0.1:4180/:8773:3)
+        at /workspace/Xl-billing/test/e2e/hotfix.spec.cjs:21:257
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/browser/hotfix-P0-2-all-pages-and--502d0-abs-render-with-seeded-data-chromium/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/browser/hotfix-P0-2-all-pages-and--502d0-abs-render-with-seeded-data-chromium/error-context.md
+
+  1 failed
+    [chromium] › test/e2e/hotfix.spec.cjs:19:1 › P0-2 all pages and report tabs render with seeded data 
+(node:12919) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+Skipping host requirements validation logic because `PLAYWRIGHT_SKIP_VALIDATE_HOST_REQUIREMENTS` env variable is set.

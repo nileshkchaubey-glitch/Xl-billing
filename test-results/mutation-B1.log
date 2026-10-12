@@ -1,0 +1,50 @@
+
+Running 1 test using 1 worker
+
+  ✘  1 [chromium] › test/e2e/hotfix.spec.cjs:6:2 › P0-1 invoice: PIN setup, wrong PIN, Enter and audit (30.1s)
+
+
+  1) [chromium] › test/e2e/hotfix.spec.cjs:6:2 › P0-1 invoice: PIN setup, wrong PIN, Enter and audit 
+
+    Test timeout of 30000ms exceeded.
+
+    Error: locator.click: Test timeout of 30000ms exceeded.
+    Call log:
+      - waiting for locator('#del-pin-ok')
+        - locator resolved to <button disabled id="del-pin-ok" class="btn btn-r">Save PIN</button>
+      - attempting click action
+        2 × waiting for element to be visible, enabled and stable
+          - element is not enabled
+        - retrying click action
+        - waiting 20ms
+        2 × waiting for element to be visible, enabled and stable
+          - element is not enabled
+        - retrying click action
+          - waiting 100ms
+        57 × waiting for element to be visible, enabled and stable
+           - element is not enabled
+         - retrying click action
+           - waiting 500ms
+        - waiting for element to be visible, enabled and stable
+
+
+       7 |   await page.evaluate(action);await expect(page.locator('#del-pin-overlay')).toBeVisible();
+       8 |   // First use must configure a new non-default PIN; never delete during setup.
+    >  9 |   await page.locator('#del-pin-inp').fill('2468');await page.locator('#del-pin-confirm').fill('2468',{timeout:1000});await page.locator('#del-pin-ok').click();
+         |                                                                                                                                                        ^
+      10 |   await expect(page.locator('#del-pin-overlay')).toHaveCount(0);
+      11 |   const s=(await records(page,'settings'));expect(s.deletePin).toBeUndefined();expect(s.deletePinHash).toMatch(/^[a-f0-9]{64}$/);
+      12 |   await page.evaluate(action);await page.locator('#del-pin-inp').fill('1111');await expect(page.locator('#del-pin-ok')).toBeDisabled();await page.locator('#del-pin-inp').press('Enter');expect((await records(page,key)).length).toBe(count+(name==='payment'?0:1));
+        at /workspace/Xl-billing/test/e2e/hotfix.spec.cjs:9:152
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/browser/hotfix-P0-1-invoice-PIN-setup-wrong-PIN-Enter-and-audit-chromium/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/browser/hotfix-P0-1-invoice-PIN-setup-wrong-PIN-Enter-and-audit-chromium/error-context.md
+
+  1 failed
+    [chromium] › test/e2e/hotfix.spec.cjs:6:2 › P0-1 invoice: PIN setup, wrong PIN, Enter and audit 
+(node:12809) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+Skipping host requirements validation logic because `PLAYWRIGHT_SKIP_VALIDATE_HOST_REQUIREMENTS` env variable is set.

@@ -1,0 +1,33 @@
+
+Running 1 test using 1 worker
+
+  ✘  1 [chromium] › test/e2e/hotfix.spec.cjs:29:1 › P0-5 batches and typed numbers never collide (443ms)
+
+
+  1) [chromium] › test/e2e/hotfix.spec.cjs:29:1 › P0-5 batches and typed numbers never collide ─────
+
+    Error: expect(received).toBe(expected) // Object.is equality
+
+    Expected: 52
+    Received: 51
+
+      29 | test('P0-5 batches and typed numbers never collide',async({page})=>{
+      30 |  await page.evaluate(()=>{nav('prev-bills');document.getElementById('bulk-party-name').value='Synthetic Customer';document.getElementById('bulk-party-id').value='p1';pbRows=[{id:'old1',date:'2026-10-09',total:100,paid:0,billNo:''}];pbSaveAll();pbRows=[{id:'old2',date:'2026-10-09',total:100,paid:0,billNo:''}];pbSaveAll();});
+    > 31 |  const invs=await records(page);expect(new Set(invs.map(x=>x.invoiceNo.trim().toLowerCase())).size).toBe(invs.length);
+         |                                                                                                     ^
+      32 |  await page.evaluate(()=>{pbRows=[{id:'old3',date:'2026-10-09',total:100,paid:0,billNo:' inv-1001 '}];pbSaveAll();});expect((await records(page)).length).toBe(invs.length);
+      33 | });
+      34 | test('P1-14 no stray shell text on any page',async({page})=>{expect(await page.locator('body').innerText()).not.toMatch(/\/home\/claude|V16_END|cat >>/);});
+        at /workspace/Xl-billing/test/e2e/hotfix.spec.cjs:31:101
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/browser/hotfix-P0-5-batches-and-typed-numbers-never-collide-chromium/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/browser/hotfix-P0-5-batches-and-typed-numbers-never-collide-chromium/error-context.md
+
+  1 failed
+    [chromium] › test/e2e/hotfix.spec.cjs:29:1 › P0-5 batches and typed numbers never collide ──────
+(node:13244) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+Skipping host requirements validation logic because `PLAYWRIGHT_SKIP_VALIDATE_HOST_REQUIREMENTS` env variable is set.

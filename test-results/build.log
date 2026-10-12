@@ -1,0 +1,5 @@
+
+> xl-billing@1.0.0 build
+> node scripts/build.cjs
+
+Built dist/index.html: self-contained static copy; no runtime dependencies.

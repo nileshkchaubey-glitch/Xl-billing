@@ -1,0 +1,11 @@
+
+Running 4 tests using 1 worker
+
+(node:3951) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓  1 [chromium] › test/e2e/hotfix.spec.cjs:26:1 › P0-4 overpayment rejected without invoice or audit writes (410ms)
+  ✓  2 [chromium] › test/e2e/hotfix.spec.cjs:27:1 › P0-4 exact payment and delete preserve totals (259ms)
+  ✓  3 [chromium] › test/e2e/hotfix.spec.cjs:28:1 › P0-4 purchase overpayment rejected (248ms)
+  ✓  4 [chromium] › test/e2e/hotfix.spec.cjs:35:1 › characterization: invoice entry, edit, cancel and restore (349ms)
+
+  4 passed (2.0s)

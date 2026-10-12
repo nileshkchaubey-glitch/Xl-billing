@@ -1,0 +1,10 @@
+
+> xl-billing@1.0.0 mutations
+> node scripts/mutations.cjs
+
+B1: CAUGHT; 1 failing test(s)
+B2: CAUGHT; 1 failing test(s)
+B3: CAUGHT; 1 failing test(s)
+B4: CAUGHT; 1 failing test(s)
+B5: CAUGHT; 1 failing test(s)
+5/5 mutations caught

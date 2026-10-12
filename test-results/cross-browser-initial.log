@@ -1,0 +1,30 @@
+
+Running 2 tests using 1 worker
+
+(node:4291) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓  1 [firefox] › test/e2e/hotfix.spec.cjs:19:1 › P0-2 all pages and report tabs render with seeded data (2.1s)
+(node:4485) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✘  2 [webkit] › test/e2e/hotfix.spec.cjs:19:1 › P0-2 all pages and report tabs render with seeded data (2ms)
+
+
+  1) [webkit] › test/e2e/hotfix.spec.cjs:19:1 › P0-2 all pages and report tabs render with seeded data 
+
+    Error: browserType.launch: 
+    ╔══════════════════════════════════════════════════════╗
+    ║ Host system is missing dependencies to run browsers. ║
+    ║ Missing libraries:                                   ║
+    ║     libgtk-4.so.1                                    ║
+    ║     libgraphene-1.0.so.0                             ║
+    ║     libharfbuzz-icu.so.0                             ║
+    ║     libmanette-0.2.so.0                              ║
+    ║     libhyphen.so.0                                   ║
+    ║     libGLESv2.so.2                                   ║
+    ╚══════════════════════════════════════════════════════╝
+
+    Error Context: test-results/browser/hotfix-P0-2-all-pages-and--502d0-abs-render-with-seeded-data-webkit/error-context.md
+
+  1 failed
+    [webkit] › test/e2e/hotfix.spec.cjs:19:1 › P0-2 all pages and report tabs render with seeded data 
+  1 passed (3.8s)

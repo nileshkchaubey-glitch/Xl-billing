@@ -1,0 +1,42 @@
+
+Running 1 test using 1 worker
+
+(node:13527) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+Skipping host requirements validation logic because `PLAYWRIGHT_SKIP_VALIDATE_HOST_REQUIREMENTS` env variable is set.
+  ✘  1 [chromium] › test/e2e/hotfix.spec.cjs:62:1 › P0-1 quoted party names select and settle through real click handlers (5.4s)
+
+
+  1) [chromium] › test/e2e/hotfix.spec.cjs:62:1 › P0-1 quoted party names select and settle through real click handlers 
+
+    Error: expect(locator).toHaveValue(expected) failed
+
+    Locator:  locator('#inv-party')
+    Expected: "O'Neil \"Traders\" & Co"
+    Received: "O'Neil"
+    Timeout:  5000ms
+
+    Call log:
+      - Expect "toHaveValue" locator('#inv-party') with timeout 5000ms
+      - waiting for locator('#inv-party')
+        14 × locator resolved to <input class="fc" id="inv-party" autocomplete="off" placeholder="Type to search party..." oninput="partyAC('inv-party','inv-party-id',this.value)"/>
+           - unexpected value "O'Neil"
+
+
+      61 | });
+      62 | test('P0-1 quoted party names select and settle through real click handlers',async({page})=>{
+    > 63 |  const name='O\'Neil "Traders" & Co';await page.evaluate(name=>{const p=getParties();p[0].name=name;DB.set('parties',p);nav('new-sale');},name);await page.fill('#inv-party',"O'Neil");await page.locator('#ac-inv-party .ac-item').first().click();await expect(page.locator('#inv-party')).toHaveValue(name);
+         |                                                                                                                                                                                                                                                                                              ^
+      64 |  await page.evaluate(name=>openSettlementModal('p1',name),name);
+      65 |  for(const attr of await page.locator('#settlement-modal [onclick]').evaluateAll(nodes=>nodes.map(n=>n.getAttribute('onclick'))))expect(()=>new Function('event',attr)).not.toThrow();
+      66 | });
+        at /workspace/Xl-billing/test/e2e/hotfix.spec.cjs:63:286
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/browser/hotfix-P0-1-quoted-party-n-57bed-through-real-click-handlers-chromium/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/browser/hotfix-P0-1-quoted-party-n-57bed-through-real-click-handlers-chromium/error-context.md
+
+  1 failed
+    [chromium] › test/e2e/hotfix.spec.cjs:62:1 › P0-1 quoted party names select and settle through real click handlers 

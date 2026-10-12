@@ -1,0 +1,40 @@
+
+Running 1 test using 1 worker
+
+  ✘  1 [chromium] › test/e2e/hotfix.spec.cjs:25:1 › P0-3 pagination reaches next and last invoice, totals cover all (5.8s)
+
+
+  1) [chromium] › test/e2e/hotfix.spec.cjs:25:1 › P0-3 pagination reaches next and last invoice, totals cover all 
+
+    Error: expect(locator).toBeVisible() failed
+
+    Locator: locator('#sales-table .pgn')
+    Expected: visible
+    Timeout: 5000ms
+    Error: element(s) not found
+
+    Call log:
+      - Expect "toBeVisible" locator('#sales-table .pgn') with timeout 5000ms
+      - waiting for locator('#sales-table .pgn')
+
+
+      23 |  await page.evaluate(()=>openPartyDetail('p1'));await page.evaluate(()=>openSettlementModal('p1','Synthetic Customer'));await page.evaluate(()=>openPayOutModal());await page.waitForTimeout(300);expect(errors).toEqual([]);
+      24 | });
+    > 25 | test('P0-3 pagination reaches next and last invoice, totals cover all',async({page})=>{await seed(page,1200);await page.evaluate(()=>nav('sales-list'));await expect(page.locator('#sales-table tbody tr')).toHaveCount(20);await expect(page.locator('#sales-table .pgn')).toBeVisible();await page.locator('#sales-table .pgn-btn').filter({hasText:'Next'}).click();await expect(page.locator('#sales-table .pgn-info')).toContainText('21');await page.evaluate(()=>slNavPage(60));await expect(page.locator('#sales-table')).toContainText('INV-1001');await expect(page.locator('#sl-summary')).toContainText('1,20,000.00');await expect(page.locator('#sales-table th[aria-sort]')).not.toHaveCount(0);});
+         |                                                                                                                                                                                                                                                                             ^
+      26 | test('P0-4 overpayment rejected without invoice or audit writes',async({page})=>{await page.evaluate(()=>openPayModal('s0'));await page.fill('#pay-amount','81');const before=await records(page);await page.evaluate(()=>savePayment());expect(await records(page)).toEqual(before);expect(await records(page,'audit')).toEqual([]);await expect(page.locator('[role=alert]')).toContainText('balance');});
+      27 | test('P0-4 exact payment and delete preserve totals',async({page})=>{await page.evaluate(()=>openPayModal('s0'));await page.fill('#pay-amount','80');await page.evaluate(()=>savePayment());const inv=(await records(page))[0];expect(inv.paid).toBe(100);expect(inv.payments.reduce((s,p)=>s+p.amt,0)).toBe(100);expect(inv.balance).toBe(0);});
+      28 | test('P0-4 purchase overpayment rejected',async({page})=>{await page.evaluate(()=>openPurPayModal('u1'));await page.fill('#pur-pay-amt','481');const before=await records(page,'purchases');await page.evaluate(()=>savePurPayment());expect(await records(page,'purchases')).toEqual(before);});
+        at /workspace/Xl-billing/test/e2e/hotfix.spec.cjs:25:269
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/browser/hotfix-P0-3-pagination-rea-21a08-st-invoice-totals-cover-all-chromium/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/browser/hotfix-P0-3-pagination-rea-21a08-st-invoice-totals-cover-all-chromium/error-context.md
+
+  1 failed
+    [chromium] › test/e2e/hotfix.spec.cjs:25:1 › P0-3 pagination reaches next and last invoice, totals cover all 
+(node:13027) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+Skipping host requirements validation logic because `PLAYWRIGHT_SKIP_VALIDATE_HOST_REQUIREMENTS` env variable is set.

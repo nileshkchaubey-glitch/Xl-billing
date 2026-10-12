@@ -1,0 +1,152 @@
+
+> xl-billing@1.0.0 lint
+> node scripts/lint.cjs
+
+
+/workspace/Xl-billing/app.js
+   117:5   warning  'slPill' is already defined as a built-in global variable              no-redeclare
+   128:10  warning  'nav' is already defined as a built-in global variable                 no-redeclare
+   156:10  warning  'renderDashboard' is already defined as a built-in global variable     no-redeclare
+   158:9   warning  'items' is assigned a value but never used                             no-unused-vars
+   158:27  warning  'parties' is assigned a value but never used                           no-unused-vars
+   169:9   warning  'pending' is assigned a value but never used                           no-unused-vars
+   232:10  warning  'partyAC' is already defined as a built-in global variable             no-redeclare
+   232:10  warning  'partyAC' is defined but never used                                    no-unused-vars
+   248:10  warning  'selectParty' is already defined as a built-in global variable         no-redeclare
+   254:10  warning  'quickAddParty' is already defined as a built-in global variable       no-redeclare
+   254:10  warning  'quickAddParty' is defined but never used                              no-unused-vars
+   275:10  warning  'initNewSale' is already defined as a built-in global variable         no-redeclare
+   299:10  warning  'addSaleItem' is already defined as a built-in global variable         no-redeclare
+   308:10  warning  'renderSaleItems' is already defined as a built-in global variable     no-redeclare
+   352:10  warning  'siName' is defined but never used                                     no-unused-vars
+   356:10  warning  'siPack' is already defined as a built-in global variable              no-redeclare
+   356:10  warning  'siPack' is defined but never used                                     no-unused-vars
+   368:10  warning  'siPackCnt' is already defined as a built-in global variable           no-redeclare
+   368:10  warning  'siPackCnt' is defined but never used                                  no-unused-vars
+   371:10  warning  'siNum' is already defined as a built-in global variable               no-redeclare
+   371:10  warning  'siNum' is defined but never used                                      no-unused-vars
+   378:10  warning  'removeSI' is defined but never used                                   no-unused-vars
+   383:10  warning  'showSaleItemAC' is already defined as a built-in global variable      no-redeclare
+   395:10  warning  'setSaleItem' is already defined as a built-in global variable         no-redeclare
+   428:10  warning  'saveSaleInvoice' is already defined as a built-in global variable     no-redeclare
+   499:10  warning  'resetSaleForm' is defined but never used                              no-unused-vars
+   506:9   warning  's' is assigned a value but never used                                 no-unused-vars
+   550:10  warning  'clearSLFilter' is already defined as a built-in global variable       no-redeclare
+   550:10  warning  'clearSLFilter' is defined but never used                              no-unused-vars
+   554:10  warning  'renderSalesList' is already defined as a built-in global variable     no-redeclare
+   602:10  warning  'editInvoiceFromList' is defined but never used                        no-unused-vars
+   605:10  warning  'delInvoice' is already defined as a built-in global variable          no-redeclare
+   605:10  warning  'delInvoice' is defined but never used                                 no-unused-vars
+   610:10  warning  'quickDispatch' is already defined as a built-in global variable       no-redeclare
+   610:10  warning  'quickDispatch' is defined but never used                              no-unused-vars
+   619:10  warning  'viewInvoice' is already defined as a built-in global variable         no-redeclare
+   716:10  warning  'toggleDispatch' is defined but never used                             no-unused-vars
+   725:10  warning  'collectPaymentFromView' is defined but never used                     no-unused-vars
+   726:10  warning  'printInvoice' is already defined as a built-in global variable        no-redeclare
+   744:10  warning  'openPayModal' is already defined as a built-in global variable        no-redeclare
+   756:10  warning  'savePayment' is already defined as a built-in global variable         no-redeclare
+   756:10  warning  'savePayment' is defined but never used                                no-unused-vars
+   782:10  warning  'saveRetail' is defined but never used                                 no-unused-vars
+   811:10  warning  'delRetail' is already defined as a built-in global variable           no-redeclare
+   811:10  warning  'delRetail' is defined but never used                                  no-unused-vars
+   853:10  warning  'piName' is defined but never used                                     no-unused-vars
+   854:10  warning  'piNum' is defined but never used                                      no-unused-vars
+   855:10  warning  'removePI' is defined but never used                                   no-unused-vars
+   864:10  warning  'setPurItem' is defined but never used                                 no-unused-vars
+   864:34  warning  'unit' is defined but never used                                       no-unused-vars
+   881:10  warning  'handlePhoto' is defined but never used                                no-unused-vars
+   890:10  warning  'removePhoto' is defined but never used                                no-unused-vars
+   896:10  warning  'savePurchase' is already defined as a built-in global variable        no-redeclare
+   896:10  warning  'savePurchase' is defined but never used                               no-unused-vars
+   919:10  warning  'clearPLFilter' is defined but never used                              no-unused-vars
+   920:10  warning  'renderPurchaseList' is already defined as a built-in global variable  no-redeclare
+   951:10  warning  'viewPurchase' is already defined as a built-in global variable        no-redeclare
+   951:10  warning  'viewPurchase' is defined but never used                               no-unused-vars
+   970:10  warning  'delPurchase' is already defined as a built-in global variable         no-redeclare
+   970:10  warning  'delPurchase' is defined but never used                                no-unused-vars
+   975:10  warning  'renderItems' is already defined as a built-in global variable         no-redeclare
+   995:10  warning  'openItemModal' is defined but never used                              no-unused-vars
+  1017:10  warning  'saveItem' is already defined as a built-in global variable            no-redeclare
+  1017:10  warning  'saveItem' is defined but never used                                   no-unused-vars
+  1026:10  warning  'delItem' is already defined as a built-in global variable             no-redeclare
+  1026:10  warning  'delItem' is defined but never used                                    no-unused-vars
+  1031:10  warning  'renderParties' is already defined as a built-in global variable       no-redeclare
+  1058:10  warning  'openPartyModal' is already defined as a built-in global variable      no-redeclare
+  1058:10  warning  'openPartyModal' is defined but never used                             no-unused-vars
+  1078:10  warning  'saveParty' is already defined as a built-in global variable           no-redeclare
+  1078:10  warning  'saveParty' is defined but never used                                  no-unused-vars
+  1087:10  warning  'delParty' is already defined as a built-in global variable            no-redeclare
+  1087:10  warning  'delParty' is defined but never used                                   no-unused-vars
+  1092:5   warning  'currentRepTab' is assigned a value but never used                     no-unused-vars
+  1093:10  warning  'repTab' is already defined as a built-in global variable              no-redeclare
+  1099:10  warning  'renderSaleRep' is already defined as a built-in global variable       no-redeclare
+  1149:10  warning  'renderPurRep' is already defined as a built-in global variable        no-redeclare
+  1168:10  warning  'renderPartyLedger' is already defined as a built-in global variable   no-redeclare
+  1176:10  warning  'filterLedger' is already defined as a built-in global variable        no-redeclare
+  1176:10  warning  'filterLedger' is defined but never used                               no-unused-vars
+  1197:10  warning  'renderItemRep' is already defined as a built-in global variable       no-redeclare
+  1215:10  warning  'renderPendingRep' is already defined as a built-in global variable    no-redeclare
+  1245:10  warning  'renderDispatchRep' is already defined as a built-in global variable   no-redeclare
+  1278:10  warning  'loadSettings' is already defined as a built-in global variable        no-redeclare
+  1314:17  warning  'i' is defined but never used                                          no-unused-vars
+  1322:10  warning  'addCustomField' is defined but never used                             no-unused-vars
+  1334:10  warning  'removeCustomField' is defined but never used                          no-unused-vars
+  1354:10  warning  'saveSettings' is already defined as a built-in global variable        no-redeclare
+  1354:10  warning  'saveSettings' is defined but never used                               no-unused-vars
+  1381:10  warning  'exportData' is defined but never used                                 no-unused-vars
+  1390:10  warning  'importData' is defined but never used                                 no-unused-vars
+  1406:10  warning  'clearAllData' is defined but never used                               no-unused-vars
+  1475:11  warning  'e' is defined but never used                                          no-unused-vars
+  1485:7   warning  '_origShowSaleItemAC' is assigned a value but never used               no-unused-vars
+  1802:7   warning  '_origSavePayment' is assigned a value but never used                  no-unused-vars
+  1814:9   warning  'totalDeducted' is assigned a value but never used                     no-unused-vars
+  1847:11  warning  'e' is defined but never used                                          no-unused-vars
+  1874:11  warning  'e' is defined but never used                                          no-unused-vars
+  1897:11  warning  'e' is defined but never used                                          no-unused-vars
+  1984:11  warning  'origHandlers' is assigned a value but never used                      no-unused-vars
+  1985:11  warning  'origRepTab' is assigned a value but never used                        no-unused-vars
+  2255:5   warning  'pbPartyName' is assigned a value but never used                       no-unused-vars
+  2256:5   warning  'pbPartyId' is assigned a value but never used                         no-unused-vars
+  2270:10  warning  'pbPartyAC' is defined but never used                                  no-unused-vars
+  2304:10  warning  'pbQuickAddParty' is defined but never used                            no-unused-vars
+  2334:10  warning  'pbDelBill' is defined but never used                                  no-unused-vars
+  2342:10  warning  'pbAddRow' is defined but never used                                   no-unused-vars
+  2352:10  warning  'pbUpdateAllPayTypes' is defined but never used                        no-unused-vars
+  2357:10  warning  'pbClearAll' is defined but never used                                 no-unused-vars
+  2425:10  warning  'pbCalcRow' is defined but never used                                  no-unused-vars
+  2455:10  warning  'pbDeleteRow' is defined but never used                                no-unused-vars
+  2462:10  warning  'pbNotesKeydown' is defined but never used                             no-unused-vars
+  2475:10  warning  'pbSaveAll' is defined but never used                                  no-unused-vars
+  2718:9   warning  'oldAmt' is assigned a value but never used                            no-unused-vars
+  2831:7   warning  '_origPartyAC' is assigned a value but never used                      no-unused-vars
+  2885:7   warning  '_origSaveParty' is assigned a value but never used                    no-unused-vars
+  3209:9   warning  '_origRenderParties' is assigned a value but never used                no-unused-vars
+  3361:27  warning  'i' is defined but never used                                          no-unused-vars
+  3545:9   warning  '_prevSaveParty' is assigned a value but never used                    no-unused-vars
+  4078:38  warning  'filename' is defined but never used                                   no-unused-vars
+  4154:11  warning  'e' is defined but never used                                          no-unused-vars
+  4205:13  warning  'obs' is assigned a value but never used                               no-unused-vars
+  4218:9   warning  'sbSub' is assigned a value but never used                             no-unused-vars
+  4260:7   warning  '_origRenderSaleItems' is assigned a value but never used              no-unused-vars
+  4405:7   warning  '_origAddSaleItem' is assigned a value but never used                  no-unused-vars
+  4425:11  warning  'showPack' is assigned a value but never used                          no-unused-vars
+  4705:9   warning  'partyId' is assigned a value but never used                           no-unused-vars
+  5573:57  warning  'containerId' is defined but never used                                no-unused-vars
+  5633:9   warning  's' is assigned a value but never used                                 no-unused-vars
+  5865:7   warning  '_origRenderPurchaseList' is assigned a value but never used           no-unused-vars
+  5918:7   warning  '_origRenderItems' is assigned a value but never used                  no-unused-vars
+  6200:7   warning  '_origRenderSaleRep' is assigned a value but never used                no-unused-vars
+  6393:5   warning  'purBulkPartyId' is assigned a value but never used                    no-unused-vars
+  6394:5   warning  'purBulkPartyName' is assigned a value but never used                  no-unused-vars
+  6430:11  warning  'purLabel' is assigned a value but never used                          no-unused-vars
+  7213:35  warning  'i' is defined but never used                                          no-unused-vars
+  7248:7   warning  '_origSavePurchaseV14' is assigned a value but never used              no-unused-vars
+  7441:7   warning  '_origDelPurchaseV15' is assigned a value but never used               no-unused-vars
+  7642:9   warning  'discount' is assigned a value but never used                          no-unused-vars
+  7678:31  warning  'invNo' is defined but never used                                      no-unused-vars
+  7960:29  warning  'color' is defined but never used                                      no-unused-vars
+  8067:11  warning  'e' is defined but never used                                          no-unused-vars
+  8156:70  warning  'i' is defined but never used                                          no-unused-vars
+
+✖ 143 problems (0 errors, 143 warnings)
+
