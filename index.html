@@ -713,6 +713,46 @@ function isCancelled(record) { return !!record && (record.status === 'cancelled'
 function isDeleted(record) { return !!record && !!record.deletedAt; }
 function isActive(record) { return !!record && !isCancelled(record) && !isDeleted(record); }
 
+// List state is session-only: changing a view never rewrites business data.
+window.listState = {};
+function listStateFor(key) { return window.listState[key] ||= {page:1,size:20,col:'date',dir:'desc',filter:''}; }
+function listView(records,key,filter='') {
+  const state=listStateFor(key);
+  if(state.filter!==filter){state.page=1;state.filter=filter;}
+  state.total=records.length;
+  state.page=Math.max(1,Math.min(state.page,Math.max(1,Math.ceil(state.total/state.size))));
+  const value=(r,col)=>col==='status'?getListStatus(r):r[col]??'';
+  const sorted=records.slice().sort((a,b)=>{
+    const x=value(a,state.col),y=value(b,state.col);
+    const result=typeof x==='number'&&typeof y==='number'?x-y:String(x).localeCompare(String(y),'en',{numeric:true,sensitivity:'base'});
+    return (state.dir==='asc'?result:-result)||String(b.invoiceNo||b.billNo||b.id||'').localeCompare(String(a.invoiceNo||a.billNo||a.id||''),'en',{numeric:true});
+  });
+  return sorted.slice((state.page-1)*state.size,state.page*state.size);
+}
+function getListStatus(record){return isCancelled(record)?'cancelled':Number(record.balance||0)>0?'due':'paid';}
+window.listGo = function(key,page){const state=listStateFor(key);state.page=page;window[state.render]();};
+window.listResize = function(key,size){const state=listStateFor(key);state.size=Number(size);state.page=1;window[state.render]();};
+function listPager(key,render) {
+  const state=listStateFor(key);state.render=render;
+  const pages=Math.max(1,Math.ceil((state.total||0)/state.size));
+  const start=Math.max(1,Math.min(state.page-3,pages-6));
+  return `<div class="pgn"><span class="pgn-info">Showing ${state.total?(state.page-1)*state.size+1:0}–${Math.min(state.page*state.size,state.total||0)} of ${state.total||0}</span>
+    <label>Rows <select aria-label="Rows per page" onchange="listResize('${key}',this.value)">${[20,50,100].map(n=>`<option ${state.size===n?'selected':''}>${n}</option>`).join('')}</select></label>
+    <div class="pgn-btns"><button class="pgn-btn" ${state.page<=1?'disabled':''} onclick="listGo('${key}',${state.page-1})">← Prev</button>
+    ${Array.from({length:Math.min(7,pages)},(_,i)=>start+i).map(n=>`<button class="pgn-btn ${n===state.page?'active':''}" onclick="listGo('${key}',${n})">${n}</button>`).join('')}
+    <button class="pgn-btn" ${state.page>=pages?'disabled':''} onclick="listGo('${key}',${state.page+1})">Next →</button></div></div>`;
+}
+function listHeaders(container,key,columns,render){
+  const state=listStateFor(key);state.render=render;
+  document.querySelectorAll(container+' thead th').forEach((th,i)=>{
+    const col=columns[i];if(!col)return;
+    th.setAttribute('aria-sort',state.col===col?(state.dir==='asc'?'ascending':'descending'):'none');
+    const button=document.createElement('button');button.className='btn btn-out btn-xs';button.textContent=th.textContent;
+    button.addEventListener('click',()=>{state.dir=state.col===col&&state.dir==='asc'?'desc':'asc';state.col=col;state.page=1;window[render]();});
+    th.replaceChildren(button);
+  });
+}
+
 const genId   = () => Date.now().toString(36) + Math.random().toString(36).slice(2,5);
 const today   = () => new Date().toISOString().slice(0,10);
 const fmtDate = d => { if(!d) return '-'; const[y,m,dd]=d.split('-'); return `${dd}/${m}/${y}`; };
@@ -3240,6 +3280,8 @@ window.renderPaymentLedger = function(){
   const pays = getAllPayments();
   const tTotal    = pays.filter(p=>p.type==='payment').reduce((a,p)=>a+p.amt,0);
   const tDiscount = pays.filter(p=>p.type==='discount').reduce((a,p)=>a+p.amt,0);
+  const count=pays.length;
+  pays=listView(pays,'payments',[fDate,fParty].join('|'));
   // Group by date
   const byDate = {};
   pays.forEach(p=>{const d=p.date||'Unknown'; if(!byDate[d]) byDate[d]=[]; byDate[d].push(p);});
@@ -3257,7 +3299,7 @@ window.renderPaymentLedger = function(){
       <div class="sg" style="grid-template-columns:repeat(auto-fit,minmax(140px,1fr));margin-bottom:16px">
         <div class="sc"><div class="sc-lbl">Total Payments</div><div class="sc-val g">${fc(tTotal)}</div></div>
         <div class="sc"><div class="sc-lbl">Total Discounts</div><div class="sc-val o">${fc(tDiscount)}</div></div>
-        <div class="sc"><div class="sc-lbl">Entries</div><div class="sc-val b">${pays.length}</div></div>
+        <div class="sc"><div class="sc-lbl">Entries</div><div class="sc-val b">${count}</div></div>
       </div>
 
       ${Object.keys(byDate).length === 0 ? `<div class="empty"><div class="ic">💰</div>No payments recorded yet</div>` :
@@ -3303,6 +3345,7 @@ window.renderPaymentLedger = function(){
           </div>`;
         }).join('')}
     </div>`;
+  el.querySelector('.pb').insertAdjacentHTML('beforeend',listPager('payments','renderPaymentLedger'));
 };
 
 // Edit payment
@@ -3917,6 +3960,8 @@ window.renderPaymentLedger = function(){
   const tTotal    = pays.filter(p=>p.type==='payment').reduce((a,p)=>a+p.amt, 0);
   const tDiscount = pays.filter(p=>p.type==='discount').reduce((a,p)=>a+p.amt, 0);
   
+  const count=pays.length;
+  pays=listView(pays,'payments',[fDate,fParty].join('|'));
   // Group by date
   const byDate = {};
   pays.forEach(p=>{ const d=p.date||'Unknown'; if(!byDate[d]) byDate[d]=[]; byDate[d].push(p); });
@@ -3941,7 +3986,7 @@ window.renderPaymentLedger = function(){
       <div class="sg" style="grid-template-columns:repeat(auto-fit,minmax(140px,1fr));margin-bottom:16px">
         <div class="sc"><div class="sc-lbl">Total Received</div><div class="sc-val g">${fc(tTotal)}</div></div>
         <div class="sc"><div class="sc-lbl">Discounts Given</div><div class="sc-val o">${fc(tDiscount)}</div></div>
-        <div class="sc"><div class="sc-lbl">Entries Shown</div><div class="sc-val b">${pays.length}</div></div>
+        <div class="sc"><div class="sc-lbl">Entries Shown</div><div class="sc-val b">${count}</div></div>
       </div>
       ${Object.keys(byDate).length===0 ? `<div class="empty"><div class="ic">💰</div>No payments found</div>` :
         Object.keys(byDate).map(date=>{
@@ -6706,6 +6751,7 @@ window.renderPurchaseList = function() {
     <tfoot><tr><td colspan="5">Total (${f.length})</td><td style="color:var(--b)">${fc(tT)}</td><td colspan="2"></td></tr></tfoot>
   </table>
   ${f.length > PAGE_SIZE ? renderPageBtns(f.length, pgState.purchases, 'plNavPage', 'purchase-table') : ''}`;
+  listHeaders('#purchase-table','purchases',[null,'date','partyName','billNo','total','paid','balance','payType'],'renderPurchaseList');
 };
 
 // ════════════════════════════════════════════════════════
@@ -6720,10 +6766,8 @@ window.renderItems = function() {
   const c = document.getElementById('items-table');
   if (!items.length) { c.innerHTML=`<div class="empty"><div class="ic">📦</div>No items yet.</div>`; return; }
 
-  const totalPages = Math.ceil(items.length/PAGE_SIZE);
-  if (pgState.items > totalPages) pgState.items = 1;
-  const pageRows = items.slice((pgState.items-1)*PAGE_SIZE, pgState.items*PAGE_SIZE);
-
+  const pageRows=listView(items,'items',srch);
+  const PAGE_SIZE=listStateFor('items').size;pgState.items=listStateFor('items').page;
   c.innerHTML=`<table>
     <thead><tr><th>#</th><th>Name</th><th>Unit</th><th>Sale Rate</th><th>Purchase Rate</th><th>GST%</th><th>HSN</th><th class="no-print">Actions</th></tr></thead>
     <tbody>${pageRows.map((it,i)=>`<tr ondblclick="openItemModal('${it.id}')">
@@ -6740,7 +6784,8 @@ window.renderItems = function() {
     </tr>`).join('')}</tbody>
     <tfoot><tr><td colspan="8">Total ${items.length} items</td></tr></tfoot>
   </table>
-  ${items.length > PAGE_SIZE ? renderPageBtns(items.length, pgState.items, 'itemNavPage', 'items-table') : ''}`;
+  ${listPager('items','renderItems')}`;
+  listHeaders('#items-table','items',[null,'name','unit','saleRate','purchaseRate','gst','hsn'],'renderItems');
 };
 
 // ════════════════════════════════════════════════════════
@@ -6756,10 +6801,8 @@ window.renderParties = function() {
   const c = document.getElementById('parties-table');
   if (!parties.length) { c.innerHTML=`<div class="empty"><div class="ic">👥</div>No parties yet.</div>`; return; }
 
-  const totalPages = Math.ceil(parties.length/PAGE_SIZE);
-  if (pgState.parties > totalPages) pgState.parties = 1;
-  const pageRows = parties.slice((pgState.parties-1)*PAGE_SIZE, pgState.parties*PAGE_SIZE);
-
+  const pageRows=listView(parties,'parties',srch);
+  const PAGE_SIZE=listStateFor('parties').size;pgState.parties=listStateFor('parties').page;
   c.innerHTML=`<table>
     <thead><tr>
       <th>#</th><th>Name</th><th>Phone</th><th>Area</th><th>Type</th>
@@ -6789,7 +6832,8 @@ window.renderParties = function() {
     }).join('')}</tbody>
     <tfoot><tr><td colspan="9">Total ${parties.length} parties</td></tr></tfoot>
   </table>
-  ${parties.length > PAGE_SIZE ? renderPageBtns(parties.length, pgState.parties, 'partyNavPage', 'parties-table') : ''}`;
+  ${listPager('parties','renderParties')}`;
+  listHeaders('#parties-table','parties',[null,'name','phone','area','type'],'renderParties');
 };
 
 // ════════════════════════════════════════════════════════
@@ -7852,13 +7896,8 @@ window.renderPurchaseList = function() {
   const c = document.getElementById('purchase-table');
   if (!f.length) { c.innerHTML=`<div class="empty"><div class="ic">🛒</div>No purchases found</div>`; return; }
 
-  const { pgState, PAGE_SIZE, renderPageBtns } = window;
-  const pageState = pgState || {};
-  const pgSize = PAGE_SIZE || 20;
-  const pg = pageState.purchases || 1;
-  const totalPages = Math.ceil(f.length/pgSize);
-  const pageRows = f.slice((pg-1)*pgSize, pg*pgSize);
-
+  const pageRows=listView(f,'purchases',[from,to,srch,due].join('|'));
+  const {page:pg,size:pgSize}=listStateFor('purchases');
   c.innerHTML = `<div class="tw"><table>
     <thead><tr>
       <th>#</th><th>Date</th><th>Supplier</th><th>Bill No</th>
@@ -7893,7 +7932,7 @@ window.renderPurchaseList = function() {
       <td colspan="3"></td>
     </tr></tfoot>
   </table></div>
-  ${f.length>pgSize && typeof renderPageBtns==='function' ? renderPageBtns(f.length, pg, 'plNavPage', 'purchase-table') : ''}`;
+  ${listPager('purchases','renderPurchaseList')}`;
 };
 
 // ════════════════════════════════════════════════════════
@@ -8704,7 +8743,9 @@ window.nav = function(pg) {
 
 window.renderAuditPage = function() {
   const el = document.getElementById('page-audit-log'); if(!el) return;
-  const log = [...getAuditLog()].reverse().slice(0,200);
+  const search=document.getElementById('audit-srch')?.value||'';
+  const all=getAuditLog().filter(r=>JSON.stringify(r).toLowerCase().includes(search.toLowerCase()));
+  const log=listView(all,'audit',search);
   const typeMap = { create:'at-create', edit:'at-edit', delete:'at-delete', payment:'at-payment', dispatch:'at-dispatch', cancel:'at-cancel', restore:'at-create', sync:'at-dispatch' };
   const iconMap = { create:'✅', edit:'✏️', delete:'🗑', payment:'💳', dispatch:'🚚', cancel:'✕', restore:'↩️', sync:'☁️' };
 
@@ -8712,7 +8753,7 @@ window.renderAuditPage = function() {
     <div class="ph" style="position:sticky;top:0;z-index:50;background:#fff;border-bottom:1px solid var(--gray-200);padding:12px 22px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px">
       <h1>📜 Audit Log</h1>
       <div style="display:flex;gap:8px">
-        <input class="fc fc-sm" id="audit-srch" placeholder="Search..." style="width:180px" oninput="renderAuditPage()">
+        <input class="fc fc-sm" id="audit-srch" value="${search.replaceAll('"','&quot;')}" placeholder="Search..." style="width:180px" oninput="renderAuditPage()">
         <button class="btn btn-out btn-sm" onclick="if(confirm('Clear audit log?')){DB.del('audit');renderAuditPage();}">🗑 Clear Log</button>
       </div>
     </div>
@@ -8742,6 +8783,8 @@ window.renderAuditPage = function() {
         </table>`}
       </div>
     </div>`;
+  el.querySelector('.pb').insertAdjacentHTML('beforeend',listPager('audit','renderAuditPage'));
+  listHeaders('#page-audit-log','audit',['ts','type','entityType','label','details','user'],'renderAuditPage');
 };
 
 // ════════════════════════════════════════════════════════
@@ -8784,6 +8827,7 @@ window.renderTxnPage = function() {
   const totalIn  = filtered.filter(t=>['sale','pay-in','retail'].includes(t.type)).reduce((a,t)=>a+t.amount,0);
   const totalOut = filtered.filter(t=>['purchase','pay-out'].includes(t.type)).reduce((a,t)=>a+t.amount,0);
 
+  const visible=listView(filtered,'transactions',[srch,filter].join('|'));
   el.innerHTML = `
     <div class="ph" style="position:sticky;top:0;z-index:50;background:#fff;border-bottom:1px solid var(--gray-200);padding:12px 22px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px">
       <h1>🔄 All Transactions</h1>
@@ -8812,7 +8856,7 @@ window.renderTxnPage = function() {
             <th style="padding:8px 10px">#</th><th>Date</th><th>Party</th><th>Description</th>
             <th style="text-align:right">Amount</th><th>Type</th><th>Notes</th>
           </tr></thead>
-          <tbody>${filtered.slice(0,100).map((t,i)=>`<tr ${t.invId?`onclick="viewInvoice('${t.invId}')" style="cursor:pointer"`:''}>
+          <tbody>${visible.map((t,i)=>`<tr ${t.invId?`onclick="viewInvoice('${t.invId}')" style="cursor:pointer"`:''}>
             <td style="color:var(--gray-400);font-size:11px;padding:7px 10px">${i+1}</td>
             <td style="white-space:nowrap">${fmtDate(t.date)}</td>
             <td style="font-weight:500">${t.party}</td>
@@ -8833,6 +8877,8 @@ window.renderTxnPage = function() {
 const _origRepTabV15 = window.repTab;
 window.repTab = function(tab) {
   _origRepTabV15(tab);
+  el.querySelector('.pb').insertAdjacentHTML('beforeend',listPager('transactions','renderTxnPage'));
+  listHeaders('#page-txn-log','transactions',[null,'date','party','label','amount','type'],'renderTxnPage');
 };
 
 // Fix pending report to exclude cancelled
@@ -9153,7 +9199,7 @@ window.clearSLFilter = function() {
 // FIX 2: renderSalesList — restore 3-dot menu, fix status
 // ════════════════════════════════════════════════════════
 window.slNavPage = function(p) {
-  if (window.pgState) window.pgState.sales = p;
+  listStateFor('sales').page=p;
   renderSalesList();
 };
 
@@ -9209,13 +9255,8 @@ window.renderSalesList = function() {
   }
 
   // Pagination
-  const pgSt   = window.pgState || {};
-  const pgSize = window.PAGE_SIZE || 20;
-  const pg     = pgSt.sales || 1;
-  const totPg  = Math.ceil(f.length / pgSize);
-  if (pg > totPg && pgSt.sales) pgSt.sales = 1;
-  const pageRows = f.slice((pg-1)*pgSize, pg*pgSize);
-
+  const pageRows=listView(f,'sales',[from,to,srch,pill].join('|'));
+  const {page:pg,size:pgSize}=listStateFor('sales');
   // 3-dot menu builder
   const dotMenu = inv => {
     const can = isCancelled(inv);
@@ -9287,9 +9328,9 @@ window.renderSalesList = function() {
       <td colspan="3"></td>
     </tr></tfoot>
   </table>
-  ${f.length > pgSize && typeof renderPageBtns === 'function'
-    ? renderPageBtns(f.length, pg, 'slNavPage', 'sales-table')
-    : ''}`;
+  ${listPager('sales','renderSalesList')}`;
+
+  listHeaders('#sales-table','sales',[null,'invoiceNo','date','partyName','total','balance','paymentType','status'],'renderSalesList');
 
   // Close menus on outside click
   document.addEventListener('click', v16DotClose, {once:true});
