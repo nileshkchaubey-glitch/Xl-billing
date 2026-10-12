@@ -684,6 +684,168 @@ input[type=number]::-webkit-inner-spin-button,input[type=number]::-webkit-outer-
   </div>
 </div>
 
+<script id="xl-storage-core">
+function createXLStorage(options){
+  'use strict';
+  const storage=options.storage,locks=options.locks,cryptoAPI=options.crypto;
+  const keys={journal:'xl_storage_journal_v1',meta:'xl_storage_meta_v1'};
+  const preferences=new Set(['v8_slcols','v8_compact','xl_backup_state','xl_backup_config']);
+  let tx=null,executing=false,busy=false,blocked=null,observedMeta=null,observedSignature=null;
+  const businessKey=key=>typeof key==='string'&&(key.startsWith('shop4_')||preferences.has(key));
+  const error=(name,message)=>{const e=new Error(message);e.name=name;return e;};
+  const notify=(hook,...args)=>{try{options[hook]?.(...args);}catch(e){if(hook!=='onNotice')try{options.onNotice?.(e);}catch{}}};
+  const report=e=>{notify('onError',e);return e;};
+  const read=key=>storage.getItem(key);
+  const rawSnapshot=()=>Object.fromEntries(storage.keys().filter(businessKey).sort().map(key=>[key,read(key)]));
+  function signature(snapshot){
+    const value=JSON.stringify(Object.keys(snapshot).sort().map(key=>[key,snapshot[key]]));
+    let a=2166136261,b=2246822507;
+    for(let i=0;i<value.length;i++){a=Math.imul(a^value.charCodeAt(i),16777619);b=Math.imul(b^value.charCodeAt(i),3266489909);}
+    return (a>>>0).toString(16).padStart(8,'0')+(b>>>0).toString(16).padStart(8,'0');
+  }
+  async function sha256(value){
+    if(!cryptoAPI?.subtle)throw error('StorageCapabilityError','Verified storage requires browser cryptography. Use HTTPS or a downloaded copy in a supported browser.');
+    const bytes=await cryptoAPI.subtle.digest('SHA-256',new TextEncoder().encode(value));
+    return Array.from(new Uint8Array(bytes),b=>b.toString(16).padStart(2,'0')).join('');
+  }
+  function metadata(raw){
+    if(raw===null)return {v:1,revision:0,signature:null,id:null};
+    let m;try{m=JSON.parse(raw);}catch{throw error('StorageRecoveryError','Storage coordination metadata is unreadable. Original records are retained.');}
+    if(!m||m.v!==1||!Number.isSafeInteger(m.revision)||m.revision<1||typeof m.signature!=='string'||typeof m.id!=='string')throw error('StorageRecoveryError','Storage coordination metadata is invalid. Original records are retained for recovery.');
+    return m;
+  }
+  function observe(){
+    const raw=read(keys.meta),snapshot=rawSnapshot(),fingerprint=signature(snapshot),m=metadata(raw);
+    if(m.signature!==null&&m.signature!==fingerprint)throw error('StorageExternalChangeError','Records changed outside the verified storage layer. Close older app copies and preserve a recovery export before reviewing these changes.');
+    observedMeta=raw;observedSignature=fingerprint;
+  }
+  function checkCurrent(){
+    if(blocked)throw blocked;
+    if(read(keys.journal)!==null)throw error('StoragePendingError','A save or recovery is pending. Keep the records intact and retry after recovery.');
+    if(read(keys.meta)!==observedMeta||signature(rawSnapshot())!==observedSignature)throw error('StorageStaleError','Another tab or app copy changed the records. Reload before making further changes.');
+  }
+  function applyValue(key,value){if(value===null)storage.removeItem(key);else storage.setItem(key,value);}
+  function replaceIn(snapshot,key,value){if(value===null)delete snapshot[key];else snapshot[key]=value;}
+  async function withLock(fn){
+    if(!locks?.request)throw error('StorageCapabilityError','This browser cannot coordinate safe billing writes. Read and recovery export remain available; use a supported browser for changes.');
+    return locks.request('xl-billing-storage-v1',{mode:'exclusive',ifAvailable:true},lock=>{
+      if(!lock)throw error('StorageBusyError','Another tab is saving or recovering. Wait for it to finish, then reload before changing records.');
+      return fn();
+    });
+  }
+  async function recover(){
+    const raw=read(keys.journal);if(raw===null){observe();return;}
+    let journal;
+    try{journal=JSON.parse(raw);}catch{throw error('StorageRecoveryError','The recovery journal is unreadable. No records were changed. Keep a raw recovery export.');}
+    const p=journal?.payload;
+    if(!p||p.v!==1||!Array.isArray(p.changes)||!p.changes.length||p.changes.length>10000||typeof p.beforeSignature!=='string'||typeof p.afterSignature!=='string'||typeof p.afterMeta!=='string'||!(p.beforeMeta===null||typeof p.beforeMeta==='string')||typeof journal.checksum!=='string')throw error('StorageRecoveryError','The recovery journal has an unsupported shape. No records were changed.');
+    if(await sha256(JSON.stringify(p))!==journal.checksum)throw error('StorageRecoveryError','The recovery journal checksum does not match. No records were changed.');
+    const used=new Set(),before=rawSnapshot();
+    for(const c of p.changes){
+      if(!c||!businessKey(c.key)||used.has(c.key)||![c.before,c.after].every(v=>v===null||typeof v==='string'))throw error('StorageRecoveryError','The recovery journal contains invalid or duplicate keys.');
+      used.add(c.key);
+      const current=read(c.key);
+      if(current!==c.before&&current!==c.after)throw error('StorageRecoveryError','A record differs from both recovery states. Its raw bytes and journal have been preserved.');
+      replaceIn(before,c.key,c.before);
+    }
+    const after={...before};for(const c of p.changes)replaceIn(after,c.key,c.after);
+    const afterM=metadata(p.afterMeta),beforeM=metadata(p.beforeMeta);
+    if(afterM.revision!==beforeM.revision+1||afterM.id!==p.id||signature(before)!==p.beforeSignature||signature(after)!==p.afterSignature||afterM.signature!==p.afterSignature||(beforeM.signature!==null&&beforeM.signature!==p.beforeSignature))throw error('StorageRecoveryError','Recovery snapshots do not match their recorded fingerprints. No records were changed.');
+    const currentMeta=read(keys.meta);
+    if(currentMeta!==p.beforeMeta&&currentMeta!==p.afterMeta)throw error('StorageRecoveryError','The recovery revision is unrelated to the current records. No records were changed.');
+    const committed=currentMeta===p.afterMeta;
+    const changes=committed?p.changes:[...p.changes].reverse();
+    for(const c of changes)applyValue(c.key,committed?c.after:c.before);
+    applyValue(keys.meta,committed?p.afterMeta:p.beforeMeta);
+    if(read(keys.meta)!==(committed?p.afterMeta:p.beforeMeta)||signature(rawSnapshot())!==(committed?p.afterSignature:p.beforeSignature))throw error('StorageRecoveryError','Recovery verification failed. Keep the original journal for another recovery attempt.');
+    storage.removeItem(keys.journal);if(read(keys.journal)!==null)throw error('StorageRecoveryError','Recovery journal cleanup could not be verified.');observe();
+  }
+  const ready=(async()=>{
+    try{if(read(keys.journal)!==null)await withLock(recover);else observe();}
+    catch(e){blocked=report(e);throw e;}
+  })();
+  function stage(key,value){
+    try{
+      if(!tx)throw error('StorageScopeError','Billing writes require a verified operation. No write was made.');
+      if(!businessKey(key)||!(value===null||typeof value==='string'))throw error('StorageValidationError','This operation contains an unsupported storage key or value.');
+      if(!tx.changes.has(key))tx.changes.set(key,{key,before:tx.before[key]??null,after:value});else tx.changes.get(key).after=value;
+      replaceIn(tx.current,key,value);
+    }catch(e){if(tx)tx.failure=e;throw e;}
+  }
+  async function run(label,fn,runOptions={}){
+    if(busy)throw report(error('StorageBusyError','A save is already in progress. Wait for its result before saving again.'));
+    busy=true;notify('onBusy',true,label);
+    try{
+      await ready;
+      return await withLock(async()=>{
+        checkCurrent();
+        const before=rawSnapshot(),beforeMeta=read(keys.meta);
+        tx={before,current:{...before},changes:new Map(),failure:null};
+        let result,written=false,payload;
+        try{
+          executing=true;
+          const pending=fn();executing=false;result=await pending;
+          if(tx.failure)throw tx.failure;
+          const changes=[...tx.changes.values()].filter(c=>c.before!==c.after);
+          if(!changes.length)return result;
+          await options.validate?.(tx.current,before,runOptions);
+          // The lock covers cooperating clients; check for uncoordinated changes too.
+          if(read(keys.meta)!==beforeMeta||signature(rawSnapshot())!==signature(before))throw error('StorageStaleError','Records changed while this operation was being prepared. No changes were applied.');
+          const m=metadata(beforeMeta),revision=m.revision+1;
+          if(!Number.isSafeInteger(revision))throw error('StorageValidationError','The storage revision cannot advance safely.');
+          const id=cryptoAPI.randomUUID?cryptoAPI.randomUUID():Array.from(cryptoAPI.getRandomValues(new Uint8Array(16)),b=>b.toString(16).padStart(2,'0')).join('');
+          const afterSignature=signature(tx.current),afterMeta=JSON.stringify({v:1,revision,id,signature:afterSignature});
+          payload={v:1,id,label,changes,beforeMeta,afterMeta,beforeSignature:signature(before),afterSignature};
+          const encoded=JSON.stringify({payload,checksum:await sha256(JSON.stringify(payload))});
+          storage.setItem(keys.journal,encoded);written=true;
+          if(read(keys.journal)!==encoded)throw error('StorageRecoveryError','Journal staging could not be verified.');
+          for(const c of changes){
+            if(read(c.key)!==c.before)throw error('StorageExternalChangeError','An older app copy changed a record during this save.');
+            applyValue(c.key,c.after);
+            if(read(c.key)!==c.after)throw error('StorageRecoveryError','A stored value failed readback verification.');
+          }
+          if(signature(rawSnapshot())!==afterSignature)throw error('StorageExternalChangeError','The saved snapshot changed before verification finished.');
+          storage.setItem(keys.meta,afterMeta);
+          if(read(keys.meta)!==afterMeta)throw error('StorageRecoveryError','The commit marker failed readback verification.');
+          storage.removeItem(keys.journal);
+          if(read(keys.journal)!==null)throw error('StorageRecoveryError','Journal cleanup could not be verified.');
+          observe();notify('onCommit',{label,revision,id});return result;
+        }catch(e){
+          if(written){
+            try{
+              for(const c of [...payload.changes].reverse()){
+                const current=read(c.key);
+                if(current!==c.before&&current!==c.after)throw error('StorageRecoveryError','A concurrent external change prevents rollback.');
+                applyValue(c.key,c.before);
+              }
+              applyValue(keys.meta,payload.beforeMeta);
+              if(read(keys.meta)!==payload.beforeMeta||signature(rawSnapshot())!==payload.beforeSignature)throw error('StorageRecoveryError','Rollback readback failed.');
+              storage.removeItem(keys.journal);if(read(keys.journal)!==null)throw error('StorageRecoveryError','Recovery journal cleanup could not be verified.');observe();
+            }catch(rollbackError){
+              blocked=error('StorageRecoveryError','Save recovery is pending. Do not repeat the operation. Original recovery states are retained in the journal; reload or download a raw recovery export.');
+              blocked.cause=rollbackError;report(blocked);throw blocked;
+            }
+          }
+          report(e);throw e;
+        }finally{executing=false;tx=null;}
+      });
+    }catch(e){report(e);throw e;}
+    finally{busy=false;notify('onBusy',false,label);}
+  }
+  function getRaw(key){
+    try{if(tx)return tx.current[key]??null;checkCurrent();const value=read(key);checkCurrent();return value;}
+    catch(e){report(e);throw e;}
+  }
+  return {keys,ready,run,getRaw,setRaw:stage,deleteRaw:key=>stage(key,null),
+    isExecuting:()=>executing,isBusy:()=>busy,isActive:()=>!!tx,
+    snapshot:()=>{checkCurrent();const value=rawSnapshot();checkCurrent();if(signature(value)!==observedSignature)throw error('StoragePendingError','Snapshot capture overlapped another write. Retry after it finishes.');return value;},recoverySnapshot:rawSnapshot,
+    rawRecovery:()=>({records:rawSnapshot(),journal:read(keys.journal),meta:read(keys.meta)}),
+    checksum:sha256,fingerprint:signature,
+    retryRecovery:async()=>{blocked=null;try{await withLock(recover);}catch(e){blocked=report(e);throw e;}},
+    fail:e=>{if(tx)tx.failure=e;report(e);}
+  };
+}
+</script>
 <script>
 // ═══════════════════════════════════
 // DATA LAYER
