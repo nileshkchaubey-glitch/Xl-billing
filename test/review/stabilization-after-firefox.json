@@ -1,0 +1,163 @@
+{
+  "workspaceCommit": "0e471e3c725f8a3eab95f0daaddf40fed457d4ac",
+  "sourceRevision": "0e471e3c725f8a3eab95f0daaddf40fed457d4ac",
+  "sourceSha256": "880034b3bfdd6833ea35f1c175fc57584952d7ef550203cb84ec0dfd1ea07934",
+  "runnerSha256": "873f7b672c27e3423124602559245e520798cea7ddfd3704e0ddbf4648624934",
+  "browser": "firefox",
+  "results": [
+    {
+      "id": "legacy-payment",
+      "status": "PASS",
+      "safe": true,
+      "observed": {
+        "paid": 30,
+        "balance": 70
+      },
+      "pageErrors": []
+    },
+    {
+      "id": "historical-purchase-discount",
+      "status": "PASS",
+      "safe": true,
+      "observed": {
+        "paid": 20,
+        "discount": 10,
+        "total": 500,
+        "balance": 470,
+        "unchanged": true
+      },
+      "pageErrors": []
+    },
+    {
+      "id": "legacy-discount",
+      "status": "PASS",
+      "safe": true,
+      "observed": {
+        "paid": 30,
+        "balance": 70,
+        "history": [
+          {
+            "date": "2026-10-12",
+            "amt": 10,
+            "mode": "Discount",
+            "note": "Settlement discount"
+          }
+        ],
+        "unchanged": false
+      },
+      "pageErrors": []
+    },
+    {
+      "id": "settlement-rounding",
+      "status": "PASS",
+      "safe": true,
+      "observed": {
+        "received": 0.01,
+        "applied": 0
+      },
+      "pageErrors": []
+    },
+    {
+      "id": "payout-rounding",
+      "status": "PASS",
+      "safe": true,
+      "observed": {
+        "received": 0.01,
+        "applied": 0
+      },
+      "pageErrors": []
+    },
+    {
+      "id": "startup-mutation",
+      "status": "PASS",
+      "safe": true,
+      "observed": {
+        "paidBefore": 150,
+        "paidAfter": 150,
+        "paymentHistoryTotal": 150,
+        "audit": []
+      },
+      "pageErrors": []
+    },
+    {
+      "id": "fractional-total-reload",
+      "status": "PASS",
+      "safe": true,
+      "observed": {
+        "total": 2719.4895,
+        "paidBeforeReload": 2719.49,
+        "paidAfterReload": 2719.49,
+        "paymentHistoryTotal": 2719.49
+      },
+      "pageErrors": []
+    },
+    {
+      "id": "corrupt-storage",
+      "status": "PASS",
+      "safe": true,
+      "observed": {
+        "error": "StorageReadError",
+        "originalBytesPreserved": true,
+        "invoiceCount": null
+      },
+      "pageErrors": [
+        "Stored invoices data is unreadable."
+      ]
+    },
+    {
+      "id": "read-denied",
+      "status": "PASS",
+      "safe": true,
+      "observed": {
+        "error": "StorageReadError",
+        "originalIdsPreserved": true,
+        "invoiceCount": 2
+      },
+      "pageErrors": [
+        "Stored invoices data is unreadable."
+      ]
+    },
+    {
+      "id": "old-bill-delete-pin",
+      "status": "PASS",
+      "safe": true,
+      "observed": {
+        "invoiceCount": 2,
+        "pinDialogCount": 1,
+        "auditEntries": 0
+      },
+      "pageErrors": []
+    },
+    {
+      "id": "stale-payment-delete",
+      "status": "PASS",
+      "safe": true,
+      "observed": {
+        "payments": [
+          {
+            "amt": 30,
+            "date": "2026-10-09",
+            "mode": "Cash",
+            "note": "second payment"
+          }
+        ],
+        "paid": 30
+      },
+      "pageErrors": []
+    },
+    {
+      "id": "stored-text-xss",
+      "status": "PASS",
+      "safe": true,
+      "observed": {
+        "harmlessScriptExecuted": false
+      },
+      "pageErrors": []
+    }
+  ],
+  "summary": {
+    "pass": 12,
+    "fail": 0,
+    "harnessErrors": 0
+  }
+}

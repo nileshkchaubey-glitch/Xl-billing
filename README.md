@@ -1,9 +1,11 @@
 # Xl-billing
 
-**Release 2 gate: BLOCKED.** The full [Release 1 code review](docs/RELEASE1_CODE_REVIEW.md)
-reproduces financial-data corruption, partial writes/restores and deletion-guard
-failures. `npm run test:review` deliberately fails on these unresolved safety
-assertions. The existing regression suite passing does not clear this gate.
+**Phase A stabilization is complete on this branch.** See
+[STABILIZATION_REPORT.md](docs/STABILIZATION_REPORT.md) for the fixed defects and
+actual failing/passing evidence. `npm run test:stabilization` checks Phase A;
+`npm run test:foundation` tracks P0-6/P0-7 separately. Storage recovery and complete
+backup/restore are not implemented here yet. The earlier audit describes PR #5
+before these fixes and is preserved as historical evidence.
 
 One self-contained offline-capable billing HTML app. This branch is a **draft
 critical hotfix**, not a fully finalized production release. The live app has

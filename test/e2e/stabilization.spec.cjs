@@ -62,7 +62,7 @@ test('stabilization missing legacy balance remains payable without a startup rew
 });
 test('stabilization payment search cannot inject HTML',async({page})=>{
  await seed(page,shop(1));await page.reload();await page.evaluate(()=>nav('payments'));
- await page.locator('#pay-filter-party').fill('<img src="/synthetic-missing" onerror="window.__filterxss=1">');
+ await page.locator('#pay-filter-party').fill('"><img src="/synthetic-missing" onerror="window.__filterxss=1">');
  await page.waitForTimeout(100);expect(await page.locator('img[onerror]').count()).toBe(0);expect(await page.evaluate(()=>window.__filterxss)).toBeUndefined();
 });
 test('stabilization printed invoice preserves literal stored text and safe CSS settings',async({page})=>{
