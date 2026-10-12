@@ -2,7 +2,7 @@
 
 This follow-up is based on Draft PR #7, on `codex/xl-recovery-date-followup`. The acceptance gates below use disposable browser profiles, synthetic records, synthetic PINs and test-generated files. They require no backend, paid service, production profile, merge or deployment.
 
-**Verification status: final source-bound full-suite verification is pending.** The complete three-engine run is in progress. The final completion report must record its source commit/hash, exact results and Draft PR/CI links before describing this follow-up as verified. Implemented assertions and a passing subset do not establish completion of the remaining cases.
+**Verification status: final source-bound full-suite verification is pending.** The final complete three-engine CI gate is pending publication and completion. The final completion report must record its source commit/hash, exact results and Draft PR/CI links before describing this follow-up as verified. Implemented assertions and a passing subset do not establish completion of the remaining cases.
 
 ## Before evidence
 
@@ -42,4 +42,4 @@ localStorage has no transaction across multiple keys. Recovery uses checked befo
 
 ## Final gate to record
 
-The completion owner must add the final source-bound full Node/browser results and CI/Draft PR link after they finish. The required browser expansion is 37 recovery cases across all three engines, alongside business-date and existing functional regression cases. Final tests must remain synthetic, and main, PR #7 and deployment must remain untouched.
+The completion owner must add the final source-bound full Node/browser results and CI/Draft PR link after they finish. The required browser expansion is 39 recovery cases across all three engines, alongside business-date and existing functional regression cases. Final tests must remain synthetic, and main, PR #7 and deployment must remain untouched.

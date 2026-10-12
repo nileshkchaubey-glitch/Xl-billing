@@ -17,13 +17,15 @@ Implementation and assertion mapping: [RECOVERY_FOLLOWUP_ACCEPTANCE.md](RECOVERY
 
 The immutable PR #7 baseline HTML SHA-256 is `acf710663fa22807a215f3a5cc334bbc566313de68d4a090a4de7d546957f88b`. [RECOVERY_FOLLOWUP_BEFORE.json](../test/review/RECOVERY_FOLLOWUP_BEFORE.json) records **31 failing and 6 passing recovery browser cases**. Separate core tests initially failed because independent recovery APIs were absent; additional tests isolated malformed collections, invalid dates/numbers, cleanup uncertainty and interrupted reviewed restores. Five date browser probes and four calendar-helper Node tests also failed before implementation. A missing recovery UI can mask later validation failures, so the baseline browser results alone do not establish every downstream defect.
 
-The final runtime is commit `61177f7`; HTML SHA-256 is `93c4a03a3bde5e9f44578a2d9f2d44555dc3abe912c41e2d9bcee9d04b943c3e`.
+Final review added two more browser probes: invoice Save and locked restore cleanup-read denial. Both failed at source hash `93c4a03a3bde5e9f44578a2d9f2d44555dc3abe912c41e2d9bcee9d04b943c3e` because UI messages claimed a removed journal existed. Neutral wording fixed both; six corrective cases passed across all three engines. This is separate from the immutable PR #7 baseline evidence.
+
+The final runtime is commit `d8cf420`; HTML SHA-256 is `37cb3c09b5d165768666d3ccefae9478b10f08a7dc20f1dcc219cad91e596933`.
 
 | Check | Evidence/status |
 | --- | --- |
 | Node and parcel VM | 63 Node tests passed, including all original 44, four calendar tests and 15 recovery tests; parcel VM passed. |
 | Full local functional run before final alert fix | 432 passed, 3 failed. All three failures were the same existing overpayment test: a hidden empty recovery alert conflicted with its strict alert locator. |
-| Corrective check at final runtime | The three unchanged overpayment assertions passed in Chromium, Firefox and WebKit after the inactive output became a status region. Actual recovery errors still use an alert. |
+| Corrective alert check at `61177f7` | The three unchanged overpayment assertions passed in Chromium, Firefox and WebKit after the inactive output became a status region. Actual recovery errors still use an alert. Six additional cleanup-message cases passed at the final runtime. |
 | New browser acceptance in the full local run | All 111 recovery and 60 date cases passed across Chromium, Firefox and WebKit. |
 | Final full-suite CI | Pending publication and completion; no final combined pass is claimed yet. |
 | Separate safety audits | Final source-bound three-engine stabilization and foundation reruns are pending. |
