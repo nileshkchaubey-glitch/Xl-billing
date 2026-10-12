@@ -1,0 +1,150 @@
+{
+  "owner_instruction": "https://github.com/nileshkchaubey-glitch/Xl-billing/pull/8#issuecomment-6126054996",
+  "tested_application_commit": "5d3fb7991586d7acef84d49cdd26a003b290d912",
+  "tested_commit": "5d3fb7991586d7acef84d49cdd26a003b290d912",
+  "source_sha256": "37cb3c09b5d165768666d3ccefae9478b10f08a7dc20f1dcc219cad91e596933",
+  "baseline_commit": "29aeb20225bccfc653b192651de608491185096c",
+  "runner_sha256": "98d4425d11f9c7d28c37fc874a5920c681ca5a29ee25bc81670c1df288d1e3b3",
+  "browser": "chromium",
+  "synthetic_only": true,
+  "summary": {
+    "pass": 1,
+    "fail": 2,
+    "harness_errors": 0
+  },
+  "results": [
+    {
+      "id": "cancel-restore-accounting",
+      "title": "Cancellation preserves actual receipts and restore reopens original balances",
+      "browser": "chromium",
+      "width": 1366,
+      "classification": "BLOCKER",
+      "status": "PASS",
+      "duration_ms": 620,
+      "pass": true,
+      "expected": "No cash receipt deletion on cancellation; restore retains 20 paid and 80 due",
+      "observed": {
+        "cancelled": {
+          "id": "s0",
+          "invoiceNo": "INV-1001",
+          "date": "2026-10-09",
+          "partyId": "p1",
+          "partyName": "Synthetic Customer",
+          "items": [
+            {
+              "id": "line0",
+              "itemId": "i1",
+              "name": "Paper Cups",
+              "qty": 5,
+              "rate": 20,
+              "amt": 100,
+              "unit": "Pcs"
+            }
+          ],
+          "subtotal": 100,
+          "discount": 0,
+          "taxPct": 0,
+          "taxAmt": 0,
+          "total": 100,
+          "paid": 20,
+          "balance": 80,
+          "notes": "",
+          "paymentType": "Credit",
+          "dispatchStatus": "cancelled",
+          "payments": [
+            {
+              "date": "2026-10-09",
+              "amt": 20,
+              "mode": "Cash",
+              "note": ""
+            }
+          ],
+          "createdAt": "2026-10-09T08:00:00Z",
+          "status": "cancelled",
+          "cancelledAt": "2026-10-12T16:27:56.390Z"
+        },
+        "restored": {
+          "id": "s0",
+          "invoiceNo": "INV-1001",
+          "date": "2026-10-09",
+          "partyId": "p1",
+          "partyName": "Synthetic Customer",
+          "items": [
+            {
+              "id": "line0",
+              "itemId": "i1",
+              "name": "Paper Cups",
+              "qty": 5,
+              "rate": 20,
+              "amt": 100,
+              "unit": "Pcs"
+            }
+          ],
+          "subtotal": 100,
+          "discount": 0,
+          "taxPct": 0,
+          "taxAmt": 0,
+          "total": 100,
+          "paid": 20,
+          "balance": 80,
+          "notes": "",
+          "paymentType": "Credit",
+          "dispatchStatus": "pending",
+          "payments": [
+            {
+              "date": "2026-10-09",
+              "amt": 20,
+              "mode": "Cash",
+              "note": ""
+            }
+          ],
+          "createdAt": "2026-10-09T08:00:00Z"
+        }
+      }
+    },
+    {
+      "id": "transaction-discount-cash",
+      "title": "Cash-in transaction filter excludes settlement discounts",
+      "browser": "chromium",
+      "width": 1366,
+      "classification": "BLOCKER",
+      "status": "FAIL",
+      "duration_ms": 319,
+      "pass": false,
+      "expected": "Cash/UPI receipts 40; settlement discount 10 is noncash",
+      "observed": {
+        "transaction_summary": [
+          "₹50.00",
+          "₹0.00",
+          "₹50.00",
+          "3"
+        ],
+        "payment_ledger_cash": 40
+      }
+    },
+    {
+      "id": "legacy-item-report",
+      "title": "Supported legacy amount field reconciles with the item financial report",
+      "browser": "chromium",
+      "width": 1366,
+      "classification": "BLOCKER",
+      "status": "FAIL",
+      "duration_ms": 349,
+      "pass": false,
+      "expected": "Legacy qty 2 × rate 3 / saved amount 6 contributes 6 to Total Amount without rewriting bytes",
+      "observed": {
+        "report_cells": [
+          "▶",
+          "Synthetic Legacy Line",
+          "2",
+          "1",
+          "₹0.00",
+          "1"
+        ],
+        "stored_total": 6,
+        "stored_line_amount": 6,
+        "bytes_preserved": true
+      }
+    }
+  ]
+}

@@ -1,0 +1,118 @@
+{
+  "tested_commit": "5d3fb7991586d7acef84d49cdd26a003b290d912",
+  "source_sha256": "37cb3c09b5d165768666d3ccefae9478b10f08a7dc20f1dcc219cad91e596933",
+  "runner_sha256": "46ea5c0d53ce3ab0f5eb8fe4d2a0134abf3f0ff1cd39d402eea24378e3073c1c",
+  "browser": "chromium",
+  "synthetic_only": true,
+  "summary": {
+    "pass": 0,
+    "fail": 4,
+    "harness_errors": 0
+  },
+  "results": [
+    {
+      "id": "cash-noncash-cancelled-reconciliation",
+      "status": "FAIL",
+      "pass": false,
+      "expected": "Dated actual invoice cash 55 includes retained cancelled receipt 20; supplier cash 20; discounts/credits 40 include supplier separate discount 10; unknown 5 and undated opening 7 are not fabricated cash",
+      "observed": {
+        "ledger": {
+          "Total Received": "₹63.00",
+          "Discounts Given": "₹10.00",
+          "Entries Shown": "8"
+        },
+        "all": {
+          "Total IN (Sale+Payment)": "₹203.00",
+          "Total OUT (Purchase+Pay)": "₹537.00",
+          "Net": "₹-334.00",
+          "Entries Shown": "14"
+        },
+        "cashIn": {
+          "Total IN (Sale+Payment)": "₹53.00",
+          "Total OUT (Purchase+Pay)": "₹0.00",
+          "Net": "₹53.00",
+          "Entries Shown": "7"
+        },
+        "cashOut": {
+          "Total IN (Sale+Payment)": "₹0.00",
+          "Total OUT (Purchase+Pay)": "₹37.00",
+          "Net": "₹-37.00",
+          "Entries Shown": "4"
+        },
+        "rows": "\n            1\n            09/10/2026\n            Synthetic Customer\n            💳 Payment — INV-1001\n            ₹20.00\n            pay-in\n            Cash · Synthetic Cash\n          \n            2\n            09/10/2026\n            Synthetic Customer\n            💳 Payment — INV-1001\n            ₹5.00\n            pay-in\n            UPI · Synthetic UPI\n          \n            3\n            09/10/2026\n            Synthetic Customer\n            💳 Payment — INV-1001\n            ₹5.00\n            pay-in\n            NEFT · Synthetic NEFT\n          \n            4\n            09/10/2026\n            Synthetic Customer\n            💳 Payment — INV-1001\n            ₹5.00\n            pay-in\n            Cheque · Synthetic Cheque\n          \n            5\n            09/10/2026\n            Synthetic Customer\n            💳 Payment — INV-1001\n            ₹10.00\n            pay-in\n            Discount · Synthetic Discount\n          \n            6\n            09/10/2026\n            Synthetic Customer\n            💳 Payment — INV-1001\n            ₹5.00\n            pay-in\n            Credit · Synthetic Credit\n          \n            7\n            09/10/2026\n            Synthetic Customer\n            💳 Payment — INV-1001\n            ₹3.00\n            pay-in\n            Voucher · Synthetic Voucher\n          "
+      },
+      "bytes_preserved": true
+    },
+    {
+      "id": "dashboard-accrual-cash-opening-policy",
+      "status": "FAIL",
+      "pass": false,
+      "expected": "Active wholesale 100 plus retail sales 50; receipts 55 and noncash 15 remain separate; due 40 excludes cancelled accrual; party opening 25 is preserved and clearly requires owner policy",
+      "observed": {
+        "dashboard": {
+          "This Month Sale": "₹150.00",
+          "Wholesale": "₹100.00",
+          "Purchase": "₹500.00",
+          "Cash Due": "₹0.00",
+          "Credit Due": "₹40.00",
+          "Pending Dispatch": "1"
+        },
+        "labels": [
+          "Total Sale",
+          "Total Paid",
+          "Outstanding",
+          "Invoices"
+        ],
+        "values": [
+          "₹100.00",
+          "₹60.00",
+          "₹40.00",
+          "2"
+        ],
+        "note": ""
+      },
+      "bytes_preserved": true
+    },
+    {
+      "id": "undated-opening-and-paise-summary",
+      "status": "FAIL",
+      "pass": false,
+      "expected": "0.10 + 0.20 dated receipts = 0.30; explicit and history-free aggregate opening 40 stays separate without inventing receipt dates",
+      "observed": {
+        "Total IN (Sale+Payment)": "₹250.30",
+        "Total OUT (Purchase+Pay)": "₹520.00",
+        "Net": "₹-269.70",
+        "Entries Shown": "7"
+      },
+      "bytes_preserved": true
+    },
+    {
+      "id": "legacy-item-party-view-print-aliases",
+      "status": "FAIL",
+      "pass": false,
+      "expected": "Active legacy amount 6 + modern amt 4 = 10 in item and party drilldown; cancelled 100 excluded; invoice and A4 printable amount remain 6 without normalization",
+      "observed": {
+        "cells": [
+          "▶",
+          "Synthetic Legacy",
+          "3",
+          "2",
+          "₹4.00",
+          "1"
+        ],
+        "drill": "\n                  \n                    Synthetic Customer\n                    Last: 09/10/2026\n                  \n                  \n                    Qty: 3\n                    Rate: ₹4.00\n                    ₹4.00\n                  \n                ",
+        "view": [
+          "1",
+          "1",
+          "Synthetic Legacy Pcs",
+          "\n              ",
+          "2",
+          "₹3.00",
+          "₹6.00"
+        ],
+        "printed_legacy_amount": true
+      },
+      "bytes_preserved": true
+    }
+  ]
+}
