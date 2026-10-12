@@ -689,10 +689,31 @@ input[type=number]::-webkit-inner-spin-button,input[type=number]::-webkit-outer-
 // DATA LAYER
 // ═══════════════════════════════════
 const K = k => 'shop4_' + k;
+let storageBlocked=false;
+function storageFailure(key) {
+  storageBlocked=true;
+  let alert=document.getElementById('storage-error');
+  if(!alert){alert=document.createElement('div');alert.id='storage-error';alert.setAttribute('role','alert');alert.style.cssText='padding:16px;background:#fef2f2;color:#991b1b;border:2px solid #dc2626;position:sticky;top:0;z-index:9999';document.body.prepend(alert);}
+  alert.textContent='Stored '+key+' data cannot be read safely. Billing changes are blocked. Original stored bytes have been preserved. Reload to retry or restore an independent backup.';
+  const error=new Error('Stored '+key+' data is unreadable.');error.name='StorageReadError';return error;
+}
+function validateStoredShape(key,value) {
+  if(key==='settings')return !!value&&typeof value==='object'&&!Array.isArray(value);
+  if(['items','parties','invoices','purchases','retail','audit'].includes(key))return Array.isArray(value)&&value.every(r=>!!r&&typeof r==='object'&&!Array.isArray(r));
+  return value!==undefined;
+}
 const DB = {
-  get: k => { try { return JSON.parse(localStorage.getItem(K(k))) } catch { return null } },
-  set: (k,v) => localStorage.setItem(K(k), JSON.stringify(v)),
-  del: k => localStorage.removeItem(K(k))
+  get: k => {
+    try{
+      const raw=localStorage.getItem(K(k));
+      if(raw===null)return null;
+      const value=JSON.parse(raw);
+      if(!validateStoredShape(k,value))throw new Error('Invalid stored shape');
+      return value;
+    }catch{throw storageFailure(k);}
+  },
+  set: (k,v) => {if(storageBlocked)throw storageFailure(k);return localStorage.setItem(K(k), JSON.stringify(v));},
+  del: k => {if(storageBlocked)throw storageFailure(k);return localStorage.removeItem(K(k));}
 };
 const getSettings  = () => DB.get('settings')  || {
   shopName:'My Shop', owner:'', address:'', phone:'', gstin:'', state:'',
@@ -900,7 +921,7 @@ function renderDashboard() {
   const pending    = invs.filter(i=>(i.balance||0)>0).reduce((a,i)=>a+(i.balance||0),0);
   const cashDue    = invs.filter(i=>i.paymentType==='Cash'&&(i.balance||0)>0).reduce((a,i)=>a+(i.balance||0),0);
   const rI = [...invs].reverse().slice(0,7);
-  const pendDisp = invs.filter(i=>i.dispatchStatus==='pending').length;
+  const pendDisp = invs.filter(i=>(i.dispatchStatus||'pending')==='pending').length;
   document.getElementById('dash-body').innerHTML = `
     <div class="sg">
       <div class="sc"><div class="sc-lbl">This Month Sale (Total)</div><div class="sc-val g">${fc(mTotal)}</div></div>
@@ -938,7 +959,7 @@ function renderDashboard() {
               </div>
             </div>`).join('')}`:''}
         ${pendDisp>0?`<div style="font-weight:700;color:var(--p);margin-top:12px;margin-bottom:8px;font-size:13.5px">📦 Pending Dispatch (${pendDisp})</div>
-          ${invs.filter(i=>i.dispatchStatus==='pending').reverse().slice(0,4).map(i=>`
+          ${invs.filter(i=>(i.dispatchStatus||'pending')==='pending').reverse().slice(0,4).map(i=>`
             <div style="display:flex;justify-content:space-between;align-items:center;padding:5px 0;border-bottom:1px solid var(--gray-100)">
               <div><span style="font-weight:600">${i.partyName}</span> <span style="font-size:11.5px;color:var(--gray-500)">· ${i.invoiceNo}</span></div>
               <div style="display:flex;gap:5px">
@@ -1071,7 +1092,7 @@ function renderSaleItems() {
       <input type="number" class="fc fc-sm" id="srt-${it.id}" value="${it.rate}" min="0" step="any"
         style="text-align:right" onchange="siNum('${it.id}','rate',this.value)">
       <!-- 6. Amount (readonly — excluded from tab) -->
-      <input class="fc fc-sm fc-ro" id="samt-${it.id}" value="${fp(it.amt)}" readonly tabindex="-1"
+      <input class="fc fc-sm fc-ro" id="samt-${it.id}" value="${fp(it.amt??it.amount??0)}" readonly tabindex="-1"
         style="text-align:right;font-weight:600">
       <!-- 7. Delete (excluded from tab) -->
       <button class="del-btn" onclick="removeSI('${it.id}')" tabindex="-1">✕</button>
@@ -1103,7 +1124,7 @@ function siNum(id, field, val) {
   const it = saleItems.find(i=>i.id===id); if(!it) return;
   it[field] = parseFloat(val)||0;
   it.amt = it.qty * it.rate;
-  const ae = document.getElementById('samt-'+id); if(ae) ae.value = fp(it.amt);
+  const ae = document.getElementById('samt-'+id); if(ae) ae.value = fp(it.amt??it.amount??0);
   calcSaleTotal();
 }
 function removeSI(id) {
@@ -1128,7 +1149,7 @@ function setSaleItem(id, itemId, name, rate, unit) {
   it.itemId=itemId; it.name=name; it.rate=+rate||0; it.unit=unit; it.amt=it.qty*it.rate;
   const ne=document.getElementById('sn-'+id); if(ne) ne.value=name;
   const re=document.getElementById('srt-'+id); if(re) re.value=fp(it.rate);
-  const ae=document.getElementById('samt-'+id); if(ae) ae.value=fp(it.amt);
+  const ae=document.getElementById('samt-'+id); if(ae) ae.value=fp(it.amt??it.amount??0);
   document.getElementById('ac-sn-'+id).style.display='none';
   calcSaleTotal();
   // Move focus to pack type select
@@ -1296,7 +1317,7 @@ function renderSalesList() {
   // Pill filter
   if(slPill==='cash-due')        f=f.filter(i=>i.paymentType==='Cash'&&(i.balance||0)>0);
   if(slPill==='credit-due')      f=f.filter(i=>i.paymentType==='Credit'&&(i.balance||0)>0);
-  if(slPill==='pending-dispatch')f=f.filter(i=>i.dispatchStatus==='pending');
+  if(slPill==='pending-dispatch')f=f.filter(i=>(i.dispatchStatus||'pending')==='pending');
   if(slPill==='dispatched')      f=f.filter(i=>i.dispatchStatus==='dispatched');
   if(slPill==='draft')           f=f.filter(i=>i.dispatchStatus==='draft');
   if(slPill==='paid')            f=f.filter(i=>(i.balance||0)<=0);
@@ -1413,7 +1434,7 @@ function viewInvoice(id){
               ${it.packType&&it.packCount?`${it.packCount} ${it.packType}`:it.packType||''}</td>`:''}
             <td style="text-align:center">${it.qty}</td>
             <td style="text-align:right">${fc(it.rate)}</td>
-            <td style="text-align:right;font-weight:600">${fc(it.amt)}</td>
+            <td style="text-align:right;font-weight:600">${fc(it.amt??it.amount??0)}</td>
           </tr>`).join('')}
         </tbody>
       </table>
@@ -1578,13 +1599,13 @@ function renderPurItems(){
       </div>
       <input type="number" class="fc fc-sm" value="${it.qty}" min="0.001" step="any" style="text-align:center" onchange="piNum('${it.id}','qty',this.value)">
       <input type="number" class="fc fc-sm" value="${it.rate}" min="0" step="any" style="text-align:right" onchange="piNum('${it.id}','rate',this.value)">
-      <input class="fc fc-sm fc-ro" id="piamt-${it.id}" value="${fp(it.amt)}" readonly tabindex="-1" style="text-align:right;font-weight:600">
+      <input class="fc fc-sm fc-ro" id="piamt-${it.id}" value="${fp(it.amt??it.amount??0)}" readonly tabindex="-1" style="text-align:right;font-weight:600">
       <button class="del-btn" onclick="removePI('${it.id}')" tabindex="-1">✕</button>
     </div>`).join('');
   calcPurTotal();
 }
 function piName(id,val){const it=purItems.find(i=>i.id===id);if(it)it.name=val;showPurItemAC(id,val);}
-function piNum(id,field,val){const it=purItems.find(i=>i.id===id);if(!it)return;it[field]=parseFloat(val)||0;it.amt=it.qty*it.rate;const ae=document.getElementById('piamt-'+id);if(ae)ae.value=fp(it.amt);calcPurTotal();}
+function piNum(id,field,val){const it=purItems.find(i=>i.id===id);if(!it)return;it[field]=parseFloat(val)||0;it.amt=it.qty*it.rate;const ae=document.getElementById('piamt-'+id);if(ae)ae.value=fp(it.amt??it.amount??0);calcPurTotal();}
 function removePI(id){purItems=purItems.filter(i=>i.id!==id);renderPurItems();}
 function showPurItemAC(id,val){
   const listEl=document.getElementById('ac-pn-'+id); if(!listEl) return;
@@ -1598,7 +1619,7 @@ function setPurItem(id,name,rate,unit){
   const it=purItems.find(i=>i.id===id); if(!it) return;
   it.name=name; it.rate=+rate||0; it.amt=it.qty*it.rate;
   const ne=document.getElementById('pn-'+id); if(ne) ne.value=name;
-  const ae=document.getElementById('piamt-'+id); if(ae) ae.value=fp(it.amt);
+  const ae=document.getElementById('piamt-'+id); if(ae) ae.value=fp(it.amt??it.amount??0);
   document.getElementById('ac-pn-'+id).style.display='none';
   calcPurTotal();
 }
@@ -1695,7 +1716,7 @@ function viewPurchase(id){
     </div>
     ${p.mode==='items'&&p.items?.length?`<div class="tw" style="margin-bottom:14px"><table>
       <thead><tr><th>#</th><th>Item</th><th>Qty</th><th>Rate</th><th>Amount</th></tr></thead>
-      <tbody>${p.items.map((it,i)=>`<tr><td>${i+1}</td><td>${it.name}</td><td>${it.qty}</td><td>${fc(it.rate)}</td><td style="font-weight:600">${fc(it.amt)}</td></tr>`).join('')}</tbody>
+      <tbody>${p.items.map((it,i)=>`<tr><td>${i+1}</td><td>${it.name}</td><td>${it.qty}</td><td>${fc(it.rate)}</td><td style="font-weight:600">${fc(it.amt??it.amount??0)}</td></tr>`).join('')}</tbody>
     </table></div>`:''}
     ${p.photoData?`<img src="${p.photoData}" style="max-width:100%;border-radius:8px;border:1px solid var(--gray-200)">`:''}`;
   document.getElementById('pur-view-modal').classList.add('show');
@@ -1977,7 +1998,7 @@ function renderPendingRep(){
 
 function renderDispatchRep(){
   const invs=getInvoices();
-  const pend=invs.filter(i=>i.dispatchStatus==='pending');
+  const pend=invs.filter(i=>(i.dispatchStatus||'pending')==='pending');
   const done=invs.filter(i=>i.dispatchStatus==='dispatched');
   const draft=invs.filter(i=>i.dispatchStatus==='draft');
   const mkTable=(list,color)=>list.length===0?`<div class="empty" style="padding:20px">None</div>`:`<div class="tw"><table>
@@ -2188,31 +2209,8 @@ document.addEventListener('keydown',e=>{
 // ═══════════════════════════════════════════════════════
 const APP_VERSION = 5;
 
-function runMigrations() {
-  const storedVer = parseInt(localStorage.getItem('shop4_app_version') || '0');
-  if (storedVer >= APP_VERSION) return;
-
-  // Migrate invoices: ensure all have dispatchStatus, paymentType
-  try {
-    const invs = getInvoices();
-    let changed = false;
-    invs.forEach(inv => {
-      if (!inv.dispatchStatus) { inv.dispatchStatus = 'pending'; changed = true; }
-      if (!inv.paymentType)    { inv.paymentType = 'Cash';       changed = true; }
-      if (!inv.payments)       { inv.payments = [];               changed = true; }
-      // Migrate old 'amt' field to ensure it exists
-      (inv.items || []).forEach(it => {
-        if (it.amount !== undefined && it.amt === undefined) { it.amt = it.amount; changed = true; }
-        if (!it.packType) it.packType = '';
-        if (!it.packCount && it.packCount !== 0) it.packCount = '';
-      });
-    });
-    if (changed) DB.set('invoices', invs);
-  } catch(e) {}
-
-  localStorage.setItem('shop4_app_version', APP_VERSION);
-  console.log('Migrated to v' + APP_VERSION);
-}
+// Historical records are decoded at use time. Merely opening the app never migrates storage.
+function runMigrations() { /* Explicit reviewed migrations belong to the storage foundation. */ }
 
 // ═══════════════════════════════════════════════════════
 // FEATURE 1: Quick Item Create during invoice entry
@@ -4521,7 +4519,7 @@ window.renderSalesList = function(){
   const pill = window.slPill || 'all';
   if(pill==='cash-due')        f=f.filter(i=>i.paymentType==='Cash'&&(i.balance||0)>0);
   if(pill==='credit-due')      f=f.filter(i=>i.paymentType==='Credit'&&(i.balance||0)>0);
-  if(pill==='pending-dispatch')f=f.filter(i=>i.dispatchStatus==='pending');
+  if(pill==='pending-dispatch')f=f.filter(i=>(i.dispatchStatus||'pending')==='pending');
   if(pill==='dispatched')      f=f.filter(i=>i.dispatchStatus==='dispatched');
   if(pill==='draft')           f=f.filter(i=>i.dispatchStatus==='draft');
   if(pill==='paid')            f=f.filter(i=>(i.balance||0)<=0);
@@ -5156,7 +5154,7 @@ window.renderSaleItems = function(){
           onfocus="siShowRates('${it.id}')">
       </div>
       <!-- Amount -->
-      <input class="fc fc-sm fc-ro" id="samt-${it.id}" value="${fp(it.amt)}" readonly tabindex="-1"
+      <input class="fc fc-sm fc-ro" id="samt-${it.id}" value="${fp(it.amt??it.amount??0)}" readonly tabindex="-1"
         style="text-align:right;font-weight:600">
       <!-- Brand display (small) -->
       <div style="font-size:10px;color:var(--gray-400);text-align:center;padding-top:7px;max-width:60px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${esc(it.colour||'')}">
@@ -5238,7 +5236,7 @@ window.siApplyRate = function(rowId, rate){
   const it = saleItems.find(i=>i.id===rowId); if(!it) return;
   it.rate = rate; it.amt = it.qty * rate;
   const re = document.getElementById('srt-'+rowId); if(re) re.value = fp(rate);
-  const ae = document.getElementById('samt-'+rowId); if(ae) ae.value = fp(it.amt);
+  const ae = document.getElementById('samt-'+rowId); if(ae) ae.value = fp(it.amt??it.amount??0);
   document.getElementById('i5-'+rowId)?.classList.remove('open');
   calcSaleTotal();
 };
@@ -5568,7 +5566,7 @@ window.renderSaleItems = function(){
       </div>
 
       <!-- Amount readonly -->
-      <input class="fc fc-sm fc-ro" id="samt-${it.id}" value="${fp(it.amt)}" readonly tabindex="-1"
+      <input class="fc fc-sm fc-ro" id="samt-${it.id}" value="${fp(it.amt??it.amount??0)}" readonly tabindex="-1"
         style="text-align:right;font-weight:600">
 
       <!-- Move up/down -->
@@ -6360,7 +6358,7 @@ window.renderSaleItems = function(){
       </div>
 
       <!-- 8. Amount readonly -->
-      <input class="fc fc-sm fc-ro" id="samt-${it.id}" value="${fp(it.amt)}" readonly tabindex="-1"
+      <input class="fc fc-sm fc-ro" id="samt-${it.id}" value="${fp(it.amt??it.amount??0)}" readonly tabindex="-1"
         style="text-align:right;font-weight:600">
 
       <!-- 8. Move up/down -->
@@ -6637,7 +6635,7 @@ window.renderSalesList = function() {
   switch(pill) {
     case 'cash-due':         f = f.filter(i=>!isCancelled(i) && i.paymentType==='Cash'    && (i.balance||0)>0); break;
     case 'credit-due':       f = f.filter(i=>!isCancelled(i) && i.paymentType==='Credit'  && (i.balance||0)>0); break;
-    case 'pending-dispatch': f = f.filter(i=>!isCancelled(i) && i.dispatchStatus==='pending'); break;
+    case 'pending-dispatch': f = f.filter(i=>!isCancelled(i) && (i.dispatchStatus||'pending')==='pending'); break;
     case 'dispatched':       f = f.filter(i=>!isCancelled(i) && i.dispatchStatus==='dispatched'); break;
     case 'draft':            f = f.filter(i=>!isCancelled(i) && i.dispatchStatus==='draft'); break;
     case 'paid':             f = f.filter(i=>!isCancelled(i) && (i.balance||0)<=0 && i.total>0); break;
@@ -7086,7 +7084,7 @@ window.renderDashboard = function() {
   const mPur       = mP.reduce((a,p)=>a+(p.total||0),0);
   const cashDue    = activeInvs.filter(i=>i.paymentType==='Cash'&&(i.balance||0)>0).reduce((a,i)=>a+(i.balance||0),0);
   const creditDue  = activeInvs.filter(i=>i.paymentType==='Credit'&&(i.balance||0)>0).reduce((a,i)=>a+(i.balance||0),0);
-  const pendDisp   = activeInvs.filter(i=>i.dispatchStatus==='pending').length;
+  const pendDisp   = activeInvs.filter(i=>(i.dispatchStatus||'pending')==='pending').length;
   const cancelled  = invs.filter(i=>isCancelled(i)).length;
   const rI = [...activeInvs].reverse().slice(0,7);
 
@@ -7135,7 +7133,7 @@ window.renderDashboard = function() {
         `:''}
         ${pendDisp>0?`
           <div style="font-weight:700;color:var(--p);margin-top:12px;margin-bottom:8px;font-size:13.5px">📦 Pending Dispatch (${pendDisp})</div>
-          ${activeInvs.filter(i=>i.dispatchStatus==='pending').slice().reverse().slice(0,4).map(i=>`
+          ${activeInvs.filter(i=>(i.dispatchStatus||'pending')==='pending').slice().reverse().slice(0,4).map(i=>`
             <div style="display:flex;justify-content:space-between;align-items:center;padding:5px 0;border-bottom:1px solid var(--gray-100)">
               <div><span style="font-weight:600">${i.partyName}</span> <span style="font-size:11.5px;color:var(--gray-500)">· ${i.invoiceNo}</span></div>
               <button class="btn btn-c btn-xs" onclick="quickDispatch('${i.id}')">✓ Dispatch</button>
@@ -7297,27 +7295,7 @@ if (partySrch) partySrch.addEventListener('input', ()=>{ pgState.parties=1; });
 // ════════════════════════════════════════════════════════
 // 16. MIGRATION — mark old invoices with no status field
 // ════════════════════════════════════════════════════════
-(function migrateV13() {
-  const invs = getInvoices();
-  let changed = false;
-  invs.forEach(inv => {
-    if (!inv.payments) { inv.payments = []; changed = true; }
-    if (!inv.dispatchStatus) { inv.dispatchStatus = 'pending'; changed = true; }
-    if (!inv.paymentType) { inv.paymentType = 'Cash'; changed = true; }
-    // Fix balance if paid > total (data corruption guard)
-    if ((inv.paid||0) > (inv.total||0)) {
-      inv.paid = inv.total||0;
-      inv.balance = 0;
-      changed = true;
-    }
-    // Recalculate balance if missing
-    if (inv.balance === undefined || inv.balance === null) {
-      inv.balance = Math.max(0, (inv.total||0) - (inv.paid||0));
-      changed = true;
-    }
-  });
-  if (changed) { DB.set('invoices', invs); console.log('v13 migration done'); }
-})();
+// Automatic migrateV13 writes removed; original records remain intact.
 
 console.log('v13 applied ✓ — Cancel Invoice | PDF Naming | Pagination(20) | Party Detail | Status Fixes | Dashboard Fix | Reports | Phone Capture');
 
@@ -7362,19 +7340,7 @@ console.log('v13 applied ✓ — Cancel Invoice | PDF Naming | Pagination(20) | 
 // ════════════════════════════════════════════════════════
 // DATA MIGRATION — add payments[] and balance to old purchases
 // ════════════════════════════════════════════════════════
-(function migratePurchasesV14(){
-  const purs = getPurchases();
-  let changed = false;
-  purs.forEach(p => {
-    if (!p.payments) { p.payments = []; changed = true; }
-    if (p.balance === undefined || p.balance === null) {
-      p.balance = Math.max(0, (p.total||0) - (p.paid||0));
-      changed = true;
-    }
-    if (!p.partyId) p.partyId = '';
-  });
-  if (changed) { DB.set('purchases', purs); console.log('v14 purchase migration done'); }
-})();
+// Automatic migratePurchasesV14 writes removed; original records remain intact.
 
 // ════════════════════════════════════════════════════════
 // HELPERS
@@ -8192,7 +8158,7 @@ window.viewPurchase = function(id) {
       <thead><tr><th>#</th><th>Item</th><th>Qty</th><th>Rate</th><th>Amount</th></tr></thead>
       <tbody>${p.items.map((it,i)=>`<tr>
         <td>${i+1}</td><td>${it.name}</td><td>${it.qty}</td>
-        <td>${fc(it.rate)}</td><td style="font-weight:600">${fc(it.amt)}</td>
+        <td>${fc(it.rate)}</td><td style="font-weight:600">${fc(it.amt??it.amount??0)}</td>
       </tr>`).join('')}</tbody>
     </table></div>`:''
     }
@@ -9217,25 +9183,7 @@ window.renderParties = function() {
 // ════════════════════════════════════════════════════════
 // MIGRATION V15 — ensure all invoices/purchases have needed fields
 // ════════════════════════════════════════════════════════
-(function migrateV15(){
-  // Invoices
-  const invs = getInvoices();
-  let ci = false;
-  invs.forEach(inv=>{
-    if(!inv.payments){inv.payments=[];ci=true;}
-    if(inv.balance===undefined){inv.balance=Math.max(0,(inv.total||0)-(inv.paid||0));ci=true;}
-  });
-  if(ci) DB.set('invoices',invs);
-
-  // Purchases
-  const purs = getPurchases();
-  let cp = false;
-  purs.forEach(pur=>{
-    if(!pur.payments){pur.payments=[];cp=true;}
-    if(pur.balance===undefined){pur.balance=Math.max(0,(pur.total||0)-(pur.paid||0));cp=true;}
-  });
-  if(cp) DB.set('purchases',purs);
-})();
+// Automatic migrateV15 writes removed; original records remain intact.
 
 console.log('v15 applied ✓ — Audit Log | Delete PIN | Settlement Modal | Party Txn Log | All Transactions | Reports Fix | GSheets Merge | Future-Ready');
 
@@ -9329,7 +9277,7 @@ window.renderSalesList = function() {
   switch (pill) {
     case 'cash-due':         f = f.filter(i => !isCancelled(i) && i.paymentType === 'Cash'   && (i.balance||0) > 0); break;
     case 'credit-due':       f = f.filter(i => !isCancelled(i) && i.paymentType === 'Credit' && (i.balance||0) > 0); break;
-    case 'pending-dispatch': f = f.filter(i => !isCancelled(i) && i.dispatchStatus === 'pending');   break;
+    case 'pending-dispatch': f = f.filter(i => !isCancelled(i) && (i.dispatchStatus||'pending')==='pending');   break;
     case 'dispatched':       f = f.filter(i => !isCancelled(i) && i.dispatchStatus === 'dispatched'); break;
     case 'draft':            f = f.filter(i => !isCancelled(i) && i.dispatchStatus === 'draft');      break;
     case 'paid':             f = f.filter(i => !isCancelled(i) && (i.balance||0) <= 0 && i.total > 0); break;
@@ -9876,7 +9824,7 @@ const _isCanV16 = i => i.status==='cancelled' || i.dispatchStatus==='cancelled';
 // Override dispatch report
 window.renderDispatchRep = function() {
   const invs = getInvoices().filter(i => !_isCanV16(i)); // EXCLUDE CANCELLED
-  const pend   = invs.filter(i=>i.dispatchStatus==='pending');
+  const pend   = invs.filter(i=>(i.dispatchStatus||'pending')==='pending');
   const done   = invs.filter(i=>i.dispatchStatus==='dispatched');
   const draft  = invs.filter(i=>i.dispatchStatus==='draft');
 
@@ -10120,7 +10068,7 @@ function updateQuantity(it){
   }
   it.amt=it.qty*it.rate;
   const final=document.getElementById('sfq-'+it.id);if(final)final.value=it.qty;
-  const amount=document.getElementById('samt-'+it.id);if(amount)amount.value=fp(it.amt);
+  const amount=document.getElementById('samt-'+it.id);if(amount)amount.value=fp(it.amt??it.amount??0);
   const pack=document.getElementById('spt-'+it.id);if(pack)pack.value=it.packType||'';
   calcSaleTotal();
 }
