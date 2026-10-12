@@ -79,7 +79,7 @@ async function probe(id, body, modify = () => {}) {
   page.on('dialog', dialog => dialog.accept());
   const pageErrors = [];
   page.on('pageerror', error => pageErrors.push(error.message));
-  const data = shop(2);if(group==='foundation')Object.assign(data.settings,hashedPin); modify(data);
+  const data = shop(2);if(group==='foundation'||group==='all')Object.assign(data.settings,hashedPin); modify(data);
   await page.addInitScript(data => {
     // Seed once; preserve bytes across reloads and interruption probes.
     if (!localStorage.getItem('__synthetic_review_seeded')) {
@@ -299,13 +299,13 @@ async function main() {
   });
 
   await probe('audit-search', async page => {
-    await page.evaluate(() => {DB.set('audit',Array.from({length:25},(_,i)=>({id:'a'+i,type:'create',entityType:'invoice',label:'Record '+i,user:'Review Needle',ts:'2026-10-09T08:00:00Z'})));nav('audit-log');});
+    await page.evaluate(async () => {const seed=()=>DB.set('audit',Array.from({length:25},(_,i)=>({id:'a'+i,type:'create',entityType:'invoice',label:'Record '+i,user:'Review Needle',ts:'2026-10-09T08:00:00Z'})));if(window.XLStore)await XLStore.run('Synthetic audit-search fixtures',seed);else seed();nav('audit-log');});
     await page.locator('#audit-srch').fill('Needle');
     const count=await page.locator('#page-audit-log tbody tr').count();
     return {safe:count === 20,observed:{rows:count,pager:await page.locator('#page-audit-log .pgn-info').textContent()}};
   });
   await probe('purchase-sort', async page => {
-    await page.evaluate(() => {const purs=getPurchases();DB.set('purchases',[{...purs[0],id:'a',billNo:'P-2'},{...purs[0],id:'z',billNo:'P-1'}]);nav('purchase-list');});
+    await page.evaluate(async () => {const seed=()=>{const purs=getPurchases();DB.set('purchases',[{...purs[0],id:'a',billNo:'P-2'},{...purs[0],id:'z',billNo:'P-1'}]);};if(window.XLStore)await XLStore.run('Synthetic purchase-sort fixtures',seed);else seed();nav('purchase-list');});
     await page.locator('#purchase-table [aria-label="Sort column"]').selectOption('invoiceNo');
     await page.locator('#purchase-table [aria-label="Sort direction"]').selectOption('asc');
     const first = await page.locator('#purchase-table tbody tr').first().locator('td').nth(3).textContent();
