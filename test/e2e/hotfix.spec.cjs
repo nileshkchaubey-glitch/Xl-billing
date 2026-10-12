@@ -15,7 +15,7 @@ for(const [name,action,key,count]of [['invoice',"delInvoice('s0')",'invoices',49
   if(name==='payment'){const inv=(await records(page)).find(x=>x.id==='s0');expect(inv.paid).toBe(0);expect(inv.balance).toBe(100);}
  });
 }
-test('P0-1 dialog escapes labels, traps focus, cancels with Esc',async({page})=>{await page.evaluate(()=>withDeletePin('<img src=x onerror=window.__xss=1> O\'Neil "Traders" & Co',()=>{}));expect(await page.evaluate(()=>window.__xss)).toBeUndefined();await expect(page.locator('.pwd-sub')).toContainText('<img');await page.locator('#del-pin-inp').press('Escape');await expect(page.locator('#del-pin-overlay')).toHaveCount(0);});
+test('P0-1 dialog escapes labels, traps focus, cancels with Esc',async({page})=>{await page.evaluate(()=>withDeletePin('<img src=x onerror=window.__xss=1> O\'Neil "Traders" & Co',()=>{}));expect(await page.evaluate(()=>window.__xss)).toBeUndefined();await expect(page.locator('.pwd-sub')).toContainText('<img');await page.locator('#del-pin-inp').press('Shift+Tab');await expect(page.locator('#del-pin-cancel')).toBeFocused();await page.locator('#del-pin-cancel').press('Tab');await expect(page.locator('#del-pin-inp')).toBeFocused();await page.locator('#del-pin-inp').press('Escape');await expect(page.locator('#del-pin-overlay')).toHaveCount(0);});
 test('P0-2 all pages and report tabs render with seeded data',async({page})=>{
  const errors=[];page.on('pageerror',e=>errors.push(String(e)));page.on('console',m=>{if(m.type()==='error')errors.push(m.text());});
  for(const p of ['dashboard','new-sale','sales-list','retail-entry','new-purchase','purchase-list','items','parties','reports','settings','prev-bills','payments','learn','excel-connect','github-guide','pur-bulk','pur-pay','audit-log','txn-log'])await page.evaluate(p=>nav(p),p);
@@ -36,4 +36,31 @@ test('characterization: invoice entry, edit, cancel and restore',async({page})=>
  await page.evaluate(()=>{nav('new-sale');document.getElementById('inv-party').value='Synthetic Customer';document.getElementById('inv-party-id').value='p1';saleItems=[{id:'row1',itemId:'i1',name:'Paper Cups',qty:5,rate:20,amt:100,unit:'Pcs',packCount:'',packType:''}];renderSaleItems();document.getElementById('inv-date').value='2026-10-09';document.getElementById('inv-paid').value='0';saveSaleInvoice(false);});
  const invs=await records(page);expect(invs.length).toBe(51);const inv=invs.at(-1);expect(inv.total).toBe(100);expect(inv.invoiceNo).toBe('INV-1051');
  await page.evaluate(id=>cancelInvoice(id),inv.id);expect((await records(page)).at(-1).status).toBe('cancelled');await page.evaluate(id=>restoreInvoice(id),inv.id);expect((await records(page)).at(-1).status).not.toBe('cancelled');
+});
+test('P0-3 all seven lists expose page size and sort controls',async({page})=>{
+ await page.evaluate(()=>{DB.set('items',Array.from({length:60},(_,i)=>({id:'i'+i,name:'Item '+i,saleRate:i,updatedAt:'2026-10-09'})));DB.set('parties',Array.from({length:60},(_,i)=>({id:'p'+i,name:'Party '+i,type:'customer'})));DB.set('audit',Array.from({length:60},(_,i)=>({id:'a'+i,type:'create',label:'Test '+i,ts:'2026-10-09T08:00:00Z'})));DB.set('purchases',Array.from({length:60},(_,i)=>({id:'u'+i,date:'2026-10-09',billNo:'PUR-'+i,total:100,paid:0,balance:100,partyName:'Supplier',items:[],payments:[]})));});
+ for(const [pg,container]of [['sales-list','#sales-table'],['purchase-list','#purchase-table'],['items','#items-table'],['parties','#parties-table'],['payments','#page-payments'],['audit-log','#page-audit-log'],['txn-log','#page-txn-log']]){
+  await page.evaluate(p=>nav(p),pg);await expect(page.locator(container+' .pgn')).toBeVisible();await page.locator(container+' [aria-label="Rows per page"]').selectOption('50');await expect(page.locator(container+' .pgn-info')).toContainText('50');await page.locator(container+' [aria-label="Sort direction"]').selectOption('asc');
+ }
+});
+test('P0-4 settlement and standalone reject excess payment and discount',async({page})=>{
+ await page.evaluate(()=>openSettlementModal('p1','Synthetic Customer'));const before=await records(page);await page.fill('#si-s0','81');await page.evaluate(()=>saveSettlement('p1','Synthetic Customer'));expect(await records(page)).toEqual(before);
+ await page.evaluate(()=>openStandalonePayModal());await page.selectOption('#spa-inv-select','s0');await page.fill('#spa-amount','80');await page.fill('#spa-discount','1');await page.evaluate(()=>saveStandalonePayment());expect(await records(page)).toEqual(before);
+});
+test('P0-4 edit payment cannot increase past invoice total',async({page})=>{const before=await records(page);await page.evaluate(()=>editPayment('s0',0));await page.fill('#ep-amt','101');await page.evaluate(()=>saveEditPayment('s0',0));expect(await records(page)).toEqual(before);});
+test('characterization: file origin works offline without outgoing requests',async({browser})=>{
+ const ctx=await browser.newContext(),pg=await ctx.newPage(),errors=[],requests=[];pg.on('pageerror',e=>errors.push(e.message));pg.on('request',r=>{if(/^https?:/.test(r.url()))requests.push(r.url());});pg.on('dialog',d=>d.accept());await ctx.setOffline(true);await pg.goto(require('node:url').pathToFileURL(require('node:path').resolve('index.html')).href);await pg.evaluate(()=>nav('new-sale'));expect(errors).toEqual([]);expect(requests).toEqual([]);await ctx.close();
+});
+test('visual evidence: desktop and mobile pages',async({page,browserName})=>{
+ if(browserName!=='chromium')return;
+ const fs=require('node:fs');fs.mkdirSync('test-results/screenshots',{recursive:true});
+ for(const [width,height]of [[1366,768],[390,844]]){await page.setViewportSize({width,height});for(const pg of ['dashboard','new-sale','sales-list','retail-entry','new-purchase','purchase-list','items','parties','reports','settings','prev-bills','payments','learn','excel-connect','github-guide','pur-bulk','pur-pay','audit-log','txn-log']){await page.evaluate(p=>nav(p),pg);await page.screenshot({path:`test-results/screenshots/${pg}-${width}.png`});}}
+});
+test('P0-5 single old bill rejects an existing typed invoice number',async({page})=>{
+ const before=await records(page);await page.evaluate(()=>{nav('prev-bills');document.getElementById('pb-invno').value=' inv-1001 ';document.getElementById('pb-date').value='2026-10-09';document.getElementById('pb-party').value='Synthetic Customer';document.getElementById('pb-total').value='100';document.getElementById('pb-paid').value='0';savePrevBill();});expect(await records(page)).toEqual(before);
+});
+test('P0-1 quoted party names select and settle through real click handlers',async({page})=>{
+ const name='O\'Neil "Traders" & Co';await page.evaluate(name=>{const p=getParties();p[0].name=name;DB.set('parties',p);nav('new-sale');},name);await page.fill('#inv-party',"O'Neil");await page.locator('#ac-inv-party .ac-item').first().click();await expect(page.locator('#inv-party')).toHaveValue(name);
+ await page.evaluate(name=>openSettlementModal('p1',name),name);
+ for(const attr of await page.locator('#settlement-modal [onclick]').evaluateAll(nodes=>nodes.map(n=>n.getAttribute('onclick'))))expect(()=>new Function('event',attr)).not.toThrow();
 });

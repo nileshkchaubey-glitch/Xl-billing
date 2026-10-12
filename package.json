@@ -11,7 +11,9 @@
     "e2e": "playwright test",
     "lint": "node scripts/lint.cjs",
     "inventory": "node scripts/inventory.cjs",
-    "test:baseline": "node scripts/baseline.cjs"
+    "test:baseline": "node scripts/baseline.cjs",
+    "mutations": "node scripts/mutations.cjs",
+    "htmlcheck": "node scripts/htmlcheck.cjs"
   },
   "engines": {
     "node": ">=22.12.0"
