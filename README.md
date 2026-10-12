@@ -1,7 +1,8 @@
 # Xl-billing
 
 **Phase A stabilization and P0-6/P0-7/P0-8 are implemented on isolated draft branches.**
-See [FOUNDATION_REPORT.md](docs/FOUNDATION_REPORT.md) for current verification,
+See [RECOVERY_FOLLOWUP_REPORT.md](docs/RECOVERY_FOLLOWUP_REPORT.md) for the PR #7
+recovery/date follow-up and its verification status, [FOUNDATION_REPORT.md](docs/FOUNDATION_REPORT.md) for the earlier foundation checkpoint,
 [storage and backup contracts](docs/STORAGE_AND_BACKUP_DESIGN.md) and
 [STABILIZATION_REPORT.md](docs/STABILIZATION_REPORT.md) for Phase A.
 The original PR #5 audit is retained as historical evidence.

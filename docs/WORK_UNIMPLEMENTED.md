@@ -1,5 +1,7 @@
 # Unimplemented and unverified work
 
+The independent recovery/date follow-up is implemented; its final combined CI gate is pending in [RECOVERY_FOLLOWUP_REPORT.md](RECOVERY_FOLLOWUP_REPORT.md). Support for recovery files larger than 20 MiB and recovery mutation without cooperative Web Locks is not implemented. No physical export durability is claimed.
+
 P0-6/P0-7/P0-8 are implemented on the foundation branch, with limits in FOUNDATION_REPORT.md. Other Release 2/3/4 items have not been completed by implication.
 
 The audit's medium view/report issues R1-11 through R1-14 remain deferred: some sort/search/tab behavior and cancellation/report policy need separate work. Cash receipts are not erased to force a cancelled-invoice ledger assertion to pass. Hard deletion remains; a Recycle Bin, comprehensive cross-device synchronization, duplicate repair/reservation ledger, broad performance budgets, complete keyboard/accessibility redesign and physical printer/PDF/mobile hardware testing remain unimplemented or unverified.
