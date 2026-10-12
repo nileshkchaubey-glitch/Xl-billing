@@ -5879,6 +5879,8 @@ window.printInvoiceA5 = function(){
 body{font-family:'Segoe UI',Arial,sans-serif;font-size:11px;color:#1f2937;overflow-wrap:anywhere}
 /* Preserve long stored references without letting flex children escape the page. */
 body *{min-width:0}
+.xl-print-content>div:first-child>div:first-child{flex:1;min-width:0}
+.xl-print-content>div:first-child>div:last-child{flex:0 0 auto;max-width:40%}
 .a4-wrap{width:210mm;height:296mm;position:relative}
 .a5-half{width:210mm;height:148mm;padding:8mm 10mm;break-inside:avoid;page-break-inside:avoid;overflow:visible}
 .a5-half:first-child{border-bottom:1px dashed #d1d5db}
@@ -5903,7 +5905,7 @@ tr:last-child td{border-bottom:none}
     const measured = frame.contentDocument;
     if(!measured) throw new Error('Print layout document unavailable');
     measured.open();
-    measured.write(`<!DOCTYPE html><html><head><meta charset="UTF-8"><style>${styles}</style></head><body><div class="a5-half">${content}</div></body></html>`);
+    measured.write(`<!DOCTYPE html><html><head><meta charset="UTF-8"><style>${styles}</style></head><body><div class="a5-half"><div class="xl-print-content">${content}</div></div></body></html>`);
     measured.close();
     const half = measured.querySelector('.a5-half');
     if(!half || half.clientHeight===0 || half.clientWidth===0) throw new Error('Print layout could not be measured');
@@ -5918,7 +5920,7 @@ tr:last-child td{border-bottom:none}
   let body;
   if(fits){
     showNotice('');
-    body = `<body data-print-layout="a5-two-up"><div class="a4-wrap"><div class="a5-half">${content}</div><div class="cut-line">CUT HERE</div><div class="a5-half">${content}</div></div>`;
+    body = `<body data-print-layout="a5-two-up"><div class="a4-wrap"><div class="a5-half"><div class="xl-print-content">${content}</div></div><div class="cut-line">CUT HERE</div><div class="a5-half"><div class="xl-print-content">${content}</div></div></div>`;
   }else{
     const message='This invoice exceeds a half A4 page. A4 layout will be used so every line and total is included.';
     showNotice(message);
@@ -5932,7 +5934,7 @@ tr{break-inside:avoid;page-break-inside:avoid}
 .print-layout-notice{padding:10px;margin-bottom:10px;border:1px solid #d97706;background:#fffbeb;color:#92400e}
 @media print{.print-layout-notice{display:none}}
 `;
-    body = `<body data-print-layout="a4-fallback"><div class="print-layout-notice" role="status">${escHtml(message)}</div>${content}`;
+    body = `<body data-print-layout="a4-fallback"><div class="print-layout-notice" role="status">${escHtml(message)}</div><div class="xl-print-content">${content}</div>`;
   }
   const w = window.open('','_blank');
   if(!w){
@@ -7184,6 +7186,8 @@ window.printInvoice = function() {
 *{box-sizing:border-box;margin:0;padding:0}
 body{font-family:'Segoe UI',Arial,sans-serif;font-size:${fs}px;color:#1f2937;padding:20px;max-width:760px;margin:0 auto;overflow-wrap:anywhere}
 body *{min-width:0}
+.xl-print-content>div:first-child>div:first-child{flex:1;min-width:0}
+.xl-print-content>div:first-child>div:last-child{flex:0 0 auto;max-width:40%}
 table{width:100%;border-collapse:collapse}
 th{background:#f3f4f6;padding:7px 9px;text-align:left;font-size:11px;font-weight:700;color:#6b7280;border-bottom:1px solid #e5e7eb}
 td{padding:7px 9px;border-bottom:1px solid #f3f4f6;font-size:${Math.max(10,+fs-1)}px}
@@ -7191,7 +7195,7 @@ tr:last-child td{border-bottom:none}
 .tot-row{display:flex;justify-content:space-between;padding:3px 0;color:#4b5563;font-size:${fs}px}
 .tot-row.grand{font-size:${+fs+2}px;font-weight:700;color:#1f2937;border-top:1px solid #d1d5db;padding-top:6px;margin-top:4px}
 .no-print{display:none}
-</style></head><body>${el.innerHTML}
+</style></head><body><div class="xl-print-content">${el.innerHTML}</div>
 <script>document.title="${pdfName.replace('.pdf','')}";setTimeout(()=>window.print(),300);<\/script>
 </body></html>`);
   w.document.close();
