@@ -779,11 +779,12 @@ function validateXLTransaction(after,before,options={}){
         matches.push({supplierId,year,changed});byNumber.set(number,matches);
       }
     }
-    const numbers=new Set();
+    const numbers=new Map();
     for(const r of value){
       const prior=oldById.get(r.id),number=key==='invoices'?normalizedInvoiceNo(r.invoiceNo):normalizedInvoiceNo(r.billNo);
-      if(key==='invoices'&&number&&numbers.has(number)&&(!prior||options.restore))throw new Error('Duplicate bill numbers must be reviewed before this operation.');
-      if(number)numbers.add(number);
+      const changed=!prior||JSON.stringify(prior)!==JSON.stringify(r);
+      if(key==='invoices'&&number&&numbers.has(number)&&(changed||numbers.get(number)||options.restore))throw new Error('Duplicate bill numbers must be reviewed before this operation.');
+      if(number)numbers.set(number,changed||numbers.get(number)||false);
       if(prior&&JSON.stringify(prior)===JSON.stringify(r)&&!options.restore)continue;
       const state=financialState(r);
       if(!state.valid||!state.consistent)throw new Error('Bill '+(r.invoiceNo||r.billNo||r.id)+' has conflicting financial history. It was not rewritten.');
