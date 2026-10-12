@@ -1,0 +1,44 @@
+{
+  "owner_instruction": "https://github.com/nileshkchaubey-glitch/Xl-billing/pull/8#issuecomment-6126054996",
+  "tested_application_commit": "0782670516e0c5eca2751e7d55169065d05b5d17",
+  "tested_commit": "0782670516e0c5eca2751e7d55169065d05b5d17",
+  "source_sha256": "2e0b6de76fedfed78b98ba702d61db50f4ebb790e608aa829b79f62b2636a978",
+  "baseline_commit": "29aeb20225bccfc653b192651de608491185096c",
+  "runner_sha256": "de22f0d16791f1f3b3aee90e0029c983d783303f05a69a2ca0479db57c16e58f",
+  "browser": "chromium",
+  "synthetic_only": true,
+  "summary": {
+    "pass": 0,
+    "fail": 1,
+    "harness_errors": 0
+  },
+  "results": [
+    {
+      "id": "stored-purchase-payment-text-xss",
+      "title": "Stored vendor bill numbers remain literal in real supplier payment and Payment Out workflows",
+      "browser": "chromium",
+      "width": 1366,
+      "classification": "BLOCKER",
+      "status": "FAIL",
+      "duration_ms": 966,
+      "pass": false,
+      "expected": "Vendor bill payload appears as literal text in the actual Pay modal and selected-supplier Payment Out table; no event execution or inserted payload element; original480 due and all stored bytes unchanged",
+      "observed": {
+        "modal": {
+          "executed": true,
+          "injected_elements": 1,
+          "literal": false,
+          "balance_input": "480.00"
+        },
+        "payout": {
+          "executed": true,
+          "injected_elements": 1,
+          "literal": false,
+          "bill_rows": 1
+        },
+        "bytes_preserved": true
+      },
+      "note": "Only real navigation, Pay and supplier-selection controls are used. No payment is saved; payload only changes a synthetic window flag."
+    }
+  ]
+}
