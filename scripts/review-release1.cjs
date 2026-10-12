@@ -249,7 +249,7 @@ async function main() {
     await page.locator('#del-pin-inp').fill('2468');
     await page.waitForFunction(() => !document.getElementById('del-pin-ok').disabled);
     await page.locator('#del-pin-ok').click();
-    await page.waitForFunction(() => !document.getElementById('del-pin-overlay'));
+    await page.waitForFunction(() => !document.getElementById('del-pin-overlay') || !!document.getElementById('del-pin-error')?.textContent);
     await importText(page,JSON.stringify(backup));
     const after=await snapshot(page);
     return {safe:JSON.stringify(before)===JSON.stringify(after),observed:{invoiceCount:(await records(page)).length,auditEntries:(await records(page,'audit')).length,changedKeys:Object.keys(after).filter(k=>before[k]!==after[k])}};
@@ -270,7 +270,7 @@ async function main() {
     await page.locator('#del-pin-inp').fill('2468');
     await page.waitForFunction(() => !document.getElementById('del-pin-ok').disabled);
     await page.locator('#del-pin-ok').click();
-    await page.waitForFunction(() => !document.getElementById('del-pin-overlay'));
+    await page.waitForFunction(() => !document.getElementById('del-pin-overlay') || !!document.getElementById('del-pin-error')?.textContent);
     const inv = (await records(page))[0];
     return {safe:inv.payments.length === 1 && inv.payments[0].note === 'second payment',observed:{payments:inv.payments,paid:inv.paid}};
   }, data => {Object.assign(data.settings,hashedPin);Object.assign(data.invoices[0],{paid:50,balance:50,payments:[{amt:20,date:'2026-10-09',mode:'Cash',note:'first payment'},{amt:30,date:'2026-10-09',mode:'Cash',note:'second payment'}]});});

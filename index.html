@@ -2086,9 +2086,11 @@ function addCustomField(){
   toast(`Custom field "${label}" added!`);
 }
 function removeCustomField(id){
-  const s=getSettings();
-  s.customFields=(s.customFields||[]).filter(cf=>cf.id!==id);
-  DB.set('settings',s); renderCustomFieldsList(s); toast('Field removed');
+  const settings=getSettings(),expected=JSON.stringify(settings);
+  withDeletePin('Remove this custom field definition? Existing invoice values remain saved.',()=>{
+    const current=getSettings();if(JSON.stringify(current)!==expected)throw new Error('Settings changed. Review them before removing the field.');
+    current.customFields=(current.customFields||[]).filter(f=>f.id!==id);DB.set('settings',current);renderCustomFieldsList();
+  });
 }
 
 // Render custom field inputs in invoice form
@@ -2158,10 +2160,13 @@ function importData(input){
   r.readAsText(file); input.value='';
 }
 function clearAllData(){
-  if(!confirm('⚠️ WARNING: ALL data will be permanently deleted!\n\nExport a backup first!\n\nAre you absolutely sure?')) return;
-  if(!confirm('Final confirmation — delete ALL data?')) return;
-  ['settings','items','parties','invoices','purchases','retail'].forEach(k=>DB.del(k));
-  toast('All data deleted!'); setTimeout(()=>location.reload(),1000);
+  const before=JSON.stringify(Object.fromEntries(Object.keys(localStorage).filter(k=>k.startsWith('shop4_')).sort().map(k=>[k,localStorage.getItem(k)])));
+  withDeletePin('Delete all billing records and settings? Keep an independent backup first.',()=>{
+    const current=JSON.stringify(Object.fromEntries(Object.keys(localStorage).filter(k=>k.startsWith('shop4_')).sort().map(k=>[k,localStorage.getItem(k)])));
+    if(current!==before)throw new Error('Stored data changed. Close this dialog and review the records again.');
+    Object.keys(localStorage).filter(k=>k.startsWith('shop4_')).forEach(k=>DB.del(k.slice(6)));
+    toast('All billing data deleted.');setTimeout(()=>location.reload(),1000);
+  });
 }
 
 // ═══════════════════════════════════
@@ -3066,11 +3071,7 @@ function pbShowPartyHistory(id, name) {
 }
 
 function pbDelBill(id, partyId, partyName) {
-  if (!confirm('Delete this bill?')) return;
-  DB.set('invoices', getInvoices().filter(i => i.id !== id));
-  pbShowPartyHistory(partyId, partyName);
-  renderPrevBillsTable();
-  toast('Bill deleted');
+  window.delInvoice(id,()=>{renderPrevBillsTable();if(partyName)pbShowPartyHistory(partyId,partyName);});
 }
 
 function pbAddRow() {
@@ -8390,6 +8391,8 @@ window.withDeletePin = function(label, onConfirm, changePin = false) {
     if (busy) return;
     busy = true; ok.disabled = true;
     try {
+      const currentSettings=getSettings();
+      if(['deletePin','deletePinHash','deletePinSalt'].some(k=>currentSettings[k]!==settings[k]))throw new Error('The delete PIN changed. Close this dialog and try again.');
       if (setup) {
         if (!/^\d{4,10}$/.test(input.value) || input.value === '1234' || input.value !== overlay.querySelector('#del-pin-confirm').value) throw new Error('Enter matching PINs, with 4–10 digits. Do not use 1234.');
         if (needsOld && !await matchesOld(overlay.querySelector('#del-pin-old')?.value || '')) throw new Error('The current PIN is incorrect.');
@@ -8401,7 +8404,7 @@ window.withDeletePin = function(label, onConfirm, changePin = false) {
         close(); toast('PIN saved. Choose Delete again to confirm the record.');
       } else {
         if (!await matchesOld(input.value)) throw new Error('Wrong PIN. No record was deleted.');
-        close(); onConfirm();
+        await onConfirm(); close();
       }
     } catch (e) {
       error.textContent = e.message; input.classList.add('wrong');
@@ -8428,77 +8431,48 @@ window.withDeletePin = function(label, onConfirm, changePin = false) {
 // ════════════════════════════════════════════════════════
 // OVERRIDE: delInvoice — add audit + pin
 // ════════════════════════════════════════════════════════
-window.delInvoice = function(id) {
-  const inv = getInvoices().find(i=>i.id===id); if(!inv) return;
-  withDeletePin(`Delete invoice ${inv.invoiceNo} — ${inv.partyName||'Cash'} (${fc(inv.total)})?`, () => {
-    auditLog('delete','invoice',id,`${inv.invoiceNo} — ${inv.partyName}`,`Total: ${fc(inv.total)}, Paid: ${fc(inv.paid||0)}`);
-    DB.set('invoices', getInvoices().filter(i=>i.id!==id));
-    renderSalesList(); toast('Invoice deleted');
+// Confirm a whole selected record, not a position in a mutable array.
+function selectedRecord(key,id,expected){
+  const records=DB.get(key)||[],record=records.find(r=>r.id===id);
+  if(!record||JSON.stringify(record)!==expected)throw new Error('The selected record changed. Close this dialog and review it again.');
+  return {records,record};
+}
+function guardedRecordDelete(key,id,label,after){
+  const original=(DB.get(key)||[]).find(r=>r.id===id);if(!original)return;
+  const expected=JSON.stringify(original);
+  withDeletePin(label+' '+String(original.invoiceNo||original.billNo||original.name||id)+(typeof original.total==='number'?' '+fc(original.total):''),()=>{
+    const {records,record}=selectedRecord(key,id,expected);
+    DB.set(key,records.filter(r=>r.id!==id));
+    auditLog('delete',({invoices:'invoice',purchases:'purchase',parties:'party',items:'item',retail:'retail'})[key],id,record.invoiceNo||record.billNo||record.name||label,'Record deleted');
+    after?.();toast('Record deleted');
   });
+}
+window.delInvoice = function(id,after){
+  guardedRecordDelete('invoices',id,'Delete this invoice?',()=>{renderSalesList();after?.();});
 };
-
-window.delInvoiceSafe = function(id) { window.delInvoice(id); };
-
-// ════════════════════════════════════════════════════════
-// OVERRIDE: delPurchase — add audit + pin
-// ════════════════════════════════════════════════════════
-const _origDelPurchaseV15 = window.delPurchase;
-window.delPurchase = function(id) {
-  const pur = getPurchases().find(p=>p.id===id); if(!pur) return;
-  withDeletePin(`Delete purchase bill ${pur.billNo||id.slice(-6)} — ${pur.partyName||'Supplier'} (${fc(pur.total)})?`, () => {
-    auditLog('delete','purchase',id,`${pur.billNo||'-'} — ${pur.partyName}`,`Total: ${fc(pur.total)}`);
-    DB.set('purchases', getPurchases().filter(p=>p.id!==id));
-    renderPurchaseList(); toast('Purchase deleted');
+window.delInvoiceSafe = function(id){window.delInvoice(id);};
+window.delPurchase = function(id){guardedRecordDelete('purchases',id,'Delete this purchase bill?',renderPurchaseList);};
+window.delParty = function(id){guardedRecordDelete('parties',id,'Delete this party? Its saved invoice details remain.',renderParties);};
+window.delItem = function(id){guardedRecordDelete('items',id,'Delete this item? Its saved invoice details remain.',renderItems);};
+function guardedPaymentDelete(key,id,index,after){
+  const original=(DB.get(key)||[]).find(r=>r.id===id);if(!original?.payments?.[index])return;
+  const expected=JSON.stringify(original);
+  withDeletePin('Delete this selected payment entry?',()=>{
+    const {records,record}=selectedRecord(key,id,expected);
+    preparePaymentHistory(record);record.payments.splice(index,1);reconcilePayment(record);
+    DB.set(key,records);auditLog('delete','payment',id,record.invoiceNo||record.billNo,'Selected payment removed');
+    after?.();toast('Payment deleted');
   });
-};
-
-// ════════════════════════════════════════════════════════
-// OVERRIDE: delParty, delItem — add pin
-// ════════════════════════════════════════════════════════
-window.delParty = function(id) {
-  const p = getParties().find(x=>x.id===id); if(!p) return;
-  withDeletePin(`Delete party "${p.name}"? All their invoices remain but party link will be broken.`, () => {
-    auditLog('delete','party',id,p.name,'');
-    DB.set('parties', getParties().filter(x=>x.id!==id));
-    if(typeof renderParties==='function') renderParties();
-    toast('Party deleted');
-  });
-};
-
-window.delItem = function(id) {
-  const it = getItems().find(i=>i.id===id); if(!it) return;
-  withDeletePin(`Delete item "${it.name}"?`, () => {
-    auditLog('delete','item',id,it.name,'');
-    DB.set('items', getItems().filter(i=>i.id!==id));
-    if(typeof renderItems==='function') renderItems();
-    toast('Item deleted');
-  });
-};
-
-// ════════════════════════════════════════════════════════
-window.deletePaymentEntry = function(invId, index) {
-  const inv = getInvoices().find(i=>i.id===invId); if(!inv?.payments?.[index])return;
-  withDeletePin('Delete this payment entry?',()=>{
-    const records = getInvoices(), record = records.find(i=>i.id===invId);
-    if(!record?.payments?.[index])return;
-    record.payments.splice(index,1);record.paid=record.payments.reduce((sum,p)=>sum+Number(p.amt||0),0);
-    record.balance=Math.round((record.total-record.paid)*100)/100;
-    DB.set('invoices',records);auditLog('delete','payment',invId,record.invoiceNo,'Payment removed');
-    closeModal('pay-modal');renderSalesList();renderPaymentLedger();toast('Payment deleted');
-  });
-};
-window.deletePayment = window.deletePaymentEntry;
-window.delPurPayEntry = function(purId,index) {
-  withDeletePin('Delete this supplier payment?',()=>{
-    const records=getPurchases(),record=records.find(i=>i.id===purId);if(!record?.payments?.[index])return;
-    record.payments.splice(index,1);record.paid=record.payments.reduce((sum,p)=>sum+Number(p.amt||0),0);
-    record.balance=Math.round((record.total-record.paid)*100)/100;
-    DB.set('purchases',records);auditLog('delete','payment',purId,record.billNo,'Supplier payment removed');renderPurchaseList();toast('Payment deleted');
-  });
-};
-window.delRetail = function(id) {
-  withDeletePin('Delete this retail entry?',()=>{
-    DB.set('retail',getRetail().filter(r=>r.id!==id));auditLog('delete','retail',id,'Retail entry deleted','');renderRetailTable();toast('Retail entry deleted');
+}
+window.deletePaymentEntry=function(id,index){guardedPaymentDelete('invoices',id,index,()=>{closeModal('pay-modal');renderSalesList();renderPaymentLedger();});};
+window.deletePayment=window.deletePaymentEntry;
+window.delPurPayEntry=function(id,index){guardedPaymentDelete('purchases',id,index,renderPurchaseList);};
+window.delRetail=function(id){guardedRecordDelete('retail',id,'Delete this retail entry?',renderRetailTable);};
+window.clearAuditLog=function(){
+  const expected=JSON.stringify(getAuditLog());
+  withDeletePin('Clear the audit log? Keep a complete independent backup first.',()=>{
+    if(JSON.stringify(getAuditLog())!==expected)throw new Error('The audit log changed. Review it again before clearing.');
+    DB.set('audit',[]);renderAuditPage();toast('Audit log cleared.');
   });
 };
 
@@ -8825,7 +8799,7 @@ window.renderAuditPage = function() {
       <h1>📜 Audit Log</h1>
       <div style="display:flex;gap:8px">
         <input class="fc fc-sm" id="audit-srch" value="${search.replaceAll('"','&quot;')}" placeholder="Search..." style="width:180px" oninput="renderAuditPage()">
-        <button class="btn btn-out btn-sm" onclick="if(confirm('Clear audit log?')){DB.del('audit');renderAuditPage();}">🗑 Clear Log</button>
+        <button class="btn btn-out btn-sm" onclick="clearAuditLog()">🗑 Clear Log</button>
       </div>
     </div>
     <div class="pb" style="padding:18px 22px">
