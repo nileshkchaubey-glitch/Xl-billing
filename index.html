@@ -5876,7 +5876,9 @@ window.printInvoiceA5 = function(){
   const styles = `
 *{box-sizing:border-box;margin:0;padding:0}
 @page { size:A4 portrait; margin:0; }
-body{font-family:'Segoe UI',Arial,sans-serif;font-size:11px;color:#1f2937}
+body{font-family:'Segoe UI',Arial,sans-serif;font-size:11px;color:#1f2937;overflow-wrap:anywhere}
+/* Preserve long stored references without letting flex children escape the page. */
+body *{min-width:0}
 .a4-wrap{width:210mm;height:296mm;position:relative}
 .a5-half{width:210mm;height:148mm;padding:8mm 10mm;break-inside:avoid;page-break-inside:avoid;overflow:visible}
 .a5-half:first-child{border-bottom:1px dashed #d1d5db}
@@ -7180,7 +7182,8 @@ window.printInvoice = function() {
 <title>${pdfName.replace('.pdf','')}</title><meta charset="UTF-8">
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
-body{font-family:'Segoe UI',Arial,sans-serif;font-size:${fs}px;color:#1f2937;padding:20px;max-width:760px;margin:0 auto}
+body{font-family:'Segoe UI',Arial,sans-serif;font-size:${fs}px;color:#1f2937;padding:20px;max-width:760px;margin:0 auto;overflow-wrap:anywhere}
+body *{min-width:0}
 table{width:100%;border-collapse:collapse}
 th{background:#f3f4f6;padding:7px 9px;text-align:left;font-size:11px;font-weight:700;color:#6b7280;border-bottom:1px solid #e5e7eb}
 td{padding:7px 9px;border-bottom:1px solid #f3f4f6;font-size:${Math.max(10,+fs-1)}px}
