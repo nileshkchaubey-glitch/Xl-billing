@@ -1,5 +1,7 @@
 # Minor-check status at the hotfix checkpoint
 
+This document records the earlier Release 1 checkpoint. Current Phase A/foundation status and evidence are in [FOUNDATION_REPORT.md](FOUNDATION_REPORT.md).
+
 A passing limited test does not prove the complete checklist requirement. Remaining lines are explicit, not assumed.
 
 | ID | Check | How verified / evidence or reason | Result |

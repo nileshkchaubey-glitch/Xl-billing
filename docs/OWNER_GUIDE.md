@@ -1,7 +1,7 @@
 # Owner guide — hotfix test copy
 
-The live app has not been changed. This draft needs data-safety work before a
-production upgrade. Test using a separate browser profile.
+The live app has not been changed. Stabilization and the storage/backup foundation are implemented on draft branches.
+Rehearse using a separate synthetic browser profile before considering an upgrade.
 
 ## Enter a bill
 
@@ -28,11 +28,18 @@ Cancel closes the dialog. Change the PIN in Settings; supply the current PIN.
 
 ## End-of-day routine
 
-Use Export Backup and keep a dated copy outside the browser. Keep older copies.
-Do not clear browser/site data. Automatic backup and complete audit backup are
-not available yet. Use one tab and one master device. A changed web address,
-file path or browser can show an empty shop because storage belongs to that
-address. Keep the old profile; restore a backup only after testing it separately.
+Use Export Backup and keep the complete private file outside the browser. It includes
+audit, preferences, settings and optional service credentials. Keep earlier copies.
+Settings → Independent backups can select a folder for free automatic backups in
+compatible browsers. The app must stay open; permission or disk failures show a
+reminder. On mobile/unsupported browsers, use manual downloads and confirm the file
+was saved. Do not clear browser/site data.
+
+Restore opens a preview. Replacement requires the existing Delete PIN, and a
+pre-restore backup download is requested before changes. PIN setup does not restore
+automatically; reopen the backup afterward. Unsupported histories are left intact
+for review. Reload after a verified restore. New devices need a separate folder
+selection; changing the file path or web address does not transfer browser data.
 
 Existing keyboard shortcuts remain. Escape closes the new PIN dialog and Enter
 confirms. A complete keyboard-first shortcut redesign is not included yet.

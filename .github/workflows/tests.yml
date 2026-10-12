@@ -16,12 +16,29 @@ jobs:
           cache: npm
       - run: npm ci
       - run: npx playwright install --with-deps chromium
-      # Future storage/backup acceptance belongs to the foundation branch.
+      # Stabilization and future-feature gates remain separate.
       - run: npm run test:stabilization
       - uses: actions/upload-artifact@v4
         if: always()
         with:
           name: release1-safety-review
+          path: test-results/review/*.json
+  foundation-safety-review:
+    name: Storage and backup acceptance gate
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+      - run: npm ci
+      - run: npx playwright install --with-deps chromium
+      - run: npm run test:foundation
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: foundation-safety-review
           path: test-results/review/*.json
   tests:
     runs-on: ubuntu-latest

@@ -1,23 +1,11 @@
-# Migration status and rollback
+# Migration and rollback status
 
-No new billing-data migration is implemented in the hotfix. No owner data was
-read or changed during this work. The baseline's automatic v5/v15 migrations
-remain a risk; they do not yet have the requested full recoverable snapshot and
-verification protocol.
+Startup does not migrate or rewrite historical business records. Read/display fallbacks preserve old amount/balance/status shapes. Explicit payment mutation can add optional `openingPaid` metadata without inventing a dated receipt. Legitimate supplier discounts remain separate from paid aggregates. Conflicting histories are preserved for review.
 
-On explicit PIN setup/change, settings.deletePinSalt and settings.deletePinHash
-replace settings.deletePin. Old plaintext PINs are accepted only as the current
-credential for this explicit operation. Default 1234 cannot authorize deletion.
-This is not a migration of invoices or payments.
+Explicit PIN setup/change replaces a plaintext setting with salt/hash after current-credential validation. Default 1234 cannot authorize deletion. This is not an invoice migration.
 
-The baseline expects settings/items/parties/invoices/purchases/retail in v4/v5
-backup objects, with payments using `amt`, and localStorage keys prefixed shop4_.
-Historical shape fixtures and verification against every release have **not**
-been completed. The baseline inventory lists literal storage keys.
+The storage journal records exact before/after raw strings and a checked revision marker. Recovery runs before app reads; it rolls back an uncommitted operation or rolls forward a committed marker. A browser storage revision is internal and not imported from portable backups. No localStorage multi-key atomicity or physical crash durability is claimed.
 
-Rolling the HTML back to baseline does not undo a deletion or payment, and the
-baseline does not recognize the new PIN hash. For testing rollback, export an
-independent backup before changing the test copy. Keep the old backup file. Do
-not experiment with imports, clearing storage or rollback on the live profile.
-A byte-exact complete restore including audit/secrets requires the unimplemented
-Release 2 backup work.
+Complete private backups preserve compatible raw values, audit, preferences and credentials. Legacy v4/v5 files require all six original collection/settings fields and are previewed without claiming checksum integrity. Restore is PIN guarded and recoverable, with a pre-restore download request. Unsupported conflicts cannot be repaired by assumption. A raw recovery package preserves damaged bytes/journals for review.
+
+Rolling HTML back to an older application does not reverse business actions. Older copies do not recognize the new recovery protocol and can bypass locks. Keep independent copies and use isolated rehearsal profiles; no production rollback, migration or record access was performed here.

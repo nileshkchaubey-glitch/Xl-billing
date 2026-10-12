@@ -1,5 +1,7 @@
 # Architecture at the hotfix checkpoint
 
+This document records the earlier Release 1 checkpoint. Current Phase A/foundation status and evidence are in [FOUNDATION_REPORT.md](FOUNDATION_REPORT.md).
+
 `index.html` remains the executable app, with embedded CSS and classic scripts.
 The historical patch/wrapper structure is retained; see the complete syntactic
 inventory in ARCHITECTURE_BASELINE.md. Earlier functions are often called by later

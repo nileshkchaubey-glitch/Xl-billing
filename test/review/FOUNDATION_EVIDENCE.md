@@ -12,3 +12,6 @@ All fixtures are synthetic. No owner's browser profile, business records or conn
 - The original restore-partial-write audit probe expected immediate rollback despite a persistent injected quota failure. It now checks a visible failed restore, retained journal when needed, blocked writes and exact original bytes after fresh startup, matching the explicitly recoverable storage contract. No success is claimed while recovery is pending.
 
 Final source hashes, phase gates and browser counts are recorded in the foundation report and committed JSON evidence. Archived audit results describe their historical source, not the current release.
+
+- P0-8 began after checkpoint `b817937`: eight automatic-backup unit probes failed before implementation, then passed. A malformed remembered timestamp additionally failed in Node and Chromium before normalization was implemented; all nine unit probes and 21 automatic-backup browser cases then passed.
+- A further Chromium failure showed that complete export wrongly used restore-level financial acceptance. Export now archives structurally valid conflicting histories unchanged while restore continues to reject unsupported financial assumptions. Its before/after probe is part of the final regression suite.

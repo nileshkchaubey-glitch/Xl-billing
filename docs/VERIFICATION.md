@@ -1,5 +1,7 @@
 # Verification evidence
 
+This document records the earlier Release 1 checkpoint. Current Phase A/foundation status and evidence are in [FOUNDATION_REPORT.md](FOUNDATION_REPORT.md).
+
 The results below describe the earlier hotfix checkpoint. The subsequent
 [full code review](RELEASE1_CODE_REVIEW.md) rejects the Release 2 gate: 24 distinct
 safety assertions fail in each of Chromium, Firefox and WebKit. See

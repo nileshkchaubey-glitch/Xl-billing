@@ -1,5 +1,9 @@
 # Completed work
 
-Phase A stabilization is complete and verified on synthetic profiles. Historical opening paid aggregates and separate purchase discounts are preserved; new payment inputs reject fractional paise. Startup no longer rewrites records, missing legacy view values are derived without persistence, unreadable storage fails closed, destructive routes use PIN guards bound to unchanged records, and stored text/search/print settings are safely rendered.
+Phase A: all requested blocking fixes R1-01/02/03/04/07/08/09/10 are verified with historical synthetic fixtures. Opening paid aggregates and separate supplier discounts are preserved. Startup does not rewrite bills. Reads fail closed, destructive routes require PIN and unchanged selected content, and stored text is safely rendered. Draft PR #6 contains the isolated stabilization changes.
 
-See STABILIZATION_REPORT.md and test/review/STABILIZATION_EVIDENCE.md. P0-6/P0-7/P0-8 are not included in this completed status. No main change, merge, deployment or real business-data access occurred.
+Phase B: P0-6 stages logical operations and verifies recoverable writes, rollback, startup recovery and stale-client protection. P0-7 supplies complete private checksummed backups, validated legacy import, explicit previews, current-PIN replacement and pre-restore downloads. Their acceptance checkpoint passed before P0-8 began.
+
+P0-8 supplies optional free folder backups, verified closed-file readback, permission-loss/manual fallback and reminders. It preserves earlier backup files and never requests permission in background work. See FOUNDATION_REPORT.md for final evidence and implementation limits; STORAGE_AND_BACKUP_DESIGN.md defines the storage/backup contracts.
+
+All tests use isolated synthetic profiles. Main, PR #5, hosting and real customer/billing data were not changed or accessed. No PR was merged.
