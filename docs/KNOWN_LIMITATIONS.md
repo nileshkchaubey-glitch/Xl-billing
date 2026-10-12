@@ -1,5 +1,10 @@
 # Known limitations
 
+The [full Release 1 review](RELEASE1_CODE_REVIEW.md) confirms blocking data-safety
+defects and regressions. P0-6/7/8 development is stopped; no Release 2 branch or PR
+has been created. This decision supersedes any interpretation of the earlier
+passing regression tests as a foundation approval.
+
 This is a draft hotfix checkpoint, not a finalized production billing app.
 
 - Release 2 (P0-6/7/8 and P1 data-safety work), Release 3 and Release 4 are not implemented.

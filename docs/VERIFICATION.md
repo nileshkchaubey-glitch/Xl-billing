@@ -1,5 +1,12 @@
 # Verification evidence
 
+The results below describe the earlier hotfix checkpoint. The subsequent
+[full code review](RELEASE1_CODE_REVIEW.md) rejects the Release 2 gate: 24 distinct
+safety assertions fail in each of Chromium, Firefox and WebKit. See
+[new regression evidence](../test/review/REGRESSION_EVIDENCE.md) and the linked
+safety reports. Earlier green tests do not verify recovery, complete backups or
+historical payment compatibility.
+
 Only the hotfix checkpoint is delivered. Later-stage work is not finalized. Tests use synthetic data and isolated browser profiles. No real shop data was used. Commands and raw outputs are committed in test-results.
 
 | ID | Problem/root cause | Change | Files/functions | Tests / real evidence | Status |

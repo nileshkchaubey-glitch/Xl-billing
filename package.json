@@ -12,6 +12,7 @@
     "lint": "node scripts/lint.cjs",
     "inventory": "node scripts/inventory.cjs",
     "test:baseline": "node scripts/baseline.cjs",
+    "test:review": "node scripts/review-release1.cjs",
     "mutations": "node scripts/mutations.cjs",
     "htmlcheck": "node scripts/htmlcheck.cjs"
   },

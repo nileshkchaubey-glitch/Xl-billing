@@ -1,0 +1,335 @@
+{
+  "workspaceCommit": "aa34ef9e476d6256f48d7ead8d3870413b5d65c9",
+  "sourceRevision": "aa34ef9e476d6256f48d7ead8d3870413b5d65c9",
+  "sourceSha256": "2b8a3fcd530c3ad2022f4a3e4e2536c0959e32270c6bbf21ca4eee722b257c3c",
+  "runnerSha256": "fc8af9b7f230cfcbc250a38d51a079c8d1308b08234e21dda65e35b4aa5964e5",
+  "browser": "chromium",
+  "results": [
+    {
+      "id": "legacy-payment",
+      "status": "FAIL",
+      "safe": false,
+      "observed": {
+        "paid": 20,
+        "balance": 80
+      },
+      "pageErrors": []
+    },
+    {
+      "id": "historical-purchase-discount",
+      "status": "FAIL",
+      "safe": false,
+      "observed": {
+        "paid": 500,
+        "discount": 10,
+        "total": 500,
+        "balance": 0,
+        "unchanged": false
+      },
+      "pageErrors": []
+    },
+    {
+      "id": "legacy-discount",
+      "status": "FAIL",
+      "safe": false,
+      "observed": {
+        "paid": 10,
+        "balance": 90,
+        "history": [
+          {
+            "date": "2026-10-12",
+            "amt": 10,
+            "mode": "Discount",
+            "note": "Settlement discount"
+          }
+        ],
+        "unchanged": false
+      },
+      "pageErrors": []
+    },
+    {
+      "id": "settlement-rounding",
+      "status": "FAIL",
+      "safe": false,
+      "observed": {
+        "received": 0.01,
+        "applied": 0.020000000000003126
+      },
+      "pageErrors": []
+    },
+    {
+      "id": "payout-rounding",
+      "status": "FAIL",
+      "safe": false,
+      "observed": {
+        "received": 0.01,
+        "applied": 0.020000000000003126
+      },
+      "pageErrors": []
+    },
+    {
+      "id": "startup-mutation",
+      "status": "FAIL",
+      "safe": false,
+      "observed": {
+        "paidBefore": 150,
+        "paidAfter": 100,
+        "paymentHistoryTotal": 150,
+        "audit": []
+      },
+      "pageErrors": []
+    },
+    {
+      "id": "fractional-total-reload",
+      "status": "FAIL",
+      "safe": false,
+      "observed": {
+        "total": 2719.4895,
+        "paidBeforeReload": 2719.49,
+        "paidAfterReload": 2719.4895,
+        "paymentHistoryTotal": 2719.49
+      },
+      "pageErrors": []
+    },
+    {
+      "id": "corrupt-storage",
+      "status": "FAIL",
+      "safe": false,
+      "observed": {
+        "error": null,
+        "originalBytesPreserved": false,
+        "invoiceCount": 1
+      },
+      "pageErrors": []
+    },
+    {
+      "id": "read-denied",
+      "status": "FAIL",
+      "safe": false,
+      "observed": {
+        "error": null,
+        "originalIdsPreserved": false,
+        "invoiceCount": 1
+      },
+      "pageErrors": []
+    },
+    {
+      "id": "failed-write-invoices",
+      "status": "PASS",
+      "safe": true,
+      "observed": {
+        "error": "QuotaExceededError",
+        "changedKeys": [],
+        "toast": "",
+        "recoveredToPreviousSnapshot": true,
+        "invoiceCount": 2
+      },
+      "pageErrors": []
+    },
+    {
+      "id": "failed-write-settings",
+      "status": "FAIL",
+      "safe": false,
+      "observed": {
+        "error": "QuotaExceededError",
+        "changedKeys": [
+          "shop4_invoices"
+        ],
+        "toast": "",
+        "recoveredToPreviousSnapshot": false,
+        "invoiceCount": 3
+      },
+      "pageErrors": []
+    },
+    {
+      "id": "failed-write-audit",
+      "status": "FAIL",
+      "safe": false,
+      "observed": {
+        "error": "QuotaExceededError",
+        "changedKeys": [
+          "shop4_invoices",
+          "shop4_settings"
+        ],
+        "toast": "Invoice INV-1003 saved! ✓",
+        "recoveredToPreviousSnapshot": false,
+        "invoiceCount": 3
+      },
+      "pageErrors": []
+    },
+    {
+      "id": "restore-truncated",
+      "status": "PASS",
+      "safe": true,
+      "observed": {
+        "toast": "Error: Invalid backup file!"
+      },
+      "pageErrors": []
+    },
+    {
+      "id": "restore-wrong-schema",
+      "status": "FAIL",
+      "safe": false,
+      "observed": {
+        "invoiceCount": 0,
+        "toast": "Data imported! Reloading..."
+      },
+      "pageErrors": []
+    },
+    {
+      "id": "restore-tampered-checksum",
+      "status": "FAIL",
+      "safe": false,
+      "observed": {
+        "tamperedTotal": 999,
+        "tamperedInputApplied": true,
+        "toast": "Data imported! Reloading..."
+      },
+      "pageErrors": []
+    },
+    {
+      "id": "restore-legacy-valid",
+      "status": "PASS",
+      "safe": true,
+      "observed": {
+        "invoiceCount": 2,
+        "paid": 20,
+        "quantity": 5,
+        "legacyNoteRestored": true
+      },
+      "pageErrors": []
+    },
+    {
+      "id": "restore-partial-write",
+      "status": "FAIL",
+      "safe": false,
+      "observed": {
+        "changedKeys": [
+          "shop4_settings"
+        ],
+        "shopName": "Synthetic replacement",
+        "toast": "Error: Invalid backup file!"
+      },
+      "pageErrors": []
+    },
+    {
+      "id": "backup-completeness",
+      "status": "FAIL",
+      "safe": false,
+      "observed": {
+        "exportedKeys": [
+          "v",
+          "exportDate",
+          "settings",
+          "items",
+          "parties",
+          "invoices",
+          "purchases",
+          "retail"
+        ],
+        "auditIncluded": false,
+        "checksumIncluded": false,
+        "syntheticSecretExported": true
+      },
+      "pageErrors": []
+    },
+    {
+      "id": "backup-rollback",
+      "status": "FAIL",
+      "safe": false,
+      "observed": {
+        "invoiceCount": 2,
+        "auditEntries": 2,
+        "changedKeys": [
+          "shop4_audit"
+        ]
+      },
+      "pageErrors": []
+    },
+    {
+      "id": "old-bill-delete-pin",
+      "status": "FAIL",
+      "safe": false,
+      "observed": {
+        "invoiceCount": 1,
+        "pinDialogCount": 0,
+        "auditEntries": 0
+      },
+      "pageErrors": []
+    },
+    {
+      "id": "stale-payment-delete",
+      "status": "FAIL",
+      "safe": false,
+      "observed": {
+        "payments": [],
+        "paid": 0
+      },
+      "pageErrors": []
+    },
+    {
+      "id": "failed-delete-feedback",
+      "status": "FAIL",
+      "safe": false,
+      "observed": {
+        "invoiceCount": 2,
+        "auditEntries": 1,
+        "visibleAlertCount": 0,
+        "toast": ""
+      },
+      "pageErrors": []
+    },
+    {
+      "id": "stored-text-xss",
+      "status": "FAIL",
+      "safe": false,
+      "observed": {
+        "harmlessScriptExecuted": true
+      },
+      "pageErrors": []
+    },
+    {
+      "id": "audit-search",
+      "status": "FAIL",
+      "safe": false,
+      "observed": {
+        "rows": 0,
+        "pager": "Showing 1–20 of 25"
+      },
+      "pageErrors": []
+    },
+    {
+      "id": "purchase-sort",
+      "status": "FAIL",
+      "safe": false,
+      "observed": {
+        "firstBill": "P-2",
+        "sortableHeaders": 0
+      },
+      "pageErrors": []
+    },
+    {
+      "id": "party-transactions-tab",
+      "status": "FAIL",
+      "safe": false,
+      "observed": {
+        "transactionContentVisible": false
+      },
+      "pageErrors": []
+    },
+    {
+      "id": "cancelled-payment-ledger",
+      "status": "FAIL",
+      "safe": false,
+      "observed": {
+        "cancelledInvoicePaymentEntries": 1
+      },
+      "pageErrors": []
+    }
+  ],
+  "summary": {
+    "pass": 3,
+    "fail": 24,
+    "harnessErrors": 0
+  }
+}

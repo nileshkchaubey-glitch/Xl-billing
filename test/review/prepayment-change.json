@@ -1,0 +1,63 @@
+{
+  "workspaceCommit": "aa34ef9e476d6256f48d7ead8d3870413b5d65c9",
+  "sourceRevision": "f8d3d47",
+  "sourceSha256": "2d284861cf593a282e2364e3b0412792da1c01468ddd6bb24fba801e022820d2",
+  "runnerSha256": "fc8af9b7f230cfcbc250a38d51a079c8d1308b08234e21dda65e35b4aa5964e5",
+  "browser": "chromium",
+  "results": [
+    {
+      "id": "legacy-payment",
+      "status": "PASS",
+      "safe": true,
+      "observed": {
+        "paid": 30,
+        "balance": 70
+      },
+      "pageErrors": []
+    },
+    {
+      "id": "legacy-discount",
+      "status": "PASS",
+      "safe": true,
+      "observed": {
+        "paid": 30,
+        "balance": 70,
+        "history": [
+          {
+            "date": "2026-10-12",
+            "amt": 10,
+            "mode": "Discount",
+            "note": "Settlement discount"
+          }
+        ],
+        "unchanged": false
+      },
+      "pageErrors": []
+    },
+    {
+      "id": "settlement-rounding",
+      "status": "FAIL",
+      "safe": false,
+      "observed": {
+        "received": 0.01,
+        "applied": 0.012000000000000455
+      },
+      "pageErrors": []
+    },
+    {
+      "id": "payout-rounding",
+      "status": "FAIL",
+      "safe": false,
+      "observed": {
+        "received": 0.01,
+        "applied": 0.012000000000000455
+      },
+      "pageErrors": []
+    }
+  ],
+  "summary": {
+    "pass": 2,
+    "fail": 2,
+    "harnessErrors": 0
+  }
+}

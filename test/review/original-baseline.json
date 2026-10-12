@@ -1,0 +1,57 @@
+{
+  "workspaceCommit": "aa34ef9e476d6256f48d7ead8d3870413b5d65c9",
+  "sourceRevision": "29aeb20225bccfc653b192651de608491185096c",
+  "sourceSha256": "85cedbb34ad543146fa4bc0d82feb2957e72801ad0712213257f13ca90dbc7fa",
+  "runnerSha256": "fc8af9b7f230cfcbc250a38d51a079c8d1308b08234e21dda65e35b4aa5964e5",
+  "browser": "chromium",
+  "results": [
+    {
+      "id": "legacy-payment",
+      "status": "PASS",
+      "safe": true,
+      "observed": {
+        "paid": 30,
+        "balance": 70
+      },
+      "pageErrors": []
+    },
+    {
+      "id": "corrupt-storage",
+      "status": "FAIL",
+      "safe": false,
+      "observed": {
+        "error": null,
+        "originalBytesPreserved": false,
+        "invoiceCount": 1
+      },
+      "pageErrors": []
+    },
+    {
+      "id": "restore-truncated",
+      "status": "PASS",
+      "safe": true,
+      "observed": {
+        "toast": "Error: Invalid backup file!"
+      },
+      "pageErrors": []
+    },
+    {
+      "id": "restore-partial-write",
+      "status": "FAIL",
+      "safe": false,
+      "observed": {
+        "changedKeys": [
+          "shop4_settings"
+        ],
+        "shopName": "Synthetic replacement",
+        "toast": "Error: Invalid backup file!"
+      },
+      "pageErrors": []
+    }
+  ],
+  "summary": {
+    "pass": 2,
+    "fail": 2,
+    "harnessErrors": 0
+  }
+}
