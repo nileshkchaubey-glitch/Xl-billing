@@ -1,0 +1,94 @@
+{
+  "scope": "Synthetic-only independent owner gate; no real browser, records, API keys or physical printers",
+  "source_sha256": "37cb3c09b5d165768666d3ccefae9478b10f08a7dc20f1dcc219cad91e596933",
+  "refs": {
+    "main": "29aeb20225bccfc653b192651de608491185096c",
+    "pr5": "d07729e60e6901fa1255a8331dde805c22890e9c",
+    "pr6": "0e4d9168406e0a57461f4c3bbebfa122263dc919",
+    "pr7": "aa9b03c5ff1968445a1a92197302796a26a3e824",
+    "pr8": "f5cc2e3319179664d1cb6227dc28e7470428e58d",
+    "review_tests": "9fa289c9fc017af669b0d0d780a3edc7bfd4f589"
+  },
+  "owner": {
+    "chromium": {
+      "pass": 30,
+      "fail": 13,
+      "harness_errors": 0
+    },
+    "firefox": {
+      "pass": 31,
+      "fail": 12,
+      "harness_errors": 0
+    },
+    "webkit": {
+      "pass": 31,
+      "fail": 12,
+      "harness_errors": 0
+    }
+  },
+  "safety": {
+    "chromium": {
+      "pass": 23,
+      "fail": 4,
+      "harnessErrors": 0
+    },
+    "firefox": {
+      "pass": 23,
+      "fail": 4,
+      "harnessErrors": 0
+    },
+    "webkit": {
+      "pass": 23,
+      "fail": 4,
+      "harnessErrors": 0
+    }
+  },
+  "regression": {
+    "stats": {
+      "startTime": "2026-10-12T14:50:08.433Z",
+      "duration": 518241.148,
+      "expected": 442,
+      "skipped": 2,
+      "unexpected": 0,
+      "flaky": 0
+    },
+    "command": "XL_REPORT=/tmp/xl-premerge-regression.json npm test",
+    "node_tests": 63,
+    "node_pass": 63,
+    "node_fail": 0,
+    "original_node_tests": 44,
+    "full_report_sha256": "36f5a4ff968c4b76b2f6ab055de6d3f73eb6015b7d209bcb01369cae2b4654dc"
+  },
+  "baseline_comparison": {
+    "pass": 2,
+    "fail": 7,
+    "harness_errors": 0
+  },
+  "pdf_text_extraction": {
+    "A4": {
+      "synthetic_lines_in_pdf": 40,
+      "has_total": true,
+      "has_balance_due": true,
+      "page_objects": 2,
+      "sha256": "ecca293d32f01dcba8e5772b154bd6ad3b86e69bcc48980237647a0f259b1e98"
+    },
+    "A5": {
+      "synthetic_lines_in_pdf": 13,
+      "has_total": false,
+      "has_balance_due": false,
+      "page_objects": 2,
+      "sha256": "625424cb79980b6cad6d483df83ba45c417870bd479f206a3cab52b85a954e84"
+    }
+  },
+  "lint": {
+    "errors": 0,
+    "warnings": 143
+  },
+  "build": {
+    "byte_identical": true,
+    "source_sha256": "37cb3c09b5d165768666d3ccefae9478b10f08a7dc20f1dcc219cad91e596933"
+  },
+  "physical_printers": "NOT VERIFIED",
+  "native_mobile_browser_storage_keyboard_and_folder_picker": "NOT VERIFIED",
+  "decision": "MERGE BLOCKED"
+}

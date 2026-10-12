@@ -1,0 +1,220 @@
+{
+  "owner_instruction": "https://github.com/nileshkchaubey-glitch/Xl-billing/pull/8#issuecomment-6126054996",
+  "tested_application_commit": "29aeb20225bccfc653b192651de608491185096c",
+  "tested_commit": "9fa289c9fc017af669b0d0d780a3edc7bfd4f589",
+  "source_sha256": "85cedbb34ad543146fa4bc0d82feb2957e72801ad0712213257f13ca90dbc7fa",
+  "baseline_commit": "29aeb20225bccfc653b192651de608491185096c",
+  "runner_sha256": "98d4425d11f9c7d28c37fc874a5920c681ca5a29ee25bc81670c1df288d1e3b3",
+  "browser": "chromium",
+  "synthetic_only": true,
+  "summary": {
+    "pass": 2,
+    "fail": 7,
+    "harness_errors": 0
+  },
+  "results": [
+    {
+      "id": "mobile-workflow-reachability-390",
+      "title": "Visible navigation reaches all required business workflows",
+      "browser": "chromium",
+      "width": 390,
+      "classification": "OWNER ACCEPTANCE REQUIRED",
+      "status": "FAIL",
+      "duration_ms": 2346,
+      "pass": false,
+      "expected": "Visible, interactive navigation for purchases, previous bills, masters and payment ledger",
+      "observed": {
+        "new-purchase": false,
+        "prev-bills": false,
+        "items": false,
+        "parties": false,
+        "payments": false
+      },
+      "note": "Hidden sidebar links and scripted nav() are not counted as mobile acceptance."
+    },
+    {
+      "id": "different-supplier-bill-number",
+      "title": "Baseline-supported supplier-issued numbers are scoped to supplier identity",
+      "browser": "chromium",
+      "width": 1366,
+      "classification": "BLOCKER",
+      "status": "PASS",
+      "duration_ms": 1705,
+      "pass": true,
+      "expected": "Supplier p2 P-1 and supplier p3 P-1 are distinct histories, as the baseline UI supports",
+      "observed": {
+        "purchase_count": 2,
+        "second_supplier_saved": true,
+        "original_bytes_preserved_on_refusal": false,
+        "error": null
+      },
+      "note": "Resolve supplier/FY uniqueness policy explicitly; never rewrite existing vendor numbers to manufacture global uniqueness."
+    },
+    {
+      "id": "csv-invalid-paid",
+      "title": "Invoice CSV rejects malformed financial input rather than silently coercing it to zero",
+      "browser": "chromium",
+      "width": 1366,
+      "classification": "BLOCKER",
+      "status": "FAIL",
+      "duration_ms": 1067,
+      "pass": false,
+      "expected": "Invalid explicit paid value rejected without byte changes",
+      "observed": {
+        "preserved": false,
+        "imported_invoice": {
+          "id": "mv5e20j0edg",
+          "invoiceNo": "OWNER-BAD-PAID",
+          "date": "2026-10-12",
+          "partyId": "",
+          "partyName": "Synthetic Customer",
+          "items": [],
+          "subtotal": 100,
+          "discount": 0,
+          "taxPct": 0,
+          "taxAmt": 0,
+          "total": 100,
+          "paid": 0,
+          "balance": 100,
+          "paymentType": "Cash",
+          "dispatchStatus": "dispatched",
+          "notes": " [CSV Import]",
+          "isManual": true,
+          "payments": [],
+          "createdAt": "2026-10-12T15:10:02.028Z"
+        },
+        "result": "\u2713 1 invoices imported successfully! Refresh"
+      }
+    },
+    {
+      "id": "csv-round-trip",
+      "title": "Quoted and multiline CSV fields preserve exact master values on reimport",
+      "browser": "chromium",
+      "width": 1366,
+      "classification": "BLOCKER",
+      "status": "FAIL",
+      "duration_ms": 876,
+      "pass": false,
+      "expected": [
+        "Synthetic \"Quoted\" item",
+        "Synthetic\nMultiline"
+      ],
+      "observed": {
+        "imported": [
+          "Synthetic Quoted item",
+          "Synthetic",
+          "Multiline"
+        ],
+        "exported_csv": "name,unit,saleRate,purchaseRate,gst,hsn\nSynthetic \"Quoted\" item,Pcs,1,0,0,\nSynthetic\nMultiline,Pcs,2,0,0,"
+      }
+    },
+    {
+      "id": "csv-formula-neutralization",
+      "title": "Spreadsheet exports neutralize stored formula prefixes",
+      "browser": "chromium",
+      "width": 1366,
+      "classification": "BLOCKER",
+      "status": "FAIL",
+      "duration_ms": 671,
+      "pass": false,
+      "expected": "Spreadsheet cell is a literal stored name, not an active formula",
+      "observed": {
+        "row": "=1+1,Pcs,1,0,0,"
+      },
+      "note": "No spreadsheet executable was opened; emitted bytes prove the unneutralized prefix, not execution in a physical Office installation."
+    },
+    {
+      "id": "csv-invoice-financial-round-trip",
+      "title": "Own invoice CSV preserves subtotal/discount/tax/total arithmetic",
+      "browser": "chromium",
+      "width": 1366,
+      "classification": "BLOCKER",
+      "status": "FAIL",
+      "duration_ms": 1188,
+      "pass": false,
+      "expected": "Own export subtotal 100 \u2212 discount 10 + tax 0 = total 90",
+      "observed": {
+        "subtotal": 90,
+        "discount": 10,
+        "tax": 0,
+        "total": 90,
+        "paid": 20,
+        "balance": 70,
+        "derived_total": 80
+      }
+    },
+    {
+      "id": "party-opening-ledger",
+      "title": "Party opening receivable is reflected consistently in displayed outstanding",
+      "browser": "chromium",
+      "width": 1366,
+      "classification": "OWNER ACCEPTANCE REQUIRED",
+      "status": "FAIL",
+      "duration_ms": 1310,
+      "pass": false,
+      "expected": "25 opening receivable + two invoices with 80 due each = 185",
+      "observed": {
+        "party_stats": [
+          "\u20b9200.00",
+          "\u20b940.00",
+          "\u20b9160.00",
+          "2"
+        ]
+      },
+      "note": "Whether party openingBal is informational or an actual receivable requires owner policy; it is never silently discarded from stored bytes."
+    },
+    {
+      "id": "legacy-item-report",
+      "title": "Supported legacy amount field reconciles with the item financial report",
+      "browser": "chromium",
+      "width": 1366,
+      "classification": "BLOCKER",
+      "status": "PASS",
+      "duration_ms": 1499,
+      "pass": true,
+      "expected": "Legacy qty 2 \u00d7 rate 3 / saved amount 6 contributes 6 to Total Amount without rewriting bytes",
+      "observed": {
+        "report_cells": [
+          "\u25b6",
+          "Synthetic Legacy Line",
+          "2",
+          "1",
+          "\u20b96.00",
+          "1"
+        ],
+        "stored_total": 6,
+        "stored_line_amount": 6,
+        "bytes_preserved": true
+      }
+    },
+    {
+      "id": "print-A5-40",
+      "title": "Generated A5 printable invoice retains 40 lines and financial totals",
+      "browser": "chromium",
+      "width": 1366,
+      "classification": "OWNER ACCEPTANCE REQUIRED",
+      "status": "FAIL",
+      "duration_ms": 1299,
+      "pass": false,
+      "expected": "Every selected line and total remains visible; A5 is two copies on A4, without silent clipping",
+      "observed": {
+        "lines": 40,
+        "visible_lines": 12,
+        "clipped": true,
+        "half_height": 560,
+        "content_height": 1395,
+        "text": "s 1 \u20b920.00 \u20b920.00 30 30 SYNTHETIC-LINE-30 Pcs 1 \u20b920.00 \u20b920.00 31 31 SYNTHETIC-LINE-31 Pcs 1 \u20b920.00 \u20b920.00 32 32 SYNTHETIC-LINE-32 Pcs 1 \u20b920.00 \u20b920.00 33 33 SYNTHETIC-LINE-33 Pcs 1 \u20b920.00 \u20b920.00 34 34 SYNTHETIC-LINE-34 Pcs 1 \u20b920.00 \u20b920.00 35 35 SYNTHETIC-LINE-35 Pcs 1 \u20b920.00 \u20b920.00 36 36 SYNTHETIC-LINE-36 Pcs 1 \u20b920.00 \u20b920.00 37 37 SYNTHETIC-LINE-37 Pcs 1 \u20b920.00 \u20b920.00 38 38 SYNTHETIC-LINE-38 Pcs 1 \u20b920.00 \u20b920.00 39 39 SYNTHETIC-LINE-39 Pcs 1 \u20b920.00 \u20b920.00 40 40 SYNTHETIC-LINE-40 Pcs 1 \u20b920.00 \u20b920.00 Subtotal\u20b9800.00 TOTAL\u20b9800.00 BALANCE DUE\u20b9800.00 Thank you for your business! Authorized Signature ",
+        "pdf": {
+          "sha256": "9961ff93c3de8a175b200325248bd364192f416fab7c66d48024f742843d4141",
+          "bytes": 60584,
+          "media_box": [
+            "594.95996",
+            "841.91998"
+          ],
+          "page_objects": 2
+        }
+      },
+      "note": "Software layout/PDF only. Physical printer, native mobile print dialog and paper calibration NOT VERIFIED."
+    }
+  ]
+}
