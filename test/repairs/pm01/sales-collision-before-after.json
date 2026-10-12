@@ -1,0 +1,52 @@
+{
+  "test_file": "test/foundation/sales-number-collision.test.cjs",
+  "before": {
+    "test_commit": "d57781c",
+    "source_sha256": "f3c11c74d19136ba544cde0c5f758199a8b3b3c6f929347bc89d689d16cc3811",
+    "summary": {
+      "tests": 3,
+      "pass": 1,
+      "fail": 2,
+      "skipped": 0
+    },
+    "cases": [
+      {
+        "name": "editing an existing invoice number cannot collide with another saved invoice",
+        "status": "FAIL"
+      },
+      {
+        "name": "changing either side of a historical duplicate sales-number pair requires review",
+        "status": "FAIL"
+      },
+      {
+        "name": "unrelated edits preserve byte-identical historical duplicate sales without renumbering",
+        "status": "PASS"
+      }
+    ]
+  },
+  "after": {
+    "tested_commit": "d91f44970c82df2d2ec5ab7d28015fe50316b220",
+    "source_sha256": "aebeb34272efea6906edeac8f69fd4bc8afee230507a19aaeee1c37f20af24c1",
+    "full_node_summary": {
+      "tests": 83,
+      "pass": 83,
+      "fail": 0,
+      "skipped": 0
+    },
+    "cases": [
+      {
+        "name": "editing an existing invoice number cannot collide with another saved invoice",
+        "status": "PASS"
+      },
+      {
+        "name": "changing either side of a historical duplicate sales-number pair requires review",
+        "status": "PASS"
+      },
+      {
+        "name": "unrelated edits preserve byte-identical historical duplicate sales without renumbering",
+        "status": "PASS"
+      }
+    ]
+  },
+  "synthetic_only": true
+}

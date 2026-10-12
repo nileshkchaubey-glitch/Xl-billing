@@ -1,0 +1,340 @@
+{
+  "test_file": "test/e2e/supplier-recovery.spec.cjs",
+  "before_retry_test_commit": "0b28f62ea9757ac9acdf2b7b3e4541ed4f9b825c",
+  "after_tested_commit": "be21969d1ed91b8d940ce879c2e882b3f5e85122",
+  "after_test_sha256": "08949630ed7be8d2860216a4a016b34afdf0d7225ee62b229a1fe4949eb8c962",
+  "before_retry": {
+    "runtime_commit": "3b79c52",
+    "source_sha256": "892212c69d987ae351a0c520e06b60821017c63dee75a409a806e5d9ee254b1d",
+    "complete": true,
+    "synthetic_only": true,
+    "started_at_utc": "2026-10-12T18:44:09.305Z",
+    "cases": [
+      {
+        "name": "supplier identity normal private restore preserves cross-supplier and cross-year purchase accounting",
+        "browser": "chromium",
+        "status": "passed",
+        "duration_ms": 1095
+      },
+      {
+        "name": "supplier identity locked private restore survives real invoice save and external modification without normal scripts",
+        "browser": "chromium",
+        "status": "failed",
+        "duration_ms": 6525,
+        "error": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoContainText\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m failed\n\nLocator: locator('#xl-recovery-preview')\nExpected pattern: \u001b[32m/checksum verified/i\u001b[39m\nReceived string:  \u001b[31m\"\"\u001b[39m\nTimeout: 5000ms\n\nCall log:\n\u001b[2m  - Expect \"toContainText\" locator('#xl-recovery-preview') with timeout 5000ms\u001b[22m\n\u001b[2m  - waiting for locator('#xl-recovery-preview')\u001b[22m\n\u001b[2m    14 \u00d7 locator resolved to <p id=\"xl-recovery-preview\"></p>\u001b[22m\n\u001b[2m       - unexpected value \"\"\u001b[22m\n\n\n  83 |   await page.locator('#xl-recovery-backup').setInputFiles(backup);await expect(page.locator('#xl-recovery-error')).toContainText(/export|proof/i);expect(await raw(page,true)).toEqual(before);\n  84 |   await proof(page,info);await page.locator('#xl-recovery-backup').setInputFiles(backup);\n> 85 |   await expect(page.locator('#xl-recovery-preview')).toContainText(/checksum verified/i);expect(await raw(page,true)).toEqual(before);\n     |                                                      ^\n  86 |   await apply(page,'1111');await expect(page.locator('#xl-recovery-error')).toContainText(/incorrect|wrong|does not match/i);expect(await raw(page,true)).toEqual(before);\n  87 |   await apply(page,'2468',false);await expect(page.locator('#xl-recovery-error')).toContainText(/confirm|approve/i);expect(await raw(page,true)).toEqual(before);\n  88 |   await apply(page);await reopen(page,expected);\n    at /workspace/Xl-billing-pm-supplier/test/e2e/supplier-recovery.spec.cjs:85:54"
+      },
+      {
+        "name": "supplier identity locked raw adoption accepts valid external multi-supplier histories after export and PIN",
+        "browser": "chromium",
+        "status": "passed",
+        "duration_ms": 3265
+      },
+      {
+        "name": "supplier identity ambiguous adoption refuses financial history without changing any bytes",
+        "browser": "chromium",
+        "status": "passed",
+        "duration_ms": 2383
+      },
+      {
+        "name": "supplier identity ambiguous restore refuses financial history without changing any bytes",
+        "browser": "chromium",
+        "status": "passed",
+        "duration_ms": 2298
+      },
+      {
+        "name": "supplier identity normal private restore preserves cross-supplier and cross-year purchase accounting",
+        "browser": "firefox",
+        "status": "passed",
+        "duration_ms": 5638
+      },
+      {
+        "name": "supplier identity locked private restore survives real invoice save and external modification without normal scripts",
+        "browser": "firefox",
+        "status": "passed",
+        "duration_ms": 4444
+      },
+      {
+        "name": "supplier identity locked raw adoption accepts valid external multi-supplier histories after export and PIN",
+        "browser": "firefox",
+        "status": "passed",
+        "duration_ms": 3406
+      },
+      {
+        "name": "supplier identity ambiguous adoption refuses financial history without changing any bytes",
+        "browser": "firefox",
+        "status": "passed",
+        "duration_ms": 2204
+      },
+      {
+        "name": "supplier identity ambiguous restore refuses financial history without changing any bytes",
+        "browser": "firefox",
+        "status": "passed",
+        "duration_ms": 3427
+      },
+      {
+        "name": "supplier identity normal private restore preserves cross-supplier and cross-year purchase accounting",
+        "browser": "webkit",
+        "status": "passed",
+        "duration_ms": 1673
+      },
+      {
+        "name": "supplier identity locked private restore survives real invoice save and external modification without normal scripts",
+        "browser": "webkit",
+        "status": "failed",
+        "duration_ms": 7755,
+        "error": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoContainText\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m failed\n\nLocator: locator('#xl-recovery-preview')\nExpected pattern: \u001b[32m/checksum verified/i\u001b[39m\nReceived string:  \u001b[31m\"\"\u001b[39m\nTimeout: 5000ms\n\nCall log:\n\u001b[2m  - Expect \"toContainText\" locator('#xl-recovery-preview') with timeout 5000ms\u001b[22m\n\u001b[2m  - waiting for locator('#xl-recovery-preview')\u001b[22m\n\u001b[2m    13 \u00d7 locator resolved to <p id=\"xl-recovery-preview\"></p>\u001b[22m\n\u001b[2m       - unexpected value \"\"\u001b[22m\n\n\n  83 |   await page.locator('#xl-recovery-backup').setInputFiles(backup);await expect(page.locator('#xl-recovery-error')).toContainText(/export|proof/i);expect(await raw(page,true)).toEqual(before);\n  84 |   await proof(page,info);await page.locator('#xl-recovery-backup').setInputFiles(backup);\n> 85 |   await expect(page.locator('#xl-recovery-preview')).toContainText(/checksum verified/i);expect(await raw(page,true)).toEqual(before);\n     |                                                      ^\n  86 |   await apply(page,'1111');await expect(page.locator('#xl-recovery-error')).toContainText(/incorrect|wrong|does not match/i);expect(await raw(page,true)).toEqual(before);\n  87 |   await apply(page,'2468',false);await expect(page.locator('#xl-recovery-error')).toContainText(/confirm|approve/i);expect(await raw(page,true)).toEqual(before);\n  88 |   await apply(page);await reopen(page,expected);\n    at /workspace/Xl-billing-pm-supplier/test/e2e/supplier-recovery.spec.cjs:85:54"
+      },
+      {
+        "name": "supplier identity locked raw adoption accepts valid external multi-supplier histories after export and PIN",
+        "browser": "webkit",
+        "status": "passed",
+        "duration_ms": 7418
+      },
+      {
+        "name": "supplier identity ambiguous adoption refuses financial history without changing any bytes",
+        "browser": "webkit",
+        "status": "passed",
+        "duration_ms": 6355
+      },
+      {
+        "name": "supplier identity ambiguous restore refuses financial history without changing any bytes",
+        "browser": "webkit",
+        "status": "passed",
+        "duration_ms": 4547
+      }
+    ],
+    "summary": {
+      "passed": 13,
+      "failed": 2,
+      "interrupted": 0,
+      "skipped": 0
+    }
+  },
+  "after": {
+    "runtime_commit": "d91f44970c82df2d2ec5ab7d28015fe50316b220",
+    "source_sha256": "aebeb34272efea6906edeac8f69fd4bc8afee230507a19aaeee1c37f20af24c1",
+    "complete": true,
+    "synthetic_only": true,
+    "started_at_utc": "2026-10-12T18:49:05.715Z",
+    "cases": [
+      {
+        "name": "supplier identity normal private restore preserves cross-supplier and cross-year purchase accounting",
+        "browser": "chromium",
+        "status": "passed",
+        "duration_ms": 1760
+      },
+      {
+        "name": "supplier identity locked private restore survives real invoice save and external modification without normal scripts",
+        "browser": "chromium",
+        "status": "passed",
+        "duration_ms": 2791
+      },
+      {
+        "name": "supplier identity locked raw adoption accepts valid external multi-supplier histories after export and PIN",
+        "browser": "chromium",
+        "status": "passed",
+        "duration_ms": 1794
+      },
+      {
+        "name": "supplier identity ambiguous adoption refuses financial history without changing any bytes",
+        "browser": "chromium",
+        "status": "passed",
+        "duration_ms": 1552
+      },
+      {
+        "name": "supplier identity ambiguous restore refuses financial history without changing any bytes",
+        "browser": "chromium",
+        "status": "passed",
+        "duration_ms": 2118
+      },
+      {
+        "name": "supplier identity normal private restore preserves cross-supplier and cross-year purchase accounting",
+        "browser": "firefox",
+        "status": "passed",
+        "duration_ms": 7685
+      },
+      {
+        "name": "supplier identity locked private restore survives real invoice save and external modification without normal scripts",
+        "browser": "firefox",
+        "status": "passed",
+        "duration_ms": 9895
+      },
+      {
+        "name": "supplier identity locked raw adoption accepts valid external multi-supplier histories after export and PIN",
+        "browser": "firefox",
+        "status": "passed",
+        "duration_ms": 6621
+      },
+      {
+        "name": "supplier identity ambiguous adoption refuses financial history without changing any bytes",
+        "browser": "firefox",
+        "status": "passed",
+        "duration_ms": 6019
+      },
+      {
+        "name": "supplier identity ambiguous restore refuses financial history without changing any bytes",
+        "browser": "firefox",
+        "status": "passed",
+        "duration_ms": 5155
+      },
+      {
+        "name": "supplier identity normal private restore preserves cross-supplier and cross-year purchase accounting",
+        "browser": "webkit",
+        "status": "passed",
+        "duration_ms": 1628
+      },
+      {
+        "name": "supplier identity locked private restore survives real invoice save and external modification without normal scripts",
+        "browser": "webkit",
+        "status": "passed",
+        "duration_ms": 2349
+      },
+      {
+        "name": "supplier identity locked raw adoption accepts valid external multi-supplier histories after export and PIN",
+        "browser": "webkit",
+        "status": "passed",
+        "duration_ms": 2041
+      },
+      {
+        "name": "supplier identity ambiguous adoption refuses financial history without changing any bytes",
+        "browser": "webkit",
+        "status": "passed",
+        "duration_ms": 1890
+      },
+      {
+        "name": "supplier identity ambiguous restore refuses financial history without changing any bytes",
+        "browser": "webkit",
+        "status": "passed",
+        "duration_ms": 1699
+      }
+    ],
+    "summary": {
+      "passed": 15,
+      "failed": 0,
+      "interrupted": 0,
+      "skipped": 0
+    }
+  },
+  "meaning": "All five actual UI workflows run per engine. The retry failure was a product change-event trap, not masked by clearing the file input in the test. Final tests additionally block external requests and explicitly await wrong-PIN evidence; original assertions remain intact.",
+  "additional_original_source_replay": {
+    "runtime_commit": "5d3fb7991586d7acef84d49cdd26a003b290d912",
+    "source_sha256": "37cb3c09b5d165768666d3ccefae9478b10f08a7dc20f1dcc219cad91e596933",
+    "complete": false,
+    "synthetic_only": true,
+    "started_at_utc": "2026-10-12T18:46:28.890Z",
+    "cases": [
+      {
+        "name": "supplier identity normal private restore preserves cross-supplier and cross-year purchase accounting",
+        "browser": "chromium",
+        "status": "failed",
+        "duration_ms": 8339,
+        "error": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoContainText\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m failed\n\nLocator: locator('#xl-restore-preview')\nExpected pattern: \u001b[32m/checksum verified.*purchases: 3/i\u001b[39m\nTimeout: 5000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toContainText\" locator('#xl-restore-preview') with timeout 5000ms\u001b[22m\n\u001b[2m  - waiting for locator('#xl-restore-preview')\u001b[22m\n\n\n  68 |   await page.evaluate(()=>XLStore.run('Synthetic changed note',()=>{const purchases=getPurchases();purchases[0].notes='Synthetic changed note';DB.set('purchases',purchases);}));\n  69 |   const before=await raw(page,true);await page.locator('#import-file').setInputFiles(backup);\n> 70 |   await expect(page.locator('#xl-restore-preview')).toContainText(/checksum verified.*purchases: 3/i);expect(await raw(page,true)).toEqual(before);\n     |                                                     ^\n  71 |   await page.locator('#xl-restore-confirm').click();await page.locator('#del-pin-inp').fill('1111');await page.locator('#del-pin-inp').press('Enter');\n  72 |   await expect(page.locator('#del-pin-overlay')).toBeVisible();expect(await raw(page,true)).toEqual(before);\n  73 |   const rollbackCopy=page.waitForEvent('download');await page.locator('#del-pin-inp').fill('2468');await page.locator('#del-pin-inp').press('Enter');\n    at /workspace/Xl-billing-pm-supplier/test/e2e/supplier-recovery.spec.cjs:70:53"
+      },
+      {
+        "name": "supplier identity locked private restore survives real invoice save and external modification without normal scripts",
+        "browser": "chromium",
+        "status": "failed",
+        "duration_ms": 12460,
+        "error": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoContainText\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m failed\n\nLocator: locator('#xl-recovery-error')\nExpected pattern: \u001b[32m/export|proof/i\u001b[39m\nReceived string:  \u001b[31m\"Duplicate bill numbers must be reviewed before this operation.\"\u001b[39m\nTimeout: 5000ms\n\nCall log:\n\u001b[2m  - Expect \"toContainText\" locator('#xl-recovery-error') with timeout 5000ms\u001b[22m\n\u001b[2m  - waiting for locator('#xl-recovery-error')\u001b[22m\n\u001b[2m    13 \u00d7 locator resolved to <div role=\"alert\" id=\"xl-recovery-error\">Duplicate bill numbers must be reviewed before th\u2026</div>\u001b[22m\n\u001b[2m       - unexpected value \"Duplicate bill numbers must be reviewed before this operation.\"\u001b[22m\n\n\n  81 |   await page.evaluate(()=>{const purchases=JSON.parse(localStorage.getItem('shop4_purchases'));purchases[0].notes='Synthetic external change';localStorage.setItem('shop4_purchases',JSON.stringify(purchases));});\n  82 |   await lock(page);const before=await raw(page,true);\n> 83 |   await page.locator('#xl-recovery-backup').setInputFiles(backup);await expect(page.locator('#xl-recovery-error')).toContainText(/export|proof/i);expect(await raw(page,true)).toEqual(before);\n     |                                                                                                                    ^\n  84 |   await proof(page,info);await page.locator('#xl-recovery-backup').setInputFiles(backup);\n  85 |   await expect(page.locator('#xl-recovery-preview')).toContainText(/checksum verified/i);expect(await raw(page,true)).toEqual(before);\n  86 |   await apply(page,'1111');await expect(page.locator('#xl-recovery-error')).toContainText(/incorrect|wrong|does not match/i);expect(await raw(page,true)).toEqual(before);\n    at /workspace/Xl-billing-pm-supplier/test/e2e/supplier-recovery.spec.cjs:83:116"
+      },
+      {
+        "name": "supplier identity locked raw adoption accepts valid external multi-supplier histories after export and PIN",
+        "browser": "chromium",
+        "status": "failed",
+        "duration_ms": 11450,
+        "error": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoContainText\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m failed\n\nLocator: locator('#xl-recovery-preview')\nExpected pattern: \u001b[32m/historical.*before.*unavailable|earlier.*snapshot.*unavailable/i\u001b[39m\nReceived string:  \u001b[31m\"\"\u001b[39m\nTimeout: 5000ms\n\nCall log:\n\u001b[2m  - Expect \"toContainText\" locator('#xl-recovery-preview') with timeout 5000ms\u001b[22m\n\u001b[2m  - waiting for locator('#xl-recovery-preview')\u001b[22m\n\u001b[2m    13 \u00d7 locator resolved to <p id=\"xl-recovery-preview\"></p>\u001b[22m\n\u001b[2m       - unexpected value \"\"\u001b[22m\n\n\n  94 |   await lock(page);const expected=await raw(page),before=await raw(page,true);\n  95 |   await page.locator('#xl-recovery-adopt').click();await expect(page.locator('#xl-recovery-error')).toContainText(/export|proof/i);expect(await raw(page,true)).toEqual(before);\n> 96 |   await proof(page,info);await page.locator('#xl-recovery-adopt').click();await expect(page.locator('#xl-recovery-preview')).toContainText(/historical.*before.*unavailable|earlier.*snapshot.*unavailable/i);\n     |                                                                                                                              ^\n  97 |   expect(await raw(page,true)).toEqual(before);await apply(page);await reopen(page,expected);\n  98 | });\n  99 |\n    at /workspace/Xl-billing-pm-supplier/test/e2e/supplier-recovery.spec.cjs:96:126"
+      },
+      {
+        "name": "supplier identity ambiguous adoption refuses financial history without changing any bytes",
+        "browser": "chromium",
+        "status": "failed",
+        "duration_ms": 11618,
+        "error": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoContainText\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m failed\n\nLocator: locator('#xl-recovery-error')\nExpected pattern: \u001b[32m/ambiguous.*supplier.*financial year/i\u001b[39m\nReceived string:  \u001b[31m\"Duplicate bill numbers must be reviewed before this operation.\"\u001b[39m\nTimeout: 5000ms\n\nCall log:\n\u001b[2m  - Expect \"toContainText\" locator('#xl-recovery-error') with timeout 5000ms\u001b[22m\n\u001b[2m  - waiting for locator('#xl-recovery-error')\u001b[22m\n\u001b[2m    13 \u00d7 locator resolved to <div role=\"alert\" id=\"xl-recovery-error\">Duplicate bill numbers must be reviewed before th\u2026</div>\u001b[22m\n\u001b[2m       - unexpected value \"Duplicate bill numbers must be reviewed before this operation.\"\u001b[22m\n\n\n  106 |   if(kind==='adoption')await page.locator('#xl-recovery-adopt').click();\n  107 |   else await page.locator('#xl-recovery-backup').setInputFiles({name:'synthetic-ambiguous-v5.json',mimeType:'application/json',buffer:Buffer.from(JSON.stringify({...candidate,v:5}))});\n> 108 |   await expect(page.locator('#xl-recovery-error')).toContainText(/ambiguous.*supplier.*financial year/i);expect(await raw(page,true)).toEqual(before);\n      |                                                    ^\n  109 |   await apply(page);expect(await page.locator('#xl-recovery-error').textContent()).not.toMatch(/^Recovery verified\\./);expect(await raw(page,true)).toEqual(before);\n  110 | });\n  111 |\n    at /workspace/Xl-billing-pm-supplier/test/e2e/supplier-recovery.spec.cjs:108:52"
+      },
+      {
+        "name": "supplier identity ambiguous restore refuses financial history without changing any bytes",
+        "browser": "chromium",
+        "status": "failed",
+        "duration_ms": 10313,
+        "error": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoContainText\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m failed\n\nLocator: locator('#xl-recovery-error')\nExpected pattern: \u001b[32m/ambiguous.*supplier.*financial year/i\u001b[39m\nReceived string:  \u001b[31m\"Duplicate bill numbers must be reviewed before this operation.\"\u001b[39m\nTimeout: 5000ms\n\nCall log:\n\u001b[2m  - Expect \"toContainText\" locator('#xl-recovery-error') with timeout 5000ms\u001b[22m\n\u001b[2m  - waiting for locator('#xl-recovery-error')\u001b[22m\n\u001b[2m    13 \u00d7 locator resolved to <div role=\"alert\" id=\"xl-recovery-error\">Duplicate bill numbers must be reviewed before th\u2026</div>\u001b[22m\n\u001b[2m       - unexpected value \"Duplicate bill numbers must be reviewed before this operation.\"\u001b[22m\n\n\n  106 |   if(kind==='adoption')await page.locator('#xl-recovery-adopt').click();\n  107 |   else await page.locator('#xl-recovery-backup').setInputFiles({name:'synthetic-ambiguous-v5.json',mimeType:'application/json',buffer:Buffer.from(JSON.stringify({...candidate,v:5}))});\n> 108 |   await expect(page.locator('#xl-recovery-error')).toContainText(/ambiguous.*supplier.*financial year/i);expect(await raw(page,true)).toEqual(before);\n      |                                                    ^\n  109 |   await apply(page);expect(await page.locator('#xl-recovery-error').textContent()).not.toMatch(/^Recovery verified\\./);expect(await raw(page,true)).toEqual(before);\n  110 | });\n  111 |\n    at /workspace/Xl-billing-pm-supplier/test/e2e/supplier-recovery.spec.cjs:108:52"
+      },
+      {
+        "name": "supplier identity normal private restore preserves cross-supplier and cross-year purchase accounting",
+        "browser": "firefox",
+        "status": "failed",
+        "duration_ms": 10513,
+        "error": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoContainText\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m failed\n\nLocator: locator('#xl-restore-preview')\nExpected pattern: \u001b[32m/checksum verified.*purchases: 3/i\u001b[39m\nTimeout: 5000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toContainText\" locator('#xl-restore-preview') with timeout 5000ms\u001b[22m\n\u001b[2m  - waiting for locator('#xl-restore-preview')\u001b[22m\n\n\n  68 |   await page.evaluate(()=>XLStore.run('Synthetic changed note',()=>{const purchases=getPurchases();purchases[0].notes='Synthetic changed note';DB.set('purchases',purchases);}));\n  69 |   const before=await raw(page,true);await page.locator('#import-file').setInputFiles(backup);\n> 70 |   await expect(page.locator('#xl-restore-preview')).toContainText(/checksum verified.*purchases: 3/i);expect(await raw(page,true)).toEqual(before);\n     |                                                     ^\n  71 |   await page.locator('#xl-restore-confirm').click();await page.locator('#del-pin-inp').fill('1111');await page.locator('#del-pin-inp').press('Enter');\n  72 |   await expect(page.locator('#del-pin-overlay')).toBeVisible();expect(await raw(page,true)).toEqual(before);\n  73 |   const rollbackCopy=page.waitForEvent('download');await page.locator('#del-pin-inp').fill('2468');await page.locator('#del-pin-inp').press('Enter');\n    at /workspace/Xl-billing-pm-supplier/test/e2e/supplier-recovery.spec.cjs:70:53"
+      },
+      {
+        "name": "supplier identity locked private restore survives real invoice save and external modification without normal scripts",
+        "browser": "firefox",
+        "status": "failed",
+        "duration_ms": 7659,
+        "error": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoContainText\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m failed\n\nLocator: locator('#xl-recovery-error')\nExpected pattern: \u001b[32m/export|proof/i\u001b[39m\nReceived string:  \u001b[31m\"Duplicate bill numbers must be reviewed before this operation.\"\u001b[39m\nTimeout: 5000ms\n\nCall log:\n\u001b[2m  - Expect \"toContainText\" locator('#xl-recovery-error') with timeout 5000ms\u001b[22m\n\u001b[2m  - waiting for locator('#xl-recovery-error')\u001b[22m\n\u001b[2m    14 \u00d7 locator resolved to <div role=\"alert\" id=\"xl-recovery-error\">Duplicate bill numbers must be reviewed before th\u2026</div>\u001b[22m\n\u001b[2m       - unexpected value \"Duplicate bill numbers must be reviewed before this operation.\"\u001b[22m\n\n\n  81 |   await page.evaluate(()=>{const purchases=JSON.parse(localStorage.getItem('shop4_purchases'));purchases[0].notes='Synthetic external change';localStorage.setItem('shop4_purchases',JSON.stringify(purchases));});\n  82 |   await lock(page);const before=await raw(page,true);\n> 83 |   await page.locator('#xl-recovery-backup').setInputFiles(backup);await expect(page.locator('#xl-recovery-error')).toContainText(/export|proof/i);expect(await raw(page,true)).toEqual(before);\n     |                                                                                                                    ^\n  84 |   await proof(page,info);await page.locator('#xl-recovery-backup').setInputFiles(backup);\n  85 |   await expect(page.locator('#xl-recovery-preview')).toContainText(/checksum verified/i);expect(await raw(page,true)).toEqual(before);\n  86 |   await apply(page,'1111');await expect(page.locator('#xl-recovery-error')).toContainText(/incorrect|wrong|does not match/i);expect(await raw(page,true)).toEqual(before);\n    at /workspace/Xl-billing-pm-supplier/test/e2e/supplier-recovery.spec.cjs:83:116"
+      },
+      {
+        "name": "supplier identity locked raw adoption accepts valid external multi-supplier histories after export and PIN",
+        "browser": "firefox",
+        "status": "failed",
+        "duration_ms": 7445,
+        "error": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoContainText\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m failed\n\nLocator: locator('#xl-recovery-preview')\nExpected pattern: \u001b[32m/historical.*before.*unavailable|earlier.*snapshot.*unavailable/i\u001b[39m\nReceived string:  \u001b[31m\"\"\u001b[39m\nTimeout: 5000ms\n\nCall log:\n\u001b[2m  - Expect \"toContainText\" locator('#xl-recovery-preview') with timeout 5000ms\u001b[22m\n\u001b[2m  - waiting for locator('#xl-recovery-preview')\u001b[22m\n\u001b[2m    14 \u00d7 locator resolved to <p id=\"xl-recovery-preview\"></p>\u001b[22m\n\u001b[2m       - unexpected value \"\"\u001b[22m\n\n\n  94 |   await lock(page);const expected=await raw(page),before=await raw(page,true);\n  95 |   await page.locator('#xl-recovery-adopt').click();await expect(page.locator('#xl-recovery-error')).toContainText(/export|proof/i);expect(await raw(page,true)).toEqual(before);\n> 96 |   await proof(page,info);await page.locator('#xl-recovery-adopt').click();await expect(page.locator('#xl-recovery-preview')).toContainText(/historical.*before.*unavailable|earlier.*snapshot.*unavailable/i);\n     |                                                                                                                              ^\n  97 |   expect(await raw(page,true)).toEqual(before);await apply(page);await reopen(page,expected);\n  98 | });\n  99 |\n    at /workspace/Xl-billing-pm-supplier/test/e2e/supplier-recovery.spec.cjs:96:126"
+      },
+      {
+        "name": "supplier identity ambiguous adoption refuses financial history without changing any bytes",
+        "browser": "firefox",
+        "status": "failed",
+        "duration_ms": 7752,
+        "error": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoContainText\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m failed\n\nLocator: locator('#xl-recovery-error')\nExpected pattern: \u001b[32m/ambiguous.*supplier.*financial year/i\u001b[39m\nReceived string:  \u001b[31m\"Duplicate bill numbers must be reviewed before this operation.\"\u001b[39m\nTimeout: 5000ms\n\nCall log:\n\u001b[2m  - Expect \"toContainText\" locator('#xl-recovery-error') with timeout 5000ms\u001b[22m\n\u001b[2m  - waiting for locator('#xl-recovery-error')\u001b[22m\n\u001b[2m    13 \u00d7 locator resolved to <div role=\"alert\" id=\"xl-recovery-error\">Duplicate bill numbers must be reviewed before th\u2026</div>\u001b[22m\n\u001b[2m       - unexpected value \"Duplicate bill numbers must be reviewed before this operation.\"\u001b[22m\n\n\n  106 |   if(kind==='adoption')await page.locator('#xl-recovery-adopt').click();\n  107 |   else await page.locator('#xl-recovery-backup').setInputFiles({name:'synthetic-ambiguous-v5.json',mimeType:'application/json',buffer:Buffer.from(JSON.stringify({...candidate,v:5}))});\n> 108 |   await expect(page.locator('#xl-recovery-error')).toContainText(/ambiguous.*supplier.*financial year/i);expect(await raw(page,true)).toEqual(before);\n      |                                                    ^\n  109 |   await apply(page);expect(await page.locator('#xl-recovery-error').textContent()).not.toMatch(/^Recovery verified\\./);expect(await raw(page,true)).toEqual(before);\n  110 | });\n  111 |\n    at /workspace/Xl-billing-pm-supplier/test/e2e/supplier-recovery.spec.cjs:108:52"
+      },
+      {
+        "name": "supplier identity ambiguous restore refuses financial history without changing any bytes",
+        "browser": "firefox",
+        "status": "failed",
+        "duration_ms": 12478,
+        "error": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoContainText\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m failed\n\nLocator: locator('#xl-recovery-error')\nExpected pattern: \u001b[32m/ambiguous.*supplier.*financial year/i\u001b[39m\nReceived string:  \u001b[31m\"Duplicate bill numbers must be reviewed before this operation.\"\u001b[39m\nTimeout: 5000ms\n\nCall log:\n\u001b[2m  - Expect \"toContainText\" locator('#xl-recovery-error') with timeout 5000ms\u001b[22m\n\u001b[2m  - waiting for locator('#xl-recovery-error')\u001b[22m\n\u001b[2m    13 \u00d7 locator resolved to <div role=\"alert\" id=\"xl-recovery-error\">Duplicate bill numbers must be reviewed before th\u2026</div>\u001b[22m\n\u001b[2m       - unexpected value \"Duplicate bill numbers must be reviewed before this operation.\"\u001b[22m\n\n\n  106 |   if(kind==='adoption')await page.locator('#xl-recovery-adopt').click();\n  107 |   else await page.locator('#xl-recovery-backup').setInputFiles({name:'synthetic-ambiguous-v5.json',mimeType:'application/json',buffer:Buffer.from(JSON.stringify({...candidate,v:5}))});\n> 108 |   await expect(page.locator('#xl-recovery-error')).toContainText(/ambiguous.*supplier.*financial year/i);expect(await raw(page,true)).toEqual(before);\n      |                                                    ^\n  109 |   await apply(page);expect(await page.locator('#xl-recovery-error').textContent()).not.toMatch(/^Recovery verified\\./);expect(await raw(page,true)).toEqual(before);\n  110 | });\n  111 |\n    at /workspace/Xl-billing-pm-supplier/test/e2e/supplier-recovery.spec.cjs:108:52"
+      },
+      {
+        "name": "supplier identity normal private restore preserves cross-supplier and cross-year purchase accounting",
+        "browser": "webkit",
+        "status": "failed",
+        "duration_ms": 6230,
+        "error": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoContainText\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m failed\n\nLocator: locator('#xl-restore-preview')\nExpected pattern: \u001b[32m/checksum verified.*purchases: 3/i\u001b[39m\nTimeout: 5000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toContainText\" locator('#xl-restore-preview') with timeout 5000ms\u001b[22m\n\u001b[2m  - waiting for locator('#xl-restore-preview')\u001b[22m\n\n\n  68 |   await page.evaluate(()=>XLStore.run('Synthetic changed note',()=>{const purchases=getPurchases();purchases[0].notes='Synthetic changed note';DB.set('purchases',purchases);}));\n  69 |   const before=await raw(page,true);await page.locator('#import-file').setInputFiles(backup);\n> 70 |   await expect(page.locator('#xl-restore-preview')).toContainText(/checksum verified.*purchases: 3/i);expect(await raw(page,true)).toEqual(before);\n     |                                                     ^\n  71 |   await page.locator('#xl-restore-confirm').click();await page.locator('#del-pin-inp').fill('1111');await page.locator('#del-pin-inp').press('Enter');\n  72 |   await expect(page.locator('#del-pin-overlay')).toBeVisible();expect(await raw(page,true)).toEqual(before);\n  73 |   const rollbackCopy=page.waitForEvent('download');await page.locator('#del-pin-inp').fill('2468');await page.locator('#del-pin-inp').press('Enter');\n    at /workspace/Xl-billing-pm-supplier/test/e2e/supplier-recovery.spec.cjs:70:53"
+      },
+      {
+        "name": "supplier identity locked private restore survives real invoice save and external modification without normal scripts",
+        "browser": "webkit",
+        "status": "failed",
+        "duration_ms": 7893,
+        "error": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoContainText\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m failed\n\nLocator: locator('#xl-recovery-error')\nExpected pattern: \u001b[32m/export|proof/i\u001b[39m\nReceived string:  \u001b[31m\"Duplicate bill numbers must be reviewed before this operation.\"\u001b[39m\nTimeout: 5000ms\n\nCall log:\n\u001b[2m  - Expect \"toContainText\" locator('#xl-recovery-error') with timeout 5000ms\u001b[22m\n\u001b[2m  - waiting for locator('#xl-recovery-error')\u001b[22m\n\u001b[2m    14 \u00d7 locator resolved to <div role=\"alert\" id=\"xl-recovery-error\">Duplicate bill numbers must be reviewed before th\u2026</div>\u001b[22m\n\u001b[2m       - unexpected value \"Duplicate bill numbers must be reviewed before this operation.\"\u001b[22m\n\n\n  81 |   await page.evaluate(()=>{const purchases=JSON.parse(localStorage.getItem('shop4_purchases'));purchases[0].notes='Synthetic external change';localStorage.setItem('shop4_purchases',JSON.stringify(purchases));});\n  82 |   await lock(page);const before=await raw(page,true);\n> 83 |   await page.locator('#xl-recovery-backup').setInputFiles(backup);await expect(page.locator('#xl-recovery-error')).toContainText(/export|proof/i);expect(await raw(page,true)).toEqual(before);\n     |                                                                                                                    ^\n  84 |   await proof(page,info);await page.locator('#xl-recovery-backup').setInputFiles(backup);\n  85 |   await expect(page.locator('#xl-recovery-preview')).toContainText(/checksum verified/i);expect(await raw(page,true)).toEqual(before);\n  86 |   await apply(page,'1111');await expect(page.locator('#xl-recovery-error')).toContainText(/incorrect|wrong|does not match/i);expect(await raw(page,true)).toEqual(before);\n    at /workspace/Xl-billing-pm-supplier/test/e2e/supplier-recovery.spec.cjs:83:116"
+      },
+      {
+        "name": "supplier identity locked raw adoption accepts valid external multi-supplier histories after export and PIN",
+        "browser": "webkit",
+        "status": "failed",
+        "duration_ms": 7856,
+        "error": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoContainText\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m failed\n\nLocator: locator('#xl-recovery-preview')\nExpected pattern: \u001b[32m/historical.*before.*unavailable|earlier.*snapshot.*unavailable/i\u001b[39m\nReceived string:  \u001b[31m\"\"\u001b[39m\nTimeout: 5000ms\n\nCall log:\n\u001b[2m  - Expect \"toContainText\" locator('#xl-recovery-preview') with timeout 5000ms\u001b[22m\n\u001b[2m  - waiting for locator('#xl-recovery-preview')\u001b[22m\n\u001b[2m    14 \u00d7 locator resolved to <p id=\"xl-recovery-preview\"></p>\u001b[22m\n\u001b[2m       - unexpected value \"\"\u001b[22m\n\n\n  94 |   await apply(page);await reopen(page,expected);\n  95 | });\n> 96 |\n     | ^\n  97 | test('supplier identity locked raw adoption accepts valid external multi-supplier histories after export and PIN',async({page},info)=>{\n  98 |   await seed(page,false);await sale(page);\n  99 |   await page.evaluate(purchases=>localStorage.setItem('shop4_purchases',JSON.stringify(purchases)),fixtures().purchases);\n    at /workspace/Xl-billing-pm-supplier/test/e2e/supplier-recovery.spec.cjs:96:126"
+      },
+      {
+        "name": "supplier identity ambiguous adoption refuses financial history without changing any bytes",
+        "browser": "webkit",
+        "status": "failed",
+        "duration_ms": 9081,
+        "error": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoContainText\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m failed\n\nLocator: locator('#xl-recovery-error')\nExpected pattern: \u001b[32m/ambiguous.*supplier.*financial year/i\u001b[39m\nReceived string:  \u001b[31m\"Duplicate bill numbers must be reviewed before this operation.\"\u001b[39m\nTimeout: 5000ms\n\nCall log:\n\u001b[2m  - Expect \"toContainText\" locator('#xl-recovery-error') with timeout 5000ms\u001b[22m\n\u001b[2m  - waiting for locator('#xl-recovery-error')\u001b[22m\n\u001b[2m    14 \u00d7 locator resolved to <div role=\"alert\" id=\"xl-recovery-error\">Duplicate bill numbers must be reviewed before th\u2026</div>\u001b[22m\n\u001b[2m       - unexpected value \"Duplicate bill numbers must be reviewed before this operation.\"\u001b[22m\n\n\n  112 |   if(kind==='adoption')await page.locator('#xl-recovery-adopt').click();\n  113 |   else await page.locator('#xl-recovery-backup').setInputFiles({name:'synthetic-ambiguous-v5.json',mimeType:'application/json',buffer:Buffer.from(JSON.stringify({...candidate,v:5}))});\n> 114 |   await expect(page.locator('#xl-recovery-error')).toContainText(/ambiguous.*supplier.*financial year/i);expect(await raw(page,true)).toEqual(before);\n      |                                                    ^\n  115 |   await apply(page);expect(await page.locator('#xl-recovery-error').textContent()).not.toMatch(/^Recovery verified\\./);expect(await raw(page,true)).toEqual(before);\n  116 | });\n  117 |\n    at /workspace/Xl-billing-pm-supplier/test/e2e/supplier-recovery.spec.cjs:114:52"
+      },
+      {
+        "name": "supplier identity ambiguous restore refuses financial history without changing any bytes",
+        "browser": "webkit",
+        "status": "interrupted",
+        "duration_ms": 7532,
+        "error": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoContainText\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m failed\n\nLocator: locator('#xl-recovery-error')\nExpected pattern: \u001b[32m/ambiguous.*supplier.*financial year/i\u001b[39m\nReceived string:  \u001b[31m\"Duplicate bill numbers must be reviewed before this operation.\"\u001b[39m\n\nCall log:\n\u001b[2m  - Expect \"toContainText\" locator('#xl-recovery-error') with timeout 5000ms\u001b[22m\n\u001b[2m  - waiting for locator('#xl-recovery-error')\u001b[22m\n\u001b[2m    9 \u00d7 locator resolved to <div role=\"alert\" id=\"xl-recovery-error\">Duplicate bill numbers must be reviewed before th\u2026</div>\u001b[22m\n\u001b[2m      - unexpected value \"Duplicate bill numbers must be reviewed before this operation.\"\u001b[22m\n\u001b[2m  - Test ended.\u001b[22m\n\n\n  112 |   if(kind==='adoption')await page.locator('#xl-recovery-adopt').click();\n  113 |   else await page.locator('#xl-recovery-backup').setInputFiles({name:'synthetic-ambiguous-v5.json',mimeType:'application/json',buffer:Buffer.from(JSON.stringify({...candidate,v:5}))});\n> 114 |   await expect(page.locator('#xl-recovery-error')).toContainText(/ambiguous.*supplier.*financial year/i);expect(await raw(page,true)).toEqual(before);\n      |                                                    ^\n  115 |   await apply(page);expect(await page.locator('#xl-recovery-error').textContent()).not.toMatch(/^Recovery verified\\./);expect(await raw(page,true)).toEqual(before);\n  116 | });\n  117 |\n    at /workspace/Xl-billing-pm-supplier/test/e2e/supplier-recovery.spec.cjs:114:52"
+      }
+    ],
+    "summary": {
+      "passed": 0,
+      "failed": 14,
+      "interrupted": 1,
+      "skipped": 0
+    },
+    "note": "Optional additional replay stopped to release shared test resources: 14 failures and 1 interrupted case. This is NOT a completed or verified baseline gate. Failures include requested ambiguity-message diagnostics as well as blocked valid histories. The immutable original premerge evidence remains the completed baseline. Network/PIN-wait-only test strengthening was committed during this optional replay; it made no assertion weaker and is not treated as one identical-source whole-suite comparison."
+  }
+}
