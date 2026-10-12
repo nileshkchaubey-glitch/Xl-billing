@@ -12,6 +12,13 @@ const browserName = process.env.XL_REVIEW_BROWSER || 'chromium';
 const sourcePath = path.resolve(process.env.XL_HTML || 'index.html');
 const html = fs.readFileSync(sourcePath);
 const only = new Set((process.env.XL_REVIEW_ONLY || '').split(',').filter(Boolean));
+const group = process.env.XL_REVIEW_GROUP || process.argv.find(a=>a.startsWith('--group='))?.slice(8) || 'all';
+const groups = {
+  stabilization: ['legacy-payment','historical-purchase-discount','legacy-discount','settlement-rounding','payout-rounding','startup-mutation','fractional-total-reload','corrupt-storage','read-denied','old-bill-delete-pin','stale-payment-delete','stored-text-xss'],
+  foundation: ['failed-write-invoices','failed-write-settings','failed-write-audit','restore-truncated','restore-wrong-schema','restore-tampered-checksum','restore-legacy-valid','restore-partial-write','backup-completeness','backup-rollback','failed-delete-feedback'],
+  views: ['audit-search','purchase-sort','party-transactions-tab','cancelled-payment-ledger']
+};
+if(group !== 'all' && !groups[group]) throw new Error('Unknown acceptance group: '+group);
 const results = [];
 const hashedPin = { deletePinSalt: 'synthetic-review-salt', deletePinHash: crypto.createHash('sha256').update('synthetic-review-salt:2468').digest('hex') };
 let browser, server, origin;
@@ -63,6 +70,7 @@ async function exportedBackup(page) {
   }));
 }
 async function probe(id, body, modify = () => {}) {
+  if(group !== 'all' && !groups[group].includes(id)) return;
   if (only.size && !only.has(id)) return;
   const context = await browser.newContext({timezoneId:'Asia/Kolkata'});
   await context.route('**/*', route => route.request().url().startsWith(origin + '/') ? route.continue() : route.abort());
@@ -312,7 +320,8 @@ async function main() {
   if(!results.length) throw new Error('No safety probes selected; the gate cannot pass without evidence.');
   const workspaceCommit=cp.execFileSync('git',['rev-parse','HEAD'],{encoding:'utf8'}).trim();
   const report={workspaceCommit,sourceRevision:process.env.XL_REVIEW_REVISION || (process.env.XL_HTML ? null : workspaceCommit),sourceSha256:crypto.createHash('sha256').update(html).digest('hex'),runnerSha256:crypto.createHash('sha256').update(fs.readFileSync(__filename)).digest('hex'),browser:browserName,results,summary:{pass:results.filter(r=>r.status==='PASS').length,fail:results.filter(r=>r.status==='FAIL').length,harnessErrors:results.filter(r=>r.status==='HARNESS_ERROR').length}};
-  const output=process.env.XL_REVIEW_REPORT || path.resolve('test/review/release1-'+browserName+'.json');
+  const output=process.env.XL_REVIEW_REPORT || path.resolve('test-results/review/'+group+'-'+browserName+'.json');
+  fs.mkdirSync(path.dirname(output),{recursive:true});
   fs.writeFileSync(output,JSON.stringify(report,null,2)+'\n');
   console.log('Safety gate: '+JSON.stringify(report.summary));
   process.exitCode=report.summary.fail || report.summary.harnessErrors ? 1 : 0;

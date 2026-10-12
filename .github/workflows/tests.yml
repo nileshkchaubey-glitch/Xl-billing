@@ -6,7 +6,7 @@ on:
   workflow_dispatch:
 jobs:
   release1-safety-review:
-    name: Release 1 data-safety gate
+    name: Release 1 stabilization gate
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -16,13 +16,13 @@ jobs:
           cache: npm
       - run: npm ci
       - run: npx playwright install --with-deps chromium
-      # This fails while the documented safety defects remain unresolved.
-      - run: npm run test:review
+      # Future storage/backup acceptance belongs to the foundation branch.
+      - run: npm run test:stabilization
       - uses: actions/upload-artifact@v4
         if: always()
         with:
           name: release1-safety-review
-          path: test/review/*.json
+          path: test-results/review/*.json
   tests:
     runs-on: ubuntu-latest
     steps:

@@ -14,7 +14,9 @@
     "test:baseline": "node scripts/baseline.cjs",
     "test:review": "node scripts/review-release1.cjs",
     "mutations": "node scripts/mutations.cjs",
-    "htmlcheck": "node scripts/htmlcheck.cjs"
+    "htmlcheck": "node scripts/htmlcheck.cjs",
+    "test:stabilization": "node scripts/review-release1.cjs --group=stabilization",
+    "test:foundation": "node scripts/review-release1.cjs --group=foundation"
   },
   "engines": {
     "node": ">=22.12.0"
