@@ -1,0 +1,167 @@
+{
+  "notes": "Actual synthetic run results. Before runs precede their named implementation fixes; after Node run uses runtime bcb9f8e. Source-bound browser gates are stored separately. No real records were used.",
+  "runs": [
+    {
+      "run": "automatic-before",
+      "logSha256": "8f1ab075d1b8946af959b0215379c817f453de727c7fce4ec1569cc675577877",
+      "summary": {
+        "tests": 8,
+        "pass": 0,
+        "fail": 8
+      },
+      "results": [
+        "\u2716 automatic backups are opt-in; unsupported/manual mode does not write",
+        "\u2716 folder backup verifies closed file contents, retains older files and marks independent success",
+        "\u2716 revoked permission is reported without background permission prompts or file writes",
+        "\u2716 automatic write failure never marks backup verified",
+        "\u2716 automatic close failure never marks backup verified",
+        "\u2716 automatic readback failure never marks backup verified",
+        "\u2716 debounce combines bursts; new commits during a backup schedule a fresh snapshot",
+        "\u2716 manual download request is distinct from verified folder persistence",
+        "\u2716 failing tests:"
+      ]
+    },
+    {
+      "run": "reminder-before",
+      "logSha256": "b66a6706582625a89f624bfe861f448331c81afaa46bdb6f54088523bc09dee4",
+      "summary": {
+        "tests": 9,
+        "pass": 8,
+        "fail": 1
+      },
+      "results": [
+        "\u2714 automatic backups are opt-in; unsupported/manual mode does not write",
+        "\u2714 folder backup verifies closed file contents, retains older files and marks independent success",
+        "\u2714 revoked permission is reported without background permission prompts or file writes",
+        "\u2714 automatic write failure never marks backup verified",
+        "\u2714 automatic close failure never marks backup verified",
+        "\u2714 automatic readback failure never marks backup verified",
+        "\u2714 debounce combines bursts; new commits during a backup schedule a fresh snapshot",
+        "\u2714 manual download request is distinct from verified folder persistence",
+        "\u2716 malformed remembered timestamps cannot suppress independent backup reminders",
+        "\u2716 failing tests:"
+      ]
+    },
+    {
+      "run": "backup-before",
+      "logSha256": "71f5107b88459055495364c40ddd25e413357414007a9926c2b254a4f0b0288a",
+      "summary": {
+        "tests": 6,
+        "pass": 0,
+        "fail": 6
+      },
+      "results": [
+        "\u2716 complete private backup round trips exact raw bytes, audit, unknown keys, preferences and credentials",
+        "\u2716 checksum covers header and payload; changed bytes are rejected",
+        "\u2716 legacy v4/v5 preserves opening paid and supplier discounts without migration",
+        "\u2716 truncated, partial, oversized, unsupported or ambiguously checksummed imports are rejected",
+        "\u2716 duplicate keys, internal metadata and invalid collection shapes cannot enter a restore",
+        "\u2716 schema validation rejects duplicate IDs and malformed payment data before checksum export",
+        "\u2716 failing tests:"
+      ]
+    },
+    {
+      "run": "cloud-header-before",
+      "logSha256": "d3bab486af4ac9bee3ad5fb76a7b32a0d38e57e3085f9035cd607159019a47bd",
+      "summary": {
+        "tests": 7,
+        "pass": 6,
+        "fail": 1
+      },
+      "results": [
+        "\u2714 complete private backup round trips exact raw bytes, audit, unknown keys, preferences and credentials",
+        "\u2714 checksum covers header and payload; changed bytes are rejected",
+        "\u2714 legacy v4/v5 preserves opening paid and supplier discounts without migration",
+        "\u2714 truncated, partial, oversized, unsupported or ambiguously checksummed imports are rejected",
+        "\u2714 duplicate keys, internal metadata and invalid collection shapes cannot enter a restore",
+        "\u2714 schema validation rejects duplicate IDs and malformed payment data before checksum export",
+        "\u2716 existing optional cloud v5 ts header is accepted without losing legacy record bytes",
+        "\u2716 failing tests:"
+      ]
+    },
+    {
+      "run": "journal-boundary-before",
+      "logSha256": "1ee3295ca4bc93099013e90453ac8c11d1c0491298bcc8ca945e0a86f1d5eeff",
+      "summary": {
+        "tests": 17,
+        "pass": 16,
+        "fail": 1
+      },
+      "results": [
+        "\u2714 one logical operation commits data, counter, audit and unknown bytes together",
+        "\u2714 failure at journal restores exact business bytes and reports no success",
+        "\u2714 failure at shop4_invoices restores exact business bytes and reports no success",
+        "\u2714 failure at shop4_settings restores exact business bytes and reports no success",
+        "\u2714 failure at shop4_audit restores exact business bytes and reports no success",
+        "\u2714 failure at meta restores exact business bytes and reports no success",
+        "\u2714 unscoped writes are rejected; caught callback errors cannot commit partial state",
+        "\u2714 failed rollback retains a recoverable journal and fresh startup rolls back",
+        "\u2714 corrupted journal blocks recovery without overwriting raw records",
+        "\u2714 a stale second client cannot overwrite the first client commit",
+        "\u2714 missing reliable lock support fails closed while allowing raw recovery capture",
+        "\u2714 a read interrupted by another writer never exposes a partial value",
+        "\u2714 backup snapshot capture rejects a writer that starts during its reads",
+        "\u2714 notification failure cannot roll back a verified completed save",
+        "\u2714 a real interrupted synthetic writer is recovered before the next read",
+        "\u2714 interruption after commit marker rolls forward with exact checked after values",
+        "\u2716 writer refuses a batch larger than startup recovery capacity before any persisted change",
+        "\u2716 failing tests:"
+      ]
+    },
+    {
+      "run": "all-node-after",
+      "logSha256": "48c88a514600cb2362b5caf63b776b1f2c1ad78f7a7dab390bc0be89332b0bb3",
+      "summary": {
+        "tests": 44,
+        "pass": 44,
+        "fail": 0
+      },
+      "results": [
+        "\u2714 automatic backups are opt-in; unsupported/manual mode does not write",
+        "\u2714 folder backup verifies closed file contents, retains older files and marks independent success",
+        "\u2714 revoked permission is reported without background permission prompts or file writes",
+        "\u2714 automatic write failure never marks backup verified",
+        "\u2714 automatic close failure never marks backup verified",
+        "\u2714 automatic readback failure never marks backup verified",
+        "\u2714 debounce combines bursts; new commits during a backup schedule a fresh snapshot",
+        "\u2714 manual download request is distinct from verified folder persistence",
+        "\u2714 malformed remembered timestamps cannot suppress independent backup reminders",
+        "\u2714 complete private backup round trips exact raw bytes, audit, unknown keys, preferences and credentials",
+        "\u2714 checksum covers header and payload; changed bytes are rejected",
+        "\u2714 legacy v4/v5 preserves opening paid and supplier discounts without migration",
+        "\u2714 truncated, partial, oversized, unsupported or ambiguously checksummed imports are rejected",
+        "\u2714 duplicate keys, internal metadata and invalid collection shapes cannot enter a restore",
+        "\u2714 schema validation rejects duplicate IDs and malformed payment data before checksum export",
+        "\u2714 existing optional cloud v5 ts header is accepted without losing legacy record bytes",
+        "\u2714 one logical operation commits data, counter, audit and unknown bytes together",
+        "\u2714 failure at journal restores exact business bytes and reports no success",
+        "\u2714 failure at shop4_invoices restores exact business bytes and reports no success",
+        "\u2714 failure at shop4_settings restores exact business bytes and reports no success",
+        "\u2714 failure at shop4_audit restores exact business bytes and reports no success",
+        "\u2714 failure at meta restores exact business bytes and reports no success",
+        "\u2714 unscoped writes are rejected; caught callback errors cannot commit partial state",
+        "\u2714 failed rollback retains a recoverable journal and fresh startup rolls back",
+        "\u2714 corrupted journal blocks recovery without overwriting raw records",
+        "\u2714 a stale second client cannot overwrite the first client commit",
+        "\u2714 missing reliable lock support fails closed while allowing raw recovery capture",
+        "\u2714 a read interrupted by another writer never exposes a partial value",
+        "\u2714 backup snapshot capture rejects a writer that starts during its reads",
+        "\u2714 notification failure cannot roll back a verified completed save",
+        "\u2714 a real interrupted synthetic writer is recovered before the next read",
+        "\u2714 interruption after commit marker rolls forward with exact checked after values",
+        "\u2714 writer refuses a batch larger than startup recovery capacity before any persisted change",
+        "\u2714 historical opening balance is decoded without changing the original record",
+        "\u2714 explicit payments preserve an opening aggregate without inventing receipts",
+        "\u2714 purchase discounts reduce balance while remaining in their historical fields",
+        "\u2714 conflicting nonempty history is blocked and kept byte-for-byte intact",
+        "\u2714 money input rejects fractional paise, infinity and unsafe integers",
+        "\u2714 removing the last dated receipt does not invent a new opening balance",
+        "\u2714 P0-5 case-insensitive numbers include cancelled records and scan maximum",
+        "\u2714 P0-5 two batches and stale counters cannot generate duplicates (seed 20261012)",
+        "\u2714 P0-5 unsupported counters and exhausted series fail without hanging",
+        "\u2714 P0-4 random payments and replacements preserve paid and balance (seed 20261012)",
+        "\u2714 all embedded scripts parse without compilation errors"
+      ]
+    }
+  ]
+}

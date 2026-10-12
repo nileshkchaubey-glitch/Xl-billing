@@ -1,0 +1,54 @@
+{
+  "runtimeCommit": "bcb9f8e43db6e312cbeb84893a1c5173b97e6796",
+  "sourceSha256": "acf710663fa22807a215f3a5cc334bbc566313de68d4a090a4de7d546957f88b",
+  "node": {
+    "passed": 44,
+    "failed": 0,
+    "storage": 17,
+    "backup": 7,
+    "automaticBackup": 9,
+    "regression": 11
+  },
+  "functionalBrowser": {
+    "passed": 264,
+    "failed": 0,
+    "engines": [
+      "chromium",
+      "firefox",
+      "webkit"
+    ],
+    "localSourceCommit": "495f17f4e8179b5fbc81720c7add7a47c3539c72",
+    "latestRuntimeCI": "PASS"
+  },
+  "audit": {
+    "stabilization": {
+      "passed": 36,
+      "failed": 0
+    },
+    "foundation": {
+      "passed": 33,
+      "failed": 0
+    }
+  },
+  "lint": {
+    "errors": 0,
+    "legacyWarnings": 143
+  },
+  "build": "byte-identical standalone HTML",
+  "CI": {
+    "runId": 38233759587,
+    "conclusion": "success",
+    "url": "https://github.com/nileshkchaubey-glitch/Xl-billing/actions/runs/38233759587"
+  },
+  "limitations": [
+    "recoverable multi-key writes, not localStorage atomicity or physical durability",
+    "older app copies can ignore Web Locks",
+    "manual downloads are requests, not verified disk saves",
+    "native folder-picker coverage and physical hardware not verified",
+    "unsupported financial histories require review; no automatic assumptions"
+  ],
+  "realDataAccessed": false,
+  "mainModified": false,
+  "merged": false,
+  "deployed": false
+}

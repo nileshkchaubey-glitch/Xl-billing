@@ -1,5 +1,7 @@
 # Foundation test-first evidence
 
+This is the implementation chronology. Its intermediate incomplete statuses describe those checkpoints; current completed gates and durable evidence are in docs/FOUNDATION_REPORT.md and test/review/FOUNDATION_TEST_FIRST.json.
+
 Before implementation, eleven recoverable-storage acceptance cases fail because the factory does not exist. Command: node --test test/foundation/storage-core.test.cjs; actual output captured in /tmp/xl-foundation-storage-before.log. These are future-feature acceptance tests and did not gate the completed Phase A stabilization. No storage/backup feature is marked verified yet.
 
 The pure journal/recovery core now passes 16 Node acceptance cases. Initial eleven cases failed before implementation; three additional read/observer cases failed before their fixes. Tests cover stage/data/counter/audit/marker failures, exact rollback, retained journals after rollback failure, corrupted journals, stale clients, unsupported locks, reads overlapping writes, observer failures and a real abruptly exited synthetic child process. Recovery also verifies roll-forward after the commit marker. The core is not wired into the application yet; P0-6/P0-7/P0-8 are not marked complete.

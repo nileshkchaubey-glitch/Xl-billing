@@ -16,12 +16,16 @@ P0-8 started only after checkpoint b817937 passed P0-6/P0-7. It offers free opt-
 
 - P0-6/P0-7 checkpoint: 22 foundation Node tests, 11 regression Node tests, parcel VM check, 237 functional browser cases, plus all 11 storage/restore audit probes in each engine.
 - After automatic backup and conflict-archive changes: full functional run passed 261 cases in Chromium, Firefox and WebKit; there were no no-op screenshot cases in this count.
-- Final cloud compatibility suite: 33 backup browser cases passed across all three engines, including the added v5 cloud preview/PIN case; seven backup codec cases passed with nonzero positive/negative party opening balances. Final Node suite totals 43 passes, including 16 storage, seven backup, nine automatic-backup and 11 regression cases. Parcel VM checks passed.
+- Final cloud compatibility suite: 33 backup browser cases passed across all three engines, including the added v5 cloud preview/PIN case; seven backup codec cases passed with nonzero positive/negative party opening balances. Final Node suite totals 44 passes, including 17 storage, seven backup, nine automatic-backup and 11 regression cases. Parcel VM checks passed.
 - Automatic-backup UI cases: 21 passed; malformed remembered timestamps failed before correction in both Node and Chromium. Write/close/readback and revoked-permission probes never mark a failed backup verified.
 - Stabilization audit remains 12/12 per engine; foundation audit remains 11/11 per engine. Source-bound final JSON evidence accompanies this report.
 - Lint: zero errors, 143 existing warnings. Build is a byte-identical standalone HTML copy. HTML markup diagnostics, physical crash durability, real printers and every native mobile folder chooser are not passed claims.
 
-A final committed-source full functional run and GitHub checks are in progress at this report checkpoint. Their results will be recorded before the task is reported complete. Historical logs are not counted as fresh evidence.
+The committed-source full functional run passed 264 cases on 495f17f. A subsequent failing boundary probe identified a writer/recovery size mismatch; bcb9f8e rejects oversized operations before staging, and all 44 Node cases pass. The final source-bound audit gates on bcb9f8e pass 69 probes. SHA-256 of the final HTML and identical build: `acf710663fa22807a215f3a5cc334bbc566313de68d4a090a4de7d546957f88b`. GitHub CI on bcb9f8e passed all three jobs: stabilization, storage/backup acceptance, and full regression/lint/build. Historical logs are not fresh verification.
+
+CI for the preceding runtime passed: https://github.com/nileshkchaubey-glitch/Xl-billing/actions/runs/38233239050
+
+Passing CI for the final runtime including the boundary test: https://github.com/nileshkchaubey-glitch/Xl-billing/actions/runs/38233759587
 
 ## Remaining risks and separate status
 
@@ -33,4 +37,4 @@ WORK_COMPLETED.md, WORK_BLOCKED.md and WORK_UNIMPLEMENTED.md separate delivered 
 
 - Stabilization Draft PR: https://github.com/nileshkchaubey-glitch/Xl-billing/pull/6
 - Foundation branch: https://github.com/nileshkchaubey-glitch/Xl-billing/tree/codex/xl-release-2-foundation
-- Foundation Draft PR: created separately with stabilization as its base; link added after publication.
+- Foundation Draft PR: https://github.com/nileshkchaubey-glitch/Xl-billing/pull/7 (base: stabilization branch).
