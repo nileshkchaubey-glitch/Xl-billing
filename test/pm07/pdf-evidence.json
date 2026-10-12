@@ -1,0 +1,54 @@
+{
+  "tested_commit": "c120ee2c365be87551ae07ffd9c1d2d7f991e917",
+  "source_sha256": "0e344a4e8d6618df1091ad2f33ae422739e1e050343195bc25170c7f1accfa52",
+  "synthetic_only": true,
+  "text_extractor": "/usr/bin/pdftotext version 25.03.0",
+  "page_reader": "/usr/bin/pdfinfo version 25.03.0",
+  "pdfs": {
+    "synthetic-A5-1": {
+      "sha256": "efd03694288750d912b73662012938f1a26d51432f2d1240de69b4dcc0c73c9f",
+      "bytes": 53502,
+      "page_objects": 1,
+      "native_poppler_pages": 1,
+      "distinct_standard_labels": 1,
+      "distinct_wrapped_labels": 0,
+      "copy_label_occurrences": 0,
+      "total_occurrences": 2,
+      "balance_occurrences": 2
+    },
+    "synthetic-A5-40": {
+      "sha256": "b2301a486186058dd5c03c635767cbb7368f1b165fc6a610dcd7563bb8e3840b",
+      "bytes": 53670,
+      "page_objects": 2,
+      "native_poppler_pages": 2,
+      "distinct_standard_labels": 40,
+      "distinct_wrapped_labels": 0,
+      "copy_label_occurrences": 0,
+      "total_occurrences": 1,
+      "balance_occurrences": 1
+    },
+    "synthetic-A5-two-copies": {
+      "sha256": "d38395c36e4e80c757187207128df002c769f12941f9a1a25a494547c091cc2c",
+      "bytes": 54039,
+      "page_objects": 1,
+      "native_poppler_pages": 1,
+      "distinct_standard_labels": 0,
+      "distinct_wrapped_labels": 0,
+      "copy_label_occurrences": 8,
+      "total_occurrences": 2,
+      "balance_occurrences": 2
+    },
+    "synthetic-A5-wrapped-80": {
+      "sha256": "2e3980eb8a51d489d0b5576f611eb5ff990b50a7356abab73eab77f9ff80a131",
+      "bytes": 59541,
+      "page_objects": 3,
+      "native_poppler_pages": 3,
+      "distinct_standard_labels": 0,
+      "distinct_wrapped_labels": 80,
+      "copy_label_occurrences": 0,
+      "total_occurrences": 1,
+      "balance_occurrences": 1
+    }
+  },
+  "physical_printer": "NOT VERIFIED"
+}
