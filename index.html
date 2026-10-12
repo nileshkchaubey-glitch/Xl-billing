@@ -4115,11 +4115,11 @@ window.renderPaymentLedger = function(){
         <button class="btn btn-g btn-sm" onclick="openStandalonePayModal()">+ Record Payment</button>
         <div>
           <label class="fl" style="margin-bottom:2px">Filter Date</label>
-          <input type="date" class="fc fc-sm" id="pay-filter-date" value="${fDate}" style="width:150px" onchange="renderPaymentLedger()">
+          <input type="date" class="fc fc-sm" id="pay-filter-date" value="${escHtml(fDate)}" style="width:150px" onchange="renderPaymentLedger()">
         </div>
         <div>
           <label class="fl" style="margin-bottom:2px">Search Party</label>
-          <input class="fc fc-sm" id="pay-filter-party" value="${fParty}" placeholder="Party name..." style="width:160px" oninput="renderPaymentLedger()">
+          <input class="fc fc-sm" id="pay-filter-party" value="${escHtml(fParty)}" placeholder="Party name..." style="width:160px" oninput="renderPaymentLedger()">
         </div>
         ${fDate||fParty?`<button class="btn btn-out btn-sm" onclick="clearPayFilters()">✕ Clear</button>`:''}
       </div>
@@ -6620,7 +6620,7 @@ window.printInvoice = function() {
   const el = document.getElementById('printable-inv'); if(!el) return;
   const s = getSettings();
   const ps = typeof getPrintSettings === 'function' ? getPrintSettings() : {};
-  const fs = ps.fontSize || '13';
+  const fs = Math.max(9,Math.min(40,Number(ps.fontSize)||13));
   const inv = getInvoices().find(i=>i.id===currentViewInvId);
   const pdfName = inv
     ? `${sanitizeFilename(inv.invoiceNo)}_${sanitizeFilename(inv.partyName||'CASH')}.pdf`
