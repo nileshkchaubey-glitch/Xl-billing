@@ -45,7 +45,7 @@ npm run build
 cmp index.html dist/index.html
 ```
 
-The managed Linux workspace uses the existing temporary browser-library fallback described in ENVIRONMENT.md. Standard CI installs dependencies using `playwright install --with-deps`. It also runs the independent owner gate after the existing regression, lint and build steps; it retains failed gate reports as artifacts. Nonzero owner-gate exit is intentional **evidence of failed conformance**, never an expected pass.
+The managed Linux workspace uses the existing temporary browser-library fallback described in ENVIRONMENT.md. Standard CI installs dependencies using `playwright install --with-deps`. Its exact-head owner loop runs both the complete safety probes and independent owner gate after the existing regression, lint and build steps; it retains failed gate reports as artifacts. Nonzero owner-gate exit is intentional **evidence of failed conformance**, never an expected pass.
 
 | Check | Actual result | Evidence |
 | --- | --- | --- |
