@@ -1,0 +1,309 @@
+{
+  "kind": "xl-billing-recovery-followup-before",
+  "version": 1,
+  "scope": "Disposable synthetic loopback profiles; Chromium only. These are baseline failures and passing existing safeguards, not final follow-up verification.",
+  "source": {
+    "git_commit": "aa9b03c5ff1968445a1a92197302796a26a3e824",
+    "branch": "codex/xl-release-2-foundation",
+    "application_html_sha256": "acf710663fa22807a215f3a5cc334bbc566313de68d4a090a4de7d546957f88b"
+  },
+  "spec": "test/e2e/recovery-followup.spec.cjs",
+  "summary": {
+    "total": 37,
+    "passed": 6,
+    "failed": 31,
+    "skipped": 0,
+    "flaky": 0
+  },
+  "limitations": [
+    "Most blocked recovery candidates fail first at missing independent recovery controls; those failures do not alone establish each downstream schema defect.",
+    "Final Chromium, Firefox and WebKit verification is recorded separately after the complete suite finishes."
+  ],
+  "runs": [
+    {
+      "id": 1,
+      "original_report": "xl-recovery-followup-before-final.json",
+      "started_at": "2026-10-12T11:49:39.105Z",
+      "duration_ms": 142037,
+      "passed": 6,
+      "failed": 21,
+      "skipped": 0,
+      "flaky": 0
+    },
+    {
+      "id": 2,
+      "original_report": "xl-recovery-malformed-before.json",
+      "started_at": "2026-10-12T11:52:22.026Z",
+      "duration_ms": 52603,
+      "passed": 0,
+      "failed": 8,
+      "skipped": 0,
+      "flaky": 0
+    },
+    {
+      "id": 3,
+      "original_report": "xl-recovery-restore-compat-before.json",
+      "started_at": "2026-10-12T11:55:09.384Z",
+      "duration_ms": 14994,
+      "passed": 0,
+      "failed": 2,
+      "skipped": 0,
+      "flaky": 0
+    }
+  ],
+  "cases": [
+    {
+      "run": 1,
+      "title": "recovery lockout sequence adopts a valid external state only after saved export, preview, PIN and owner choice",
+      "engine": "chromium",
+      "status": "failed",
+      "error_excerpt": "Error: expect(locator).toBeVisible() failed Locator: locator('#xl-recovery-adopt') Expected: visible Timeout: 5000ms Error: element(s) not found"
+    },
+    {
+      "run": 1,
+      "title": "recovery locked adoption preserves legitimate undated opening receipts and supplier discounts byte for byte",
+      "engine": "chromium",
+      "status": "failed",
+      "error_excerpt": "Error: expect(locator).toBeVisible() failed Locator: locator('#xl-recovery-proof') Expected: visible Timeout: 5000ms Error: element(s) not found"
+    },
+    {
+      "run": 1,
+      "title": "recovery a valid private backup restores exact records while normal app scripts never initialize",
+      "engine": "chromium",
+      "status": "failed",
+      "error_excerpt": "Error: expect(locator).toBeVisible() failed Locator: locator('#xl-recovery-proof') Expected: visible Timeout: 5000ms Error: element(s) not found"
+    },
+    {
+      "run": 1,
+      "title": "recovery rejects conflicting external records and preserves every original byte",
+      "engine": "chromium",
+      "status": "failed",
+      "error_excerpt": "Error: expect(locator).toBeVisible() failed Locator: locator('#xl-recovery-proof') Expected: visible Timeout: 5000ms Error: element(s) not found"
+    },
+    {
+      "run": 1,
+      "title": "recovery rejects duplicate-id external records and preserves every original byte",
+      "engine": "chromium",
+      "status": "failed",
+      "error_excerpt": "Error: expect(locator).toBeVisible() failed Locator: locator('#xl-recovery-proof') Expected: visible Timeout: 5000ms Error: element(s) not found"
+    },
+    {
+      "run": 1,
+      "title": "recovery rejects duplicate-number external records and preserves every original byte",
+      "engine": "chromium",
+      "status": "failed",
+      "error_excerpt": "Error: expect(locator).toBeVisible() failed Locator: locator('#xl-recovery-proof') Expected: visible Timeout: 5000ms Error: element(s) not found"
+    },
+    {
+      "run": 1,
+      "title": "recovery missing current PIN cannot be replaced by setup or an imported PIN",
+      "engine": "chromium",
+      "status": "failed",
+      "error_excerpt": "Error: expect(locator).toBeVisible() failed Locator: locator('#xl-recovery-proof') Expected: visible Timeout: 5000ms Error: element(s) not found"
+    },
+    {
+      "run": 1,
+      "title": "recovery wrong PIN refuses adoption and preserves the same verified preview for a correct retry",
+      "engine": "chromium",
+      "status": "failed",
+      "error_excerpt": "Error: expect(locator).toBeVisible() failed Locator: locator('#xl-recovery-proof') Expected: visible Timeout: 5000ms Error: element(s) not found"
+    },
+    {
+      "run": 1,
+      "title": "recovery refuses a saved proof when raw records changed after its download",
+      "engine": "chromium",
+      "status": "failed",
+      "error_excerpt": "Error: expect(locator).toBeVisible() failed Locator: locator('#xl-recovery-proof') Expected: visible Timeout: 5000ms Error: element(s) not found"
+    },
+    {
+      "run": 1,
+      "title": "recovery refuses changed records after preview without deleting recovery material",
+      "engine": "chromium",
+      "status": "failed",
+      "error_excerpt": "Error: expect(locator).toBeVisible() failed Locator: locator('#xl-recovery-proof') Expected: visible Timeout: 5000ms Error: element(s) not found"
+    },
+    {
+      "run": 1,
+      "title": "recovery refuses changed PIN after preview without deleting recovery material",
+      "engine": "chromium",
+      "status": "failed",
+      "error_excerpt": "Error: expect(locator).toBeVisible() failed Locator: locator('#xl-recovery-proof') Expected: visible Timeout: 5000ms Error: element(s) not found"
+    },
+    {
+      "run": 1,
+      "title": "recovery locked restore rejects checksum backup and keeps all original bytes",
+      "engine": "chromium",
+      "status": "failed",
+      "error_excerpt": "Error: expect(locator).toBeVisible() failed Locator: locator('#xl-recovery-proof') Expected: visible Timeout: 5000ms Error: element(s) not found"
+    },
+    {
+      "run": 1,
+      "title": "recovery locked restore rejects financial-history backup and keeps all original bytes",
+      "engine": "chromium",
+      "status": "failed",
+      "error_excerpt": "Error: expect(locator).toBeVisible() failed Locator: locator('#xl-recovery-proof') Expected: visible Timeout: 5000ms Error: element(s) not found"
+    },
+    {
+      "run": 1,
+      "title": "recovery corrupt startup journal remains downloadable without evaluating any normal app script",
+      "engine": "chromium",
+      "status": "passed"
+    },
+    {
+      "run": 1,
+      "title": "quota real New Invoice Save at xl_storage_journal_v1 keeps originals without reserving or acknowledging a number",
+      "engine": "chromium",
+      "status": "failed",
+      "error_excerpt": "Error: expect(locator).toContainText(expected) failed Locator: locator('#storage-error') Expected pattern: /no.*invoice.*counter.*changes|no.*changes.*applied/i Received string: \"Browser storage could not complete this save. Original records were restored. Keep your entries and export an independent backup before retrying.\" Timeout: 5000ms"
+    },
+    {
+      "run": 1,
+      "title": "quota real New Invoice Save at shop4_invoices keeps originals without reserving or acknowledging a number",
+      "engine": "chromium",
+      "status": "passed"
+    },
+    {
+      "run": 1,
+      "title": "quota real New Invoice Save at shop4_settings keeps originals without reserving or acknowledging a number",
+      "engine": "chromium",
+      "status": "passed"
+    },
+    {
+      "run": 1,
+      "title": "quota real New Invoice Save at shop4_audit keeps originals without reserving or acknowledging a number",
+      "engine": "chromium",
+      "status": "passed"
+    },
+    {
+      "run": 1,
+      "title": "quota real New Invoice Save at xl_storage_meta_v1 keeps originals without reserving or acknowledging a number",
+      "engine": "chromium",
+      "status": "passed"
+    },
+    {
+      "run": 1,
+      "title": "quota real Save with failed rollback reports recovery pending and preserves verified original states until reload",
+      "engine": "chromium",
+      "status": "passed"
+    },
+    {
+      "run": 1,
+      "title": "recovery rejects checksum saved proof without trusting imported recovery bytes",
+      "engine": "chromium",
+      "status": "failed",
+      "error_excerpt": "Error: expect(locator).toBeVisible() failed Locator: locator('#xl-recovery-proof') Expected: visible Timeout: 5000ms Error: element(s) not found"
+    },
+    {
+      "run": 1,
+      "title": "recovery rejects different-snapshot saved proof without trusting imported recovery bytes",
+      "engine": "chromium",
+      "status": "failed",
+      "error_excerpt": "Error: expect(locator).toBeVisible() failed Locator: locator('#xl-recovery-proof') Expected: visible Timeout: 5000ms Error: element(s) not found"
+    },
+    {
+      "run": 1,
+      "title": "recovery locked backup quota at shop4_invoices restores exact external records and original metadata",
+      "engine": "chromium",
+      "status": "failed",
+      "error_excerpt": "Error: expect(locator).toBeVisible() failed Locator: locator('#xl-recovery-proof') Expected: visible Timeout: 5000ms Error: element(s) not found"
+    },
+    {
+      "run": 1,
+      "title": "recovery locked backup quota at xl_storage_meta_v1 restores exact external records and original metadata",
+      "engine": "chromium",
+      "status": "failed",
+      "error_excerpt": "Error: expect(locator).toBeVisible() failed Locator: locator('#xl-recovery-proof') Expected: visible Timeout: 5000ms Error: element(s) not found"
+    },
+    {
+      "run": 1,
+      "title": "recovery locked restore pending rollback retains both snapshots and returns to the exact unadopted external state on reload",
+      "engine": "chromium",
+      "status": "failed",
+      "error_excerpt": "Error: expect(locator).toBeVisible() failed Locator: locator('#xl-recovery-proof') Expected: visible Timeout: 5000ms Error: element(s) not found"
+    },
+    {
+      "run": 1,
+      "title": "recovery exported corrupt journal can be replaced by a valid backup while adoption remains refused",
+      "engine": "chromium",
+      "status": "failed",
+      "error_excerpt": "Error: expect(locator).toBeVisible() failed Locator: locator('#xl-recovery-proof') Expected: visible Timeout: 5000ms Error: element(s) not found"
+    },
+    {
+      "run": 1,
+      "title": "recovery works when all deferred application scripts are removed and valid stored records cannot initialize navigation",
+      "engine": "chromium",
+      "status": "failed",
+      "error_excerpt": "Error: expect(locator).toBeVisible() failed Locator: locator('#storage-error') Expected: visible Timeout: 5000ms Error: element(s) not found"
+    },
+    {
+      "run": 2,
+      "title": "recovery adopt rejects malformed items-object and preserves the whole original profile",
+      "engine": "chromium",
+      "status": "failed",
+      "error_excerpt": "Error: expect(locator).toBeVisible() failed Locator: locator('#xl-recovery-proof') Expected: visible Timeout: 5000ms Error: element(s) not found"
+    },
+    {
+      "run": 2,
+      "title": "recovery adopt rejects malformed custom-fields-object and preserves the whole original profile",
+      "engine": "chromium",
+      "status": "failed",
+      "error_excerpt": "Error: expect(locator).toBeVisible() failed Locator: locator('#xl-recovery-proof') Expected: visible Timeout: 5000ms Error: element(s) not found"
+    },
+    {
+      "run": 2,
+      "title": "recovery adopt rejects malformed invoice-number-object and preserves the whole original profile",
+      "engine": "chromium",
+      "status": "failed",
+      "error_excerpt": "Error: expect(locator).toBeVisible() failed Locator: locator('#xl-recovery-proof') Expected: visible Timeout: 5000ms Error: element(s) not found"
+    },
+    {
+      "run": 2,
+      "title": "recovery adopt rejects malformed impossible-date and preserves the whole original profile",
+      "engine": "chromium",
+      "status": "failed",
+      "error_excerpt": "Error: expect(locator).toBeVisible() failed Locator: locator('#xl-recovery-proof') Expected: visible Timeout: 5000ms Error: element(s) not found"
+    },
+    {
+      "run": 2,
+      "title": "recovery restore rejects malformed items-object and preserves the whole original profile",
+      "engine": "chromium",
+      "status": "failed",
+      "error_excerpt": "Error: expect(locator).toBeVisible() failed Locator: locator('#xl-recovery-proof') Expected: visible Timeout: 5000ms Error: element(s) not found"
+    },
+    {
+      "run": 2,
+      "title": "recovery restore rejects malformed custom-fields-object and preserves the whole original profile",
+      "engine": "chromium",
+      "status": "failed",
+      "error_excerpt": "Error: expect(locator).toBeVisible() failed Locator: locator('#xl-recovery-proof') Expected: visible Timeout: 5000ms Error: element(s) not found"
+    },
+    {
+      "run": 2,
+      "title": "recovery restore rejects malformed invoice-number-object and preserves the whole original profile",
+      "engine": "chromium",
+      "status": "failed",
+      "error_excerpt": "Error: expect(locator).toBeVisible() failed Locator: locator('#xl-recovery-proof') Expected: visible Timeout: 5000ms Error: element(s) not found"
+    },
+    {
+      "run": 2,
+      "title": "recovery restore rejects malformed impossible-date and preserves the whole original profile",
+      "engine": "chromium",
+      "status": "failed",
+      "error_excerpt": "Error: expect(locator).toBeVisible() failed Locator: locator('#xl-recovery-proof') Expected: visible Timeout: 5000ms Error: element(s) not found"
+    },
+    {
+      "run": 3,
+      "title": "recovery valid backup replaces archived conflicting current history without inventing before counts or differences",
+      "engine": "chromium",
+      "status": "failed",
+      "error_excerpt": "Error: expect(locator).toBeVisible() failed Locator: locator('#xl-recovery-proof') Expected: visible Timeout: 5000ms Error: element(s) not found"
+    },
+    {
+      "run": 3,
+      "title": "recovery locked legacy v5 restore requires the current PIN and preserves the selected opening balances, discounts and PIN settings",
+      "engine": "chromium",
+      "status": "failed",
+      "error_excerpt": "Error: expect(locator).toBeVisible() failed Locator: locator('#xl-recovery-proof') Expected: visible Timeout: 5000ms Error: element(s) not found"
+    }
+  ]
+}
