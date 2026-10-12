@@ -17,7 +17,8 @@
     "htmlcheck": "node scripts/htmlcheck.cjs",
     "test:stabilization": "node scripts/review-release1.cjs --group=stabilization",
     "test:foundation": "node --test test/foundation/*.test.cjs && node scripts/review-release1.cjs --group=foundation",
-    "test:storage": "node --test test/foundation/storage-core.test.cjs"
+    "test:storage": "node --test test/foundation/storage-core.test.cjs",
+    "test:premerge": "node scripts/verify-premerge.cjs"
   },
   "engines": {
     "node": ">=22.12.0"

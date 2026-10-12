@@ -44,6 +44,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
       - uses: actions/setup-node@v4
         with:
           node-version-file: .nvmrc
@@ -53,6 +55,13 @@ jobs:
       - run: npm test
       - run: npm run lint
       - run: npm run build
+      - name: Independent owner pre-merge gate
+        run: |
+          owner_gate_result=0
+          for owner_gate_browser in chromium firefox webkit; do
+            XL_PREMERGE_BROWSER="$owner_gate_browser" node scripts/verify-premerge.cjs || owner_gate_result=1
+          done
+          exit "$owner_gate_result"
       - uses: actions/upload-artifact@v4
         if: always()
         with:
