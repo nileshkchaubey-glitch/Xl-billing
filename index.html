@@ -897,7 +897,7 @@ const DB = {
 };
 const getSettings  = () => DB.get('settings')  || {
   shopName:'My Shop', owner:'', address:'', phone:'', gstin:'', state:'',
-  prefix:'INV-', invNo:1001, fy:'2024-25',
+  prefix:'INV-', invNo:1001, fy:businessFinancialYear(),
   terms:'Goods once sold will not be returned.\nSubject to local jurisdiction.',
   bank:'',
   customFields:[],
@@ -1051,7 +1051,38 @@ function listHeaders(container,key,columns,render){
 }
 
 const genId = () => Date.now().toString(36)+'-'+(typeof crypto.randomUUID==='function'?crypto.randomUUID():Array.from(crypto.getRandomValues(new Uint8Array(16)),b=>b.toString(16).padStart(2,'0')).join(''));
-const today   = () => new Date().toISOString().slice(0,10);
+// Business dates use the configured shop calendar; stored event timestamps stay UTC.
+const BUSINESS_TIME_ZONE = 'Asia/Kolkata';
+function businessDate(instant=new Date()) {
+  const date=new Date(instant);
+  if(!Number.isFinite(date.getTime()))throw new Error('Invalid business date timestamp.');
+  const parts=new Intl.DateTimeFormat('en-IN',{timeZone:BUSINESS_TIME_ZONE,calendar:'iso8601',numberingSystem:'latn',year:'numeric',month:'2-digit',day:'2-digit'}).formatToParts(date);
+  const part=type=>parts.find(p=>p.type===type).value;
+  return part('year').padStart(4,'0')+'-'+part('month')+'-'+part('day');
+}
+function businessDayNumber(date) {
+  if(typeof date!=='string'||!/^\d{4}-\d{2}-\d{2}$/.test(date))throw new Error('Invalid business calendar date.');
+  const [year,month,day]=date.split('-').map(Number),utc=new Date(0);
+  utc.setUTCHours(0,0,0,0);utc.setUTCFullYear(year,month-1,day);
+  if(year<1||utc.getUTCFullYear()!==year||utc.getUTCMonth()!==month-1||utc.getUTCDate()!==day)throw new Error('Invalid business calendar date.');
+  return utc.getTime()/86400000;
+}
+function businessMonthRange(date=businessDate()) {
+  businessDayNumber(date);
+  const [year,month]=date.split('-').map(Number),last=new Date(0);
+  last.setUTCHours(0,0,0,0);last.setUTCFullYear(year,month,0);
+  return {first:date.slice(0,7)+'-01',last:date.slice(0,7)+'-'+String(last.getUTCDate()).padStart(2,'0')};
+}
+function businessFinancialYear(date=businessDate()) {
+  businessDayNumber(date);
+  const [year,month]=date.split('-').map(Number),start=month<4?year-1:year;
+  return start+'-'+String((start+1)%100).padStart(2,'0');
+}
+function businessAgeDays(date,asOf=businessDate()) {
+  // Invalid historical dates stay unsupported; never roll them into another date.
+  try{return businessDayNumber(asOf)-businessDayNumber(date);}catch{return NaN;}
+}
+const today   = () => businessDate();
 const fmtDate = d => { if(!d) return '-'; if(typeof d!=='string'||!/^\d{4}-\d{2}-\d{2}$/.test(d))return 'Invalid date'; const[y,m,dd]=d.split('-'); return `${dd}/${m}/${y}`; };
 const fc      = n  => '₹'+(+(n||0)).toLocaleString('en-IN',{minimumFractionDigits:2,maximumFractionDigits:2});
 const fp      = n  => (+(n||0)).toFixed(2);
@@ -1104,7 +1135,7 @@ function renderDashboard() {
   const items=getItems(), parties=getParties();
   document.getElementById('sb-shop').textContent = s.shopName||'My Shop';
   document.getElementById('sb-loc').textContent  = s.state||'Billing v4';
-  const ym = new Date().toISOString().slice(0,7);
+  const ym = today().slice(0,7);
   const mI = invs.filter(i=>(i.date||'').startsWith(ym));
   const mP = purs.filter(p=>(p.date||'').startsWith(ym));
   const mR = retail.filter(r=>(r.date||'').startsWith(ym));
@@ -1198,7 +1229,7 @@ function selectParty(inputId, hiddenId, id, name, listId) {
   if(inputId==='inv-party') showLastRate(id);
 }
 function quickAddParty(inputId, hiddenId, listId, name) {
-  const p={id:genId(),name,phone:'',address:'',type:'both',openingBal:0,createdAt:today()};
+  const p={id:genId(),name,phone:'',address:'',type:'both',openingBal:0,createdAt:new Date().toISOString()};
   const parties=getParties(); parties.push(p); DB.set('parties',parties);
   selectParty(inputId,hiddenId,p.id,name,listId);
   toast(`Party "${name}" added!`);
@@ -2378,9 +2409,7 @@ document.querySelectorAll('.mo').forEach(m=>m.addEventListener('click',e=>{if(e.
 // INIT
 // ═══════════════════════════════════
 window.addEventListener('xl:ready',()=>{
-  const now=new Date();
-  const first=new Date(now.getFullYear(),now.getMonth(),1).toISOString().slice(0,10);
-  const last=new Date(now.getFullYear(),now.getMonth()+1,0).toISOString().slice(0,10);
+  const {first,last}=businessMonthRange();
   ['sl-from','pl-from'].forEach(id=>{const el=document.getElementById(id);if(el) el.value=first;});
   ['sl-to','pl-to'].forEach(id=>{const el=document.getElementById(id);if(el) el.value=last;});
   const s=getSettings();
@@ -2665,23 +2694,22 @@ window.repTab = function(tab) {
 
 window.renderOutstandingRep = function() {
   const invs = getInvoices().filter(i => (billBalance(i)||0) > 0);
-  const now = new Date();
+  const asOf = today();
   // Group by party
   const pm = {};
   invs.forEach(inv => {
     const key = inv.partyName || 'Cash';
     if (!pm[key]) pm[key] = { name: key, invoices: [] };
-    const invDate = new Date(inv.date);
-    const days = Math.floor((now - invDate) / 86400000);
+    const days = businessAgeDays(inv.date,asOf);
     pm[key].invoices.push({ ...inv, days });
   });
   const parties = Object.values(pm).sort((a,b) =>
     b.invoices.reduce((s,i)=>s+(billBalance(i)||0),0) - a.invoices.reduce((s,i)=>s+(billBalance(i)||0),0)
   );
-  const total0_30   = invs.filter(i => { const d=Math.floor((now-new Date(i.date))/86400000); return d<=30; }).reduce((a,i)=>a+(billBalance(i)||0),0);
-  const total31_60  = invs.filter(i => { const d=Math.floor((now-new Date(i.date))/86400000); return d>30&&d<=60; }).reduce((a,i)=>a+(billBalance(i)||0),0);
-  const total61_90  = invs.filter(i => { const d=Math.floor((now-new Date(i.date))/86400000); return d>60&&d<=90; }).reduce((a,i)=>a+(billBalance(i)||0),0);
-  const total90plus = invs.filter(i => { const d=Math.floor((now-new Date(i.date))/86400000); return d>90; }).reduce((a,i)=>a+(billBalance(i)||0),0);
+  const total0_30   = invs.filter(i => { const d=businessAgeDays(i.date,asOf); return d<=30; }).reduce((a,i)=>a+(billBalance(i)||0),0);
+  const total31_60  = invs.filter(i => { const d=businessAgeDays(i.date,asOf); return d>30&&d<=60; }).reduce((a,i)=>a+(billBalance(i)||0),0);
+  const total61_90  = invs.filter(i => { const d=businessAgeDays(i.date,asOf); return d>60&&d<=90; }).reduce((a,i)=>a+(billBalance(i)||0),0);
+  const total90plus = invs.filter(i => { const d=businessAgeDays(i.date,asOf); return d>90; }).reduce((a,i)=>a+(billBalance(i)||0),0);
   const grandTotal  = invs.reduce((a,i)=>a+(billBalance(i)||0),0);
 
   document.getElementById('rep-content').innerHTML = `
@@ -3235,7 +3263,7 @@ function pbSelectParty(id, name) {
 }
 
 function pbQuickAddParty(name) {
-  const p = { id: genId(), name, phone: '', address: '', type: 'both', openingBal: 0, createdAt: today() };
+  const p = { id: genId(), name, phone: '', address: '', type: 'both', openingBal: 0, createdAt: new Date().toISOString() };
   const parties = getParties(); parties.push(p); DB.set('parties', parties);
   pbSelectParty(p.id, name);
   toast(`Party "${name}" added!`);
@@ -4446,7 +4474,7 @@ console.log('v6 fixes applied ✓');
     const listId = document.getElementById('qp-list-id').value || ('ac-' + inputId);
     if(!name){ toast('Enter party name!'); document.getElementById('qp-name').focus(); return; }
     if(!area){ toast('Enter party area!'); document.getElementById('qp-area').focus(); return; }
-    const p = { id:genId(), name, phone:'', address:'', area, description, desc:description, type:'both', openingBal:0, createdAt:today() };
+    const p = { id:genId(), name, phone:'', address:'', area, description, desc:description, type:'both', openingBal:0, createdAt:new Date().toISOString() };
     const parties = getParties(); parties.push(p); DB.set('parties', parties);
     closeModal('quick-party-modal');
     selectParty(inputId, hiddenId, p.id, p.name, listId);
@@ -7268,7 +7296,7 @@ window.renderDashboard = function() {
   document.getElementById('sb-shop').textContent = s.shopName||'My Shop';
   document.getElementById('sb-loc').textContent  = s.state||'Billing';
 
-  const ym = new Date().toISOString().slice(0,7);
+  const ym = today().slice(0,7);
   const activeInvs = invs.filter(i=>!isCancelled(i));
   const mI = activeInvs.filter(i=>(i.date||'').startsWith(ym));
   const mP = purs.filter(p=>(p.date||'').startsWith(ym));
@@ -7789,7 +7817,7 @@ window.purBulkSelectParty = function(id, name) {
 };
 
 window.purBulkQuickAdd = function(name) {
-  const p = { id:genId(), name, phone:'', address:'', area:'', type:'supplier', openingBal:0, createdAt:today() };
+  const p = { id:genId(), name, phone:'', address:'', area:'', type:'supplier', openingBal:0, createdAt:new Date().toISOString() };
   const parties = getParties(); parties.push(p); DB.set('parties', parties);
   purBulkSelectParty(p.id, name);
   toast(`Supplier "${name}" added!`);
@@ -8937,7 +8965,7 @@ function buildPartyTxnLog(partyId, partyName) {
     (inv.payments||[]).forEach(p=>{
       txns.push({ date:p.date, icon:'💳', label:`Payment — ${inv.invoiceNo}`, sub:`${p.mode} ${p.note?'· '+p.note:''}`, amount:fc(p.amt), color:'var(--b)' });
     });
-    if(isCancelled(inv)) txns.push({ date:inv.cancelledAt?.slice(0,10)||inv.date, icon:'✕', label:`Cancelled — ${inv.invoiceNo}`, sub:'Invoice cancelled', amount:'-'+fc(inv.total), color:'var(--r)' });
+    if(isCancelled(inv)) txns.push({ date:inv.cancelledAt&&Number.isFinite(Date.parse(inv.cancelledAt))?businessDate(inv.cancelledAt):inv.date, icon:'✕', label:`Cancelled — ${inv.invoiceNo}`, sub:'Invoice cancelled', amount:'-'+fc(inv.total), color:'var(--r)' });
   });
   // Purchases
   getPurchases().filter(p=>p.partyId===partyId||p.partyName===partyName).forEach(pur=>{
@@ -9014,7 +9042,7 @@ window.renderAuditPage = function() {
             const q=(document.getElementById('audit-srch')?.value||'').toLowerCase();
             return !q||((e.label||'')+(e.details||'')+(e.entityType||'')).toLowerCase().includes(q);
           }).map(e=>`<tr>
-            <td style="color:var(--gray-400);font-size:11.5px;white-space:nowrap;padding:7px 12px">${new Date(e.ts).toLocaleString('en-IN',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'})}</td>
+            <td style="color:var(--gray-400);font-size:11.5px;white-space:nowrap;padding:7px 12px">${new Date(e.ts).toLocaleString('en-IN',{timeZone:BUSINESS_TIME_ZONE,day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'})}</td>
             <td><span class="audit-type ${escHtml(typeMap[e.type]||'at-create')}">${escHtml(iconMap[e.type]||'•')} ${escHtml(e.type)}</span></td>
             <td style="color:var(--gray-500);font-size:12px">${escHtml(e.entityType||'-')}</td>
             <td style="font-weight:600">${escHtml(e.label||'-')}</td>
@@ -10106,20 +10134,20 @@ window.repTab = function(tab) {
 // Ensure outstanding report also excludes cancelled
 window.renderOutstandingRep = function() {
   const invs = getInvoices().filter(i => !_isCanV16(i) && (billBalance(i)||0)>0);
-  const now  = new Date();
+  const asOf = today();
   const pm   = {};
   invs.forEach(inv => {
     const key = inv.partyName||'Cash';
     if (!pm[key]) pm[key] = { name:key, invoices:[] };
-    const days = Math.floor((now - new Date(inv.date)) / 86400000);
+    const days = businessAgeDays(inv.date,asOf);
     pm[key].invoices.push({...inv, days});
   });
   const parties   = Object.values(pm).sort((a,b)=>b.invoices.reduce((s,i)=>s+(billBalance(i)||0),0)-a.invoices.reduce((s,i)=>s+(billBalance(i)||0),0));
   const grandTotal = invs.reduce((a,i)=>a+(billBalance(i)||0),0);
-  const t0_30  = invs.filter(i=>Math.floor((now-new Date(i.date))/86400000)<=30).reduce((a,i)=>a+(billBalance(i)||0),0);
-  const t31_60 = invs.filter(i=>{const d=Math.floor((now-new Date(i.date))/86400000);return d>30&&d<=60;}).reduce((a,i)=>a+(billBalance(i)||0),0);
-  const t61_90 = invs.filter(i=>{const d=Math.floor((now-new Date(i.date))/86400000);return d>60&&d<=90;}).reduce((a,i)=>a+(billBalance(i)||0),0);
-  const t90p   = invs.filter(i=>Math.floor((now-new Date(i.date))/86400000)>90).reduce((a,i)=>a+(billBalance(i)||0),0);
+  const t0_30  = invs.filter(i=>businessAgeDays(i.date,asOf)<=30).reduce((a,i)=>a+(billBalance(i)||0),0);
+  const t31_60 = invs.filter(i=>{const d=businessAgeDays(i.date,asOf);return d>30&&d<=60;}).reduce((a,i)=>a+(billBalance(i)||0),0);
+  const t61_90 = invs.filter(i=>{const d=businessAgeDays(i.date,asOf);return d>60&&d<=90;}).reduce((a,i)=>a+(billBalance(i)||0),0);
+  const t90p   = invs.filter(i=>businessAgeDays(i.date,asOf)>90).reduce((a,i)=>a+(billBalance(i)||0),0);
 
   document.getElementById('rep-content').innerHTML = `
     <div class="sg" style="grid-template-columns:repeat(auto-fit,minmax(130px,1fr))">
