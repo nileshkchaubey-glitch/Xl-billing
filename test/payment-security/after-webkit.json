@@ -1,0 +1,214 @@
+{
+  "owner_instruction": "https://github.com/nileshkchaubey-glitch/Xl-billing/pull/8#issuecomment-6126054996",
+  "tested_application_commit": "e8132f32609d1047d6d3316cc5799e3ca3bd35a0",
+  "tested_commit": "e8132f32609d1047d6d3316cc5799e3ca3bd35a0",
+  "source_sha256": "a7f74be6ff3bc197a0e3ceecff547c6dec29346cd0c0b2a25a6b998311d95a03",
+  "baseline_commit": "29aeb20225bccfc653b192651de608491185096c",
+  "runner_sha256": "de22f0d16791f1f3b3aee90e0029c983d783303f05a69a2ca0479db57c16e58f",
+  "browser": "webkit",
+  "synthetic_only": true,
+  "summary": {
+    "pass": 5,
+    "fail": 0,
+    "harness_errors": 0
+  },
+  "results": [
+    {
+      "id": "real-payment-out",
+      "title": "Real UPI payment-out allocation reconciles supplier history and paise",
+      "browser": "webkit",
+      "width": 1366,
+      "classification": "BLOCKER",
+      "status": "PASS",
+      "duration_ms": 2667,
+      "pass": true,
+      "expected": "Original cash 20 + UPI 12.34 = paid 32.34; remaining 467.66",
+      "observed": {
+        "id": "u1",
+        "date": "2026-10-09",
+        "partyId": "p2",
+        "partyName": "Synthetic Supplier",
+        "billNo": "P-1",
+        "mode": "amount",
+        "total": 500,
+        "paid": 32.34,
+        "balance": 467.66,
+        "items": [],
+        "notes": "",
+        "payments": [
+          {
+            "date": "2026-10-09",
+            "amt": 20,
+            "mode": "Cash",
+            "note": ""
+          },
+          {
+            "date": "2026-10-13",
+            "amt": 12.34,
+            "mode": "UPI",
+            "note": "Payment Out"
+          }
+        ],
+        "createdAt": "2026-10-09T08:00:00Z",
+        "openingPaid": 0,
+        "updatedAt": "2026-10-12T19:06:50.525Z"
+      }
+    },
+    {
+      "id": "real-purchase-payment",
+      "title": "New Purchase and actual supplier UPI payment reconcile",
+      "browser": "webkit",
+      "width": 1366,
+      "classification": "BLOCKER",
+      "status": "PASS",
+      "duration_ms": 2900,
+      "pass": true,
+      "expected": "125.50 = paid 35.50 + due 90; two UPI records",
+      "observed": {
+        "id": "mv5milpb-152f0777-0e6b-4b51-ad84-daaceebed460",
+        "date": "2026-10-13",
+        "partyId": "p2",
+        "partyName": "Synthetic Supplier",
+        "billNo": "OWNER-PUR-1",
+        "mode": "amount",
+        "total": 125.5,
+        "paid": 35.5,
+        "balance": 90,
+        "payType": "UPI",
+        "items": [],
+        "notes": "",
+        "payments": [
+          {
+            "date": "2026-10-13",
+            "amt": 25.5,
+            "mode": "UPI",
+            "note": "Initial payment"
+          },
+          {
+            "date": "2026-10-13",
+            "amt": 10,
+            "mode": "UPI",
+            "note": ""
+          }
+        ],
+        "photoData": null,
+        "createdAt": "2026-10-12T19:06:52.895Z",
+        "openingPaid": 0,
+        "updatedAt": "2026-10-12T19:06:53.542Z"
+      }
+    },
+    {
+      "id": "edit-reversal-pin",
+      "title": "Invoice edit, payment reversal and PIN change use real confirmation UI",
+      "browser": "webkit",
+      "width": 1366,
+      "classification": "BLOCKER",
+      "status": "PASS",
+      "duration_ms": 3821,
+      "pass": true,
+      "expected": "Edit retains 20 receipt; setup does not delete; changed PIN rejects old value; approved reversal returns due 120",
+      "observed": {
+        "edited": true,
+        "setup_preserved": true,
+        "old_pin_denied": true,
+        "invoice": {
+          "id": "s0",
+          "invoiceNo": "INV-1001",
+          "date": "2026-10-09",
+          "partyId": "p1",
+          "partyName": "Synthetic Customer",
+          "items": [
+            {
+              "id": "line0",
+              "itemId": "i1",
+              "name": "Paper Cups",
+              "qty": 6,
+              "rate": 20,
+              "amt": 120,
+              "unit": "Pcs"
+            }
+          ],
+          "subtotal": 120,
+          "discount": 0,
+          "taxPct": 0,
+          "taxAmt": 0,
+          "total": 120,
+          "paid": 0,
+          "balance": 120,
+          "notes": "",
+          "paymentType": "Credit",
+          "dispatchStatus": "pending",
+          "payments": [],
+          "createdAt": "2026-10-09T08:00:00Z",
+          "due": "",
+          "customFieldValues": {},
+          "updatedAt": "2026-10-12T19:06:57.401Z",
+          "openingPaid": 0
+        }
+      }
+    },
+    {
+      "id": "stored-print-text-xss",
+      "title": "Stored packing text remains literal in the actual invoice view and both print layouts",
+      "browser": "webkit",
+      "width": 1366,
+      "classification": "BLOCKER",
+      "status": "PASS",
+      "duration_ms": 2775,
+      "pass": true,
+      "expected": "Name, packing summary, fallback pack type and colour payloads render as literal text; no event script executes in real view/A4/A5 output; totals80 and raw bytes preserved",
+      "observed": {
+        "view": {
+          "executed": false,
+          "injected_elements": 0,
+          "literals": true
+        },
+        "outputs": [
+          {
+            "paper": "A4",
+            "executed": false,
+            "injected_elements": 0,
+            "literals": true,
+            "total_present": true
+          },
+          {
+            "paper": "A5",
+            "executed": false,
+            "injected_elements": 0,
+            "literals": true,
+            "total_present": true
+          }
+        ],
+        "bytes_preserved": true
+      },
+      "note": "Payloads only toggle a synthetic window flag. No secret or real profile is accessed."
+    },
+    {
+      "id": "stored-purchase-payment-text-xss",
+      "title": "Stored vendor bill numbers remain literal in real supplier payment and Payment Out workflows",
+      "browser": "webkit",
+      "width": 1366,
+      "classification": "BLOCKER",
+      "status": "PASS",
+      "duration_ms": 1881,
+      "pass": true,
+      "expected": "Vendor bill payload appears as literal text in the actual Pay modal and selected-supplier Payment Out table; no event execution or inserted payload element; original480 due and all stored bytes unchanged",
+      "observed": {
+        "modal": {
+          "executed": false,
+          "injected_elements": 0,
+          "literal": true,
+          "balance_input": "480.00"
+        },
+        "payout": {
+          "executed": false,
+          "injected_elements": 0,
+          "literal": true,
+          "bill_rows": 1
+        },
+        "bytes_preserved": true
+      },
+      "note": "Only real navigation, Pay and supplier-selection controls are used. No payment is saved; payload only changes a synthetic window flag."
+    }
+  ]
+}
