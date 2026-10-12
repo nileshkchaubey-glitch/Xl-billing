@@ -26,8 +26,10 @@ const invalid={
 };
 for(const screen of ['previous','excel'])for(const[name,text]of Object.entries(invalid))test(`CSV ${screen}: ${name} leaves all business bytes unchanged`,async({page})=>{
  const before=await raw(page);await upload(page,screen,text);
+ await expect.poll(()=>page.evaluate(()=>!!document.getElementById('storage-error')||/imported successfully/.test((document.getElementById('csv-import-result')?.textContent||'')+(document.getElementById('xl-import-result')?.textContent||'')))).toBe(true);
+ expect(await raw(page)).toEqual(before);
  await expect(page.locator('#storage-error')).toBeVisible();await expect(page.locator('#storage-error')).toContainText(/CSV rejected|duplicate/i);
- expect(await raw(page)).toEqual(before);await expect(page.locator('#toast')).not.toContainText(/imported|success/i);
+ await expect(page.locator('#toast')).not.toContainText(/imported|success/i);
 });
 for(const screen of ['previous','excel'])test(`CSV ${screen}: legacy summaries retain opening receipt without fabricated events`,async({page})=>{
  const before=await raw(page);
