@@ -8222,50 +8222,87 @@ function auditLog(type, entityType, entityId, label, details) {
 // DELETE PROTECTION — password guard
 // Setting: settings.deletePin (default '1234')
 // ════════════════════════════════════════════════════════
-function getDeletePin() {
-  return getSettings().deletePin || '1234';
+// PIN changes require an explicit user action; loading old data never rewrites it.
+async function pinDigest(pin, salt) {
+  const bytes = new TextEncoder().encode(salt + ':' + pin);
+  const hash = await crypto.subtle.digest('SHA-256', bytes);
+  return Array.from(new Uint8Array(hash), b => b.toString(16).padStart(2, '0')).join('');
 }
-
-window.withDeletePin = function(label, onConfirm) {
-  // Inject overlay
+window.withDeletePin = function(label, onConfirm, changePin = false) {
+  document.getElementById('del-pin-overlay')?.remove();
+  const settings = getSettings();
+  const setup = changePin || !settings.deletePinHash;
+  const needsOld = !!settings.deletePinHash || (!!settings.deletePin && settings.deletePin !== '1234');
+  const previousFocus = document.activeElement;
   const overlay = document.createElement('div');
-  overlay.className = 'pwd-overlay';
-  overlay.id = 'del-pin-overlay';
-  overlay.innerHTML = `
-    <div class="pwd-box">
-      <div class="pwd-icon">🔐</div>
-      <div class="pwd-title">Confirm Delete</div>
-      <div class="pwd-sub">${label}<br><span style="color:var(--r);font-size:11.5px">This action cannot be undone after confirmation.</span></div>
-      <input class="pwd-input" id="del-pin-inp" type="password" maxlength="10"
-        placeholder="••••" autocomplete="off"
-        oninput="v15CheckPin(this,${JSON.stringify(getDeletePin())})">
-      <div style="display:flex;gap:8px;margin-top:14px">
-        <button class="btn btn-out" style="flex:1" onclick="document.getElementById('del-pin-overlay').remove()">Cancel</button>
-        <button class="btn btn-r" id="del-pin-ok" style="flex:1" disabled onclick="v15PinConfirm(${JSON.stringify(getDeletePin())})">🗑 Delete</button>
-      </div>
-      <div style="margin-top:10px;font-size:11px;color:var(--gray-400)">Default PIN: 1234 — Change in Settings</div>
-    </div>`;
+  overlay.className = 'pwd-overlay'; overlay.id = 'del-pin-overlay';
+  overlay.innerHTML = `<div class="pwd-box" role="dialog" aria-modal="true" aria-labelledby="del-pin-title">
+    <div class="pwd-icon">🔐</div>
+    <div class="pwd-title" id="del-pin-title">${setup ? 'Set a secure delete PIN' : 'Confirm Delete'}</div>
+    <div class="pwd-sub"></div>
+    ${setup && needsOld ? '<label for="del-pin-old">Current PIN</label><input class="pwd-input" id="del-pin-old" type="password" maxlength="10" autocomplete="off">' : ''}
+    <label for="del-pin-inp">${setup ? 'New PIN (4–10 digits, different from 1234)' : 'Delete PIN'}</label>
+    <input class="pwd-input" id="del-pin-inp" type="password" inputmode="numeric" maxlength="10" autocomplete="off">
+    ${setup ? '<label for="del-pin-confirm">Confirm new PIN</label><input class="pwd-input" id="del-pin-confirm" type="password" maxlength="10" autocomplete="off">' : ''}
+    <div id="del-pin-error" role="alert" style="color:var(--r);margin-top:8px"></div>
+    <div style="display:flex;gap:8px;margin-top:14px">
+      <button class="btn btn-out" id="del-pin-cancel" style="flex:1">Cancel</button>
+      <button class="btn btn-r" id="del-pin-ok" style="flex:1" disabled>${setup ? 'Save PIN' : 'Delete'}</button>
+    </div></div>`;
+  overlay.querySelector('.pwd-sub').textContent = setup ? 'Save a new PIN first. Then choose Delete again. The default PIN cannot delete records. ' + label : label;
   document.body.appendChild(overlay);
-  overlay.addEventListener('click', e=>{ if(e.target===overlay) overlay.remove(); });
-  setTimeout(()=>document.getElementById('del-pin-inp')?.focus(), 80);
-
-  // Store callback
-  window._delPinCb = () => { overlay.remove(); onConfirm(); };
-};
-
-window.v15CheckPin = function(input, pin) {
-  const ok = document.getElementById('del-pin-ok');
-  if (ok) ok.disabled = input.value !== pin;
-  if (input.value.length > 0 && input.value !== pin.slice(0, input.value.length)) {
-    input.classList.add('wrong');
-    setTimeout(()=>input.classList.remove('wrong'), 300);
-  }
-};
-
-window.v15PinConfirm = function(pin) {
-  const val = document.getElementById('del-pin-inp')?.value;
-  if (val !== pin) { toast('Wrong PIN!'); return; }
-  if (typeof window._delPinCb === 'function') window._delPinCb();
+  const input = overlay.querySelector('#del-pin-inp');
+  const ok = overlay.querySelector('#del-pin-ok');
+  const error = overlay.querySelector('#del-pin-error');
+  let revision = 0, busy = false;
+  const close = () => { overlay.remove(); previousFocus?.focus(); };
+  const matchesOld = async value => settings.deletePinHash
+    ? await pinDigest(value, settings.deletePinSalt) === settings.deletePinHash
+    : value === settings.deletePin;
+  const refresh = async () => {
+    const current = ++revision; ok.disabled = true;
+    const valid = setup
+      ? /^\d{4,10}$/.test(input.value) && input.value !== '1234' && input.value === overlay.querySelector('#del-pin-confirm').value
+      : await matchesOld(input.value);
+    if (current === revision && overlay.isConnected) ok.disabled = !valid;
+  };
+  const submit = async () => {
+    if (busy) return;
+    busy = true; ok.disabled = true;
+    try {
+      if (setup) {
+        if (!/^\d{4,10}$/.test(input.value) || input.value === '1234' || input.value !== overlay.querySelector('#del-pin-confirm').value) throw new Error('Enter matching PINs, with 4–10 digits. Do not use 1234.');
+        if (needsOld && !await matchesOld(overlay.querySelector('#del-pin-old')?.value || '')) throw new Error('The current PIN is incorrect.');
+        const salt = Array.from(crypto.getRandomValues(new Uint8Array(16)), b=>b.toString(16).padStart(2,'0')).join('');
+        const hash = await pinDigest(input.value, salt);
+        const next = { ...getSettings(), deletePinSalt:salt, deletePinHash:hash };
+        delete next.deletePin; DB.set('settings', next);
+        auditLog('edit','settings','delete-pin','Delete PIN changed','');
+        close(); toast('PIN saved. Choose Delete again to confirm the record.');
+      } else {
+        if (!await matchesOld(input.value)) throw new Error('Wrong PIN. No record was deleted.');
+        close(); onConfirm();
+      }
+    } catch (e) {
+      error.textContent = e.message; input.classList.add('wrong');
+      setTimeout(()=>input.classList.remove('wrong'),300);
+    } finally { busy = false; if(overlay.isConnected) await refresh(); }
+  };
+  overlay.addEventListener('input',refresh);
+  ok.addEventListener('click',submit);
+  overlay.querySelector('#del-pin-cancel').addEventListener('click',close);
+  overlay.addEventListener('click',e=>{if(e.target===overlay)close();});
+  overlay.addEventListener('keydown',e=>{
+    if(e.key==='Escape'){e.preventDefault();close();}
+    if(e.key==='Enter'){e.preventDefault();submit();}
+    if(e.key==='Tab'){
+      const fields = [...overlay.querySelectorAll('input,button')].filter(el=>!el.disabled);
+      const first = fields[0], last = fields.at(-1);
+      if(e.shiftKey && document.activeElement===first){e.preventDefault();last.focus();}
+      else if(!e.shiftKey && document.activeElement===last){e.preventDefault();first.focus();}
+    }
+  });
+  (overlay.querySelector('#del-pin-old') || input).focus();
 };
 
 // ════════════════════════════════════════════════════════
@@ -8319,6 +8356,32 @@ window.delItem = function(id) {
 };
 
 // ════════════════════════════════════════════════════════
+window.deletePaymentEntry = function(invId, index) {
+  const inv = getInvoices().find(i=>i.id===invId); if(!inv?.payments?.[index])return;
+  withDeletePin('Delete this payment entry?',()=>{
+    const records = getInvoices(), record = records.find(i=>i.id===invId);
+    if(!record?.payments?.[index])return;
+    record.payments.splice(index,1);record.paid=record.payments.reduce((sum,p)=>sum+Number(p.amt||0),0);
+    record.balance=Math.round((record.total-record.paid)*100)/100;
+    DB.set('invoices',records);auditLog('delete','payment',invId,record.invoiceNo,'Payment removed');
+    closeModal('pay-modal');renderSalesList();renderPaymentLedger();toast('Payment deleted');
+  });
+};
+window.deletePayment = window.deletePaymentEntry;
+window.delPurPayEntry = function(purId,index) {
+  withDeletePin('Delete this supplier payment?',()=>{
+    const records=getPurchases(),record=records.find(i=>i.id===purId);if(!record?.payments?.[index])return;
+    record.payments.splice(index,1);record.paid=record.payments.reduce((sum,p)=>sum+Number(p.amt||0),0);
+    record.balance=Math.round((record.total-record.paid)*100)/100;
+    DB.set('purchases',records);auditLog('delete','payment',purId,record.billNo,'Supplier payment removed');renderPurchaseList();toast('Payment deleted');
+  });
+};
+window.delRetail = function(id) {
+  withDeletePin('Delete this retail entry?',()=>{
+    DB.set('retail',getRetail().filter(r=>r.id!==id));auditLog('delete','retail',id,'Retail entry deleted','');renderRetailTable();toast('Retail entry deleted');
+  });
+};
+
 // AUDIT saveInvoice — log create/edit
 // ════════════════════════════════════════════════════════
 const _origSaveSaleInvoiceV15 = window.saveSaleInvoice;
@@ -8944,29 +9007,14 @@ window.gsPull = async function() {
 const _origLoadSettingsV15 = window.loadSettings;
 window.loadSettings = function() {
   if (typeof _origLoadSettingsV15==='function') _origLoadSettingsV15();
-  setTimeout(()=>{
-    const pinEl = document.getElementById('s-delete-pin');
-    if (pinEl) { pinEl.value = getSettings().deletePin || '1234'; return; }
-    // Inject PIN field after bank details card
-    const bankEl = document.getElementById('s-bank');
-    if (bankEl) {
-      const fg = document.createElement('div');
-      fg.className='fg'; fg.style.marginTop='8px';
-      fg.innerHTML=`<label class="fl">🔐 Delete/Edit PIN <span style="font-weight:400;color:var(--gray-400)">(protects delete actions)</span></label>
-        <input class="fc" id="s-delete-pin" type="password" maxlength="10" placeholder="Default: 1234" value="${getSettings().deletePin||'1234'}" style="max-width:160px">`;
-      bankEl.closest('.fg').parentElement?.appendChild(fg);
-    }
-  }, 200);
-};
-
-const _origSaveSettingsV15 = window.saveSettings;
-window.saveSettings = function() {
-  if (typeof _origSaveSettingsV15==='function') _origSaveSettingsV15();
-  const pinEl = document.getElementById('s-delete-pin');
-  if (pinEl) {
-    const s = getSettings();
-    s.deletePin = pinEl.value.trim() || '1234';
-    DB.set('settings', s);
+  if(document.getElementById('s-delete-pin'))return;
+  const bankEl = document.getElementById('s-bank');
+  if(bankEl){
+    const field = document.createElement('div'); field.className = 'fg';
+    const button = document.createElement('button');button.id='s-delete-pin';button.className='btn btn-out';
+    button.textContent='Set or change delete PIN';
+    button.addEventListener('click',()=>withDeletePin('Change delete PIN',()=>{},true));
+    field.appendChild(button);bankEl.closest('.fg').parentElement?.appendChild(field);
   }
 };
 
