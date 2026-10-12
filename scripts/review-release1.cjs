@@ -317,8 +317,18 @@ async function main() {
     return {safe:await page.locator('#pd-tab-txn').isVisible(),observed:{transactionContentVisible:await page.locator('#pd-tab-txn').isVisible()}};
   });
   await probe('cancelled-payment-ledger', async page => {
-    const entries=await page.evaluate(() => getAllPayments().filter(p=>p._invId==='s0').length);
-    return {safe:entries===0,observed:{cancelledInvoicePaymentEntries:entries}};
+    // Owner decision #6128013121: cancellation must not erase legitimate cash.
+    // The previous zero-entry assertion conflicted with that explicit policy;
+    // its original FAIL remains in test/premerge/safety-*.json.
+    const observed=await page.evaluate(() => {
+      const entries=getAllPayments().filter(p=>p._invId==='s0');
+      return {cancelledInvoicePaymentEntries:entries.length,
+        retainedCash:entries.filter(p=>p.type==='payment').reduce((n,p)=>n+p.amt,0),
+        activeInvoiceDue:getInvoices().filter(i=>!isCancelled(i)).reduce((n,i)=>n+billBalance(i),0)};
+    });
+    return {safe:observed.cancelledInvoicePaymentEntries===1&&observed.retainedCash===20&&observed.activeInvoiceDue===80,
+      expected:'Retain actual cash 20; exclude the cancelled invoice from active receivables',observed,
+      policy:'https://github.com/nileshkchaubey-glitch/Xl-billing/pull/9#issuecomment-6128013121'};
   }, data => {data.invoices[0].status='cancelled';});
 
   await browser.close();browser=null;await new Promise(resolve=>server.close(resolve));server=null;
