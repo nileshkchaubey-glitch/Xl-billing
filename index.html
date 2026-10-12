@@ -9185,7 +9185,6 @@ console.log('v15 applied ✓ — Audit Log | Delete PIN | Settlement Modal | Par
 
 })(); // end v15
 </script>
-cat >> /home/claude/v9base.html << 'V16_END'
 <!-- ═══════════════════════════════════════════════════════════════
      V16 FIX PATCH
      1. Sale list filter — no auto-reset, FY dates removed
@@ -9994,8 +9993,6 @@ console.log('v16 applied ✓ — Sale filter fixed | 3-dot restored | Payment Ou
 
 })(); // end v16
 </script>
-V16_END
-echo "Done. Lines: $(wc -l < /home/claude/v9base.html)"
 <!-- Focused invoice-entry patch. Existing storage keys, totals and printing use qty as final quantity. -->
 <style>
 .entry-setting{display:flex;justify-content:space-between;align-items:center;gap:16px;padding:11px 0;border-bottom:1px solid var(--gray-100)}
