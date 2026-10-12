@@ -2050,7 +2050,7 @@ function viewInvoice(id){
             <td>${i+1}</td>
             <td>${escHtml(it.name)} <span style="color:var(--gray-400);font-size:11px">${escHtml(it.unit||'')}</span></td>
             ${showPack?`<td style="text-align:center;font-size:12px;font-weight:600;color:${escHtml(it.packType&&it.packCount?'#374151':'#d1d5db')}">
-              ${it.packType&&it.packCount?`${escHtml(it.packCount)} ${escHtml(it.packType)}`:it.packType||''}</td>`:''}
+              ${it.packType&&it.packCount?`${escHtml(it.packCount)} ${escHtml(it.packType)}`:escHtml(it.packType||'')}</td>`:''}
             <td style="text-align:center">${escHtml(it.qty)}</td>
             <td style="text-align:right">${fc(it.rate)}</td>
             <td style="text-align:right;font-weight:600">${fc(lineRecordedAmount(it))}</td>
@@ -2069,7 +2069,7 @@ function viewInvoice(id){
       </div>
       ${showPack&&packLines.length>0?`<div style="background:#fef3c7;border:1px solid #fbbf24;border-radius:8px;padding:10px 14px;margin-bottom:12px">
         <div style="font-size:11px;font-weight:700;color:#92400e;margin-bottom:5px">📦 PACKING SUMMARY</div>
-        ${packLines.map(l=>`<div style="font-size:12.5px;color:#78350f">• ${l}</div>`).join('')}
+        ${packLines.map(l=>`<div style="font-size:12.5px;color:#78350f">• ${escHtml(l)}</div>`).join('')}
         <div style="font-size:11.5px;color:#92400e;margin-top:5px;font-weight:600">Total Packed Units: ${(inv.items||[]).filter(it=>it.packType&&it.packCount).reduce((a,it)=>a+(+it.packCount||0),0)}</div>
       </div>`:''}
       ${inv.notes?`<div style="font-size:13px;color:var(--gray-600);margin-bottom:10px"><strong>Note:</strong> ${escHtml(inv.notes)}</div>`:''}
