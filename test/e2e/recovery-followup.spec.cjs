@@ -227,6 +227,34 @@ test('quota real Save with failed rollback reports recovery pending and preserve
   await saveRealInvoice(page);expect(await page.evaluate(()=>JSON.parse(localStorage.getItem('shop4_invoices')).filter(row=>row.invoiceNo==='INV-1003').length)).toBe(1);
 });
 
+for(const kind of ['invoice save','locked restore'])test('recovery '+kind+' cleanup read denial never claims a removed journal exists',async({page},testInfo)=>{
+  await seed(page);
+  let before;
+  if(kind==='locked restore'){
+    await saveRealInvoice(page);const backup=privateFile(await raw(page,true));
+    await external(page);await locked(page);await recoveryProof(page,testInfo);
+    before=await raw(page);await page.locator('#xl-recovery-backup').setInputFiles(backup);
+    await expect(page.locator('#xl-recovery-preview')).toContainText(/checksum.*verified|verified.*checksum/i);
+  }else{await enterRealInvoice(page);before=await raw(page);}
+  await page.evaluate(kind=>{
+    const set=Storage.prototype.setItem,get=Storage.prototype.getItem,remove=Storage.prototype.removeItem;
+    let failed=false,removed=false;
+    window.restoreSyntheticStorage=()=>{Storage.prototype.setItem=set;Storage.prototype.getItem=get;Storage.prototype.removeItem=remove;};
+    Storage.prototype.setItem=function(k,v){if(!failed&&k===(kind==='locked restore'?'xl_storage_meta_v1':'shop4_settings')){failed=true;throw new DOMException('Synthetic apply quota','QuotaExceededError');}return set.call(this,k,v);};
+    Storage.prototype.removeItem=function(k){const result=remove.call(this,k);if(failed&&k==='xl_storage_journal_v1')removed=true;return result;};
+    Storage.prototype.getItem=function(k){if(removed&&k==='xl_storage_journal_v1')throw new DOMException('Synthetic rollback cleanup read denial','SecurityError');return get.call(this,k);};
+  },kind);
+  if(kind==='locked restore')await approve(page);else await page.locator('#save-inv-btn').click();
+  const output=page.locator(kind==='locked restore'?'#xl-recovery-error':'#storage-error');
+  await expect(output).toContainText(/recovery.*pending|pending.*recovery/i);
+  expect(await output.textContent()).not.toMatch(/states remain in the journal|keep the checked recovery journal|verified restored|rollback succeeded/i);
+  expect(await page.locator('#toast').textContent()).not.toMatch(/saved|success/i);
+  await page.evaluate(()=>restoreSyntheticStorage());
+  expect(await raw(page)).toEqual(before);expect(await page.evaluate(()=>localStorage.getItem('xl_storage_journal_v1'))).toBeNull();
+  if(kind==='locked restore'){await locked(page);await assertUnchanged(page,before);}
+  else{await expect(page.locator('#inv-no')).toHaveValue('INV-1003');await page.reload();await ready(page);expect(await raw(page)).toEqual(before);await saveRealInvoice(page);}
+});
+
 for(const kind of ['checksum','different-snapshot'])test('recovery rejects '+kind+' saved proof without trusting imported recovery bytes',async({page},testInfo)=>{
   await prepareLocked(page);const before=await raw(page);const proof=await recoveryProof(page,testInfo);
   if(kind==='checksum')proof.content.checksum='0'.repeat(64);
