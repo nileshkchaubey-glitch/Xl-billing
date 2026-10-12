@@ -35,3 +35,28 @@ test('stabilization supplier payment deletion rejects a changed selected payment
  await page.evaluate(()=>{const rows=getPurchases();rows[0].payments[0].note='Synthetic concurrent change';DB.set('purchases',rows);});const before=await raw(page);
  await page.locator('#del-pin-inp').fill('2468');await page.locator('#del-pin-ok').click();await expect(page.locator('#del-pin-error')).toContainText('changed');expect(await raw(page)).toEqual(before);
 });
+test('stabilization stored text remains literal across lists, autocomplete, invoice and audit',async({page})=>{
+ const data=shop(2),payload='<img src="/synthetic-missing" onerror="window.__storedTextExecuted=1"> O\'Neil "Test" & Co';
+ data.parties[0].name=payload;data.items[0].name=payload;data.items[0].unit=payload;data.invoices[0].partyName=payload;data.invoices[0].notes=payload;data.invoices[0].items[0].name=payload;data.invoices[0].items[0].colour=payload;
+ data.settings.shopName=payload;data.settings.bank=payload;data.settings.terms=payload;data.purchases[0].partyName=payload;data.purchases[0].notes=payload;
+ data.audit=[{id:'unsafe-text',type:'create',entityType:'invoice',label:payload,details:payload,user:payload,ts:'2026-10-09T08:00:00Z'}];
+ await seed(page,data);await page.reload();const before=await raw(page);
+ for(const pg of ['sales-list','items','parties','purchase-list','payments','audit-log','txn-log'])await page.evaluate(pg=>nav(pg),pg);
+ await page.evaluate(()=>viewInvoice('s0'));await expect(page.locator('#inv-view-modal')).toContainText(payload);
+ await page.evaluate(()=>{closeModal('inv-view-modal');nav('new-sale');partyAC('inv-party','inv-party-id','Test');showSaleItemAC(saleItems[0].id,'Test');});
+ await page.waitForTimeout(100);expect(await page.evaluate(()=>window.__storedTextExecuted)).toBeUndefined();expect(await page.locator('img[onerror]').count()).toBe(0);expect(await raw(page)).toEqual(before);
+});
+for(const field of ['partyId','nestedItemId','rate']){
+ test('stabilization unsafe reference or numeric source is rejected '+field,async({page})=>{
+  const data=shop(1);await seed(page,data);await page.reload();
+  const result=await page.evaluate(field=>{const rows=getInvoices();if(field==='partyId')rows[0].partyId="x');window.__unsafeReference=1;//";else if(field==='nestedItemId')rows[0].items[0].id="x');window.__unsafeReference=1;//";else rows[0].items[0].rate="1);window.__unsafeReference=1;//";const original=JSON.stringify(rows);localStorage.setItem('shop4_invoices',original);let threw=false;try{getInvoices();}catch{threw=true;}return {threw,preserved:localStorage.getItem('shop4_invoices')===original,executed:window.__unsafeReference===1};},field);
+  expect(result).toEqual({threw:true,preserved:true,executed:false});
+ });
+}
+test('stabilization missing legacy balance remains payable without a startup rewrite',async({page})=>{
+ const data=shop(1);delete data.invoices[0].balance;delete data.invoices[0].payments;delete data.invoices[0].dispatchStatus;delete data.invoices[0].paymentType;delete data.purchases[0].balance;
+ await seed(page,data);const before=await raw(page);await page.reload();await page.evaluate(()=>nav('sales-list'));
+ await expect(page.locator('#sales-table button').filter({hasText:/^Pay$/}).first()).toBeVisible();expect(await raw(page)).toEqual(before);
+ await page.evaluate(()=>{openPayModal('s0');document.getElementById('pay-amount').value='10';savePayment();});
+ const inv=await page.evaluate(()=>getInvoices()[0]);expect(inv.paid).toBe(30);expect(inv.balance).toBe(70);expect(inv.openingPaid).toBe(20);
+});
