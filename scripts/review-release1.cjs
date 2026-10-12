@@ -23,7 +23,7 @@ const results = [];
 const hashedPin = { deletePinSalt: 'synthetic-review-salt', deletePinHash: crypto.createHash('sha256').update('synthetic-review-salt:2468').digest('hex') };
 let browser, server, origin;
 async function snapshot(page) {
-  return page.evaluate(() => Object.fromEntries(Object.keys(localStorage).sort().map(k => [k, localStorage.getItem(k)])));
+  return page.evaluate(() => Object.fromEntries(Object.keys(localStorage).filter(k=>!k.startsWith('xl_storage_')).sort().map(k => [k, localStorage.getItem(k)])));
 }
 async function records(page, key = 'invoices') {
   return page.evaluate(k => JSON.parse(localStorage.getItem('shop4_' + k)), key);
@@ -49,7 +49,7 @@ async function prepareInvoice(page) {
   });
 }
 async function attemptSave(page) {
-  return page.evaluate(() => { try { saveSaleInvoice(false); return null; } catch(e) { return e.name; } });
+  return page.evaluate(async () => { try { await saveSaleInvoice(false); return null; } catch(e) { return e.name; } });
 }
 async function importText(page, content) {
   // Real FileReader with a synthetic File. Observe completion before the app's reload timer.
@@ -90,7 +90,7 @@ async function probe(id, body, modify = () => {}) {
     }
   }, data);
   try {
-    await page.goto(origin);
+    await page.goto(origin);await page.waitForFunction(()=>!window.XLStore||window.XLAppReady);
     const outcome = await body(page, context);
     const result = {id, status:outcome.safe ? 'PASS' : 'FAIL', ...outcome, pageErrors};
     results.push(result);
@@ -137,24 +137,24 @@ async function main() {
   }, data => { delete data.invoices[0].payments; });
 
   await probe('settlement-rounding', async page => {
-    await page.evaluate(() => {
+    await page.evaluate(async () => {
       openSettlementModal('p1','Synthetic Customer');
       document.getElementById('settle-total-inp').value = '0.01';
       document.getElementById('si-s0').value = '0.006';
       document.getElementById('si-s1').value = '0.006';
-      saveSettlement('p1','Synthetic Customer');
+      await saveSettlement('p1','Synthetic Customer');
     });
     const applied = (await records(page)).reduce((s,i) => s + i.paid - 20,0);
     return {safe:Math.abs(applied) < 0.000001 || Math.abs(applied - 0.01) < 0.000001,observed:{received:0.01,applied}};
   });
 
   await probe('payout-rounding', async page => {
-    await page.evaluate(() => {
+    await page.evaluate(async () => {
       openPayOutModal();poutSelectParty('p2','Synthetic Supplier');
       document.getElementById('pout-amount').value = '0.01';
       document.getElementById('pi-u1').value = '0.006';
       document.getElementById('pi-u2').value = '0.006';
-      savePoutPayment();
+      await savePoutPayment();
     });
     const applied = (await records(page,'purchases')).reduce((s,i) => s + i.paid - 20,0);
     return {safe:Math.abs(applied) < 0.000001 || Math.abs(applied - 0.01) < 0.000001,observed:{received:0.01,applied}};
@@ -170,7 +170,7 @@ async function main() {
     await page.locator('#pay-amount').fill('2719.49');
     await page.evaluate(() => savePayment());
     const before = (await records(page))[0];
-    await page.reload();
+    await page.reload();await page.waitForFunction(()=>!window.XLStore||window.XLAppReady);
     const after = (await records(page))[0];
     return {safe:after.paid === before.paid && Math.abs(after.paid-after.payments.reduce((s,p)=>s+p.amt,0)) < 1e-9,observed:{total:after.total,paidBeforeReload:before.paid,paidAfterReload:after.paid,paymentHistoryTotal:after.payments.reduce((s,p)=>s+p.amt,0)}};
   }, data => { Object.assign(data.invoices[0],{total:2719.4895,paid:0,balance:2719.4895,payments:[]}); });
@@ -191,7 +191,7 @@ async function main() {
     });
     const error = await attemptSave(page);
     // Reload restores the prototype and does not reseed the context.
-    await page.reload();
+    await page.reload();await page.waitForFunction(()=>!window.XLStore||window.XLAppReady);
     const ids = (await records(page)).map(i=>i.id);
     return {safe:ids.includes('s0') && ids.includes('s1'),observed:{error,originalIdsPreserved:ids.includes('s0') && ids.includes('s1'),invoiceCount:ids.length}};
   });
@@ -205,7 +205,7 @@ async function main() {
       const after = await snapshot(page);
       const changedKeys = Object.keys(after).filter(k=>before[k] !== after[k]);
       const toast = await page.locator('#toast').textContent();
-      await page.reload();
+      await page.reload();await page.waitForFunction(()=>!window.XLStore||window.XLAppReady);
       const recovered = await snapshot(page);
       return {safe:JSON.stringify(before) === JSON.stringify(recovered),observed:{error,changedKeys,toast,recoveredToPreviousSnapshot:JSON.stringify(before) === JSON.stringify(recovered),invoiceCount:(await records(page)).length}};
     });
@@ -265,8 +265,8 @@ async function main() {
   await probe('stale-payment-delete', async page => {
     await page.evaluate(() => deletePaymentEntry('s0',0));
     // A second tab changes the array after the first tab chose its payment.
-    const other = await page.context().newPage();await other.goto(origin);
-    await other.evaluate(() => {const invs=getInvoices();invs[0].payments.shift();invs[0].paid=30;invs[0].balance=70;DB.set('invoices',invs);});
+    const other = await page.context().newPage();await other.goto(origin);await other.waitForFunction(()=>!window.XLStore||window.XLAppReady);
+    await other.evaluate(() => XLStore.run('Synthetic concurrent payment',()=>{const invs=getInvoices();invs[0].payments.shift();invs[0].paid=30;invs[0].balance=70;DB.set('invoices',invs);}));
     await page.locator('#del-pin-inp').fill('2468');
     await page.waitForFunction(() => !document.getElementById('del-pin-ok').disabled);
     await page.locator('#del-pin-ok').click();
@@ -281,13 +281,13 @@ async function main() {
     await page.locator('#del-pin-inp').fill('2468');
     await page.waitForFunction(() => !document.getElementById('del-pin-ok').disabled);
     await page.locator('#del-pin-ok').click();
-    await page.waitForFunction(() => !document.getElementById('del-pin-overlay'));
+    await page.waitForFunction(() => !document.getElementById('del-pin-overlay') || !!document.getElementById('del-pin-error')?.textContent);
     const after = await snapshot(page);
     return {safe:JSON.stringify(before) === JSON.stringify(after) && await page.locator('[role=alert]').count() > 0,observed:{invoiceCount:(await records(page)).length,auditEntries:(await records(page,'audit')).length,visibleAlertCount:await page.locator('[role=alert]').count(),toast:await page.locator('#toast').textContent()}};
   }, data => Object.assign(data.settings,hashedPin));
 
   await probe('stored-text-xss', async page => {
-    await page.evaluate(() => {const invs=getInvoices();invs[0].partyName='<img src="/synthetic-missing" onerror="window.__reviewXss=1">';DB.set('invoices',invs);renderSalesList();});
+    await page.evaluate(() => XLStore.run('Synthetic stored text',()=>{const invs=getInvoices();invs[0].partyName='<img src="/synthetic-missing" onerror="window.__reviewXss=1">';DB.set('invoices',invs);renderSalesList();}));
     await page.waitForFunction(() => window.__reviewXss === 1, null, {timeout:1000}).catch(() => {});
     const executed=await page.evaluate(() => window.__reviewXss === 1);
     return {safe:!executed,observed:{harmlessScriptExecuted:executed}};
