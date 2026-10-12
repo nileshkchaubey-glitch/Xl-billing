@@ -3336,10 +3336,9 @@ window.nav = function(pg){
 window.renderPaymentLedger = function(){
   const el = document.getElementById('page-payments'); if(!el) return;
   const pays = getAllPayments();
+  const count=pays.length;
   const tTotal    = pays.filter(p=>p.type==='payment').reduce((a,p)=>a+p.amt,0);
   const tDiscount = pays.filter(p=>p.type==='discount').reduce((a,p)=>a+p.amt,0);
-  const count=pays.length;
-  pays=listView(pays,'payments',[fDate,fParty].join('|'));
   // Group by date
   const byDate = {};
   pays.forEach(p=>{const d=p.date||'Unknown'; if(!byDate[d]) byDate[d]=[]; byDate[d].push(p);});
@@ -3403,7 +3402,6 @@ window.renderPaymentLedger = function(){
           </div>`;
         }).join('')}
     </div>`;
-  el.querySelector('.pb').insertAdjacentHTML('beforeend',listPager('payments','renderPaymentLedger'));
 };
 
 // Edit payment
@@ -4086,6 +4084,8 @@ window.renderPaymentLedger = function(){
           </div>`;
         }).join('')}
     </div>`;
+
+  el.querySelector('.pb').insertAdjacentHTML('beforeend',listPager('payments','renderPaymentLedger'));
 };
 
 window.clearPayFilters = function(){
@@ -8919,6 +8919,9 @@ window.renderTxnPage = function() {
         ${filtered.length>100?`<div style="padding:10px;text-align:center;font-size:12.5px;color:var(--gray-400)">Showing 100 of ${filtered.length} entries. Use filters to narrow down.</div>`:''}
       </div>
     </div>`;
+
+  el.querySelector('.pb').insertAdjacentHTML('beforeend',listPager('transactions','renderTxnPage'));
+  listHeaders('#page-txn-log','transactions',[null,'date','party','label','amount','type'],'renderTxnPage');
 };
 
 // ════════════════════════════════════════════════════════
@@ -8927,8 +8930,6 @@ window.renderTxnPage = function() {
 const _origRepTabV15 = window.repTab;
 window.repTab = function(tab) {
   _origRepTabV15(tab);
-  el.querySelector('.pb').insertAdjacentHTML('beforeend',listPager('transactions','renderTxnPage'));
-  listHeaders('#page-txn-log','transactions',[null,'date','party','label','amount','type'],'renderTxnPage');
 };
 
 // Fix pending report to exclude cancelled
