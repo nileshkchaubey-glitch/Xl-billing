@@ -1,0 +1,79 @@
+{
+  "owner_instruction": "https://github.com/nileshkchaubey-glitch/Xl-billing/pull/8#issuecomment-6126054996",
+  "tested_application_commit": "79f8d13943c24837234ed44d145be4c114914734",
+  "tested_commit": "79f8d13943c24837234ed44d145be4c114914734",
+  "source_sha256": "0e344a4e8d6618df1091ad2f33ae422739e1e050343195bc25170c7f1accfa52",
+  "baseline_commit": "29aeb20225bccfc653b192651de608491185096c",
+  "runner_sha256": "91434b84e88197f787cdaa279e16f161503e039ac097b14adb4a2805396ba064",
+  "browser": "chromium",
+  "synthetic_only": true,
+  "summary": {
+    "pass": 0,
+    "fail": 2,
+    "harness_errors": 0
+  },
+  "results": [
+    {
+      "id": "print-A4-unbroken-fields",
+      "title": "Long unbroken invoice fields remain within printable width and retain their PDF endpoints",
+      "browser": "chromium",
+      "width": 1366,
+      "classification": "BLOCKER",
+      "status": "FAIL",
+      "duration_ms": 536,
+      "pass": false,
+      "expected": "All five long unbroken stored text fields wrap within printable width; actual Chromium PDF retains their beginning/end markers and financial content; exact stored bytes unchanged",
+      "observed": {
+        "width": 760,
+        "content_width": 13174,
+        "half_overflow": false,
+        "hidden_overflow": false,
+        "pdf": {
+          "field_endpoints": {
+            "ADDRESS": false,
+            "BANK": false,
+            "TERMS": false,
+            "NOTES": false,
+            "CUSTOM": false
+          },
+          "line_present": true,
+          "total_present": true,
+          "balance_present": true
+        },
+        "bytes_preserved": true
+      },
+      "note": "Text extraction removes whitespace only when locating endpoint markers, to account for line wrapping. No PDF content or financial data is altered."
+    },
+    {
+      "id": "print-A5-unbroken-fields",
+      "title": "Long unbroken invoice fields remain within printable width and retain their PDF endpoints",
+      "browser": "chromium",
+      "width": 1366,
+      "classification": "BLOCKER",
+      "status": "FAIL",
+      "duration_ms": 503,
+      "pass": false,
+      "expected": "All five long unbroken stored text fields wrap within printable width; actual Chromium PDF retains their beginning/end markers and financial content; exact stored bytes unchanged",
+      "observed": {
+        "width": 718,
+        "content_width": 13125,
+        "half_overflow": false,
+        "hidden_overflow": false,
+        "pdf": {
+          "field_endpoints": {
+            "ADDRESS": false,
+            "BANK": false,
+            "TERMS": false,
+            "NOTES": false,
+            "CUSTOM": false
+          },
+          "line_present": true,
+          "total_present": true,
+          "balance_present": true
+        },
+        "bytes_preserved": true
+      },
+      "note": "Text extraction removes whitespace only when locating endpoint markers, to account for line wrapping. No PDF content or financial data is altered."
+    }
+  ]
+}
