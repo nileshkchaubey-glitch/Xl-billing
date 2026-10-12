@@ -1,0 +1,155 @@
+{
+  "workspaceCommit": "18cbc3e066e6af55b942ca504bf9c8b73146f9b4",
+  "sourceRevision": "18cbc3e066e6af55b942ca504bf9c8b73146f9b4",
+  "sourceSha256": "a9c6c382e7d57095e4ce61eb32d3bf460500b39dda0ebb54965252f7aa713383",
+  "runnerSha256": "df064bbcac0c5a3e16f12caf897764cc2d28cd5320f773f4e53e7fa9d2055241",
+  "browser": "firefox",
+  "results": [
+    {
+      "id": "failed-write-invoices",
+      "status": "PASS",
+      "safe": true,
+      "observed": {
+        "error": null,
+        "changedKeys": [],
+        "toast": "",
+        "recoveredToPreviousSnapshot": true,
+        "invoiceCount": 2
+      },
+      "pageErrors": []
+    },
+    {
+      "id": "failed-write-settings",
+      "status": "PASS",
+      "safe": true,
+      "observed": {
+        "error": null,
+        "changedKeys": [
+          "shop4_invoices"
+        ],
+        "toast": "",
+        "recoveredToPreviousSnapshot": true,
+        "invoiceCount": 2
+      },
+      "pageErrors": []
+    },
+    {
+      "id": "failed-write-audit",
+      "status": "PASS",
+      "safe": true,
+      "observed": {
+        "error": null,
+        "changedKeys": [
+          "shop4_invoices",
+          "shop4_settings"
+        ],
+        "toast": "",
+        "recoveredToPreviousSnapshot": true,
+        "invoiceCount": 2
+      },
+      "pageErrors": []
+    },
+    {
+      "id": "restore-truncated",
+      "status": "PASS",
+      "safe": true,
+      "observed": {
+        "toast": ""
+      },
+      "pageErrors": []
+    },
+    {
+      "id": "restore-wrong-schema",
+      "status": "PASS",
+      "safe": true,
+      "observed": {
+        "invoiceCount": 2,
+        "toast": ""
+      },
+      "pageErrors": []
+    },
+    {
+      "id": "restore-tampered-checksum",
+      "status": "PASS",
+      "safe": true,
+      "observed": {
+        "tamperedTotal": 100,
+        "tamperedInputApplied": false,
+        "toast": ""
+      },
+      "pageErrors": []
+    },
+    {
+      "id": "restore-legacy-valid",
+      "status": "PASS",
+      "safe": true,
+      "observed": {
+        "invoiceCount": 2,
+        "paid": 20,
+        "quantity": 5,
+        "legacyNoteRestored": true
+      },
+      "pageErrors": []
+    },
+    {
+      "id": "restore-partial-write",
+      "status": "PASS",
+      "safe": true,
+      "observed": {
+        "changedKeysBeforeRecovery": [
+          "shop4_settings"
+        ],
+        "recoveryJournalRetained": true,
+        "failedRestoreReported": true,
+        "recoveredToExactOriginal": true
+      },
+      "pageErrors": []
+    },
+    {
+      "id": "backup-completeness",
+      "status": "PASS",
+      "safe": true,
+      "observed": {
+        "exportedKeys": [
+          "format",
+          "version",
+          "createdAt",
+          "payload",
+          "checksum"
+        ],
+        "auditIncluded": true,
+        "checksumIncluded": true,
+        "privateCredentialsIncluded": true
+      },
+      "pageErrors": []
+    },
+    {
+      "id": "backup-rollback",
+      "status": "PASS",
+      "safe": true,
+      "observed": {
+        "invoiceCount": 2,
+        "auditEntries": 1,
+        "changedKeys": []
+      },
+      "pageErrors": []
+    },
+    {
+      "id": "failed-delete-feedback",
+      "status": "PASS",
+      "safe": true,
+      "observed": {
+        "invoiceCount": 2,
+        "auditEntries": 0,
+        "visibleAlertCount": 2,
+        "toast": ""
+      },
+      "pageErrors": []
+    }
+  ],
+  "summary": {
+    "pass": 11,
+    "fail": 0,
+    "harnessErrors": 0
+  }
+}

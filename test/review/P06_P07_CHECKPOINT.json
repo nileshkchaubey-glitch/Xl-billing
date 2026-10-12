@@ -1,0 +1,27 @@
+{
+  "sourceSha256": "a9c6c382e7d57095e4ce61eb32d3bf460500b39dda0ebb54965252f7aa713383",
+  "nodeFoundation": {
+    "passed": 22,
+    "failed": 0
+  },
+  "nodeRegression": {
+    "passed": 11,
+    "failed": 0
+  },
+  "parcelVM": "PASS",
+  "browserFunctional": {
+    "passed": 237,
+    "failed": 0,
+    "engines": [
+      "chromium",
+      "firefox",
+      "webkit"
+    ]
+  },
+  "auditFoundation": {
+    "chromium": 11,
+    "firefox": 11,
+    "webkit": 11
+  },
+  "automaticBackups": "NOT IMPLEMENTED at this checkpoint"
+}

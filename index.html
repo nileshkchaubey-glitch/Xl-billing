@@ -10310,7 +10310,7 @@ function createXLBackup(options){
       const ids=new Set();for(const row of value){
         if(!plain(row)||typeof row.id!=='string'||!row.id||ids.has(row.id))throw new Error('Backup '+name+' contains invalid or duplicate identifiers.');ids.add(row.id);
         if(['invoices','purchases'].includes(name)){
-          if(!Number.isFinite(row.total)||row.total<0||!Number.isFinite(row.paid)||row.paid<0)throw new Error('Backup bill amounts are invalid.');
+          if(!Number.isFinite(row.total)||row.total<0||!Number.isFinite(row.paid??0)||(row.paid??0)<0)throw new Error('Backup bill amounts are invalid.');
           for(const list of ['payments','discounts'])if(row[list]!==undefined){if(!Array.isArray(row[list])||row[list].some(p=>!plain(p)||!Number.isFinite(p.amt)||p.amt<0))throw new Error('Backup payment or discount history is invalid.');}
         }
       }
@@ -10322,7 +10322,7 @@ function createXLBackup(options){
   async function encode(records){
     validate(records);const backup={format:'xl-billing-private',version:1,createdAt:new Date().toISOString(),payload:{records:Object.keys(records).sort().map(key=>({key,value:records[key]}))}};
     if(new TextEncoder().encode(signed(backup)).length>maxBytes)throw new Error('Backup exceeds the supported 20 MiB limit. Use raw recovery export for review.');
-    backup.checksum={algorithm:'SHA-256',value:await digest(signed(backup))};return backup;
+    backup.checksum={algorithm:'SHA-256',value:await digest(signed(backup))};if(new TextEncoder().encode(JSON.stringify(backup)).length>maxBytes)throw new Error('Backup exceeds the supported 20 MiB limit.');return backup;
   }
   async function decode(text){
     if(typeof text!=='string'||new TextEncoder().encode(text).length>maxBytes)throw new Error('Backup exceeds the supported 20 MiB limit.');
@@ -10347,7 +10347,7 @@ function createXLBackup(options){
 <script id="xl-bootstrap">
 // All code in deferred app scripts is authored application code, never imported data.
 function xlDownloadJSON(data,name){
-  const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'}),url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);
+  const blob=new Blob([JSON.stringify(data)],{type:'application/json'}),url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);
 }
 function xlRecoveryControls(){
   if(document.getElementById('xl-recovery-controls'))return;

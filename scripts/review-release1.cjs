@@ -236,8 +236,12 @@ async function main() {
   await probe('restore-partial-write', async page => {
     const before = await snapshot(page);await injectWriteFailure(page,'shop4_items');
     await importText(page,JSON.stringify({v:4,settings:{shopName:'Synthetic replacement'},items:[],parties:[],invoices:[],purchases:[],retail:[]}));
-    const after = await snapshot(page);
-    return {safe:JSON.stringify(before) === JSON.stringify(after),observed:{changedKeys:Object.keys(after).filter(k=>before[k]!==after[k]),shopName:(await records(page,'settings')).shopName,toast:await page.locator('#toast').textContent()}};
+    const after = await snapshot(page),pending=await page.evaluate(()=>!!localStorage.getItem('xl_storage_journal_v1'));
+    const failed=await page.locator('#del-pin-error').textContent();
+    const blocked=!pending||await page.evaluate(async()=>{try{await XLStore.run('Synthetic blocked restore probe',()=>XLStore.setRaw('shop4_retail','[]'));return false;}catch{return true;}});
+    await page.reload();await page.waitForFunction(()=>!window.XLStore||window.XLAppReady);
+    const recovered=await snapshot(page);
+    return {safe:!!failed&&blocked&&JSON.stringify(before)===JSON.stringify(recovered)&&(JSON.stringify(before)===JSON.stringify(after)||pending),observed:{changedKeysBeforeRecovery:Object.keys(after).filter(k=>before[k]!==after[k]),recoveryJournalRetained:pending,failedRestoreReported:!!failed,furtherChangesBlocked:blocked,recoveredToExactOriginal:JSON.stringify(before)===JSON.stringify(recovered)}};
   });
   await probe('backup-completeness', async page => {
     const data = await exportedBackup(page);

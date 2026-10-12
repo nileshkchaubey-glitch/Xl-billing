@@ -7,7 +7,7 @@
     "dev": "vite --host 0.0.0.0",
     "build": "node scripts/build.cjs",
     "preview": "vite preview --host 0.0.0.0",
-    "test": "node qa/verify-invoice-entry.cjs && node --test test/unit/*.test.cjs && playwright test",
+    "test": "node qa/verify-invoice-entry.cjs && node --test test/unit/*.test.cjs test/foundation/*.test.cjs && playwright test",
     "e2e": "playwright test",
     "lint": "node scripts/lint.cjs",
     "inventory": "node scripts/inventory.cjs",
@@ -16,7 +16,7 @@
     "mutations": "node scripts/mutations.cjs",
     "htmlcheck": "node scripts/htmlcheck.cjs",
     "test:stabilization": "node scripts/review-release1.cjs --group=stabilization",
-    "test:foundation": "node scripts/review-release1.cjs --group=foundation",
+    "test:foundation": "node --test test/foundation/*.test.cjs && node scripts/review-release1.cjs --group=foundation",
     "test:storage": "node --test test/foundation/storage-core.test.cjs"
   },
   "engines": {
