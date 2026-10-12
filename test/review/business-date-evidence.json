@@ -1,0 +1,423 @@
+{
+  "baselineCommit": "aa9b03c",
+  "baselineHtmlSha256": "acf710663fa22807a215f3a5cc334bbc566313de68d4a090a4de7d546957f88b",
+  "afterHtmlSha256": "75076b3f6ec62b230d01d21a3f139c3cc2ca08e3b4fe7c86d446bfc1d652627e",
+  "syntheticDataOnly": true,
+  "nodeBefore": {
+    "tests": 4,
+    "passed": 0,
+    "failed": 4,
+    "reason": "Application has no explicit business-calendar helpers."
+  },
+  "nodeAfter": {
+    "tests": 48,
+    "passed": 48,
+    "failed": 0,
+    "includesExisting": 44,
+    "newBusinessDate": 4
+  },
+  "browserBefore": [
+    {
+      "name": "business date October 00:30 IST, device Asia/Kolkata",
+      "browser": "chromium",
+      "status": "failed",
+      "durationMs": 488,
+      "failure": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\nExpected: \u001b[32m\"2026-\u001b[7m10-01\u001b[27m\"\u001b[39m\nReceived: \u001b[31m\"2026-\u001b[7m09-30\u001b[27m\"\u001b[39m\n\n  23 |    await page.locator('#save-inv-btn').click();await expect(page.locator('#toast')).toContainText('saved');\n  24 |    const stored=await page.evaluate(()=>({invoice:getInvoices().at(-1),settings:getSettings(),audit:DB.get('audit')}));\n> 25 |    expect(stored.invoice.date).toBe(boundary.date);await expect(page.locator('#pl-from')).toHaveValue(boundary.first);await expect(page.locator('#pl-to')).toHaveValue(boundary.last);expect(stored.invoice.invoiceNo).toBe('INV-1001');expect(stored.settings.invNo).toBe(1002);expect(stored.settings.fy).toBe('2026-27');\n     |                                ^\n  26 |    expect(stored.invoice.createdAt).toBe(boundary.instant);expect(stored.audit.at(-1).ts).toBe(boundary.instant);\n  27 |    expect(await page.evaluate(()=>businessFinancialYear(today()))).toBe(boundary.fy);\n  28 |    await page.evaluate(()=>{nav('retail-entry');});await expect(page.locator('#ret-date')).toHaveValue(boundary.date);\n    at /workspace/Xl-billing-dates/test/e2e/busines"
+    },
+    {
+      "name": "business date October 00:30 IST, device America/Los_Angeles",
+      "browser": "chromium",
+      "status": "failed",
+      "durationMs": 490,
+      "failure": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\nExpected: \u001b[32m\"2026-\u001b[7m10-01\u001b[27m\"\u001b[39m\nReceived: \u001b[31m\"2026-\u001b[7m09-30\u001b[27m\"\u001b[39m\n\n  23 |    await page.locator('#save-inv-btn').click();await expect(page.locator('#toast')).toContainText('saved');\n  24 |    const stored=await page.evaluate(()=>({invoice:getInvoices().at(-1),settings:getSettings(),audit:DB.get('audit')}));\n> 25 |    expect(stored.invoice.date).toBe(boundary.date);await expect(page.locator('#pl-from')).toHaveValue(boundary.first);await expect(page.locator('#pl-to')).toHaveValue(boundary.last);expect(stored.invoice.invoiceNo).toBe('INV-1001');expect(stored.settings.invNo).toBe(1002);expect(stored.settings.fy).toBe('2026-27');\n     |                                ^\n  26 |    expect(stored.invoice.createdAt).toBe(boundary.instant);expect(stored.audit.at(-1).ts).toBe(boundary.instant);\n  27 |    expect(await page.evaluate(()=>businessFinancialYear(today()))).toBe(boundary.fy);\n  28 |    await page.evaluate(()=>{nav('retail-entry');});await expect(page.locator('#ret-date')).toHaveValue(boundary.date);\n    at /workspace/Xl-billing-dates/test/e2e/busines"
+    },
+    {
+      "name": "business date October 00:30 IST, device Pacific/Auckland",
+      "browser": "chromium",
+      "status": "failed",
+      "durationMs": 470,
+      "failure": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\nExpected: \u001b[32m\"2026-\u001b[7m10-01\u001b[27m\"\u001b[39m\nReceived: \u001b[31m\"2026-\u001b[7m09-30\u001b[27m\"\u001b[39m\n\n  23 |    await page.locator('#save-inv-btn').click();await expect(page.locator('#toast')).toContainText('saved');\n  24 |    const stored=await page.evaluate(()=>({invoice:getInvoices().at(-1),settings:getSettings(),audit:DB.get('audit')}));\n> 25 |    expect(stored.invoice.date).toBe(boundary.date);await expect(page.locator('#pl-from')).toHaveValue(boundary.first);await expect(page.locator('#pl-to')).toHaveValue(boundary.last);expect(stored.invoice.invoiceNo).toBe('INV-1001');expect(stored.settings.invNo).toBe(1002);expect(stored.settings.fy).toBe('2026-27');\n     |                                ^\n  26 |    expect(stored.invoice.createdAt).toBe(boundary.instant);expect(stored.audit.at(-1).ts).toBe(boundary.instant);\n  27 |    expect(await page.evaluate(()=>businessFinancialYear(today()))).toBe(boundary.fy);\n  28 |    await page.evaluate(()=>{nav('retail-entry');});await expect(page.locator('#ret-date')).toHaveValue(boundary.date);\n    at /workspace/Xl-billing-dates/test/e2e/busines"
+    },
+    {
+      "name": "October filters include both endpoints and dashboard uses the business month",
+      "browser": "chromium",
+      "status": "failed",
+      "durationMs": 5308,
+      "failure": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoHaveText\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m failed\n\nLocator:  locator('#dash-body .sc').filter({ has: locator('.sc-lbl').filter({ hasText: 'This Month Sale' }) }).locator('.sc-val')\nExpected: \u001b[32m\"\u20b9\u001b[7m2\u001b[27m00.00\"\u001b[39m\nReceived: \u001b[31m\"\u20b9\u001b[7m1\u001b[27m00.00\"\u001b[39m\nTimeout:  5000ms\n\nCall log:\n\u001b[2m  - Expect \"toHaveText\" locator('#dash-body .sc').filter({ has: locator('.sc-lbl').filter({ hasText: 'This Month Sale' }) }).locator('.sc-val') with timeout 5000ms\u001b[22m\n\u001b[2m  - waiting for locator('#dash-body .sc').filter({ has: locator('.sc-lbl').filter({ hasText: 'This Month Sale' }) }).locator('.sc-val')\u001b[22m\n\u001b[2m    14 \u00d7 locator resolved to <div class=\"sc-val g\">\u20b9100.00</div>\u001b[22m\n\u001b[2m       - unexpected value \"\u20b9100.00\"\u001b[22m\n\n\n  39 |   data.retail=[];\n  40 |   await page.evaluate(data=>{localStorage.clear();for(const[k,v]of Object.entries(data))localStorage.setItem('shop4_'+k,JSON.stringify(v));},data);await page.reload();await page.waitForFunction(()=>window.XLAppReady);\n> 41 |   await expect(page.locator('#dash-body .sc').filter({has:page.locator('.sc-lbl', {hasText:'This Month Sale'})}).locator('.sc-val')).toHaveText('\u20b9200.00');\n    "
+    },
+    {
+      "name": "IST aging, payment defaults and UTC event timestamps preserve stored history",
+      "browser": "chromium",
+      "status": "failed",
+      "durationMs": 5313,
+      "failure": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoHaveText\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m failed\n\nLocator:  locator('#rep-content tbody tr').filter({ has: locator('td').filter({ hasText: 'INV-1001' }) }).locator('td').nth(5)\nExpected: \u001b[32m\"3\u001b[7m1\u001b[27m\"\u001b[39m\nReceived: \u001b[31m\"3\u001b[7m0\u001b[27m\"\u001b[39m\nTimeout:  5000ms\n\nCall log:\n\u001b[2m  - Expect \"toHaveText\" locator('#rep-content tbody tr').filter({ has: locator('td').filter({ hasText: 'INV-1001' }) }).locator('td').nth(5) with timeout 5000ms\u001b[22m\n\u001b[2m  - waiting for locator('#rep-content tbody tr').filter({ has: locator('td').filter({ hasText: 'INV-1001' }) }).locator('td').nth(5)\u001b[22m\n\u001b[2m    14 \u00d7 locator resolved to <td>30</td>\u001b[22m\n\u001b[2m       - unexpected value \"30\"\u001b[22m\n\n\n  53 |   await page.evaluate(data=>{localStorage.clear();for(const[k,v]of Object.entries(data))localStorage.setItem('shop4_'+k,JSON.stringify(v));},data);await page.reload();await page.waitForFunction(()=>window.XLAppReady);\n  54 |   await page.evaluate(()=>{nav('reports');repTab('outstanding');});\n> 55 |   const oldRow=page.locator('#rep-content tbody tr').filter({has:page.locator('td',{hasText:'INV-1001'})});await expect(oldRow.locator('td').nth(5)).toHaveTex"
+    }
+  ],
+  "browserAfter": [
+    {
+      "name": "business date October 00:30 IST, device Asia/Kolkata",
+      "browser": "chromium",
+      "status": "passed",
+      "durationMs": 538
+    },
+    {
+      "name": "business date October 23:30 IST, device Asia/Kolkata",
+      "browser": "chromium",
+      "status": "passed",
+      "durationMs": 450
+    },
+    {
+      "name": "business date March 31 late evening IST, device Asia/Kolkata",
+      "browser": "chromium",
+      "status": "passed",
+      "durationMs": 485
+    },
+    {
+      "name": "business date April 1 early morning IST, device Asia/Kolkata",
+      "browser": "chromium",
+      "status": "passed",
+      "durationMs": 467
+    },
+    {
+      "name": "business date December 31 late evening IST, device Asia/Kolkata",
+      "browser": "chromium",
+      "status": "passed",
+      "durationMs": 441
+    },
+    {
+      "name": "business date January 1 early morning IST, device Asia/Kolkata",
+      "browser": "chromium",
+      "status": "passed",
+      "durationMs": 459
+    },
+    {
+      "name": "business date October 00:30 IST, device America/Los_Angeles",
+      "browser": "chromium",
+      "status": "passed",
+      "durationMs": 410
+    },
+    {
+      "name": "business date October 23:30 IST, device America/Los_Angeles",
+      "browser": "chromium",
+      "status": "passed",
+      "durationMs": 444
+    },
+    {
+      "name": "business date March 31 late evening IST, device America/Los_Angeles",
+      "browser": "chromium",
+      "status": "passed",
+      "durationMs": 410
+    },
+    {
+      "name": "business date April 1 early morning IST, device America/Los_Angeles",
+      "browser": "chromium",
+      "status": "passed",
+      "durationMs": 428
+    },
+    {
+      "name": "business date December 31 late evening IST, device America/Los_Angeles",
+      "browser": "chromium",
+      "status": "passed",
+      "durationMs": 421
+    },
+    {
+      "name": "business date January 1 early morning IST, device America/Los_Angeles",
+      "browser": "chromium",
+      "status": "passed",
+      "durationMs": 397
+    },
+    {
+      "name": "business date October 00:30 IST, device Pacific/Auckland",
+      "browser": "chromium",
+      "status": "passed",
+      "durationMs": 482
+    },
+    {
+      "name": "business date October 23:30 IST, device Pacific/Auckland",
+      "browser": "chromium",
+      "status": "passed",
+      "durationMs": 488
+    },
+    {
+      "name": "business date March 31 late evening IST, device Pacific/Auckland",
+      "browser": "chromium",
+      "status": "passed",
+      "durationMs": 457
+    },
+    {
+      "name": "business date April 1 early morning IST, device Pacific/Auckland",
+      "browser": "chromium",
+      "status": "passed",
+      "durationMs": 444
+    },
+    {
+      "name": "business date December 31 late evening IST, device Pacific/Auckland",
+      "browser": "chromium",
+      "status": "passed",
+      "durationMs": 465
+    },
+    {
+      "name": "business date January 1 early morning IST, device Pacific/Auckland",
+      "browser": "chromium",
+      "status": "passed",
+      "durationMs": 470
+    },
+    {
+      "name": "October filters include both endpoints and dashboard uses the business month",
+      "browser": "chromium",
+      "status": "passed",
+      "durationMs": 393
+    },
+    {
+      "name": "business date October 00:30 IST, device Asia/Kolkata",
+      "browser": "firefox",
+      "status": "passed",
+      "durationMs": 1774
+    },
+    {
+      "name": "business date October 23:30 IST, device Asia/Kolkata",
+      "browser": "firefox",
+      "status": "passed",
+      "durationMs": 903
+    },
+    {
+      "name": "business date March 31 late evening IST, device Asia/Kolkata",
+      "browser": "firefox",
+      "status": "passed",
+      "durationMs": 895
+    },
+    {
+      "name": "business date April 1 early morning IST, device Asia/Kolkata",
+      "browser": "firefox",
+      "status": "passed",
+      "durationMs": 922
+    },
+    {
+      "name": "business date December 31 late evening IST, device Asia/Kolkata",
+      "browser": "firefox",
+      "status": "passed",
+      "durationMs": 899
+    },
+    {
+      "name": "business date January 1 early morning IST, device Asia/Kolkata",
+      "browser": "firefox",
+      "status": "passed",
+      "durationMs": 896
+    },
+    {
+      "name": "business date October 00:30 IST, device America/Los_Angeles",
+      "browser": "firefox",
+      "status": "passed",
+      "durationMs": 994
+    },
+    {
+      "name": "business date October 23:30 IST, device America/Los_Angeles",
+      "browser": "firefox",
+      "status": "passed",
+      "durationMs": 1288
+    },
+    {
+      "name": "business date March 31 late evening IST, device America/Los_Angeles",
+      "browser": "firefox",
+      "status": "passed",
+      "durationMs": 819
+    },
+    {
+      "name": "business date April 1 early morning IST, device America/Los_Angeles",
+      "browser": "firefox",
+      "status": "passed",
+      "durationMs": 1736
+    },
+    {
+      "name": "business date December 31 late evening IST, device America/Los_Angeles",
+      "browser": "firefox",
+      "status": "passed",
+      "durationMs": 1395
+    },
+    {
+      "name": "business date January 1 early morning IST, device America/Los_Angeles",
+      "browser": "firefox",
+      "status": "passed",
+      "durationMs": 1307
+    },
+    {
+      "name": "business date October 00:30 IST, device Pacific/Auckland",
+      "browser": "firefox",
+      "status": "passed",
+      "durationMs": 1411
+    },
+    {
+      "name": "business date October 23:30 IST, device Pacific/Auckland",
+      "browser": "firefox",
+      "status": "passed",
+      "durationMs": 914
+    },
+    {
+      "name": "business date March 31 late evening IST, device Pacific/Auckland",
+      "browser": "firefox",
+      "status": "passed",
+      "durationMs": 806
+    },
+    {
+      "name": "business date April 1 early morning IST, device Pacific/Auckland",
+      "browser": "firefox",
+      "status": "passed",
+      "durationMs": 860
+    },
+    {
+      "name": "business date December 31 late evening IST, device Pacific/Auckland",
+      "browser": "firefox",
+      "status": "passed",
+      "durationMs": 856
+    },
+    {
+      "name": "business date January 1 early morning IST, device Pacific/Auckland",
+      "browser": "firefox",
+      "status": "passed",
+      "durationMs": 863
+    },
+    {
+      "name": "October filters include both endpoints and dashboard uses the business month",
+      "browser": "firefox",
+      "status": "passed",
+      "durationMs": 744
+    },
+    {
+      "name": "business date October 00:30 IST, device Asia/Kolkata",
+      "browser": "webkit",
+      "status": "passed",
+      "durationMs": 1241
+    },
+    {
+      "name": "business date October 23:30 IST, device Asia/Kolkata",
+      "browser": "webkit",
+      "status": "passed",
+      "durationMs": 1113
+    },
+    {
+      "name": "business date March 31 late evening IST, device Asia/Kolkata",
+      "browser": "webkit",
+      "status": "passed",
+      "durationMs": 1189
+    },
+    {
+      "name": "business date April 1 early morning IST, device Asia/Kolkata",
+      "browser": "webkit",
+      "status": "passed",
+      "durationMs": 1110
+    },
+    {
+      "name": "business date December 31 late evening IST, device Asia/Kolkata",
+      "browser": "webkit",
+      "status": "passed",
+      "durationMs": 1217
+    },
+    {
+      "name": "business date January 1 early morning IST, device Asia/Kolkata",
+      "browser": "webkit",
+      "status": "passed",
+      "durationMs": 1040
+    },
+    {
+      "name": "business date October 00:30 IST, device America/Los_Angeles",
+      "browser": "webkit",
+      "status": "passed",
+      "durationMs": 1186
+    },
+    {
+      "name": "business date October 23:30 IST, device America/Los_Angeles",
+      "browser": "webkit",
+      "status": "passed",
+      "durationMs": 1110
+    },
+    {
+      "name": "business date March 31 late evening IST, device America/Los_Angeles",
+      "browser": "webkit",
+      "status": "passed",
+      "durationMs": 1059
+    },
+    {
+      "name": "business date April 1 early morning IST, device America/Los_Angeles",
+      "browser": "webkit",
+      "status": "passed",
+      "durationMs": 1052
+    },
+    {
+      "name": "business date December 31 late evening IST, device America/Los_Angeles",
+      "browser": "webkit",
+      "status": "passed",
+      "durationMs": 1155
+    },
+    {
+      "name": "business date January 1 early morning IST, device America/Los_Angeles",
+      "browser": "webkit",
+      "status": "passed",
+      "durationMs": 1204
+    },
+    {
+      "name": "business date October 00:30 IST, device Pacific/Auckland",
+      "browser": "webkit",
+      "status": "passed",
+      "durationMs": 1142
+    },
+    {
+      "name": "business date October 23:30 IST, device Pacific/Auckland",
+      "browser": "webkit",
+      "status": "passed",
+      "durationMs": 1245
+    },
+    {
+      "name": "business date March 31 late evening IST, device Pacific/Auckland",
+      "browser": "webkit",
+      "status": "passed",
+      "durationMs": 1203
+    },
+    {
+      "name": "business date April 1 early morning IST, device Pacific/Auckland",
+      "browser": "webkit",
+      "status": "passed",
+      "durationMs": 1253
+    },
+    {
+      "name": "business date December 31 late evening IST, device Pacific/Auckland",
+      "browser": "webkit",
+      "status": "passed",
+      "durationMs": 1038
+    },
+    {
+      "name": "business date January 1 early morning IST, device Pacific/Auckland",
+      "browser": "webkit",
+      "status": "passed",
+      "durationMs": 1154
+    },
+    {
+      "name": "October filters include both endpoints and dashboard uses the business month",
+      "browser": "webkit",
+      "status": "passed",
+      "durationMs": 948
+    },
+    {
+      "name": "IST aging, payment defaults and UTC event timestamps preserve stored history",
+      "browser": "chromium",
+      "status": "passed",
+      "durationMs": 612
+    },
+    {
+      "name": "IST aging, payment defaults and UTC event timestamps preserve stored history",
+      "browser": "firefox",
+      "status": "passed",
+      "durationMs": 1864
+    },
+    {
+      "name": "IST aging, payment defaults and UTC event timestamps preserve stored history",
+      "browser": "webkit",
+      "status": "passed",
+      "durationMs": 1467
+    }
+  ],
+  "browserAfterCounts": {
+    "chromium": 20,
+    "firefox": 20,
+    "webkit": 20
+  }
+}
