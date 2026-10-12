@@ -25,3 +25,13 @@ Restore validates before mutation, shows counts and format/checksum status, and 
 ## Verification scope
 
 Only disposable synthetic storage, loopback servers and browser contexts were used. Fault injection covers journal, records, settings, audit, revision marker, rollback, concurrent tabs, corrupt journals and failed restore. Node tests include abrupt child-process exit and fresh-client recovery. Browser tests cover Chromium, Firefox and WebKit, including offline file origin. This does not establish survival of physical power failure, every mobile browser, printing hardware or arbitrary historical data not represented by fixtures.
+
+## Free automatic backups and reminders
+
+Folder backups are opt-in through Settings. The File System Access directory picker requires an explicit click and is chiefly available in Chromium. A folder handle is remembered in IndexedDB in this device/browser profile. On reload, background work only queries existing permission; reconnecting or granting permission requires a click. Unsupported browsers, including many mobile browsers, retain manual private downloads and a seven-day reminder. The app cannot run backups while closed, and background-tab scheduling can be delayed.
+
+Verified changes schedule a debounced full snapshot. Unique timestamp/UUID filenames retain previous files without automatic removal. Success requires write, close and exact file readback; denied permission, disk/write/close/readback failure keeps a visible reminder. New commits arriving during a backup schedule another snapshot. A manual download request is recorded separately from a verified folder write and reminds users to check the saved file. Malformed or future remembered timestamps cannot silence reminders.
+
+Folder handles, permission grants and device-specific backup status are excluded from portable clean backups. They must be selected again on another device; they are not billing records. Status keys use the internal prefix and do not trigger recursive backups or alter invoice revisions. No paid service or mandatory backend is used. Older files accumulate by design; owners manage disk space themselves.
+
+Tests use synthetic folder/file/permission ports and check actual app commit scheduling. They do not open an owner's folder or prove native chooser interaction on every phone/browser. Real API capability on fresh offline file contexts was checked for locks and IndexedDB in all three engines; the native folder picker is available only where the browser implements it.

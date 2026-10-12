@@ -10348,7 +10348,8 @@ function createXLBackup(options){
 function createXLAutomaticBackup(options){
   let folder=null,enabled=false,busy=false,dirty=false,pending=null;
   const timer=options.timer||setTimeout,cancel=options.cancel||clearTimeout,now=options.now||Date.now;
-  let state={phase:'manual',lastVerified:null,lastManualRequest:null,error:null,...options.initial};
+  const remembered=options.initial||{},timestamp=value=>typeof value==='number'&&Number.isFinite(value)&&value>=0&&value<=now()?value:null;
+  let state={phase:'manual',lastVerified:timestamp(remembered.lastVerified),lastManualRequest:timestamp(remembered.lastManualRequest),error:null};
   const emit=()=>{try{options.onStatus?.({...state,enabled});}catch{}};
   function schedule(delay=1500){if(!enabled||!folder)return;if(pending!==null)cancel(pending);pending=timer(()=>{pending=null;return runNow();},delay);}
   async function runNow(){
@@ -10382,11 +10383,12 @@ function xlBackupHandleStore(value,write=false){
   });
 }
 function installXLAutomaticBackups(){
-  let initial={};try{const raw=localStorage.getItem('xl_storage_backup_status');if(raw)initial=JSON.parse(raw)||{};}catch{}
+  let initial={};try{const raw=localStorage.getItem('xl_storage_backup_status');if(raw){const value=JSON.parse(raw);if(value&&typeof value==='object'&&!Array.isArray(value))initial=value;}}catch{}
+  let statusPersistenceError='';
   function renderBackupStatus(){
     const state=window.XLAutoBackup?.status();if(!state)return;
     const text=state.phase==='verified'?'Folder backup verified at '+new Date(state.lastVerified).toLocaleString():state.phase==='attention'?state.error:state.enabled?'Automatic folder backups are enabled while this app is open.':'Manual backups are available. Choose a folder to enable automatic backups in a supported browser.';
-    const output=document.getElementById('xl-auto-status');if(output)output.textContent=text+(state.lastManualRequest?' Last manual download requested: '+new Date(state.lastManualRequest).toLocaleString()+'. Check that the file was saved.':'');
+    const output=document.getElementById('xl-auto-status');if(output)output.textContent=text+statusPersistenceError+(state.lastManualRequest?' Last manual download requested: '+new Date(state.lastManualRequest).toLocaleString()+'. Check that the file was saved.':'');
     let reminder=document.getElementById('xl-backup-reminder');
     if(window.XLAutoBackup.reminderDue()){
       if(!reminder){reminder=document.createElement('div');reminder.id='xl-backup-reminder';reminder.setAttribute('role','status');reminder.style.cssText='padding:12px;background:#fef3c7;color:#78350f';const label=document.createElement('span'),button=document.createElement('button');label.textContent='Keep an independent backup outside this browser. ';button.textContent='Download private backup';button.onclick=()=>exportData();reminder.append(label,button);document.body.prepend(reminder);}
@@ -10394,7 +10396,7 @@ function installXLAutomaticBackups(){
     }else reminder?.remove();
   }
   const auto=createXLAutomaticBackup({initial,capture:()=>XLStore.snapshot(),encode:records=>XLBackup.encode(records),id:()=>crypto.randomUUID?crypto.randomUUID():Array.from(crypto.getRandomValues(new Uint8Array(16)),b=>b.toString(16).padStart(2,'0')).join(''),
-    onStatus:state=>{try{localStorage.setItem('xl_storage_backup_status',JSON.stringify(state));}catch{state.error='Backup status could not be remembered. Check the independent file.';}renderBackupStatus();}});
+    onStatus:state=>{try{localStorage.setItem('xl_storage_backup_status',JSON.stringify(state));statusPersistenceError='';}catch{statusPersistenceError=' Backup status could not be remembered. Check the independent file.';}renderBackupStatus();}});
   window.XLAutoBackup=auto;
   const load=window.loadSettings;
   window.loadSettings=function(){load();if(document.getElementById('xl-backup-options')){renderBackupStatus();return;}
