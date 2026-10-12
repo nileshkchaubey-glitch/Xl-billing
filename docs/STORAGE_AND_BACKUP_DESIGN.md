@@ -6,7 +6,7 @@ The app remains one HTML file with no required network service. The existing `sh
 
 `localStorage` has no transaction spanning multiple keys. One successful `setItem` changes one value; it does not atomically commit an invoice, its number counter and its audit entry. Browser readback is not proof of physical disk durability. Browser eviction, clearing site data, device loss and power loss can defeat browser storage. Keep independent downloaded or folder backups.
 
-The app stages a logical operation in memory, validates it, writes and reads back a SHA-256-checked recovery journal, applies and verifies its changed keys, writes a revision marker, then verifies journal cleanup. Success UI follows verification. A failed operation restores exact original raw strings. If rollback itself fails, the checked journal remains and further changes are blocked. Startup acquires the writer lock and recovers before application scripts read business records. A pre-marker interruption rolls back; a verified commit marker causes roll-forward. Corrupt, foreign or contradictory recovery material is retained without guessing.
+The app stages a logical operation in memory, validates it, writes and reads back a SHA-256-checked recovery journal, applies and verifies its changed keys, writes a revision marker, then verifies journal cleanup. Success UI follows verification. A recoverable failed operation restores and verifies exact original raw strings. If rollback or cleanup cannot be verified, further changes are blocked and the profile and any retained journal must be preserved. Read denial after journal removal can leave no journal, so pending UI does not assert its presence. A verified commit is never rolled back merely because its cleanup acknowledgement fails; that distinct outcome requires reload and inspection. Startup acquires the writer lock and recovers before application scripts read business records. A pre-marker interruption rolls back; a verified commit marker causes roll-forward. Corrupt, foreign or contradictory recovery material is retained without guessing.
 
 Web Locks coordinate cooperating tabs. A stale tab must reload; simultaneous submissions cannot create duplicate operations. Browsers without usable locks permit reading and raw recovery export but fail closed for writes. An old application copy can ignore locks: revision and snapshot checks detect many such changes, but cannot guarantee prevention. Close old copies before using this version. A lightweight snapshot fingerprint detects ordinary drift; SHA-256 checks journals and backups. Neither is an authentication signature or protection against an attacker who can replace all local data.
 
@@ -21,6 +21,40 @@ The complete private format includes PIN hashes and optional service credentials
 Legacy v4/v5 backups require all six original collections/settings fields. Their compatible record fields remain unchanged, including aggregate opening paid amounts and separate supplier discounts. They have no integrity checksum and the preview says so. Partial files, unverifiable checksum additions, unsupported schemas, duplicate IDs/numbers, malformed amounts and inconsistent financial histories cannot be restored. No startup migration or historical repair is performed. Conflicting histories are archived without rewriting their amounts; restoring them requires review and is rejected rather than guessing a repair. Corrupted schemas remain available through raw recovery export.
 
 Restore validates before mutation, shows counts and format/checksum status, and requires an explicit choice. Replacement of an existing profile requires its current Delete PIN. First-time PIN setup never restores automatically; open the file again after setup. An empty profile can be initialized explicitly. A complete pre-restore backup download is requested before writes. The same recovery journal protects replacement of settings, collections, audit and preferences, including removing keys absent from the backup. Restore does not import the old coordination revision. Reload after a verified restore to refresh all view preferences.
+
+## Independent locked recovery
+
+Draft PR #8 mounts recovery controls before awaiting storage or executing normal
+application scripts. The raw recovery version 1 envelope and private/legacy backup
+formats are unchanged. Exact current records, metadata and journal are exported
+with SHA-256; re-selection verifies both file contents and the still-current
+captured state. A requested download alone cannot authorize adoption or restore.
+Without Web Locks, repeated capture permits read-only raw export while verification
+and mutation remain unavailable. Denied storage reads cannot be bypassed.
+
+Candidate schema/accounting validation, an explicit preview, readable nondefault
+current PIN credentials and separate owner approval precede mutation. Adoption
+preserves current business bytes and refuses unresolved journals. Restore can
+replace corrupt current history with a validated private/legacy candidate after
+the raw original is exported and verified. The backup's credential never stands
+in for the current credential. Valid historical opening aggregates and supplier
+discounts retain their supported meaning; ambiguous histories are rejected.
+
+The internal owner-reviewed journal has payload version 2, kind
+`owner-reviewed-recovery`, checked before/after records, metadata and journal,
+and a SHA-256 checksum. It nests an earlier corrupt journal as exact before
+evidence rather than deleting it to bypass validation. Startup interprets the
+marker and checks observed values before choosing rollback or roll-forward.
+Rollback can legitimately return to an externally changed state that remains
+locked; it must not silently re-anchor that state. Foreign bytes or invalid
+recovery evidence block mutation. Normal version 1 journals remain supported.
+
+Preview compares actual captured current records with a selected candidate only
+if both states validate. Otherwise before counts/differences are unavailable.
+The metadata fingerprint is not an earlier snapshot. Recovery file selection is
+limited to 20 MiB. Possession of matching exported bytes is not a claim of durable
+external storage; the owner must retain the private file outside the profile.
+See [RECOVERY_FOLLOWUP_REPORT.md](RECOVERY_FOLLOWUP_REPORT.md) for exact evidence.
 
 ## Verification scope
 
