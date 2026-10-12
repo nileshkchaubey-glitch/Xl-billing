@@ -10344,6 +10344,76 @@ function createXLBackup(options){
   return {maxBytes,encode,decode,validate};
 }
 </script>
+<script id="xl-automatic-backup">
+function createXLAutomaticBackup(options){
+  let folder=null,enabled=false,busy=false,dirty=false,pending=null;
+  const timer=options.timer||setTimeout,cancel=options.cancel||clearTimeout,now=options.now||Date.now;
+  let state={phase:'manual',lastVerified:null,lastManualRequest:null,error:null,...options.initial};
+  const emit=()=>{try{options.onStatus?.({...state,enabled});}catch{}};
+  function schedule(delay=1500){if(!enabled||!folder)return;if(pending!==null)cancel(pending);pending=timer(()=>{pending=null;return runNow();},delay);}
+  async function runNow(){
+    if(busy){dirty=true;return false;}
+    if(!enabled||!folder){state.phase='manual';emit();return false;}
+    busy=true;let writer;
+    try{
+      if(await folder.queryPermission({mode:'readwrite'})!=='granted')throw new Error('Folder permission is unavailable. Reconnect the folder or download a manual backup.');
+      const records=await options.capture(),backup=await options.encode(records),text=JSON.stringify(backup);
+      const name='xl-billing-private-'+new Date(now()).toISOString().replace(/[:.]/g,'-')+'-'+options.id()+'.json';
+      const handle=await folder.getFileHandle(name,{create:true});writer=await handle.createWritable();await writer.write(text);await writer.close();writer=null;
+      const saved=await handle.getFile();if(await saved.text()!==text)throw new Error('Backup file readback did not match. Keep earlier backups and try again.');
+      state={...state,phase:'verified',lastVerified:now(),error:null};emit();return true;
+    }catch(e){try{await writer?.abort?.();}catch{}state={...state,phase:'attention',error:e.message||String(e)};emit();return false;}
+    finally{busy=false;if(dirty){dirty=false;schedule();}}
+  }
+  return {runNow,schedule,status:()=>({...state,enabled}),
+    resume:async(handle,on=true)=>{folder=handle;enabled=!!handle&&!!on;state.phase=enabled?'ready':'manual';emit();},
+    disable:()=>{enabled=false;if(pending!==null)cancel(pending);pending=null;state.phase='manual';emit();},
+    manualRequested:()=>{state.lastManualRequest=now();emit();},
+    reminderDue:()=>state.phase==='attention'||now()-(state.lastVerified||state.lastManualRequest||0)>=7*86400000,
+    isBusy:()=>busy};
+}
+function xlBackupHandleStore(value,write=false){
+  return new Promise((resolve,reject)=>{
+    if(!window.indexedDB){reject(new Error('Folder persistence is unavailable. Manual backups remain available.'));return;}
+    const request=indexedDB.open('xl-billing-backup-folder',1);request.onupgradeneeded=()=>request.result.createObjectStore('handles');request.onerror=()=>reject(request.error);
+    request.onsuccess=()=>{const db=request.result,tx=db.transaction('handles',write?'readwrite':'readonly'),store=tx.objectStore('handles');let result;
+      const operation=write?(value?store.put(value,'folder'):store.delete('folder')):store.get('folder');operation.onsuccess=()=>{result=operation.result;};
+      tx.oncomplete=()=>{db.close();resolve(result||null);};tx.onerror=tx.onabort=()=>{db.close();reject(tx.error||new Error('Folder persistence failed.'));};};
+  });
+}
+function installXLAutomaticBackups(){
+  let initial={};try{const raw=localStorage.getItem('xl_storage_backup_status');if(raw)initial=JSON.parse(raw)||{};}catch{}
+  function renderBackupStatus(){
+    const state=window.XLAutoBackup?.status();if(!state)return;
+    const text=state.phase==='verified'?'Folder backup verified at '+new Date(state.lastVerified).toLocaleString():state.phase==='attention'?state.error:state.enabled?'Automatic folder backups are enabled while this app is open.':'Manual backups are available. Choose a folder to enable automatic backups in a supported browser.';
+    const output=document.getElementById('xl-auto-status');if(output)output.textContent=text+(state.lastManualRequest?' Last manual download requested: '+new Date(state.lastManualRequest).toLocaleString()+'. Check that the file was saved.':'');
+    let reminder=document.getElementById('xl-backup-reminder');
+    if(window.XLAutoBackup.reminderDue()){
+      if(!reminder){reminder=document.createElement('div');reminder.id='xl-backup-reminder';reminder.setAttribute('role','status');reminder.style.cssText='padding:12px;background:#fef3c7;color:#78350f';const label=document.createElement('span'),button=document.createElement('button');label.textContent='Keep an independent backup outside this browser. ';button.textContent='Download private backup';button.onclick=()=>exportData();reminder.append(label,button);document.body.prepend(reminder);}
+      if(state.phase==='attention')reminder.firstChild.textContent='Automatic backup needs attention. '+text+' ';
+    }else reminder?.remove();
+  }
+  const auto=createXLAutomaticBackup({initial,capture:()=>XLStore.snapshot(),encode:records=>XLBackup.encode(records),id:()=>crypto.randomUUID?crypto.randomUUID():Array.from(crypto.getRandomValues(new Uint8Array(16)),b=>b.toString(16).padStart(2,'0')).join(''),
+    onStatus:state=>{try{localStorage.setItem('xl_storage_backup_status',JSON.stringify(state));}catch{state.error='Backup status could not be remembered. Check the independent file.';}renderBackupStatus();}});
+  window.XLAutoBackup=auto;
+  const load=window.loadSettings;
+  window.loadSettings=function(){load();if(document.getElementById('xl-backup-options')){renderBackupStatus();return;}
+    const card=document.createElement('div');card.className='card';card.id='xl-backup-options';
+    const title=document.createElement('h3');title.textContent='Independent backups';const info=document.createElement('p');info.textContent='Free folder backups run after verified changes while this app is open. Mobile and unsupported browsers can download backups manually. Files include private records and credentials. Keep earlier files; no backup files are deleted automatically.';
+    const status=document.createElement('p');status.id='xl-auto-status';status.setAttribute('role','status');
+    const choose=document.createElement('button');choose.id='xl-backup-folder';choose.textContent='Choose or reconnect backup folder';choose.disabled=typeof window.showDirectoryPicker!=='function';
+    choose.onclick=async()=>{try{const handle=await window.showDirectoryPicker({id:'xl-billing-backups',mode:'readwrite'});if(await handle.queryPermission({mode:'readwrite'})!=='granted'&&await handle.requestPermission({mode:'readwrite'})!=='granted')throw new Error('Folder access was not granted.');await xlBackupHandleStore(handle,true);await auto.resume(handle,true);auto.schedule(0);}catch(e){if(e.name!=='AbortError')xlStorageMessage(new Error(e.message||'Folder backup setup failed.'));}};
+    const run=document.createElement('button');run.id='xl-backup-now';run.textContent='Back up to folder now';run.onclick=()=>auto.runNow();
+    const disable=document.createElement('button');disable.id='xl-backup-disable';disable.textContent='Disable automatic backups';disable.onclick=()=>auto.disable();
+    const manual=document.createElement('button');manual.id='xl-backup-manual';manual.textContent='Download private backup';manual.onclick=()=>exportData();
+    const raw=document.createElement('button');raw.textContent='Private raw recovery download';raw.onclick=()=>{xlRecoveryControls();document.getElementById('xl-recovery-export').click();};
+    card.append(title,info,status,choose,run,disable,manual,raw);document.getElementById('page-settings').appendChild(card);renderBackupStatus();
+  };
+  window.addEventListener('xl:committed',()=>auto.schedule());window.addEventListener('xl:manual-backup',()=>auto.manualRequested());
+  renderBackupStatus();
+  (async()=>{try{const handle=await xlBackupHandleStore();if(handle&&initial.enabled){await auto.resume(handle,true);auto.schedule(0);}else if(initial.enabled){xlStorageMessage(new Error('The backup folder is no longer available. Reconnect it or download a manual backup.'));}}catch{if(initial.enabled)xlStorageMessage(new Error('The saved backup folder cannot be opened. Manual backups remain available.'));}})();
+}
+</script>
 <script id="xl-bootstrap">
 // All code in deferred app scripts is authored application code, never imported data.
 function xlDownloadJSON(data,name){
@@ -10481,6 +10551,6 @@ function installXLStorageBindings(){
     validate:(after,before,options)=>validateXLTransaction(after,before,options),onCommit:detail=>window.dispatchEvent(new CustomEvent('xl:committed',{detail}))});
   try{await window.XLStore.ready;}catch(e){loading.remove();xlStorageMessage(e);window.XLAppReady=false;return;}
   for(const source of document.querySelectorAll('script[type="text/xl-app"]')){const script=document.createElement('script');script.textContent=source.textContent;document.body.appendChild(script);}
-  installXLStorageBindings();installXLBackup();window.XLAppReady=true;window.dispatchEvent(new Event('xl:ready'));loading.remove();
+  installXLStorageBindings();installXLBackup();installXLAutomaticBackups();window.XLAppReady=true;window.dispatchEvent(new Event('xl:ready'));loading.remove();
 })();
 </script>
