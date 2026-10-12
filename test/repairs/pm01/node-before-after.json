@@ -1,0 +1,178 @@
+{
+  "test_file": "test/foundation/supplier-identity.test.cjs",
+  "test_sha256": "f6918e214f0b15d379f58223a5c9db4f376b335f38d2d9e4fd35b79ef186fab2",
+  "synthetic_only": true,
+  "before": {
+    "tested_commit": "2e92674a3c7d0087e66ac91abe468b998f906640",
+    "runtime_commit": "5d3fb7991586d7acef84d49cdd26a003b290d912",
+    "source_sha256": "37cb3c09b5d165768666d3ccefae9478b10f08a7dc20f1dcc219cad91e596933",
+    "summary": {
+      "tests": 17,
+      "pass": 2,
+      "fail": 15,
+      "skipped": 0
+    },
+    "cases": [
+      {
+        "name": "purchase vendor number is scoped to stable supplier ID, even when display names match",
+        "status": "FAIL"
+      },
+      {
+        "name": "saved business dates scope supplier numbers across the March 31 / April 1 financial-year boundary",
+        "status": "FAIL"
+      },
+      {
+        "name": "same-supplier duplicate number in one financial year is rejected without normalizing source bytes",
+        "status": "FAIL"
+      },
+      {
+        "name": "colliding purchase numbers with missing partyId require review rather than name/date inference",
+        "status": "FAIL"
+      },
+      {
+        "name": "colliding purchase numbers with missing date require review rather than name/date inference",
+        "status": "FAIL"
+      },
+      {
+        "name": "a display-name change does not create a new supplier identity",
+        "status": "FAIL"
+      },
+      {
+        "name": "a unique legacy purchase without supplier/date and historical removed-master links remain portable",
+        "status": "PASS"
+      },
+      {
+        "name": "unchanged historical ambiguity may be archived but cannot be edited or fully restored",
+        "status": "FAIL"
+      },
+      {
+        "name": "changing a purchase record ID or supplier link cannot evade duplicate validation",
+        "status": "FAIL"
+      },
+      {
+        "name": "new purchase link missing-supplier is refused without changing stored records",
+        "status": "FAIL"
+      },
+      {
+        "name": "new purchase link customer-only is refused without changing stored records",
+        "status": "FAIL"
+      },
+      {
+        "name": "full batch preflight prevents partial writes when one purchase conflicts",
+        "status": "FAIL"
+      },
+      {
+        "name": "private and legacy backups preserve exact multi-supplier and cross-year purchase bytes",
+        "status": "FAIL"
+      },
+      {
+        "name": "locked adopt accepts validated multi-supplier histories only after export proof, current PIN and owner confirmation",
+        "status": "FAIL"
+      },
+      {
+        "name": "locked restore accepts validated multi-supplier histories only after export proof, current PIN and owner confirmation",
+        "status": "FAIL"
+      },
+      {
+        "name": "ambiguous locked adoption and restore retain original financial and coordination bytes",
+        "status": "FAIL"
+      },
+      {
+        "name": "sales invoice numbering remains globally unique across suppliers and financial years",
+        "status": "PASS"
+      }
+    ]
+  },
+  "after": {
+    "tested_commit": "50a41c84f99bda23f4d240143410a9170578977c",
+    "source_sha256": "f3c11c74d19136ba544cde0c5f758199a8b3b3c6f929347bc89d689d16cc3811",
+    "summary": {
+      "tests": 17,
+      "pass": 17,
+      "fail": 0,
+      "skipped": 0
+    },
+    "cases": [
+      {
+        "name": "purchase vendor number is scoped to stable supplier ID, even when display names match",
+        "status": "PASS"
+      },
+      {
+        "name": "saved business dates scope supplier numbers across the March 31 / April 1 financial-year boundary",
+        "status": "PASS"
+      },
+      {
+        "name": "same-supplier duplicate number in one financial year is rejected without normalizing source bytes",
+        "status": "PASS"
+      },
+      {
+        "name": "colliding purchase numbers with missing partyId require review rather than name/date inference",
+        "status": "PASS"
+      },
+      {
+        "name": "colliding purchase numbers with missing date require review rather than name/date inference",
+        "status": "PASS"
+      },
+      {
+        "name": "a display-name change does not create a new supplier identity",
+        "status": "PASS"
+      },
+      {
+        "name": "a unique legacy purchase without supplier/date and historical removed-master links remain portable",
+        "status": "PASS"
+      },
+      {
+        "name": "unchanged historical ambiguity may be archived but cannot be edited or fully restored",
+        "status": "PASS"
+      },
+      {
+        "name": "changing a purchase record ID or supplier link cannot evade duplicate validation",
+        "status": "PASS"
+      },
+      {
+        "name": "new purchase link missing-supplier is refused without changing stored records",
+        "status": "PASS"
+      },
+      {
+        "name": "new purchase link customer-only is refused without changing stored records",
+        "status": "PASS"
+      },
+      {
+        "name": "full batch preflight prevents partial writes when one purchase conflicts",
+        "status": "PASS"
+      },
+      {
+        "name": "private and legacy backups preserve exact multi-supplier and cross-year purchase bytes",
+        "status": "PASS"
+      },
+      {
+        "name": "locked adopt accepts validated multi-supplier histories only after export proof, current PIN and owner confirmation",
+        "status": "PASS"
+      },
+      {
+        "name": "locked restore accepts validated multi-supplier histories only after export proof, current PIN and owner confirmation",
+        "status": "PASS"
+      },
+      {
+        "name": "ambiguous locked adoption and restore retain original financial and coordination bytes",
+        "status": "PASS"
+      },
+      {
+        "name": "sales invoice numbering remains globally unique across suppliers and financial years",
+        "status": "PASS"
+      }
+    ]
+  },
+  "interpretation": "Before failures include both incorrect acceptance/refusal and newly specified diagnostic assertions. Existing independent owner creation/backup probes separately reproduce two genuine blocked compatible workflows. No failures were marked expected or skipped.",
+  "all_node_after": {
+    "tests": 80,
+    "pass": 80,
+    "fail": 0,
+    "skipped": 0,
+    "original_node_tests_retained": 63,
+    "parcel_vm": "PASS",
+    "source_sha256": "f3c11c74d19136ba544cde0c5f758199a8b3b3c6f929347bc89d689d16cc3811",
+    "committed_source": "50a41c84f99bda23f4d240143410a9170578977c",
+    "note": "Combined Node run occurred on these exact runtime bytes before fix commit was written; final parent verification must retest assembled committed head."
+  }
+}

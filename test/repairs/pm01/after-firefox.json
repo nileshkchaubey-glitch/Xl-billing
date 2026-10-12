@@ -1,0 +1,51 @@
+{
+  "owner_instruction": "https://github.com/nileshkchaubey-glitch/Xl-billing/pull/8#issuecomment-6126054996",
+  "tested_application_commit": "50a41c84f99bda23f4d240143410a9170578977c",
+  "tested_commit": "50a41c84f99bda23f4d240143410a9170578977c",
+  "source_sha256": "f3c11c74d19136ba544cde0c5f758199a8b3b3c6f929347bc89d689d16cc3811",
+  "baseline_commit": "29aeb20225bccfc653b192651de608491185096c",
+  "runner_sha256": "98d4425d11f9c7d28c37fc874a5920c681ca5a29ee25bc81670c1df288d1e3b3",
+  "browser": "firefox",
+  "synthetic_only": true,
+  "summary": {
+    "pass": 2,
+    "fail": 0,
+    "harness_errors": 0
+  },
+  "results": [
+    {
+      "id": "different-supplier-bill-number",
+      "title": "Baseline-supported supplier-issued numbers are scoped to supplier identity",
+      "browser": "firefox",
+      "width": 1366,
+      "classification": "BLOCKER",
+      "status": "PASS",
+      "duration_ms": 4713,
+      "pass": true,
+      "expected": "Supplier p2 P-1 and supplier p3 P-1 are distinct histories, as the baseline UI supports",
+      "observed": {
+        "purchase_count": 2,
+        "second_supplier_saved": true,
+        "original_bytes_preserved_on_refusal": false,
+        "error": null
+      },
+      "note": "Resolve supplier/FY uniqueness policy explicitly; never rewrite existing vendor numbers to manufacture global uniqueness."
+    },
+    {
+      "id": "different-supplier-backup-restore",
+      "title": "Complete private backup can restore distinct suppliers sharing an external bill number",
+      "browser": "firefox",
+      "width": 1366,
+      "classification": "BLOCKER",
+      "status": "PASS",
+      "duration_ms": 525,
+      "pass": true,
+      "expected": "Two unambiguous supplier-linked P-1 records remain a restorable complete snapshot",
+      "observed": {
+        "verified": true,
+        "error": null,
+        "original_bytes_preserved": true
+      }
+    }
+  ]
+}
