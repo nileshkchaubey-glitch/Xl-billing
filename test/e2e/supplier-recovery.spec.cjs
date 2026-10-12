@@ -3,6 +3,11 @@ const {test,expect}=require('@playwright/test');
 const {shop}=require('../fixtures/shop.cjs');
 const crypto=require('node:crypto'),fs=require('node:fs/promises');
 
+test.beforeEach(async({page,baseURL})=>{
+  const origin=new URL(baseURL).origin;
+  await page.route('**/*',route=>new URL(route.request().url()).origin===origin?route.continue():route.abort());
+});
+
 // Every browser context, payment, PIN and file is synthetic. No hosted profile is used.
 function fixtures(multiple=true){
   const d=shop(2);d.settings.deletePinSalt='synthetic-supplier-recovery';
@@ -69,6 +74,7 @@ test('supplier identity normal private restore preserves cross-supplier and cros
   const before=await raw(page,true);await page.locator('#import-file').setInputFiles(backup);
   await expect(page.locator('#xl-restore-preview')).toContainText(/checksum verified.*purchases: 3/i);expect(await raw(page,true)).toEqual(before);
   await page.locator('#xl-restore-confirm').click();await page.locator('#del-pin-inp').fill('1111');await page.locator('#del-pin-inp').press('Enter');
+  await expect(page.locator('#del-pin-error')).toContainText(/wrong PIN/i);
   await expect(page.locator('#del-pin-overlay')).toBeVisible();expect(await raw(page,true)).toEqual(before);
   const rollbackCopy=page.waitForEvent('download');await page.locator('#del-pin-inp').fill('2468');await page.locator('#del-pin-inp').press('Enter');
   const download=await rollbackCopy;await download.saveAs(info.outputPath('synthetic-before-normal-restore.json'));
