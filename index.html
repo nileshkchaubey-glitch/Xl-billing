@@ -713,6 +713,8 @@ function isCancelled(record) { return !!record && (record.status === 'cancelled'
 function isDeleted(record) { return !!record && !!record.deletedAt; }
 function isActive(record) { return !!record && !isCancelled(record) && !isDeleted(record); }
 
+function escHtml(value){return String(value??'').replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;').replaceAll('"','&quot;').replaceAll("'",'&#39;');}
+
 function normalizedInvoiceNo(value){return String(value||'').trim().toLocaleLowerCase('en');}
 function nextInvoiceNumber(prefix,records,start=1){
   const used=new Set(records.map(r=>normalizedInvoiceNo(r.invoiceNo)));
@@ -920,11 +922,11 @@ function partyAC(inputId, hiddenId, val) {
   if(!val){list.style.display='none';return;}
   const res=getParties().filter(p=>p.name.toLowerCase().includes(val.toLowerCase())).slice(0,8);
   list.innerHTML = res.map(p=>`
-    <div class="ac-item" onclick="selectParty('${inputId}','${hiddenId}','${p.id}','${esc(p.name)}','${listId}')">
+    <div class="ac-item" onclick="selectParty('${inputId}','${hiddenId}','${p.id}',this.dataset.xlArg0,'${listId}')" data-xl-arg0="${escHtml(p.name)}">
       <div style="font-weight:500">${p.name}</div>
       <div class="ac-sub">${p.phone||''} ${p.type?'· '+p.type:''}</div>
     </div>`).join('') +
-    `<div class="ac-item" onclick="quickAddParty('${inputId}','${hiddenId}','${listId}','${esc(val)}')">
+    `<div class="ac-item" onclick="quickAddParty('${inputId}','${hiddenId}','${listId}',this.dataset.xlArg0)" data-xl-arg0="${escHtml(val)}">
       <span style="color:var(--g)">+ Add "${val}" as new party</span>
     </div>`;
   list.style.display='block';
@@ -997,7 +999,7 @@ function renderSaleItems() {
     <div class="it-row" id="sr-${it.id}">
       <!-- 1. Item Name -->
       <div class="ac-wrap">
-        <input class="fc fc-sm" id="sn-${it.id}" value="${esc(it.name)}" placeholder="Item name..." autocomplete="off"
+        <input class="fc fc-sm" id="sn-${it.id}" value="${escHtml(it.name)}" placeholder="Item name..." autocomplete="off"
           oninput="siName('${it.id}',this.value)">
         <div class="ac-list" id="ac-sn-${it.id}"></div>
       </div>
@@ -1069,7 +1071,7 @@ function showSaleItemAC(id, val) {
   if(!val) { listEl.style.display='none'; return; }
   const res = getItems().filter(i=>i.name.toLowerCase().includes(val.toLowerCase())).slice(0,8);
   listEl.innerHTML = res.map(i=>`
-    <div class="ac-item" onclick="setSaleItem('${id}','${i.id}','${esc(i.name)}','${i.saleRate||0}','${i.unit||'Pcs'}')">
+    <div class="ac-item" onclick="setSaleItem('${id}','${i.id}',this.dataset.xlArg0,'${i.saleRate||0}',this.dataset.xlArg1)" data-xl-arg0="${escHtml(i.name)}" data-xl-arg1="${escHtml(i.unit||'Pcs')}">
       <div style="font-weight:500">${i.name}</div>
       <div class="ac-sub">Sale: ${fc(i.saleRate||0)} · ${i.unit||'Pcs'}</div>
     </div>`).join('')+(val?`<div class="ac-item" onclick="document.getElementById('ac-sn-${id}').style.display='none'"><span style="color:var(--gray-400);font-size:12px">Keep "${val}" as-is</span></div>`:'');
@@ -1524,7 +1526,7 @@ function renderPurItems(){
   c.innerHTML=purItems.map(it=>`
     <div class="pit-row">
       <div class="ac-wrap">
-        <input class="fc fc-sm" id="pn-${it.id}" value="${esc(it.name)}" placeholder="Item..." autocomplete="off" oninput="piName('${it.id}',this.value)">
+        <input class="fc fc-sm" id="pn-${it.id}" value="${escHtml(it.name)}" placeholder="Item..." autocomplete="off" oninput="piName('${it.id}',this.value)">
         <div class="ac-list" id="ac-pn-${it.id}"></div>
       </div>
       <input type="number" class="fc fc-sm" value="${it.qty}" min="0.001" step="any" style="text-align:center" onchange="piNum('${it.id}','qty',this.value)">
@@ -1541,7 +1543,7 @@ function showPurItemAC(id,val){
   const listEl=document.getElementById('ac-pn-'+id); if(!listEl) return;
   if(!val){listEl.style.display='none';return;}
   const res=getItems().filter(i=>i.name.toLowerCase().includes(val.toLowerCase())).slice(0,8);
-  listEl.innerHTML=res.map(i=>`<div class="ac-item" onclick="setPurItem('${id}','${esc(i.name)}','${i.purchaseRate||0}','${i.unit||'Pcs'}')">
+  listEl.innerHTML=res.map(i=>`<div class="ac-item" onclick="setPurItem('${id}',this.dataset.xlArg0,'${i.purchaseRate||0}',this.dataset.xlArg1)" data-xl-arg0="${escHtml(i.name)}" data-xl-arg1="${escHtml(i.unit||'Pcs')}">
     <div style="font-weight:500">${i.name}</div><div class="ac-sub">Purchase: ${fc(i.purchaseRate||0)} · ${i.unit}</div></div>`).join('');
   listEl.style.display=res.length>0?'block':'none';
 }
@@ -2176,11 +2178,11 @@ window.showSaleItemAC = function(id, val) {
   if (!val) { listEl.style.display = 'none'; return; }
   const res = getItems().filter(i => i.name.toLowerCase().includes(val.toLowerCase())).slice(0, 8);
   listEl.innerHTML = res.map(i => `
-    <div class="ac-item" onclick="setSaleItem('${id}','${i.id}','${esc(i.name)}','${i.saleRate||0}','${i.unit||'Pcs'}')">
+    <div class="ac-item" onclick="setSaleItem('${id}','${i.id}',this.dataset.xlArg0,'${i.saleRate||0}',this.dataset.xlArg1)" data-xl-arg0="${escHtml(i.name)}" data-xl-arg1="${escHtml(i.unit||'Pcs')}">
       <div style="font-weight:500">${i.name}</div>
       <div class="ac-sub">Sale: ${fc(i.saleRate||0)} · ${i.unit||'Pcs'}</div>
     </div>`).join('') +
-    `<div class="ac-item" onclick="quickCreateItem('${id}','${esc(val)}')" style="color:var(--g);border-top:1px solid var(--gray-100);margin-top:2px">
+    `<div class="ac-item" onclick="quickCreateItem('${id}',this.dataset.xlArg0)" data-xl-arg0="${escHtml(val)}" style="color:var(--g);border-top:1px solid var(--gray-100);margin-top:2px">
       <strong>+ Create "${val}" as new item</strong>
       <div class="ac-sub">Opens quick item form</div>
     </div>`;
@@ -2963,11 +2965,11 @@ function pbPartyAC(val) {
   if (!val) { list.style.display = 'none'; return; }
   const res = getParties().filter(p => p.name.toLowerCase().includes(val.toLowerCase())).slice(0, 8);
   list.innerHTML = res.map(p => `
-    <div class="ac-item" onclick="pbSelectParty('${p.id}','${esc(p.name)}')">
+    <div class="ac-item" onclick="pbSelectParty('${p.id}',this.dataset.xlArg0)" data-xl-arg0="${escHtml(p.name)}">
       <div style="font-weight:500">${p.name}</div>
       <div class="ac-sub">${p.phone || ''} · ${p.type || ''}</div>
     </div>`).join('') +
-    `<div class="ac-item" onclick="pbQuickAddParty('${esc(val)}')" style="color:var(--g)">
+    `<div class="ac-item" onclick="pbQuickAddParty(this.dataset.xlArg0)" data-xl-arg0="${escHtml(val)}" style="color:var(--g)">
       <strong>+ Add "${val}" as new party</strong>
     </div>`;
   list.style.display = 'block';
@@ -3011,7 +3013,7 @@ function pbShowPartyHistory(id, name) {
           ${(i.balance||0)>0 ? fc(i.balance) : '<span style="color:var(--g)">Paid ✓</span>'}
         </td>
         <td><span class="badge ${ptBadge(i.paymentType)}">${i.paymentType||'Cash'}</span></td>
-        <td><button class="btn btn-r btn-xs" onclick="pbDelBill('${i.id}','${esc(id||'')}','${esc(name)}')">Del</button></td>
+        <td><button class="btn btn-r btn-xs" onclick="pbDelBill('${i.id}',this.dataset.xlArg0,this.dataset.xlArg1)" data-xl-arg0="${escHtml(id||'')}" data-xl-arg1="${escHtml(name)}">Del</button></td>
       </tr>`).join('')}
       </tbody>
     </table></div>
@@ -3061,7 +3063,7 @@ function pbRenderRows() {
           style="min-width:105px;padding:5px 7px;font-size:12.5px">
       </td>
       <td style="padding:4px 5px">
-        <input class="fc fc-sm" id="pbr-billno-${r.id}" value="${esc(r.billNo)}" placeholder="Bill no..."
+        <input class="fc fc-sm" id="pbr-billno-${r.id}" value="${escHtml(r.billNo)}" placeholder="Bill no..."
           onchange="pbUpdate('${r.id}','billNo',this.value)"
           style="min-width:95px;font-size:12.5px">
       </td>
@@ -3090,7 +3092,7 @@ function pbRenderRows() {
         </select>
       </td>
       <td style="padding:4px 5px">
-        <input class="fc fc-sm" id="pbr-notes-${r.id}" value="${esc(r.notes)}" placeholder="Notes..."
+        <input class="fc fc-sm" id="pbr-notes-${r.id}" value="${escHtml(r.notes)}" placeholder="Notes..."
           onchange="pbUpdate('${r.id}','notes',this.value)"
           onkeydown="pbNotesKeydown(event,'${r.id}')"
           style="min-width:120px;font-size:12.5px">
@@ -3268,7 +3270,7 @@ window.renderPrevBillsTable = function() {
           <td><div style="display:flex;gap:4px">
             <button class="btn btn-b btn-xs" onclick="viewInvoice('${b.id}')">View</button>
             ${(b.balance||0)>0?`<button class="btn btn-g btn-xs" onclick="openPayModal('${b.id}')">Pay</button>`:''}
-            <button class="btn btn-r btn-xs" onclick="pbDelBill('${b.id}','','${esc(b.partyName)}')">Del</button>
+            <button class="btn btn-r btn-xs" onclick="pbDelBill('${b.id}','',this.dataset.xlArg0)" data-xl-arg0="${escHtml(b.partyName)}">Del</button>
           </div></td>
         </tr>`)
       ).join('')}
@@ -3546,7 +3548,7 @@ window.partyAC = function(inputId, hiddenId, val){
     (p.area||'').toLowerCase().includes(val.toLowerCase())
   ).slice(0,8);
   list.innerHTML = res.map(p=>`
-    <div class="ac-item" onclick="selectParty('${inputId}','${hiddenId}','${p.id}','${esc(p.name)}','${listId}')">
+    <div class="ac-item" onclick="selectParty('${inputId}','${hiddenId}','${p.id}',this.dataset.xlArg0,'${listId}')" data-xl-arg0="${escHtml(p.name)}">
       <div style="font-weight:600">${p.name}</div>
       <div class="ac-sub">
         ${p.phone?`📞 ${p.phone}`:''} 
@@ -3554,7 +3556,7 @@ window.partyAC = function(inputId, hiddenId, val){
         ${p.address?`&nbsp;·&nbsp; ${p.address.slice(0,30)}${p.address.length>30?'...':''}`:''}
       </div>
     </div>`).join('') +
-    `<div class="ac-item" onclick="quickAddParty('${inputId}','${hiddenId}','${listId}','${esc(val)}')" style="color:var(--g);border-top:1px solid var(--gray-100);margin-top:2px">
+    `<div class="ac-item" onclick="quickAddParty('${inputId}','${hiddenId}','${listId}',this.dataset.xlArg0)" data-xl-arg0="${escHtml(val)}" style="color:var(--g);border-top:1px solid var(--gray-100);margin-top:2px">
       <strong>+ Add "${val}" as new party</strong>
     </div>`;
   list.style.display='block';
@@ -4224,11 +4226,11 @@ console.log('v6 fixes applied ✓');
       (p.description||p.desc||'').toLowerCase().includes(q) || (p.phone||'').includes(val)
     ).slice(0, 8);
     list.innerHTML = res.map(p => `
-      <div class="ac-item" onclick="selectParty('${inputId}','${hiddenId}','${p.id}','${esc(p.name)}','${listId}')">
+      <div class="ac-item" onclick="selectParty('${inputId}','${hiddenId}','${p.id}',this.dataset.xlArg0,'${listId}')" data-xl-arg0="${escHtml(p.name)}">
         <div style="font-weight:600">${html(p.name)}${p.area?` <span style="color:var(--g);font-weight:600">· ${html(p.area)}</span>`:''}</div>
         <div class="ac-sub">${p.description||p.desc ? html(p.description||p.desc) : p.phone ? 'Phone: '+html(p.phone) : 'No description'}</div>
       </div>`).join('') +
-      `<div class="ac-item" onclick="quickAddParty('${inputId}','${hiddenId}','${listId}','${esc(val)}')" style="color:var(--g);border-top:1px solid var(--gray-100);margin-top:2px">
+      `<div class="ac-item" onclick="quickAddParty('${inputId}','${hiddenId}','${listId}',this.dataset.xlArg0)" data-xl-arg0="${escHtml(val)}" style="color:var(--g);border-top:1px solid var(--gray-100);margin-top:2px">
         <strong>+ Add "${html(val)}" as new party</strong>
         ${inputId==='inv-party'?'<div class="ac-sub">Add area and description</div>':''}
       </div>`;
@@ -5073,13 +5075,13 @@ window.renderSaleItems = function(){
       <!-- Item Name + Brand -->
       <div style="display:flex;flex-direction:column;gap:3px">
         <div class="ac-wrap i5-wrap">
-          <input class="fc fc-sm" id="sn-${it.id}" value="${esc(it.name)}" placeholder="Item name..." autocomplete="off"
+          <input class="fc fc-sm" id="sn-${it.id}" value="${escHtml(it.name)}" placeholder="Item name..." autocomplete="off"
             oninput="siName('${it.id}',this.value)"
             onfocus="siShowRates('${it.id}')">
           <div class="ac-list" id="ac-sn-${it.id}"></div>
           <div class="i5-pop" id="i5-${it.id}"></div>
         </div>
-        <input class="item-colour" id="scol-${it.id}" value="${esc(it.colour||'')}"
+        <input class="item-colour" id="scol-${it.id}" value="${escHtml(it.colour||'')}"
           placeholder="Brand..." title="Brand (shows in print)"
           onchange="siField('${it.id}','colour',this.value)">
       </div>
@@ -5479,14 +5481,14 @@ window.renderSaleItems = function(){
 
       <!-- Item Name autocomplete -->
       <div class="ac-wrap" style="position:relative">
-        <input class="fc fc-sm" id="sn-${it.id}" value="${esc(it.name)}" placeholder="Item..." autocomplete="off"
+        <input class="fc fc-sm" id="sn-${it.id}" value="${escHtml(it.name)}" placeholder="Item..." autocomplete="off"
           oninput="siName('${it.id}',this.value)"
           onfocus="siRatePopup('${it.id}')">
         <div class="ac-list" id="ac-sn-${it.id}"></div>
       </div>
 
       <!-- Brand (inline, same row) -->
-      ${showColour?`<input class="fc fc-sm" id="scol-${it.id}" value="${esc(it.colour||'')}"
+      ${showColour?`<input class="fc fc-sm" id="scol-${it.id}" value="${escHtml(it.colour||'')}"
         placeholder="Brand..." title="Brand — shows in print"
         style="font-size:12px"
         onchange="siField('${it.id}','colour',this.value)">`:''}
@@ -6935,7 +6937,7 @@ window.openPartyDetail = function(partyId) {
           ${p.area?`<span style="font-size:12px;color:var(--gray-400);margin-left:8px">📍 ${p.area}</span>`:''}
         </div>
         <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap">
-          <button class="btn btn-g btn-sm" onclick="nav('new-sale');closeModal('party-detail-modal');setTimeout(()=>{document.getElementById('inv-party').value='${p.name}';document.getElementById('inv-party-id').value='${p.id}';showLastRate('${p.id}');},200)">+ New Invoice</button>
+          <button class="btn btn-g btn-sm" onclick="nav('new-sale');closeModal('party-detail-modal');setTimeout(()=>{document.getElementById('inv-party').value=this.dataset.xlArg0;document.getElementById('inv-party-id').value='${p.id}';showLastRate('${p.id}');},200)" data-xl-arg0="${escHtml(p.name)}">+ New Invoice</button>
           <button class="btn btn-out btn-sm" onclick="openPartyModal('${p.id}');closeModal('party-detail-modal')">Edit Party</button>
           <button class="mc" onclick="closeModal('party-detail-modal')">✕</button>
         </div>
@@ -6979,7 +6981,7 @@ window.openPartyDetail = function(partyId) {
               ${!isCancelled(i)&&(i.balance||0)>0?`<button class="btn btn-g btn-xs" onclick="closeModal('party-detail-modal');openPayModal('${i.id}')">Pay</button>`:''}</td>
             </tr>`).join('')}</tbody>
           </table></div>`}
-          ${invs.length>8?`<div style="text-align:center;margin-top:8px;font-size:12.5px;color:var(--b);cursor:pointer" onclick="closeModal('party-detail-modal');nav('sales-list');setTimeout(()=>{document.getElementById('sl-srch').value='${p.name}';renderSalesList();},200)">View all ${invs.length} invoices →</div>`:''}
+          ${invs.length>8?`<div style="text-align:center;margin-top:8px;font-size:12.5px;color:var(--b);cursor:pointer" onclick="closeModal('party-detail-modal');nav('sales-list');setTimeout(()=>{document.getElementById('sl-srch').value=this.dataset.xlArg0;renderSalesList();},200)" data-xl-arg0="${escHtml(p.name)}">View all ${invs.length} invoices →</div>`:''}
         </div>
 
         <!-- Payments tab -->
@@ -7435,7 +7437,7 @@ window.renderPurBulkPage = function() {
         <!-- Quick supplier chips -->
         <div id="pur-supp-chips" style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px">
           ${getParties().filter(p=>p.type==='supplier'||p.type==='both').slice(0,8).map(p=>`
-            <div class="supp-chip" onclick="purBulkSelectParty('${p.id}','${esc(p.name)}')"
+            <div class="supp-chip" onclick="purBulkSelectParty('${p.id}',this.dataset.xlArg0)" data-xl-arg0="${escHtml(p.name)}"
               data-sid="${p.id}">${p.name}${p.area?` <span style="font-size:10.5px;color:var(--gray-400)">· ${p.area}</span>`:''}</div>
           `).join('')}
         </div>
@@ -7539,11 +7541,11 @@ window.purbPartyAC = function(val) {
     (p.name||'').toLowerCase().includes(q) || (p.area||'').toLowerCase().includes(q)
   ).slice(0, 8);
   list.innerHTML = res.map(p => `
-    <div class="ac-item" onclick="purBulkSelectParty('${p.id}','${esc(p.name)}')">
+    <div class="ac-item" onclick="purBulkSelectParty('${p.id}',this.dataset.xlArg0)" data-xl-arg0="${escHtml(p.name)}">
       <div style="font-weight:600">${p.name}${p.area?` <span style="color:var(--gray-400);font-size:10.5px">· ${p.area}</span>`:''}</div>
       <div class="ac-sub">${p.phone||''}</div>
     </div>`).join('') +
-    `<div class="ac-item" onclick="purBulkQuickAdd('${esc(val)}')" style="color:var(--g)">
+    `<div class="ac-item" onclick="purBulkQuickAdd(this.dataset.xlArg0)" data-xl-arg0="${escHtml(val)}" style="color:var(--g)">
       <strong>+ Add "${val}" as new supplier</strong>
     </div>`;
   list.style.display = 'block';
@@ -7593,7 +7595,7 @@ window.purBulkRenderRows = function() {
           onchange="purBulkUpdate('${r.id}','date',this.value)" style="min-width:100px">
       </td>
       <td style="padding:3px 4px">
-        <input class="fc fc-sm" id="purbb-${r.id}" value="${esc(r.billNo)}" placeholder="Bill no..."
+        <input class="fc fc-sm" id="purbb-${r.id}" value="${escHtml(r.billNo)}" placeholder="Bill no..."
           onchange="purBulkUpdate('${r.id}','billNo',this.value)" style="min-width:90px">
       </td>
       <td style="padding:3px 4px">
@@ -7622,7 +7624,7 @@ window.purBulkRenderRows = function() {
         </select>
       </td>
       <td style="padding:3px 4px">
-        <input class="fc fc-sm" id="purbn-${r.id}" value="${esc(r.notes)}" placeholder="Notes..."
+        <input class="fc fc-sm" id="purbn-${r.id}" value="${escHtml(r.notes)}" placeholder="Notes..."
           onchange="purBulkUpdate('${r.id}','notes',this.value)"
           onkeydown="purBulkNotesKey(event,'${r.id}')"
           style="min-width:110px">
@@ -7774,7 +7776,7 @@ window.purBulkShowHistory = function(partyId, partyName) {
           <td style="display:flex;gap:4px;white-space:nowrap">
             <button class="btn btn-b btn-xs" onclick="viewPurchase('${b.id}')">View</button>
             ${(b.balance||0)>0?`<button class="btn btn-g btn-xs" onclick="openPurPayModal('${b.id}')">Pay</button>`:''}
-            <button class="btn btn-r btn-xs" onclick="delPurchase('${b.id}');purBulkShowHistory('${partyId}','${esc(partyName)}')">Del</button>
+            <button class="btn btn-r btn-xs" onclick="delPurchase('${b.id}');purBulkShowHistory('${partyId}',this.dataset.xlArg0)" data-xl-arg0="${escHtml(partyName)}">Del</button>
           </td>
         </tr>`).join('')}</tbody>
       </table></div>
@@ -8601,7 +8603,7 @@ window.openSettlementModal = function(partyId, partyName) {
       </div>
       <div class="mf">
         <button class="btn btn-out" onclick="closeModal('settlement-modal')">Cancel</button>
-        <button class="btn btn-g" onclick="saveSettlement('${partyId}','${partyName}')">✓ Save Settlement</button>
+        <button class="btn btn-g" onclick="saveSettlement('${partyId}',this.dataset.xlArg0)" data-xl-arg0="${escHtml(partyName)}">✓ Save Settlement</button>
       </div>
     </div>`;
 
@@ -8956,7 +8958,7 @@ window.renderPendingRep = function() {
       <td style="font-weight:700;color:var(--r);text-align:right">${fc(i.balance)}</td>
       <td class="no-print">
         <button class="btn btn-g btn-xs" onclick="openPayModal('${i.id}')">Pay</button>
-        <button class="btn btn-b btn-xs" onclick="openSettlementModal('${i.partyId||''}','${esc(i.partyName||'')}')">Settle</button>
+        <button class="btn btn-b btn-xs" onclick="openSettlementModal('${i.partyId||''}',this.dataset.xlArg0)" data-xl-arg0="${escHtml(i.partyName||'')}">Settle</button>
       </td>
     </tr>`).join('')}</tbody>
     <tfoot><tr><td colspan="4">Total</td><td style="text-align:right"></td><td style="color:var(--r);text-align:right">${fc(list.reduce((a,i)=>a+(i.balance||0),0))}</td><td></td></tr></tfoot>
@@ -9507,7 +9509,7 @@ window.poutPartyAC = function(val) {
     (p.name||'').toLowerCase().includes(q) || (p.area||'').toLowerCase().includes(q)
   ).slice(0,8);
   list.innerHTML = res.map(p => `
-    <div class="ac-item" onclick="poutSelectParty('${p.id}','${esc(p.name)}')">
+    <div class="ac-item" onclick="poutSelectParty('${p.id}',this.dataset.xlArg0)" data-xl-arg0="${escHtml(p.name)}">
       <div style="font-weight:600">${p.name}${p.area?` <span style="color:var(--gray-400)">· ${p.area}</span>`:''}</div>
       <div class="ac-sub">${p.phone||'Supplier'}</div>
     </div>`).join('') || `<div class="ac-item" style="color:var(--gray-400)">No suppliers found</div>`;
@@ -9904,7 +9906,7 @@ function buildLedger(parties, invs, purs) {
         <td style="font-size:12px">${last?fmtDate(last.date)+' · '+fc(last.total):'-'}</td>
         <td class="no-print">
           <button class="btn btn-b btn-xs" onclick="openPartyDetail('${p.id}')">Detail</button>
-          ${tB>0?`<button class="btn btn-g btn-xs" onclick="openSettlementModal('${p.id}','${esc(p.name)}')">Settle</button>`:''}
+          ${tB>0?`<button class="btn btn-g btn-xs" onclick="openSettlementModal('${p.id}',this.dataset.xlArg0)" data-xl-arg0="${escHtml(p.name)}">Settle</button>`:''}
         </td>
       </tr>`;
     }).join('')}</tbody>
@@ -9973,7 +9975,7 @@ window.renderOutstandingRep = function() {
           </div>
           <div style="display:flex;align-items:center;gap:8px">
             <div style="font-size:17px;font-weight:800;color:var(--r)">${fc(partyTotal)}</div>
-            <button class="btn btn-g btn-xs" onclick="openSettlementModal('','${esc(p.name)}')">🧾 Settle</button>
+            <button class="btn btn-g btn-xs" onclick="openSettlementModal('',this.dataset.xlArg0)" data-xl-arg0="${escHtml(p.name)}">🧾 Settle</button>
           </div>
         </div>
         <div class="tw"><table>
