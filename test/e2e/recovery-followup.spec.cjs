@@ -279,13 +279,34 @@ test('recovery exported corrupt journal can be replaced by a valid backup while 
 });
 
 test('recovery works when all deferred application scripts are removed and valid stored records cannot initialize navigation',async({page},testInfo)=>{
-  await seed(page);await saveRealInvoice(page);const before=await raw(page),original=await raw(page,true),backup=privateFile(original);
+  await seed(page);await saveRealInvoice(page);const before=await raw(page),original=await raw(page,true),replacement={...original};
+  const rows=JSON.parse(replacement.shop4_invoices);rows[0].notes='Synthetic replacement through standalone recovery';replacement.shop4_invoices=JSON.stringify(rows);const backup=privateFile(replacement);
   const source=await fs.readFile(process.env.XL_HTML||path.resolve('index.html'),'utf8');
   const stripped=source.replace(/<script\b(?=[^>]*\btype=["']text\/xl-app["'])[^>]*>[\s\S]*?<\/script>/gi,'');
   expect(stripped).not.toMatch(/<script\b[^>]*\btype=["']text\/xl-app["']/i);
   await page.route('**/',route=>route.fulfill({status:200,contentType:'text/html',body:stripped}));
   await locked(page);expect(await page.locator('script[type="text/xl-app"]').count()).toBe(0);await assertUnchanged(page,before);
   await recoveryProof(page,testInfo);await page.locator('#xl-recovery-backup').setInputFiles(backup);await expect(page.locator('#xl-recovery-preview')).toContainText(/verified/i);
-  await approve(page);await verified(page);expect(await raw(page,true)).toEqual(original);
+  await expect(page.locator('#xl-recovery-preview')).toContainText('invoices: 0 added, 0 removed, 1 changed');
+  await approve(page);await verified(page);expect(await raw(page,true)).toEqual(replacement);
   expect(await page.evaluate(()=>typeof window.nav)).toBe('undefined');
+});
+
+function malformedRecords(records,kind){
+  const result={...records};
+  if(kind==='items-object')result.shop4_items='{}';
+  if(kind==='custom-fields-object'){const settings=JSON.parse(result.shop4_settings);settings.customFields={synthetic:'invalid collection'};result.shop4_settings=JSON.stringify(settings);}
+  if(kind==='invoice-number-object'||kind==='impossible-date'){const rows=JSON.parse(result.shop4_invoices);if(kind==='invoice-number-object')rows[0].invoiceNo={synthetic:'INV-1001'};else rows[0].date='2026-02-30';result.shop4_invoices=JSON.stringify(rows);}
+  return result;
+}
+for(const mode of ['adopt','restore'])for(const kind of ['items-object','custom-fields-object','invoice-number-object','impossible-date'])test('recovery '+mode+' rejects malformed '+kind+' and preserves the whole original profile',async({page},testInfo)=>{
+  await seed(page);await saveRealInvoice(page);
+  const malformed=malformedRecords(await raw(page,true),kind);
+  if(mode==='adopt')await page.evaluate(records=>{for(const[key,value]of Object.entries(records))localStorage.setItem(key,value);},malformed);
+  else await external(page);
+  await locked(page);const before=await raw(page);await recoveryProof(page,testInfo);
+  if(mode==='adopt')await page.locator('#xl-recovery-adopt').click();
+  else await page.locator('#xl-recovery-backup').setInputFiles(privateFile(malformed));
+  await expect(page.locator('#xl-recovery-error')).toContainText(/invalid|unsupported|shape|must|array|object|number|date|collection/i);
+  await assertUnchanged(page,before);await denyOwnerAttempt(page,before);
 });
