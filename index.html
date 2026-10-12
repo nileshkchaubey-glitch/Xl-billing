@@ -751,10 +751,38 @@ function validateXLTransaction(after,before,options={}){
     const ids=new Set();for(const r of value){if(typeof r.id!=='string'||!r.id||ids.has(r.id))throw new Error('The '+key+' collection has missing or duplicate identifiers. Review it before saving.');ids.add(r.id);}
     if(!['invoices','purchases'].includes(key))continue;
     const old=options.restore?[]:(before['shop4_'+key]?JSON.parse(before['shop4_'+key]):[]),oldById=new Map(old.map(r=>[r.id,r]));
+    if(key==='purchases'){
+      // Vendor numbers belong to a saved supplier ID and an April-March business year.
+      // Names, current settings and UTC event timestamps never manufacture that identity.
+      const parties=new Map((after.shop4_parties?JSON.parse(after.shop4_parties):[]).map(p=>[p.id,p]));
+      const byNumber=new Map();
+      for(const r of value){
+        const prior=oldById.get(r.id),changed=!prior||JSON.stringify(prior)!==JSON.stringify(r);
+        if(!options.restore&&r.partyId&&(!prior||prior.partyId!==r.partyId)){
+          const supplier=parties.get(r.partyId);
+          if(!supplier||(supplier.type&&!['supplier','both'].includes(supplier.type)))throw new Error('The new purchase supplier link is missing or is not a supplier. Select a valid supplier; original records were preserved.');
+        }
+        const number=normalizedInvoiceNo(r.billNo);if(!number)continue;
+        const supplierId=r.partyId||null;
+        const year=r.date?Number(r.date.slice(0,4))-(Number(r.date.slice(5,7))<4?1:0):null;
+        const matches=byNumber.get(number)||[];
+        for(const other of matches){
+          if(supplierId&&other.supplierId&&supplierId!==other.supplierId)continue;
+          if(year!==null&&other.year!==null&&year!==other.year)continue;
+          // An untouched legacy conflict remains readable. Its mutation and complete
+          // recovery require an owner decision rather than an invented vendor/date.
+          if(options.restore||changed||other.changed){
+            if(!supplierId||!other.supplierId||year===null||other.year===null)throw new Error('Ambiguous purchase bill number: supplier identity or financial year is missing. Review the original history with the owner; no records were rewritten.');
+            throw new Error('Duplicate purchase bill number for the same supplier and financial year. Review the original history; no records were rewritten.');
+          }
+        }
+        matches.push({supplierId,year,changed});byNumber.set(number,matches);
+      }
+    }
     const numbers=new Set();
     for(const r of value){
       const prior=oldById.get(r.id),number=key==='invoices'?normalizedInvoiceNo(r.invoiceNo):normalizedInvoiceNo(r.billNo);
-      if(number&&numbers.has(number)&&(!prior||options.restore))throw new Error('Duplicate bill numbers must be reviewed before this operation.');
+      if(key==='invoices'&&number&&numbers.has(number)&&(!prior||options.restore))throw new Error('Duplicate bill numbers must be reviewed before this operation.');
       if(number)numbers.add(number);
       if(prior&&JSON.stringify(prior)===JSON.stringify(r)&&!options.restore)continue;
       const state=financialState(r);
