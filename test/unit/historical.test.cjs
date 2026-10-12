@@ -1,7 +1,7 @@
 'use strict';
 const {test}=require('node:test'),assert=require('node:assert/strict'),fs=require('node:fs'),vm=require('node:vm'),acorn=require('acorn');
 const fixtures=require('../fixtures/historical.cjs');
-const names=['round2','moneyPaise','parseMoneyInput','financialState','recordedPaid','preparePaymentHistory','allowPayment','reconcilePayment'];
+const names=['round2','moneyPaise','parseMoneyInput','financialState','billBalance','recordedPaid','preparePaymentHistory','allowPayment','reconcilePayment'];
 function context(){
  const html=fs.readFileSync('index.html','utf8');
  const source=[...html.matchAll(/<script\b[^>]*>([\s\S]*?)<\/script>/gi)].flatMap(m=>acorn.parse(m[1],{ecmaVersion:'latest'}).body.filter(n=>n.type==='FunctionDeclaration'&&names.includes(n.id.name)).map(n=>m[1].slice(n.start,n.end))).join('\n');

@@ -60,3 +60,15 @@ test('stabilization missing legacy balance remains payable without a startup rew
  await page.evaluate(()=>{openPayModal('s0');document.getElementById('pay-amount').value='10';savePayment();});
  const inv=await page.evaluate(()=>getInvoices()[0]);expect(inv.paid).toBe(30);expect(inv.balance).toBe(70);expect(inv.openingPaid).toBe(20);
 });
+test('stabilization payment search cannot inject HTML',async({page})=>{
+ await seed(page,shop(1));await page.reload();await page.evaluate(()=>nav('payments'));
+ await page.locator('#pay-filter-party').fill('<img src="/synthetic-missing" onerror="window.__filterxss=1">');
+ await page.waitForTimeout(100);expect(await page.locator('img[onerror]').count()).toBe(0);expect(await page.evaluate(()=>window.__filterxss)).toBeUndefined();
+});
+test('stabilization printed invoice preserves literal stored text and safe CSS settings',async({page})=>{
+ const data=shop(1),payload='<img src="/synthetic-missing" onerror="window.__printxss=1">';
+ data.settings.shopName=payload;data.settings.bank=payload;data.settings.terms=payload;data.settings.printSettings={fontSize:'13</style>'+payload};data.invoices[0].partyName=payload;data.invoices[0].notes=payload;
+ await seed(page,data);await page.reload();
+ const result=await page.evaluate(()=>{viewInvoice('s0');let output='';window.open=()=>({document:{write:value=>output+=value,close(){}},focus(){},print(){}});printInvoice();const doc=new DOMParser().parseFromString(output,'text/html');return {payloadNodes:doc.querySelectorAll('img[onerror]').length,text:doc.body.textContent};});
+ expect(result.payloadNodes).toBe(0);expect(result.text).toContain(payload);
+});

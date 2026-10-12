@@ -747,7 +747,7 @@ const getPurchases = () => DB.get('purchases') || [];
 const getRetail    = () => DB.get('retail')    || [];
 
 // Shared record predicates are available to every script block.
-function isCancelled(record) { return !!record && (record.status === 'cancelled' || record.dispatchStatus === 'cancelled'); }
+function isCancelled(record) { return !!record && (record.status === 'cancelled' || (record.dispatchStatus||'pending') === 'cancelled'); }
 function isDeleted(record) { return !!record && !!record.deletedAt; }
 function isActive(record) { return !!record && !isCancelled(record) && !isDeleted(record); }
 
@@ -810,6 +810,14 @@ function financialState(record) {
   const balance=(moneyPaise(total)-moneyPaise(paid)-moneyPaise(discount))/100;
   return {valid:Number.isFinite(balance)&&balance>=0,consistent:moneyPaise(savedPaid)===moneyPaise(paid),opening,paid,discount,balance};
 }
+// Display legacy missing balances without adding fields or rewriting history.
+function billBalance(record){
+  const balance=record?.balance;
+  if(balance!==undefined&&balance!==null&&Number.isFinite(Number(balance)))return Number(balance);
+  const separate=record&&('billNo' in record||'discounts' in record);
+  const discount=separate?(record.discounts?.length?record.discounts.reduce((sum,p)=>sum+Number(p.amt),0):Number(record.discount||0)):0;
+  return round2(Number(record?.total)-Number(record?.paid||0)-discount);
+}
 function recordedPaid(record){return financialState(record).paid;}
 function preparePaymentHistory(record){
   const state=financialState(record);
@@ -824,14 +832,14 @@ function allowPayment(record,amount,discount=0,inputId='pay-amount',replacing=0)
   const state=financialState(record);
   if(!state.valid||!state.consistent)return paymentError(inputId,'Payment history does not match this bill. The original record has been preserved for review.');
   if(!Number.isFinite(replacing)||replacing<0)return paymentError(inputId,'The selected payment is invalid.');
-  const balance=moneyPaise(state.balance)+moneyPaise(replacing);
+  const balance=moneyPaise(billBalance(state))+moneyPaise(replacing);
   if(moneyPaise(amount)+moneyPaise(discount)>balance)return paymentError(inputId,'Payment plus discount cannot exceed the remaining balance of '+fc(balance/100)+'.');
   document.getElementById('payment-validation-error')?.remove();return true;
 }
 function reconcilePayment(record){
   const state=financialState(record);
   if(!state.valid)throw new Error('The payment would create an invalid balance. No changes were saved.');
-  record.paid=state.paid;record.balance=state.balance;record.updatedAt=new Date().toISOString();
+  record.paid=state.paid;record.balance=billBalance(state);record.updatedAt=new Date().toISOString();
 }
 
 // List state is session-only: changing a view never rewrites business data.
@@ -850,7 +858,7 @@ function listView(records,key,filter='') {
   });
   return sorted.slice((state.page-1)*state.size,state.page*state.size);
 }
-function getListStatus(record){return isCancelled(record)?'cancelled':Number(record.balance||0)>0?'due':'paid';}
+function getListStatus(record){return isCancelled(record)?'cancelled':Number(billBalance(record)||0)>0?'due':'paid';}
 window.listGo = function(key,page){const state=listStateFor(key);state.page=page;window[state.render]();};
 window.listOrder = function(key,column,direction){const state=listStateFor(key);state.col=column||state.col;state.dir=direction||state.dir;state.page=1;window[state.render]();};
 window.listResize = function(key,size){const state=listStateFor(key);state.size=Number(size);state.page=1;window[state.render]();};
@@ -940,10 +948,10 @@ function renderDashboard() {
   const mRetail    = mR.reduce((a,r)=>a+(r.amount||0),0);
   const mTotal     = mWholesale + mRetail;
   const mPur       = mP.reduce((a,p)=>a+(p.total||0),0);
-  const pending    = invs.filter(i=>(i.balance||0)>0).reduce((a,i)=>a+(i.balance||0),0);
-  const cashDue    = invs.filter(i=>i.paymentType==='Cash'&&(i.balance||0)>0).reduce((a,i)=>a+(i.balance||0),0);
+  const pending    = invs.filter(i=>(billBalance(i)||0)>0).reduce((a,i)=>a+(billBalance(i)||0),0);
+  const cashDue    = invs.filter(i=>(i.paymentType||'Cash')==='Cash'&&(billBalance(i)||0)>0).reduce((a,i)=>a+(billBalance(i)||0),0);
   const rI = [...invs].reverse().slice(0,7);
-  const pendDisp = invs.filter(i=>(i.dispatchStatus||'pending')==='pending').length;
+  const pendDisp = invs.filter(i=>((i.dispatchStatus||'pending')||'pending')==='pending').length;
   document.getElementById('dash-body').innerHTML = `
     <div class="sg">
       <div class="sc"><div class="sc-lbl">This Month Sale (Total)</div><div class="sc-val g">${fc(mTotal)}</div></div>
@@ -961,27 +969,27 @@ function renderDashboard() {
         ${rI.length===0?`<div class="empty"><div class="ic">📄</div>No invoices yet</div>`:rI.map(i=>`
           <div onclick="viewInvoice('${escHtml(i.id)}')" style="display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-bottom:1px solid var(--gray-100);cursor:pointer">
             <div>
-              <div style="font-size:13px;font-weight:600">${escHtml(i.invoiceNo)} <span class="badge ${ptBadge(i.paymentType)}" style="font-size:10px">${escHtml(i.paymentType||'Cash')}</span></div>
+              <div style="font-size:13px;font-weight:600">${escHtml(i.invoiceNo)} <span class="badge ${ptBadge((i.paymentType||'Cash'))}" style="font-size:10px">${escHtml((i.paymentType||'Cash')||'Cash')}</span></div>
               <div style="font-size:11.5px;color:var(--gray-500)">${escHtml(i.partyName||'Cash')} · ${fmtDate(i.date)}</div>
             </div>
             <div style="text-align:right">
               <div style="font-size:13px;font-weight:700;color:var(--g)">${fc(i.total)}</div>
-              ${dispBadge(i)} ${(i.balance||0)>0?`<span class="badge br">${fc(i.balance)} due</span>`:`<span class="badge bg">Paid✓</span>`}
+              ${dispBadge(i)} ${(billBalance(i)||0)>0?`<span class="badge br">${fc(billBalance(i))} due</span>`:`<span class="badge bg">Paid✓</span>`}
             </div>
           </div>`).join('')}
       </div>
       <div class="card">
         ${cashDue>0?`<div style="font-weight:700;color:var(--r);margin-bottom:10px;font-size:13.5px">💵 Cash Collection Pending</div>
-          ${invs.filter(i=>i.paymentType==='Cash'&&(i.balance||0)>0).reverse().slice(0,5).map(i=>`
+          ${invs.filter(i=>(i.paymentType||'Cash')==='Cash'&&(billBalance(i)||0)>0).reverse().slice(0,5).map(i=>`
             <div style="display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-bottom:1px solid var(--gray-100)">
               <div><span style="font-weight:600">${escHtml(i.partyName)}</span><br><span style="font-size:11.5px;color:var(--gray-500)">${escHtml(i.invoiceNo)} · ${fmtDate(i.date)}</span></div>
               <div style="display:flex;align-items:center;gap:6px">
-                <span style="color:var(--r);font-weight:700">${fc(i.balance)}</span>
+                <span style="color:var(--r);font-weight:700">${fc(billBalance(i))}</span>
                 <button class="btn btn-g btn-xs" onclick="openPayModal('${escHtml(i.id)}')">Pay</button>
               </div>
             </div>`).join('')}`:''}
         ${pendDisp>0?`<div style="font-weight:700;color:var(--p);margin-top:12px;margin-bottom:8px;font-size:13.5px">📦 Pending Dispatch (${pendDisp})</div>
-          ${invs.filter(i=>(i.dispatchStatus||'pending')==='pending').reverse().slice(0,4).map(i=>`
+          ${invs.filter(i=>((i.dispatchStatus||'pending')||'pending')==='pending').reverse().slice(0,4).map(i=>`
             <div style="display:flex;justify-content:space-between;align-items:center;padding:5px 0;border-bottom:1px solid var(--gray-100)">
               <div><span style="font-weight:600">${escHtml(i.partyName)}</span> <span style="font-size:11.5px;color:var(--gray-500)">· ${escHtml(i.invoiceNo)}</span></div>
               <div style="display:flex;gap:5px">
@@ -995,8 +1003,8 @@ function renderDashboard() {
 
 function ptBadge(pt){return{Cash:'pt-cash',Credit:'pt-credit',UPI:'pt-upi',Cheque:'pt-cheque',NEFT:'pt-neft'}[pt]||'pt-cash';}
 function dispBadge(i){
-  if(i.dispatchStatus==='dispatched') return'<span class="badge disp-done" style="font-size:10px">🚚Disp</span>';
-  if(i.dispatchStatus==='draft')      return'<span class="badge disp-draft" style="font-size:10px">📝Draft</span>';
+  if((i.dispatchStatus||'pending')==='dispatched') return'<span class="badge disp-done" style="font-size:10px">🚚Disp</span>';
+  if((i.dispatchStatus||'pending')==='draft')      return'<span class="badge disp-draft" style="font-size:10px">📝Draft</span>';
   return'<span class="badge disp-pending" style="font-size:10px">📦Pend</span>';
 }
 
@@ -1034,7 +1042,7 @@ function quickAddParty(inputId, hiddenId, listId, name) {
 function showLastRate(partyId) {
   const last=[...getInvoices()].reverse().find(i=>i.partyId===partyId);
   const el=document.getElementById('party-last-info'); if(!el) return;
-  el.textContent=last?`✓ Last: ${last.invoiceNo} | ${fmtDate(last.date)} | ${fc(last.total)} | ${last.paymentType||'Cash'}`:'';
+  el.textContent=last?`✓ Last: ${last.invoiceNo} | ${fmtDate(last.date)} | ${fc(last.total)} | ${(last.paymentType||'Cash')||'Cash'}`:'';
 }
 document.addEventListener('click',e=>{
   if(!e.target.closest('.ac-wrap')) document.querySelectorAll('.ac-list').forEach(l=>l.style.display='none');
@@ -1283,10 +1291,10 @@ function editInvoice() {
   document.getElementById('inv-no').value = inv.invoiceNo;
   document.getElementById('inv-date').value = inv.date||today();
   document.getElementById('inv-due').value  = inv.due||'';
-  document.getElementById('inv-dispatch').value = inv.dispatchStatus||'pending';
+  document.getElementById('inv-dispatch').value = (inv.dispatchStatus||'pending')||'pending';
   document.getElementById('inv-party').value = inv.partyName||'';
   document.getElementById('inv-party-id').value = inv.partyId||'';
-  document.getElementById('inv-pay-type').value = inv.paymentType||'Cash';
+  document.getElementById('inv-pay-type').value = (inv.paymentType||'Cash')||'Cash';
   document.getElementById('inv-notes').value = inv.notes||'';
   document.getElementById('inv-disc').value  = inv.discount||0;
   document.getElementById('inv-tax').value   = inv.taxPct||0;
@@ -1337,14 +1345,14 @@ function renderSalesList() {
   if(to)   f=f.filter(i=>i.date<=to);
   if(srch) f=f.filter(i=>(i.partyName+i.invoiceNo+(i.notes||'')).toLowerCase().includes(srch));
   // Pill filter
-  if(slPill==='cash-due')        f=f.filter(i=>i.paymentType==='Cash'&&(i.balance||0)>0);
-  if(slPill==='credit-due')      f=f.filter(i=>i.paymentType==='Credit'&&(i.balance||0)>0);
-  if(slPill==='pending-dispatch')f=f.filter(i=>(i.dispatchStatus||'pending')==='pending');
-  if(slPill==='dispatched')      f=f.filter(i=>i.dispatchStatus==='dispatched');
-  if(slPill==='draft')           f=f.filter(i=>i.dispatchStatus==='draft');
-  if(slPill==='paid')            f=f.filter(i=>(i.balance||0)<=0);
+  if(slPill==='cash-due')        f=f.filter(i=>(i.paymentType||'Cash')==='Cash'&&(billBalance(i)||0)>0);
+  if(slPill==='credit-due')      f=f.filter(i=>(i.paymentType||'Cash')==='Credit'&&(billBalance(i)||0)>0);
+  if(slPill==='pending-dispatch')f=f.filter(i=>((i.dispatchStatus||'pending')||'pending')==='pending');
+  if(slPill==='dispatched')      f=f.filter(i=>(i.dispatchStatus||'pending')==='dispatched');
+  if(slPill==='draft')           f=f.filter(i=>(i.dispatchStatus||'pending')==='draft');
+  if(slPill==='paid')            f=f.filter(i=>(billBalance(i)||0)<=0);
   f.reverse();
-  const tT=f.reduce((a,i)=>a+(i.total||0),0),tP=f.reduce((a,i)=>a+(i.paid||0),0),tB=f.reduce((a,i)=>a+(i.balance||0),0);
+  const tT=f.reduce((a,i)=>a+(i.total||0),0),tP=f.reduce((a,i)=>a+(i.paid||0),0),tB=f.reduce((a,i)=>a+(billBalance(i)||0),0);
   document.getElementById('sl-summary').innerHTML=`
     <div class="sg" style="grid-template-columns:repeat(3,1fr)">
       <div class="sc"><div class="sc-lbl">Total Sale</div><div class="sc-val g">${fc(tT)}</div></div>
@@ -1359,16 +1367,16 @@ function renderSalesList() {
       <td style="font-weight:700;color:var(--b);cursor:pointer" onclick="viewInvoice('${escHtml(i.id)}')">${escHtml(i.invoiceNo)}</td>
       <td>${fmtDate(i.date)}</td>
       <td style="font-weight:500">${escHtml(i.partyName||'Cash')}</td>
-      <td><span class="badge ${ptBadge(i.paymentType)}">${escHtml(i.paymentType||'Cash')}</span></td>
+      <td><span class="badge ${ptBadge((i.paymentType||'Cash'))}">${escHtml((i.paymentType||'Cash')||'Cash')}</span></td>
       <td style="font-weight:600">${fc(i.total)}</td>
-      <td style="color:${escHtml((i.balance||0)>0?'var(--r)':'var(--gray-400)')}"><strong>${fc(i.balance)}</strong></td>
+      <td style="color:${escHtml((billBalance(i)||0)>0?'var(--r)':'var(--gray-400)')}"><strong>${fc(billBalance(i))}</strong></td>
       <td>${dispBadge(i)}</td>
-      <td>${(i.balance||0)<=0?'<span class="badge bg">Paid ✓</span>':i.paymentType==='Cash'?'<span class="badge br">Cash Due</span>':'<span class="badge bo">Credit Due</span>'}</td>
+      <td>${(billBalance(i)||0)<=0?'<span class="badge bg">Paid ✓</span>':(i.paymentType||'Cash')==='Cash'?'<span class="badge br">Cash Due</span>':'<span class="badge bo">Credit Due</span>'}</td>
       <td class="no-print"><div style="display:flex;gap:3px;justify-content:flex-end;flex-wrap:wrap">
         <button class="btn btn-b btn-xs" onclick="viewInvoice('${escHtml(i.id)}')">View</button>
         <button class="btn btn-o btn-xs" onclick="editInvoiceFromList('${escHtml(i.id)}')">Edit</button>
-        ${(i.balance||0)>0?`<button class="btn btn-g btn-xs" onclick="openPayModal('${escHtml(i.id)}')">Pay</button>`:''}
-        ${i.dispatchStatus!=='dispatched'?`<button class="btn btn-c btn-xs" onclick="quickDispatch('${escHtml(i.id)}')">🚚</button>`:''}
+        ${(billBalance(i)||0)>0?`<button class="btn btn-g btn-xs" onclick="openPayModal('${escHtml(i.id)}')">Pay</button>`:''}
+        ${(i.dispatchStatus||'pending')!=='dispatched'?`<button class="btn btn-c btn-xs" onclick="quickDispatch('${escHtml(i.id)}')">🚚</button>`:''}
         <button class="btn btn-out btn-xs" onclick="delInvoice('${escHtml(i.id)}')">Del</button>
       </div></td>
     </tr>`).join('')}</tbody>
@@ -1405,7 +1413,7 @@ function viewInvoice(id){
   // Update dispatch button
   const dispBtn=document.getElementById('dispatch-toggle-btn');
   if(dispBtn){
-    if(inv.dispatchStatus==='dispatched'){ dispBtn.textContent='↩️ Undo Dispatch'; dispBtn.className='btn btn-out btn-sm'; }
+    if((inv.dispatchStatus||'pending')==='dispatched'){ dispBtn.textContent='↩️ Undo Dispatch'; dispBtn.className='btn btn-out btn-sm'; }
     else{ dispBtn.textContent='🚚 Mark Dispatched'; dispBtn.className='btn btn-c btn-sm'; }
   }
   document.getElementById('inv-view-body').innerHTML=`
@@ -1423,7 +1431,7 @@ function viewInvoice(id){
           <div style="font-size:13px;margin-top:4px"><span style="color:var(--gray-500)">No: </span><strong>${escHtml(inv.invoiceNo)}</strong></div>
           <div style="font-size:13px"><span style="color:var(--gray-500)">Date: </span>${fmtDate(inv.date)}</div>
           ${inv.due?`<div style="font-size:13px"><span style="color:var(--gray-500)">Due: </span>${fmtDate(inv.due)}</div>`:''}
-          <div style="margin-top:4px"><span class="badge ${ptBadge(inv.paymentType)}">${escHtml(inv.paymentType||'Cash')}</span> ${dispBadge(inv)}</div>
+          <div style="margin-top:4px"><span class="badge ${ptBadge((inv.paymentType||'Cash'))}">${escHtml((inv.paymentType||'Cash')||'Cash')}</span> ${dispBadge(inv)}</div>
           ${s.fy?`<div style="font-size:12px;color:var(--gray-500)">FY: ${escHtml(s.fy)}</div>`:''}
         </div>
       </div>
@@ -1467,7 +1475,7 @@ function viewInvoice(id){
           ${inv.taxAmt>0?`<div class="tot-row"><span>Tax (${escHtml(inv.taxPct)}%)</span><span>${fc(inv.taxAmt)}</span></div>`:''}
           <div class="tot-row grand"><span>TOTAL</span><span>${fc(inv.total)}</span></div>
           ${inv.paid>0?`<div class="tot-row" style="color:var(--g)"><span>Received</span><span>${fc(inv.paid)}</span></div>`:''}
-          ${(inv.balance||0)>0?`<div class="tot-row" style="color:var(--r);font-weight:700"><span>BALANCE DUE</span><span>${fc(inv.balance)}</span></div>`:''}
+          ${(billBalance(inv)||0)>0?`<div class="tot-row" style="color:var(--r);font-weight:700"><span>BALANCE DUE</span><span>${fc(billBalance(inv))}</span></div>`:''}
         </div>
       </div>
       ${showPack&&packLines.length>0?`<div style="background:#fef3c7;border:1px solid #fbbf24;border-radius:8px;padding:10px 14px;margin-bottom:12px">
@@ -1492,7 +1500,7 @@ function viewInvoice(id){
 function toggleDispatch(){
   const inv=getInvoices().find(i=>i.id===currentViewInvId); if(!inv) return;
   const invs=getInvoices(); const idx=invs.findIndex(i=>i.id===currentViewInvId);
-  if(inv.dispatchStatus==='dispatched'){ invs[idx].dispatchStatus='pending'; delete invs[idx].dispatchedAt; toast('Dispatch undone'); }
+  if((inv.dispatchStatus||'pending')==='dispatched'){ invs[idx].dispatchStatus='pending'; delete invs[idx].dispatchedAt; toast('Dispatch undone'); }
   else{ invs[idx].dispatchStatus='dispatched'; invs[idx].dispatchedAt=new Date().toISOString(); toast('Marked as Dispatched ✓'); }
   DB.set('invoices',invs);
   viewInvoice(currentViewInvId);
@@ -1522,9 +1530,9 @@ function openPayModal(invId){
   document.getElementById('pay-inv-id').value=invId;
   document.getElementById('pay-inv-info').innerHTML=`
     <div style="font-weight:700">${escHtml(inv.invoiceNo)} — ${escHtml(inv.partyName||'Cash')}</div>
-    <div style="margin-top:4px">Total: <strong>${fc(inv.total)}</strong> | Paid: <span style="color:var(--g)">${fc(inv.paid)}</span> | <span style="color:var(--r)">Balance: ${fc(inv.balance)}</span></div>`;
-  document.getElementById('pay-amount').value=fp(inv.balance||0);
-  document.getElementById('pay-mode').value=inv.paymentType==='Cash'?'Cash':'UPI';
+    <div style="margin-top:4px">Total: <strong>${fc(inv.total)}</strong> | Paid: <span style="color:var(--g)">${fc(inv.paid)}</span> | <span style="color:var(--r)">Balance: ${fc(billBalance(inv))}</span></div>`;
+  document.getElementById('pay-amount').value=fp(billBalance(inv)||0);
+  document.getElementById('pay-mode').value=(inv.paymentType||'Cash')==='Cash'?'Cash':'UPI';
   document.getElementById('pay-note').value='';
   document.getElementById('pay-modal').classList.add('show');
   setTimeout(()=>document.getElementById('pay-amount').focus(),100);
@@ -1542,7 +1550,7 @@ function savePayment(){
   reconcilePayment(inv);
   DB.set('invoices',invs);
   closeModal('pay-modal');
-  toast(`${fc(amt)} payment saved! Balance: ${fc(inv.balance)} ✓`);
+  toast(`${fc(amt)} payment saved! Balance: ${fc(billBalance(inv))} ✓`);
   if(currentPage==='sales-list') renderSalesList();
   if(currentPage==='dashboard') renderDashboard();
   if(currentViewInvId===invId) viewInvoice(invId);
@@ -1883,7 +1891,7 @@ function renderSaleRep(){
   const allR=retail.reduce((a,r)=>a+(r.amount||0),0);
   // Party-wise
   const pm={};
-  invs.forEach(i=>{const k=i.partyName||'Cash';if(!pm[k])pm[k]={name:k,cnt:0,total:0,last:'',lastAmt:0,lastPay:''};pm[k].cnt++;pm[k].total+=i.total||0;if(!pm[k].last||i.date>pm[k].last){pm[k].last=i.date;pm[k].lastAmt=i.total||0;pm[k].lastPay=i.paymentType||'Cash';}});
+  invs.forEach(i=>{const k=i.partyName||'Cash';if(!pm[k])pm[k]={name:k,cnt:0,total:0,last:'',lastAmt:0,lastPay:''};pm[k].cnt++;pm[k].total+=i.total||0;if(!pm[k].last||i.date>pm[k].last){pm[k].last=i.date;pm[k].lastAmt=i.total||0;pm[k].lastPay=(i.paymentType||'Cash')||'Cash';}});
   const pList=Object.values(pm).sort((a,b)=>b.total-a.total);
   document.getElementById('rep-content').innerHTML=`
     <div class="card" style="border-left:4px solid var(--g)">
@@ -1989,28 +1997,28 @@ function renderItemRep(){
 }
 
 function renderPendingRep(){
-  const pending=getInvoices().filter(i=>(i.balance||0)>0).sort((a,b)=>(b.balance||0)-(a.balance||0));
-  const cashPend=pending.filter(i=>i.paymentType==='Cash');
-  const credPend=pending.filter(i=>i.paymentType==='Credit');
-  const total=pending.reduce((a,i)=>a+(i.balance||0),0);
+  const pending=getInvoices().filter(i=>(billBalance(i)||0)>0).sort((a,b)=>(billBalance(b)||0)-(billBalance(a)||0));
+  const cashPend=pending.filter(i=>(i.paymentType||'Cash')==='Cash');
+  const credPend=pending.filter(i=>(i.paymentType||'Cash')==='Credit');
+  const total=pending.reduce((a,i)=>a+(billBalance(i)||0),0);
   const buildTable=(list)=>`<div class="tw"><table>
     <thead><tr><th>Invoice</th><th>Date</th><th>Party</th><th>Pay Type</th><th>Total</th><th>Balance</th><th class="no-print">Action</th></tr></thead>
     <tbody>${list.map(i=>`<tr>
       <td style="font-weight:700;color:var(--b);cursor:pointer" onclick="viewInvoice('${escHtml(i.id)}')">${escHtml(i.invoiceNo)}</td>
       <td>${fmtDate(i.date)}</td><td style="font-weight:500">${escHtml(i.partyName)}</td>
-      <td><span class="badge ${ptBadge(i.paymentType)}">${escHtml(i.paymentType||'Cash')}</span></td>
+      <td><span class="badge ${ptBadge((i.paymentType||'Cash'))}">${escHtml((i.paymentType||'Cash')||'Cash')}</span></td>
       <td>${fc(i.total)}</td>
-      <td style="font-weight:700;color:var(--r)">${fc(i.balance)}</td>
+      <td style="font-weight:700;color:var(--r)">${fc(billBalance(i))}</td>
       <td class="no-print"><button class="btn btn-g btn-xs" onclick="openPayModal('${escHtml(i.id)}')">💰 Pay</button></td>
     </tr>`).join('')}</tbody>
-    <tfoot><tr><td colspan="5">Total</td><td style="color:var(--r)">${fc(list.reduce((a,i)=>a+(i.balance||0),0))}</td><td></td></tr></tfoot>
+    <tfoot><tr><td colspan="5">Total</td><td style="color:var(--r)">${fc(list.reduce((a,i)=>a+(billBalance(i)||0),0))}</td><td></td></tr></tfoot>
   </table></div>`;
   document.getElementById('rep-content').innerHTML=`
     <div class="card" style="border-left:4px solid var(--r)">
       <div style="display:flex;gap:16px;flex-wrap:wrap">
         <div><div style="font-size:12px;color:var(--gray-500)">Total Pending</div><div style="font-size:20px;font-weight:800;color:var(--r)">${fc(total)}</div></div>
-        <div><div style="font-size:12px;color:var(--gray-500)">Cash Collection Due</div><div style="font-size:20px;font-weight:800;color:var(--b)">${fc(cashPend.reduce((a,i)=>a+(i.balance||0),0))}</div></div>
-        <div><div style="font-size:12px;color:var(--gray-500)">Credit Due</div><div style="font-size:20px;font-weight:800;color:var(--o)">${fc(credPend.reduce((a,i)=>a+(i.balance||0),0))}</div></div>
+        <div><div style="font-size:12px;color:var(--gray-500)">Cash Collection Due</div><div style="font-size:20px;font-weight:800;color:var(--b)">${fc(cashPend.reduce((a,i)=>a+(billBalance(i)||0),0))}</div></div>
+        <div><div style="font-size:12px;color:var(--gray-500)">Credit Due</div><div style="font-size:20px;font-weight:800;color:var(--o)">${fc(credPend.reduce((a,i)=>a+(billBalance(i)||0),0))}</div></div>
       </div>
     </div>
     ${cashPend.length>0?`<div class="card"><div style="font-weight:700;font-size:14px;margin-bottom:10px;color:var(--b)">💵 Cash Due — Delivery Collection Pending</div>${buildTable(cashPend)}</div>`:''}
@@ -2020,18 +2028,18 @@ function renderPendingRep(){
 
 function renderDispatchRep(){
   const invs=getInvoices();
-  const pend=invs.filter(i=>(i.dispatchStatus||'pending')==='pending');
-  const done=invs.filter(i=>i.dispatchStatus==='dispatched');
-  const draft=invs.filter(i=>i.dispatchStatus==='draft');
+  const pend=invs.filter(i=>((i.dispatchStatus||'pending')||'pending')==='pending');
+  const done=invs.filter(i=>(i.dispatchStatus||'pending')==='dispatched');
+  const draft=invs.filter(i=>(i.dispatchStatus||'pending')==='draft');
   const mkTable=(list,color)=>list.length===0?`<div class="empty" style="padding:20px">None</div>`:`<div class="tw"><table>
     <thead><tr><th>Invoice</th><th>Date</th><th>Party</th><th>Pay Type</th><th>Total</th><th class="no-print">Action</th></tr></thead>
     <tbody>${list.slice().reverse().map(i=>`<tr>
       <td style="font-weight:700;color:var(--b);cursor:pointer" onclick="viewInvoice('${escHtml(i.id)}')">${escHtml(i.invoiceNo)}</td>
       <td>${fmtDate(i.date)}</td><td style="font-weight:500">${escHtml(i.partyName)}</td>
-      <td><span class="badge ${ptBadge(i.paymentType)}">${escHtml(i.paymentType||'Cash')}</span></td>
+      <td><span class="badge ${ptBadge((i.paymentType||'Cash'))}">${escHtml((i.paymentType||'Cash')||'Cash')}</span></td>
       <td style="font-weight:600;color:${color}">${fc(i.total)}</td>
       <td class="no-print">
-        ${i.dispatchStatus!=='dispatched'?`<button class="btn btn-c btn-xs" onclick="quickDispatch('${escHtml(i.id)}');renderDispatchRep()">🚚 Dispatch</button>`:'<span style="color:var(--g);font-size:12px">✓ Done</span>'}
+        ${(i.dispatchStatus||'pending')!=='dispatched'?`<button class="btn btn-c btn-xs" onclick="quickDispatch('${escHtml(i.id)}');renderDispatchRep()">🚚 Dispatch</button>`:'<span style="color:var(--g);font-size:12px">✓ Done</span>'}
       </td>
     </tr>`).join('')}</tbody>
   </table></div>`;
@@ -2430,8 +2438,8 @@ window.renderPrevBillsTable = function() {
       <td>${fmtDate(i.date)}</td>
       <td>${escHtml(i.partyName)}</td>
       <td style="font-weight:600">${fc(i.total)}</td>
-      <td style="color:${escHtml((i.balance||0)>0?'var(--r)':'var(--gray-400)')}">${fc(i.balance)}</td>
-      <td><span class="badge ${ptBadge(i.paymentType)}">${escHtml(i.paymentType)}</span></td>
+      <td style="color:${escHtml((billBalance(i)||0)>0?'var(--r)':'var(--gray-400)')}">${fc(billBalance(i))}</td>
+      <td><span class="badge ${ptBadge((i.paymentType||'Cash'))}">${escHtml((i.paymentType||'Cash'))}</span></td>
       <td><button class="btn btn-r btn-xs" onclick="delInvoice('${escHtml(i.id)}');renderPrevBillsTable()">Del</button></td>
     </tr>`).join('')}</tbody>
   </table>`;
@@ -2492,7 +2500,7 @@ window.repTab = function(tab) {
 };
 
 window.renderOutstandingRep = function() {
-  const invs = getInvoices().filter(i => (i.balance||0) > 0);
+  const invs = getInvoices().filter(i => (billBalance(i)||0) > 0);
   const now = new Date();
   // Group by party
   const pm = {};
@@ -2504,13 +2512,13 @@ window.renderOutstandingRep = function() {
     pm[key].invoices.push({ ...inv, days });
   });
   const parties = Object.values(pm).sort((a,b) =>
-    b.invoices.reduce((s,i)=>s+(i.balance||0),0) - a.invoices.reduce((s,i)=>s+(i.balance||0),0)
+    b.invoices.reduce((s,i)=>s+(billBalance(i)||0),0) - a.invoices.reduce((s,i)=>s+(billBalance(i)||0),0)
   );
-  const total0_30   = invs.filter(i => { const d=Math.floor((now-new Date(i.date))/86400000); return d<=30; }).reduce((a,i)=>a+(i.balance||0),0);
-  const total31_60  = invs.filter(i => { const d=Math.floor((now-new Date(i.date))/86400000); return d>30&&d<=60; }).reduce((a,i)=>a+(i.balance||0),0);
-  const total61_90  = invs.filter(i => { const d=Math.floor((now-new Date(i.date))/86400000); return d>60&&d<=90; }).reduce((a,i)=>a+(i.balance||0),0);
-  const total90plus = invs.filter(i => { const d=Math.floor((now-new Date(i.date))/86400000); return d>90; }).reduce((a,i)=>a+(i.balance||0),0);
-  const grandTotal  = invs.reduce((a,i)=>a+(i.balance||0),0);
+  const total0_30   = invs.filter(i => { const d=Math.floor((now-new Date(i.date))/86400000); return d<=30; }).reduce((a,i)=>a+(billBalance(i)||0),0);
+  const total31_60  = invs.filter(i => { const d=Math.floor((now-new Date(i.date))/86400000); return d>30&&d<=60; }).reduce((a,i)=>a+(billBalance(i)||0),0);
+  const total61_90  = invs.filter(i => { const d=Math.floor((now-new Date(i.date))/86400000); return d>60&&d<=90; }).reduce((a,i)=>a+(billBalance(i)||0),0);
+  const total90plus = invs.filter(i => { const d=Math.floor((now-new Date(i.date))/86400000); return d>90; }).reduce((a,i)=>a+(billBalance(i)||0),0);
+  const grandTotal  = invs.reduce((a,i)=>a+(billBalance(i)||0),0);
 
   document.getElementById('rep-content').innerHTML = `
     <!-- Aging Summary -->
@@ -2525,7 +2533,7 @@ window.renderOutstandingRep = function() {
     <!-- Party-wise aging table -->
     ${parties.length === 0 ? `<div class="empty"><div class="ic">✅</div>No outstanding balance!</div>` :
     parties.map(p => {
-      const partyTotal = p.invoices.reduce((a,i)=>a+(i.balance||0),0);
+      const partyTotal = p.invoices.reduce((a,i)=>a+(billBalance(i)||0),0);
       return `<div class="card" style="margin-bottom:12px">
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;flex-wrap:wrap;gap:8px">
           <div>
@@ -2544,10 +2552,10 @@ window.renderOutstandingRep = function() {
               <td>${fmtDate(i.date)}</td>
               <td>${fc(i.total)}</td>
               <td style="color:var(--g)">${fc(i.paid)}</td>
-              <td style="font-weight:700;color:var(--r)">${fc(i.balance)}</td>
+              <td style="font-weight:700;color:var(--r)">${fc(billBalance(i))}</td>
               <td style="font-weight:700;color:${ageColor}">${escHtml(i.days)}</td>
               <td>${ageLabel}</td>
-              <td><span class="badge ${ptBadge(i.paymentType)}">${escHtml(i.paymentType||'Cash')}</span></td>
+              <td><span class="badge ${ptBadge((i.paymentType||'Cash'))}">${escHtml((i.paymentType||'Cash')||'Cash')}</span></td>
               <td class="no-print"><button class="btn btn-g btn-xs" onclick="openPayModal('${escHtml(i.id)}')">💰 Pay</button></td>
             </tr>`;
           }).join('')}</tbody>
@@ -2578,7 +2586,7 @@ window.savePayment = function() {
   reconcilePayment(inv);
   DB.set('invoices', invs);
   closeModal('pay-modal');
-  toast(`Payment saved! Received: ${fc(amt)} + Discount: ${fc(discount)} | Balance: ${fc(inv.balance)} ✓`);
+  toast(`Payment saved! Received: ${fc(amt)} + Discount: ${fc(discount)} | Balance: ${fc(billBalance(inv))} ✓`);
   if (currentPage === 'sales-list') renderSalesList();
   if (currentPage === 'dashboard')  renderDashboard();
   if (currentViewInvId === invId)   viewInvoice(invId);
@@ -3056,7 +3064,7 @@ function pbSelectParty(id, name) {
   // Show party history
   const invs = getInvoices().filter(i => i.partyId === id || i.partyName === name);
   const total = invs.reduce((a,i) => a+(i.total||0), 0);
-  const pending = invs.filter(i => (i.balance||0)>0).reduce((a,i) => a+(i.balance||0), 0);
+  const pending = invs.filter(i => (billBalance(i)||0)>0).reduce((a,i) => a+(billBalance(i)||0), 0);
   document.getElementById('bulk-party-info').innerHTML =
     `✓ ${escHtml(invs.length)} existing invoices | Total: ${fc(total)} | Pending: <span style="color:var(--r)">${fc(pending)}</span>`;
   pbShowPartyHistory(id, name);
@@ -3081,10 +3089,10 @@ function pbShowPartyHistory(id, name) {
         <td style="font-weight:600">${escHtml(i.invoiceNo)}</td>
         <td>${fmtDate(i.date)}</td>
         <td style="font-weight:600">${fc(i.total)}</td>
-        <td style="color:${escHtml((i.balance||0)>0?'var(--r)':'var(--g)')}">
-          ${(i.balance||0)>0 ? fc(i.balance) : '<span style="color:var(--g)">Paid ✓</span>'}
+        <td style="color:${escHtml((billBalance(i)||0)>0?'var(--r)':'var(--g)')}">
+          ${(billBalance(i)||0)>0 ? fc(billBalance(i)) : '<span style="color:var(--g)">Paid ✓</span>'}
         </td>
-        <td><span class="badge ${ptBadge(i.paymentType)}">${escHtml(i.paymentType||'Cash')}</span></td>
+        <td><span class="badge ${ptBadge((i.paymentType||'Cash'))}">${escHtml((i.paymentType||'Cash')||'Cash')}</span></td>
         <td><button class="btn btn-r btn-xs" onclick="pbDelBill('${escHtml(i.id)}',this.dataset.xlArg0,this.dataset.xlArg1)" data-xl-arg0="${escHtml(id||'')}" data-xl-arg1="${escHtml(name)}">Del</button></td>
       </tr>`).join('')}
       </tbody>
@@ -3320,7 +3328,7 @@ window.renderPrevBillsTable = function() {
     if (!pm[k]) pm[k] = { name: k, bills: [], total: 0, bal: 0 };
     pm[k].bills.push(b);
     pm[k].total += b.total || 0;
-    pm[k].bal   += b.balance || 0;
+    pm[k].bal   += billBalance(b) || 0;
   });
   c.innerHTML = `
     <table>
@@ -3331,13 +3339,13 @@ window.renderPrevBillsTable = function() {
           <td>${fmtDate(b.date)}</td>
           <td style="font-weight:${escHtml(i===0?'700':'400')}">${i===0?`<strong>${escHtml(b.partyName)}</strong>`:b.partyName}</td>
           <td style="font-weight:600">${fc(b.total)}</td>
-          <td style="color:${escHtml((b.balance||0)>0?'var(--r)':'var(--g)')}">
-            ${(b.balance||0)>0 ? fc(b.balance) : '✓ Paid'}
+          <td style="color:${escHtml((billBalance(b)||0)>0?'var(--r)':'var(--g)')}">
+            ${(billBalance(b)||0)>0 ? fc(billBalance(b)) : '✓ Paid'}
           </td>
-          <td><span class="badge ${ptBadge(b.paymentType)}">${escHtml(b.paymentType||'Cash')}</span></td>
+          <td><span class="badge ${ptBadge((b.paymentType||'Cash'))}">${escHtml((b.paymentType||'Cash')||'Cash')}</span></td>
           <td><div style="display:flex;gap:4px">
             <button class="btn btn-b btn-xs" onclick="viewInvoice('${escHtml(b.id)}')">View</button>
-            ${(b.balance||0)>0?`<button class="btn btn-g btn-xs" onclick="openPayModal('${escHtml(b.id)}')">Pay</button>`:''}
+            ${(billBalance(b)||0)>0?`<button class="btn btn-g btn-xs" onclick="openPayModal('${escHtml(b.id)}')">Pay</button>`:''}
             <button class="btn btn-r btn-xs" onclick="pbDelBill('${escHtml(b.id)}','',this.dataset.xlArg0)" data-xl-arg0="${escHtml(b.partyName)}">Del</button>
           </div></td>
         </tr>`)
@@ -3347,7 +3355,7 @@ window.renderPrevBillsTable = function() {
         <tr>
           <td colspan="3">Total (${escHtml(bills.length)} bills)</td>
           <td style="color:var(--b)">${fc(bills.reduce((a,b)=>a+(b.total||0),0))}</td>
-          <td style="color:var(--r)">${fc(bills.reduce((a,b)=>a+(b.balance||0),0))}</td>
+          <td style="color:var(--r)">${fc(bills.reduce((a,b)=>a+(billBalance(b)||0),0))}</td>
           <td colspan="2"></td>
         </tr>
       </tfoot>
@@ -3387,7 +3395,7 @@ window.getAllPayments = function(){
         _invNo:   inv.invoiceNo,
         _party:   inv.partyName || 'Cash',
         _invTotal:inv.total || 0,
-        _invBal:  inv.balance || 0,
+        _invBal:  billBalance(inv) || 0,
         date:     p.date,
         amt:      p.amt || 0,
         mode:     p.mode || 'Cash',
@@ -3518,8 +3526,8 @@ window.deletePayment = function(invId, payIdx){
 
 // Standalone payment (search invoice then pay)
 window.openStandalonePayModal = function(){
-  const invs = getInvoices().filter(i=>(i.balance||0)>0);
-  const list = invs.map(i=>`<option value="${escHtml(i.id)}">${escHtml(i.invoiceNo)} — ${escHtml(i.partyName)} — Balance: ₹${(i.balance||0).toFixed(2)}</option>`).join('');
+  const invs = getInvoices().filter(i=>(billBalance(i)||0)>0);
+  const list = invs.map(i=>`<option value="${escHtml(i.id)}">${escHtml(i.invoiceNo)} — ${escHtml(i.partyName)} — Balance: ₹${(billBalance(i)||0).toFixed(2)}</option>`).join('');
   document.getElementById('spa-inv-select').innerHTML = `<option value="">— Select Invoice —</option>${list}`;
   document.getElementById('spa-amount').value='';
   document.getElementById('spa-discount').value='0';
@@ -3536,9 +3544,9 @@ window.spaSelectInv = function(){
   if(!inv||!id){el.innerHTML='';return;}
   el.innerHTML=`<div style="background:var(--gray-50);border-radius:8px;padding:10px;font-size:13px;margin-top:8px">
     <strong>${escHtml(inv.invoiceNo)}</strong> — ${escHtml(inv.partyName)}<br>
-    Total: ${fc(inv.total)} &nbsp;|&nbsp; Paid: <span style="color:var(--g)">${fc(inv.paid||0)}</span> &nbsp;|&nbsp; <span style="color:var(--r);font-weight:700">Balance: ${fc(inv.balance)}</span>
+    Total: ${fc(inv.total)} &nbsp;|&nbsp; Paid: <span style="color:var(--g)">${fc(inv.paid||0)}</span> &nbsp;|&nbsp; <span style="color:var(--r);font-weight:700">Balance: ${fc(billBalance(inv))}</span>
   </div>`;
-  document.getElementById('spa-amount').value = (inv.balance||0).toFixed(2);
+  document.getElementById('spa-amount').value = (billBalance(inv)||0).toFixed(2);
 };
 
 window.saveStandalonePayment = function(){
@@ -3559,7 +3567,7 @@ window.saveStandalonePayment = function(){
   DB.set('invoices',invs);
   if(typeof auditLog==='function')auditLog('payment','invoice',id,inv.invoiceNo,'Standalone payment recorded');
   closeModal('standalone-pay-modal');
-  toast(`Payment saved! Balance: ${fc(inv.balance)} ✓`);
+  toast(`Payment saved! Balance: ${fc(billBalance(inv))} ✓`);
   renderPaymentLedger();
 };
 
@@ -4179,7 +4187,7 @@ window.getAllPayments = function(){
         _invNo:  inv.invoiceNo,
         _party:  inv.partyName||'Cash',
         _invTotal:inv.total||0,
-        _invBal: inv.balance||0,
+        _invBal: billBalance(inv)||0,
         date:    p.date,
         amt:     p.amt||0,
         mode:    p.mode||'Cash',
@@ -4193,9 +4201,9 @@ window.getAllPayments = function(){
 
 // Fix 4: spaSelectInv needs fresh read each time modal opens
 window.openStandalonePayModal = function(){
-  const invs = getInvoices().filter(i=>(i.balance||0)>0);
+  const invs = getInvoices().filter(i=>(billBalance(i)||0)>0);
   const list = invs.sort((a,b)=>a.partyName.localeCompare(b.partyName)).map(i=>
-    `<option value="${escHtml(i.id)}">${escHtml(i.invoiceNo)} — ${escHtml(i.partyName)} — Bal: ₹${(i.balance||0).toFixed(2)}</option>`
+    `<option value="${escHtml(i.id)}">${escHtml(i.invoiceNo)} — ${escHtml(i.partyName)} — Bal: ₹${(billBalance(i)||0).toFixed(2)}</option>`
   ).join('');
   document.getElementById('spa-inv-select').innerHTML=`<option value="">— Select Invoice —</option>${list}`;
   document.getElementById('spa-amount').value='';
@@ -4478,9 +4486,9 @@ function showLast5Rates(partyId){
           <span style="color:var(--gray-400);margin-left:6px">${fmtDate(i.date)}</span>
         </div>
         <div style="display:flex;align-items:center;gap:8px">
-          <span class="badge ${ptBadge(i.paymentType)}" style="font-size:10px">${escHtml(i.paymentType||'Cash')}</span>
+          <span class="badge ${ptBadge((i.paymentType||'Cash'))}" style="font-size:10px">${escHtml((i.paymentType||'Cash')||'Cash')}</span>
           <span style="font-weight:700;color:var(--g)">${fc(i.total)}</span>
-          ${(i.balance||0)>0?`<span style="color:var(--r);font-size:11px">Bal: ${fc(i.balance)}</span>`:'<span style="color:var(--g);font-size:11px">✓Paid</span>'}
+          ${(billBalance(i)||0)>0?`<span style="color:var(--r);font-size:11px">Bal: ${fc(billBalance(i))}</span>`:'<span style="color:var(--g);font-size:11px">✓Paid</span>'}
         </div>
       </div>`).join('')}
     ${invs[0]?.items?.length ? `
@@ -4540,12 +4548,12 @@ window.renderSalesList = function(){
 
   // pill filter
   const pill = window.slPill || 'all';
-  if(pill==='cash-due')        f=f.filter(i=>i.paymentType==='Cash'&&(i.balance||0)>0);
-  if(pill==='credit-due')      f=f.filter(i=>i.paymentType==='Credit'&&(i.balance||0)>0);
-  if(pill==='pending-dispatch')f=f.filter(i=>(i.dispatchStatus||'pending')==='pending');
-  if(pill==='dispatched')      f=f.filter(i=>i.dispatchStatus==='dispatched');
-  if(pill==='draft')           f=f.filter(i=>i.dispatchStatus==='draft');
-  if(pill==='paid')            f=f.filter(i=>(i.balance||0)<=0);
+  if(pill==='cash-due')        f=f.filter(i=>(i.paymentType||'Cash')==='Cash'&&(billBalance(i)||0)>0);
+  if(pill==='credit-due')      f=f.filter(i=>(i.paymentType||'Cash')==='Credit'&&(billBalance(i)||0)>0);
+  if(pill==='pending-dispatch')f=f.filter(i=>((i.dispatchStatus||'pending')||'pending')==='pending');
+  if(pill==='dispatched')      f=f.filter(i=>(i.dispatchStatus||'pending')==='dispatched');
+  if(pill==='draft')           f=f.filter(i=>(i.dispatchStatus||'pending')==='draft');
+  if(pill==='paid')            f=f.filter(i=>(billBalance(i)||0)<=0);
 
   // SORT
   f.sort((a,b)=>{
@@ -4553,7 +4561,7 @@ window.renderSalesList = function(){
     if(slSort.col==='date')    { va=a.date||''; vb=b.date||''; }
     else if(slSort.col==='party')  { va=a.partyName||''; vb=b.partyName||''; }
     else if(slSort.col==='total')  { va=a.total||0; vb=b.total||0; }
-    else if(slSort.col==='balance'){ va=a.balance||0; vb=b.balance||0; }
+    else if(slSort.col==='balance'){ va=billBalance(a)||0; vb=billBalance(b)||0; }
     else if(slSort.col==='invno')  { va=a.invoiceNo||''; vb=b.invoiceNo||''; }
     else { va=a.date||''; vb=b.date||''; }
     if(va<vb) return slSort.dir==='asc'?-1:1;
@@ -4566,7 +4574,7 @@ window.renderSalesList = function(){
   const total = f.length;
   const tT=f.reduce((a,i)=>a+(i.total||0),0);
   const tP=f.reduce((a,i)=>a+(i.paid||0),0);
-  const tB=f.reduce((a,i)=>a+(i.balance||0),0);
+  const tB=f.reduce((a,i)=>a+(billBalance(i)||0),0);
 
   // PAGINATE
   const pages = Math.max(1, Math.ceil(total/SL_PER_PAGE));
@@ -4598,9 +4606,9 @@ window.renderSalesList = function(){
       <div class="dot-menu" id="dm-${escHtml(i.id)}">
         <div class="dot-menu-item" onclick="viewInvoice('${escHtml(i.id)}');closeDotMenus()">👁 View</div>
         <div class="dot-menu-item" onclick="editInvoiceFromList('${escHtml(i.id)}');closeDotMenus()">✏️ Edit</div>
-        ${(i.balance||0)>0?`<div class="dot-menu-item" onclick="openPayModal('${escHtml(i.id)}');closeDotMenus()">💰 Pay</div>`:''}
+        ${(billBalance(i)||0)>0?`<div class="dot-menu-item" onclick="openPayModal('${escHtml(i.id)}');closeDotMenus()">💰 Pay</div>`:''}
         <div class="dot-menu-item" onclick="printFromList('${escHtml(i.id)}');closeDotMenus()">🖨️ Print</div>
-        ${i.dispatchStatus!=='dispatched'?`<div class="dot-menu-item" onclick="quickDispatch('${escHtml(i.id)}');closeDotMenus()">🚚 Mark Dispatched</div>`:''}
+        ${(i.dispatchStatus||'pending')!=='dispatched'?`<div class="dot-menu-item" onclick="quickDispatch('${escHtml(i.id)}');closeDotMenus()">🚚 Mark Dispatched</div>`:''}
         <div class="dot-sep"></div>
         <div class="dot-menu-item danger" onclick="delInvoiceSafe('${escHtml(i.id)}');closeDotMenus()">🗑 Delete</div>
       </div>
@@ -4625,7 +4633,7 @@ window.renderSalesList = function(){
         ${C.party  ? sortTh('party','Party') : ''}
         ${C.paytype? '<th>Pay Type</th>' : ''}
         ${C.total  ? sortTh('total','Total') : ''}
-        ${C.balance? sortTh('balance','Balance') : ''}
+        ${billBalance(C)? sortTh('balance','Balance') : ''}
         ${C.dispatch?'<th>Dispatch</th>' : ''}
         ${C.status ? '<th>Status</th>' : ''}
         <th style="text-align:right">Actions</th>
@@ -4635,15 +4643,15 @@ window.renderSalesList = function(){
           ${C.invno  ? `<td style="font-weight:700;color:var(--b);cursor:pointer" onclick="viewInvoice('${escHtml(i.id)}')">${escHtml(i.invoiceNo)}</td>` : ''}
           ${C.date   ? `<td style="white-space:nowrap">${fmtDate(i.date)}</td>` : ''}
           ${C.party  ? `<td style="font-weight:500">${escHtml(i.partyName||'Cash')}</td>` : ''}
-          ${C.paytype? `<td><span class="badge ${ptBadge(i.paymentType)}">${escHtml(i.paymentType||'Cash')}</span></td>` : ''}
+          ${C.paytype? `<td><span class="badge ${ptBadge((i.paymentType||'Cash'))}">${escHtml((i.paymentType||'Cash')||'Cash')}</span></td>` : ''}
           ${C.total  ? `<td style="font-weight:600;text-align:right">${fc(i.total)}</td>` : ''}
-          ${C.balance? `<td style="text-align:right;color:${escHtml((i.balance||0)>0?'var(--r)':'var(--gray-400)')}"><strong>${fc(i.balance)}</strong></td>` : ''}
+          ${billBalance(C)? `<td style="text-align:right;color:${escHtml((billBalance(i)||0)>0?'var(--r)':'var(--gray-400)')}"><strong>${fc(billBalance(i))}</strong></td>` : ''}
           ${C.dispatch?`<td>${dispBadge(i)}</td>` : ''}
-          ${C.status ? `<td>${(i.balance||0)<=0?'<span class="badge bg">Paid ✓</span>':i.paymentType==='Cash'?'<span class="badge br">Cash Due</span>':'<span class="badge bo">Credit Due</span>'}</td>` : ''}
+          ${C.status ? `<td>${(billBalance(i)||0)<=0?'<span class="badge bg">Paid ✓</span>':(i.paymentType||'Cash')==='Cash'?'<span class="badge br">Cash Due</span>':'<span class="badge bo">Credit Due</span>'}</td>` : ''}
           <td style="text-align:right;white-space:nowrap">
             <div style="display:flex;gap:4px;justify-content:flex-end;align-items:center">
               <button class="btn btn-b btn-xs" onclick="viewInvoice('${escHtml(i.id)}')">View</button>
-              ${(i.balance||0)>0?`<button class="btn btn-g btn-xs" onclick="openPayModal('${escHtml(i.id)}')">Pay</button>`:''}
+              ${(billBalance(i)||0)>0?`<button class="btn btn-g btn-xs" onclick="openPayModal('${escHtml(i.id)}')">Pay</button>`:''}
               ${dotMenu(i)}
             </div>
           </td>
@@ -6522,10 +6530,10 @@ window.renderPageBtns = renderPageBtns;
 
 function getInvoiceStatus(inv) {
   if (isCancelled(inv)) return 'cancelled';
-  if ((inv.balance||0) <= 0 && inv.total > 0) return 'paid';
-  if (inv.paymentType === 'Cash' && (inv.balance||0) > 0) return 'cashdue';
-  if (inv.paymentType === 'Credit' && (inv.balance||0) > 0) return 'creditdue';
-  return inv.dispatchStatus || 'pending';
+  if ((billBalance(inv)||0) <= 0 && inv.total > 0) return 'paid';
+  if ((inv.paymentType||'Cash') === 'Cash' && (billBalance(inv)||0) > 0) return 'cashdue';
+  if ((inv.paymentType||'Cash') === 'Credit' && (billBalance(inv)||0) > 0) return 'creditdue';
+  return (inv.dispatchStatus||'pending') || 'pending';
 }
 
 function statusBadge(inv) {
@@ -6656,12 +6664,12 @@ window.renderSalesList = function() {
 
   // Status filters — all accurate
   switch(pill) {
-    case 'cash-due':         f = f.filter(i=>!isCancelled(i) && i.paymentType==='Cash'    && (i.balance||0)>0); break;
-    case 'credit-due':       f = f.filter(i=>!isCancelled(i) && i.paymentType==='Credit'  && (i.balance||0)>0); break;
-    case 'pending-dispatch': f = f.filter(i=>!isCancelled(i) && (i.dispatchStatus||'pending')==='pending'); break;
-    case 'dispatched':       f = f.filter(i=>!isCancelled(i) && i.dispatchStatus==='dispatched'); break;
-    case 'draft':            f = f.filter(i=>!isCancelled(i) && i.dispatchStatus==='draft'); break;
-    case 'paid':             f = f.filter(i=>!isCancelled(i) && (i.balance||0)<=0 && i.total>0); break;
+    case 'cash-due':         f = f.filter(i=>!isCancelled(i) && (i.paymentType||'Cash')==='Cash'    && (billBalance(i)||0)>0); break;
+    case 'credit-due':       f = f.filter(i=>!isCancelled(i) && (i.paymentType||'Cash')==='Credit'  && (billBalance(i)||0)>0); break;
+    case 'pending-dispatch': f = f.filter(i=>!isCancelled(i) && ((i.dispatchStatus||'pending')||'pending')==='pending'); break;
+    case 'dispatched':       f = f.filter(i=>!isCancelled(i) && (i.dispatchStatus||'pending')==='dispatched'); break;
+    case 'draft':            f = f.filter(i=>!isCancelled(i) && (i.dispatchStatus||'pending')==='draft'); break;
+    case 'paid':             f = f.filter(i=>!isCancelled(i) && (billBalance(i)||0)<=0 && i.total>0); break;
     case 'cancelled':        f = f.filter(i=>isCancelled(i)); break;
     case 'all':
     default:                 /* show everything */ break;
@@ -6673,7 +6681,7 @@ window.renderSalesList = function() {
   const active = f.filter(i=>!isCancelled(i));
   const tT = active.reduce((a,i)=>a+(i.total||0),0);
   const tP = active.reduce((a,i)=>a+(i.paid||0),0);
-  const tB = active.reduce((a,i)=>a+(i.balance||0),0);
+  const tB = active.reduce((a,i)=>a+(billBalance(i)||0),0);
 
   document.getElementById('sl-summary').innerHTML=`
     <div class="sg" style="grid-template-columns:repeat(4,1fr);margin-bottom:10px">
@@ -6706,8 +6714,8 @@ window.renderSalesList = function() {
         <td style="white-space:nowrap">${fmtDate(i.date)}</td>
         <td style="font-weight:500;max-width:140px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${escHtml(i.partyName||'Cash')}</td>
         <td style="font-weight:600;text-align:right">${fc(i.total)}</td>
-        <td style="text-align:right;color:${escHtml((i.balance||0)>0?'var(--r)':'var(--gray-400)')}"><strong>${fc(i.balance||0)}</strong></td>
-        <td><span class="badge ${ptBadge(i.paymentType)}">${escHtml(i.paymentType||'Cash')}</span></td>
+        <td style="text-align:right;color:${escHtml((billBalance(i)||0)>0?'var(--r)':'var(--gray-400)')}"><strong>${fc(billBalance(i)||0)}</strong></td>
+        <td><span class="badge ${ptBadge((i.paymentType||'Cash'))}">${escHtml((i.paymentType||'Cash')||'Cash')}</span></td>
         <td>${statusBadge(i)}</td>
         <td class="no-print" style="text-align:right;white-space:nowrap">
           ${cancelled ? `
@@ -6715,9 +6723,9 @@ window.renderSalesList = function() {
             <button class="btn btn-g btn-xs" onclick="restoreInvoice('${escHtml(i.id)}')">Restore</button>
           ` : `
             <button class="btn btn-b btn-xs" onclick="viewInvoice('${escHtml(i.id)}')">View</button>
-            ${(i.balance||0)>0?`<button class="btn btn-g btn-xs" onclick="openPayModal('${escHtml(i.id)}')">Pay</button>`:''}
+            ${(billBalance(i)||0)>0?`<button class="btn btn-g btn-xs" onclick="openPayModal('${escHtml(i.id)}')">Pay</button>`:''}
             <button class="btn btn-o btn-xs" onclick="editInvoiceFromList('${escHtml(i.id)}')">Edit</button>
-            ${i.dispatchStatus!=='dispatched'?`<button class="btn btn-c btn-xs" onclick="quickDispatch('${escHtml(i.id)}')">🚚</button>`:''}
+            ${(i.dispatchStatus||'pending')!=='dispatched'?`<button class="btn btn-c btn-xs" onclick="quickDispatch('${escHtml(i.id)}')">🚚</button>`:''}
             <button class="btn btn-r btn-xs" onclick="cancelInvoice('${escHtml(i.id)}')">✕</button>
           `}
         </td>
@@ -6948,7 +6956,7 @@ window.renderParties = function() {
     <tbody>${pageRows.map((p,idx)=>{
       const pI = invs.filter(i=>i.partyId===p.id && !isCancelled(i));
       const tS = pI.reduce((a,i)=>a+(i.total||0),0);
-      const tB = pI.reduce((a,i)=>a+(i.balance||0),0);
+      const tB = pI.reduce((a,i)=>a+(billBalance(i)||0),0);
       const last = [...pI].reverse()[0];
       return `<tr style="cursor:pointer" ondblclick="openPartyDetail('${escHtml(p.id)}')">
         <td style="color:var(--gray-400);font-size:11px">${(pgState.parties-1)*PAGE_SIZE+idx+1}</td>
@@ -6980,7 +6988,7 @@ window.openPartyDetail = function(partyId) {
   const invs = getInvoices().filter(i=>i.partyId===partyId);
   const active = invs.filter(i=>!isCancelled(i));
   const tSale = active.reduce((a,i)=>a+(i.total||0),0);
-  const tBal  = active.reduce((a,i)=>a+(i.balance||0),0);
+  const tBal  = active.reduce((a,i)=>a+(billBalance(i)||0),0);
   const tPaid = active.reduce((a,i)=>a+(i.paid||0),0);
   const recent = [...invs].reverse().slice(0,8);
 
@@ -7043,10 +7051,10 @@ window.openPartyDetail = function(partyId) {
               <td>${fmtDate(i.date)}</td>
               <td>${fc(i.total)}</td>
               <td style="color:var(--g)">${fc(i.paid||0)}</td>
-              <td style="color:${escHtml((i.balance||0)>0?'var(--r)':'var(--gray-400)')};font-weight:600">${fc(i.balance||0)}</td>
+              <td style="color:${escHtml((billBalance(i)||0)>0?'var(--r)':'var(--gray-400)')};font-weight:600">${fc(billBalance(i)||0)}</td>
               <td>${statusBadge(i)}</td>
               <td><button class="btn btn-b btn-xs" onclick="closeModal('party-detail-modal');viewInvoice('${escHtml(i.id)}')">View</button>
-              ${!isCancelled(i)&&(i.balance||0)>0?`<button class="btn btn-g btn-xs" onclick="closeModal('party-detail-modal');openPayModal('${escHtml(i.id)}')">Pay</button>`:''}</td>
+              ${!isCancelled(i)&&(billBalance(i)||0)>0?`<button class="btn btn-g btn-xs" onclick="closeModal('party-detail-modal');openPayModal('${escHtml(i.id)}')">Pay</button>`:''}</td>
             </tr>`).join('')}</tbody>
           </table></div>`}
           ${invs.length>8?`<div style="text-align:center;margin-top:8px;font-size:12.5px;color:var(--b);cursor:pointer" onclick="closeModal('party-detail-modal');nav('sales-list');setTimeout(()=>{document.getElementById('sl-srch').value=this.dataset.xlArg0;renderSalesList();},200)" data-xl-arg0="${escHtml(p.name)}">View all ${escHtml(invs.length)} invoices →</div>`:''}
@@ -7105,9 +7113,9 @@ window.renderDashboard = function() {
   const mRetail    = mR.reduce((a,r)=>a+(r.amount||0),0);
   const mTotal     = mWholesale + mRetail;
   const mPur       = mP.reduce((a,p)=>a+(p.total||0),0);
-  const cashDue    = activeInvs.filter(i=>i.paymentType==='Cash'&&(i.balance||0)>0).reduce((a,i)=>a+(i.balance||0),0);
-  const creditDue  = activeInvs.filter(i=>i.paymentType==='Credit'&&(i.balance||0)>0).reduce((a,i)=>a+(i.balance||0),0);
-  const pendDisp   = activeInvs.filter(i=>(i.dispatchStatus||'pending')==='pending').length;
+  const cashDue    = activeInvs.filter(i=>(i.paymentType||'Cash')==='Cash'&&(billBalance(i)||0)>0).reduce((a,i)=>a+(billBalance(i)||0),0);
+  const creditDue  = activeInvs.filter(i=>(i.paymentType||'Cash')==='Credit'&&(billBalance(i)||0)>0).reduce((a,i)=>a+(billBalance(i)||0),0);
+  const pendDisp   = activeInvs.filter(i=>((i.dispatchStatus||'pending')||'pending')==='pending').length;
   const cancelled  = invs.filter(i=>isCancelled(i)).length;
   const rI = [...activeInvs].reverse().slice(0,7);
 
@@ -7129,34 +7137,34 @@ window.renderDashboard = function() {
         ${rI.length===0?`<div class="empty"><div class="ic">📄</div>No invoices yet</div>`:rI.map(i=>`
           <div ondblclick="viewInvoice('${escHtml(i.id)}')" onclick="viewInvoice('${escHtml(i.id)}')" style="display:flex;justify-content:space-between;align-items:center;padding:7px 0;border-bottom:1px solid var(--gray-100);cursor:pointer">
             <div>
-              <div style="font-size:13px;font-weight:600">${escHtml(i.invoiceNo)} <span class="badge ${ptBadge(i.paymentType)}" style="font-size:10px">${escHtml(i.paymentType||'Cash')}</span></div>
+              <div style="font-size:13px;font-weight:600">${escHtml(i.invoiceNo)} <span class="badge ${ptBadge((i.paymentType||'Cash'))}" style="font-size:10px">${escHtml((i.paymentType||'Cash')||'Cash')}</span></div>
               <div style="font-size:11.5px;color:var(--gray-500)">${escHtml(i.partyName||'Cash')} · ${fmtDate(i.date)}</div>
             </div>
             <div style="text-align:right">
               <div style="font-size:13px;font-weight:700;color:var(--g)">${fc(i.total)}</div>
-              ${(i.balance||0)>0?`<span class="badge br">${fc(i.balance)} due</span>`:`<span class="badge bg">Paid ✓</span>`}
+              ${(billBalance(i)||0)>0?`<span class="badge br">${fc(billBalance(i))} due</span>`:`<span class="badge bg">Paid ✓</span>`}
             </div>
           </div>`).join('')}
       </div>
       <div class="card">
         ${cashDue>0||creditDue>0?`
           <div style="font-weight:700;color:var(--r);margin-bottom:10px;font-size:13.5px">📋 Due Collection — ${fc(cashDue+creditDue)}</div>
-          ${activeInvs.filter(i=>(i.balance||0)>0).slice().reverse().slice(0,6).map(i=>`
+          ${activeInvs.filter(i=>(billBalance(i)||0)>0).slice().reverse().slice(0,6).map(i=>`
             <div style="display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-bottom:1px solid var(--gray-100)">
               <div>
                 <span style="font-weight:600">${escHtml(i.partyName)}</span>
-                <span class="badge ${ptBadge(i.paymentType)}" style="margin-left:4px;font-size:10px">${escHtml(i.paymentType)}</span>
+                <span class="badge ${ptBadge((i.paymentType||'Cash'))}" style="margin-left:4px;font-size:10px">${escHtml((i.paymentType||'Cash'))}</span>
                 <br><span style="font-size:11.5px;color:var(--gray-500)">${escHtml(i.invoiceNo)} · ${fmtDate(i.date)}</span>
               </div>
               <div style="display:flex;align-items:center;gap:6px">
-                <span style="color:var(--r);font-weight:700">${fc(i.balance)}</span>
+                <span style="color:var(--r);font-weight:700">${fc(billBalance(i))}</span>
                 <button class="btn btn-g btn-xs" onclick="openPayModal('${escHtml(i.id)}')">Pay</button>
               </div>
             </div>`).join('')}
         `:''}
         ${pendDisp>0?`
           <div style="font-weight:700;color:var(--p);margin-top:12px;margin-bottom:8px;font-size:13.5px">📦 Pending Dispatch (${pendDisp})</div>
-          ${activeInvs.filter(i=>(i.dispatchStatus||'pending')==='pending').slice().reverse().slice(0,4).map(i=>`
+          ${activeInvs.filter(i=>((i.dispatchStatus||'pending')||'pending')==='pending').slice().reverse().slice(0,4).map(i=>`
             <div style="display:flex;justify-content:space-between;align-items:center;padding:5px 0;border-bottom:1px solid var(--gray-100)">
               <div><span style="font-weight:600">${escHtml(i.partyName)}</span> <span style="font-size:11.5px;color:var(--gray-500)">· ${escHtml(i.invoiceNo)}</span></div>
               <button class="btn btn-c btn-xs" onclick="quickDispatch('${escHtml(i.id)}')">✓ Dispatch</button>
@@ -7190,14 +7198,14 @@ window.renderSaleRep = function() {
 
   const allW = invs.reduce((a,i)=>a+(i.total||0),0);
   const allR = retail.reduce((a,r)=>a+(r.amount||0),0);
-  const allBal = invs.reduce((a,i)=>a+(i.balance||0),0);
+  const allBal = invs.reduce((a,i)=>a+(billBalance(i)||0),0);
 
   // Party-wise
   const pm = {};
   invs.forEach(i=>{
     const k=i.partyId||i.partyName||'Cash';
     if(!pm[k])pm[k]={name:i.partyName||'Cash',cnt:0,total:0,paid:0,bal:0,last:'',lastAmt:0};
-    pm[k].cnt++;pm[k].total+=i.total||0;pm[k].paid+=(i.paid||0);pm[k].bal+=(i.balance||0);
+    pm[k].cnt++;pm[k].total+=i.total||0;pm[k].paid+=(i.paid||0);pm[k].bal+=(billBalance(i)||0);
     if(!pm[k].last||i.date>pm[k].last){pm[k].last=i.date;pm[k].lastAmt=i.total||0;}
   });
   const pList = Object.values(pm).sort((a,b)=>b.total-a.total);
@@ -7604,7 +7612,7 @@ window.purBulkSelectParty = function(id, name) {
   // Show existing bills for this supplier
   const purs = getPurchases().filter(p => p.partyId === id || p.partyName === name);
   const total = purs.reduce((a,p)=>a+(p.total||0),0);
-  const bal   = purs.reduce((a,p)=>a+(p.balance||0),0);
+  const bal   = purs.reduce((a,p)=>a+(billBalance(p)||0),0);
   const info  = document.getElementById('purb-party-info');
   if (info) info.innerHTML = purs.length
     ? `✓ ${escHtml(purs.length)} existing bills | Total: ${fc(total)} | Outstanding: <span style="color:${escHtml(bal>0?'var(--r)':'var(--g)')}">${fc(bal)}</span>`
@@ -7789,7 +7797,7 @@ window.purBulkShowHistory = function(partyId, partyName) {
   if (!bills.length) { el.innerHTML = ''; return; }
 
   const tT = bills.reduce((a,b)=>a+(b.total||0),0);
-  const tB = bills.reduce((a,b)=>a+(b.balance||0),0);
+  const tB = bills.reduce((a,b)=>a+(billBalance(b)||0),0);
 
   el.innerHTML = `
     <div class="card" style="margin-top:10px">
@@ -7807,11 +7815,11 @@ window.purBulkShowHistory = function(partyId, partyName) {
           <td style="font-weight:600">${escHtml(b.billNo||'-')}</td>
           <td style="font-weight:600">${fc(b.total)}</td>
           <td style="color:var(--g)">${fc(b.paid||0)}</td>
-          <td style="color:${escHtml((b.balance||0)>0?'var(--r)':'var(--g)')};font-weight:700">${fc(b.balance||0)}</td>
+          <td style="color:${escHtml((billBalance(b)||0)>0?'var(--r)':'var(--g)')};font-weight:700">${fc(billBalance(b)||0)}</td>
           <td><span class="badge ${ptBadge(b.payType||b.mode||'Cash')}">${escHtml(b.payType||'Cash')}</span></td>
           <td style="display:flex;gap:4px;white-space:nowrap">
             <button class="btn btn-b btn-xs" onclick="viewPurchase('${escHtml(b.id)}')">View</button>
-            ${(b.balance||0)>0?`<button class="btn btn-g btn-xs" onclick="openPurPayModal('${escHtml(b.id)}')">Pay</button>`:''}
+            ${(billBalance(b)||0)>0?`<button class="btn btn-g btn-xs" onclick="openPurPayModal('${escHtml(b.id)}')">Pay</button>`:''}
             <button class="btn btn-r btn-xs" onclick="delPurchase('${escHtml(b.id)}');purBulkShowHistory('${escHtml(partyId)}',this.dataset.xlArg0)" data-xl-arg0="${escHtml(partyName)}">Del</button>
           </td>
         </tr>`).join('')}</tbody>
@@ -7879,7 +7887,7 @@ window.openPurPayModal = function(purId) {
 
   document.getElementById('pur-pay-bill-id').value = purId;
   document.getElementById('pur-pay-date').value    = today();
-  document.getElementById('pur-pay-amt').value     = fp(pur.balance||0);
+  document.getElementById('pur-pay-amt').value     = fp(billBalance(pur)||0);
   document.getElementById('pur-pay-mode').value    = pur.payType || 'Cash';
   document.getElementById('pur-pay-note').value    = '';
 
@@ -7889,7 +7897,7 @@ window.openPurPayModal = function(purId) {
       <span>Bill Date: <strong>${fmtDate(pur.date)}</strong></span>
       <span>Total: <strong>${fc(pur.total)}</strong></span>
       <span>Paid: <strong style="color:var(--g)">${fc(pur.paid||0)}</strong></span>
-      <span>Balance: <strong style="color:${escHtml((pur.balance||0)>0?'var(--r)':'var(--g)')}">${fc(pur.balance||0)}</strong></span>
+      <span>Balance: <strong style="color:${escHtml((billBalance(pur)||0)>0?'var(--r)':'var(--g)')}">${fc(billBalance(pur)||0)}</strong></span>
     </div>`;
 
   // Payment history
@@ -7938,7 +7946,7 @@ window.savePurPayment = function() {
   DB.set('purchases', purs);
 
   closeModal('pur-pay-modal');
-  toast(`${fc(amt)} payment recorded! Balance: ${fc(pur.balance)} ✓`);
+  toast(`${fc(amt)} payment recorded! Balance: ${fc(billBalance(pur))} ✓`);
 
   // Refresh whichever page is visible
   if (typeof renderPurchaseList==='function') renderPurchaseList();
@@ -7974,13 +7982,13 @@ window.renderPurchaseList = function() {
   if (from) f = f.filter(p=>p.date>=from);
   if (to)   f = f.filter(p=>p.date<=to);
   if (srch) f = f.filter(p=>(p.partyName+(p.billNo||'')).toLowerCase().includes(srch));
-  if (due)  f = f.filter(p=>(p.balance||0)>0);
+  if (due)  f = f.filter(p=>(billBalance(p)||0)>0);
   f.reverse();
 
   const tT = f.reduce((a,p)=>a+(p.total||0),0);
   const tP = f.reduce((a,p)=>a+(p.paid||0),0);
-  const tB = f.reduce((a,p)=>a+(p.balance||0),0);
-  const dueCnt = f.filter(p=>(p.balance||0)>0).length;
+  const tB = f.reduce((a,p)=>a+(billBalance(p)||0),0);
+  const dueCnt = f.filter(p=>(billBalance(p)||0)>0).length;
 
   document.getElementById('pl-summary').innerHTML=`
     <div class="sg" style="grid-template-columns:repeat(auto-fit,minmax(130px,1fr));margin-bottom:8px">
@@ -8012,19 +8020,19 @@ window.renderPurchaseList = function() {
       <th class="no-print" style="text-align:right">Actions</th>
     </tr></thead>
     <tbody>${pageRows.map((p,i)=>`<tr ondblclick="viewPurchase('${escHtml(p.id)}')"
-      ${escHtml((p.balance||0)>0?'style="background:#fff9f9"':'')}>
+      ${escHtml((billBalance(p)||0)>0?'style="background:#fff9f9"':'')}>
       <td style="color:var(--gray-400);font-size:11px">${(pg-1)*pgSize+i+1}</td>
       <td style="white-space:nowrap">${fmtDate(p.date)}</td>
       <td style="font-weight:500">${escHtml(p.partyName||'Cash')}</td>
       <td>${escHtml(p.billNo||'-')}</td>
       <td style="font-weight:600;text-align:right">${fc(p.total)}</td>
       <td style="text-align:right;color:var(--g)">${fc(p.paid||0)}</td>
-      <td style="text-align:right;font-weight:700;color:${escHtml((p.balance||0)>0?'var(--r)':'var(--gray-400)')}">${fc(p.balance||0)}</td>
+      <td style="text-align:right;font-weight:700;color:${escHtml((billBalance(p)||0)>0?'var(--r)':'var(--gray-400)')}">${fc(billBalance(p)||0)}</td>
       <td><span class="badge ${ptBadge(p.payType||'Cash')}">${escHtml(p.payType||'Cash')}</span></td>
       <td>${p.photoData?'<span class="badge bo">📷</span>':'-'}</td>
       <td class="no-print" style="text-align:right;white-space:nowrap">
         <button class="btn btn-b btn-xs" onclick="viewPurchase('${escHtml(p.id)}')">View</button>
-        ${(p.balance||0)>0?`<button class="btn btn-g btn-xs" onclick="openPurPayModal('${escHtml(p.id)}')">Pay</button>`:''}
+        ${(billBalance(p)||0)>0?`<button class="btn btn-g btn-xs" onclick="openPurPayModal('${escHtml(p.id)}')">Pay</button>`:''}
         <button class="btn btn-r btn-xs" onclick="delPurchase('${escHtml(p.id)}')">Del</button>
       </td>
     </tr>`).join('')}</tbody>
@@ -8056,7 +8064,7 @@ window.renderPurPayPage = function() {
         _billNo:   pur.billNo || pur.id.slice(-6),
         _party:    pur.partyName||'',
         _purTotal: pur.total||0,
-        _purBal:   pur.balance||0,
+        _purBal:   billBalance(pur)||0,
         _idx:      i
       });
     });
@@ -8064,10 +8072,10 @@ window.renderPurPayPage = function() {
   allPays.sort((a,b)=>(b.date||'').localeCompare(a.date||''));
 
   const tPaid = allPays.reduce((a,p)=>a+p.amt,0);
-  const totalDue = purs.reduce((a,p)=>a+(p.balance||0),0);
+  const totalDue = purs.reduce((a,p)=>a+(billBalance(p)||0),0);
 
   // Also list all bills with balance
-  const dueBills = purs.filter(p=>(p.balance||0)>0).slice().reverse();
+  const dueBills = purs.filter(p=>(billBalance(p)||0)>0).slice().reverse();
 
   el.innerHTML = `
     <div class="ph" style="position:sticky;top:0;z-index:50;background:#fff;border-bottom:1px solid var(--gray-200);
@@ -8105,7 +8113,7 @@ window.renderPurPayPage = function() {
             <td>${escHtml(p.billNo||'-')}</td>
             <td style="text-align:right">${fc(p.total)}</td>
             <td style="text-align:right;color:var(--g)">${fc(p.paid||0)}</td>
-            <td style="text-align:right;font-weight:700;color:var(--r)">${fc(p.balance)}</td>
+            <td style="text-align:right;font-weight:700;color:var(--r)">${fc(billBalance(p))}</td>
             <td><button class="btn btn-g btn-xs" onclick="openPurPayModal('${escHtml(p.id)}')">💳 Pay Now</button></td>
           </tr>`).join('')}</tbody>
           <tfoot><tr>
@@ -8170,10 +8178,10 @@ window.viewPurchase = function(id) {
           <div class="tot-row"><span>Bill Total</span><span style="font-weight:700;color:var(--b)">${fc(p.total)}</span></div>
           <div class="tot-row"><span>Paid</span><span style="color:var(--g)">${fc(p.paid||0)}</span></div>
           <div class="tot-row grand"><span>Balance</span>
-            <span style="color:${escHtml((p.balance||0)>0?'var(--r)':'var(--g)')}">${fc(p.balance||0)}</span>
+            <span style="color:${escHtml((billBalance(p)||0)>0?'var(--r)':'var(--g)')}">${fc(billBalance(p)||0)}</span>
           </div>
         </div>
-        ${(p.balance||0)>0?`<button class="btn btn-g" style="width:100%;margin-top:10px" onclick="openPurPayModal('${escHtml(p.id)}')">💳 Record Payment</button>`:'<div style="margin-top:10px;padding:10px;background:var(--gl);border-radius:8px;text-align:center;color:var(--gd);font-weight:700">✅ Fully Paid</div>'}
+        ${(billBalance(p)||0)>0?`<button class="btn btn-g" style="width:100%;margin-top:10px" onclick="openPurPayModal('${escHtml(p.id)}')">💳 Record Payment</button>`:'<div style="margin-top:10px;padding:10px;background:var(--gl);border-radius:8px;text-align:center;color:var(--gd);font-weight:700">✅ Fully Paid</div>'}
       </div>
     </div>
     ${p.mode==='items'&&p.items?.length?`
@@ -8215,7 +8223,7 @@ window.viewPurchase = function(id) {
       payBtn.style.marginRight = '6px';
       mh.querySelector('.mc').before(payBtn);
     }
-    payBtn.style.display = (p.balance||0)>0 ? '' : 'none';
+    payBtn.style.display = (billBalance(p)||0)>0 ? '' : 'none';
     payBtn.onclick = () => openPurPayModal(p.id);
   }
 
@@ -8522,7 +8530,7 @@ window.savePurPayment = function() {
 };
 
 window.openSettlementModal = function(partyId, partyName) {
-  const invs = getInvoices().filter(i => (i.partyId===partyId||i.partyName===partyName) && !isCancelled(i) && (i.balance||0)>0);
+  const invs = getInvoices().filter(i => (i.partyId===partyId||i.partyName===partyName) && !isCancelled(i) && (billBalance(i)||0)>0);
   if (!invs.length) { toast('No pending invoices for this party.'); return; }
 
   let modal = document.getElementById('settlement-modal');
@@ -8533,7 +8541,7 @@ window.openSettlementModal = function(partyId, partyName) {
     modal.addEventListener('click', e=>{ if(e.target===modal) modal.classList.remove('show'); });
   }
 
-  const totalDue = invs.reduce((a,i)=>a+(i.balance||0),0);
+  const totalDue = invs.reduce((a,i)=>a+(billBalance(i)||0),0);
 
   modal.innerHTML = `
     <div class="md" style="max-width:580px">
@@ -8569,15 +8577,15 @@ window.openSettlementModal = function(partyId, partyName) {
             <div class="settle-row" id="sr-settle-${escHtml(i.id)}">
               <div style="flex:1">
                 <div class="settle-inv">${escHtml(i.invoiceNo)}</div>
-                <div class="settle-party">${fmtDate(i.date)} · <span class="badge ${ptBadge(i.paymentType)}" style="font-size:10px">${escHtml(i.paymentType)}</span></div>
+                <div class="settle-party">${fmtDate(i.date)} · <span class="badge ${ptBadge((i.paymentType||'Cash'))}" style="font-size:10px">${escHtml((i.paymentType||'Cash'))}</span></div>
               </div>
               <div style="text-align:right;min-width:80px;font-size:12px">
                 <div>Total: ${fc(i.total)}</div>
-                <div class="settle-bal">Due: ${fc(i.balance)}</div>
+                <div class="settle-bal">Due: ${fc(billBalance(i))}</div>
               </div>
               <input type="number" class="fc fc-sm settle-inp" id="si-${escHtml(i.id)}"
-                data-max="${escHtml(i.balance)}" data-invid="${escHtml(i.id)}"
-                placeholder="0.00" min="0" max="${escHtml(i.balance)}"
+                data-max="${escHtml(billBalance(i))}" data-invid="${escHtml(i.id)}"
+                placeholder="0.00" min="0" max="${escHtml(billBalance(i))}"
                 oninput="settleRecalc()">
             </div>`).join('')}
         </div>
@@ -8628,7 +8636,7 @@ window.settleAutoFill = function(totalStr) {
   invs.forEach(inv => {
     const inp = document.getElementById('si-'+inv.id);
     if (!inp) return;
-    const alloc = Math.min(remaining, inv.balance||0);
+    const alloc = Math.min(remaining, billBalance(inv)||0);
     inp.value = alloc > 0 ? fp(alloc) : '';
     remaining = Math.max(0, remaining - alloc);
   });
@@ -8671,7 +8679,7 @@ window.saveSettlement = function(partyId, partyName) {
   const received=parseMoneyInput(document.getElementById('settle-total-inp')?.value||0);
   const allocated=round2(allAllocos.reduce((sum,r)=>sum+r.amt,0));
   if(!Number.isFinite(received)||(received>0&&moneyPaise(received)!==moneyPaise(allocated))){paymentError('settle-total-inp','Total received must match the allocated payments.');return;}
-  const discountRecord=dbInvs.find(i=>(i.partyId===partyId||i.partyName===partyName)&&isActive(i)&&financialState(i).balance-(allAllocos.find(r=>r.invId===i.id)?.amt||0)>0);
+  const discountRecord=dbInvs.find(i=>(i.partyId===partyId||i.partyName===partyName)&&isActive(i)&&billBalance(financialState(i))-(allAllocos.find(r=>r.invId===i.id)?.amt||0)>0);
   if(disc>0&&(!discountRecord||!allowPayment(discountRecord,allAllocos.find(r=>r.invId===discountRecord.id)?.amt||0,disc,'settle-discount')))return;
   let totalApplied = 0;
 
@@ -8759,7 +8767,7 @@ function buildPartyTxnLog(partyId, partyName) {
   const txns = [];
   // Sales invoices
   getInvoices().filter(i=>i.partyId===partyId||i.partyName===partyName).forEach(inv=>{
-    txns.push({ date:inv.date, icon:'📄', label:`${inv.invoiceNo} — Sale`, sub:`${inv.paymentType} · ${inv.dispatchStatus}`, amount:fc(inv.total), color:'var(--g)' });
+    txns.push({ date:inv.date, icon:'📄', label:`${inv.invoiceNo} — Sale`, sub:`${(inv.paymentType||'Cash')} · ${(inv.dispatchStatus||'pending')}`, amount:fc(inv.total), color:'var(--g)' });
     (inv.payments||[]).forEach(p=>{
       txns.push({ date:p.date, icon:'💳', label:`Payment — ${inv.invoiceNo}`, sub:`${p.mode} ${p.note?'· '+p.note:''}`, amount:fc(p.amt), color:'var(--b)' });
     });
@@ -8866,7 +8874,7 @@ window.renderTxnPage = function() {
   const txns = [];
   getInvoices().filter(i=>!isCancelled(i)).forEach(inv=>{
     txns.push({ date:inv.date, type:'sale', icon:'📄', party:inv.partyName||'Cash',
-      label:`${inv.invoiceNo} — Sale`, sub:`${inv.paymentType}`, amount:inv.total, color:'var(--g)', invId:inv.id });
+      label:`${inv.invoiceNo} — Sale`, sub:`${(inv.paymentType||'Cash')}`, amount:inv.total, color:'var(--g)', invId:inv.id });
     (inv.payments||[]).forEach(p=>{
       txns.push({ date:p.date, type:'pay-in', icon:'💳', party:inv.partyName||'Cash',
         label:`Payment — ${inv.invoiceNo}`, sub:`${p.mode} ${p.note?'· '+p.note:''}`, amount:p.amt, color:'var(--b)', invId:inv.id });
@@ -8951,34 +8959,34 @@ window.repTab = function(tab) {
 
 // Fix pending report to exclude cancelled
 window.renderPendingRep = function() {
-  const allPending = getInvoices().filter(i=>!isCancelled(i)&&(i.balance||0)>0).sort((a,b)=>(b.balance||0)-(a.balance||0));
-  const cashPend   = allPending.filter(i=>i.paymentType==='Cash');
-  const credPend   = allPending.filter(i=>i.paymentType==='Credit');
-  const upiPend    = allPending.filter(i=>i.paymentType==='UPI'||i.paymentType==='NEFT');
-  const total      = allPending.reduce((a,i)=>a+(i.balance||0),0);
+  const allPending = getInvoices().filter(i=>!isCancelled(i)&&(billBalance(i)||0)>0).sort((a,b)=>(billBalance(b)||0)-(billBalance(a)||0));
+  const cashPend   = allPending.filter(i=>(i.paymentType||'Cash')==='Cash');
+  const credPend   = allPending.filter(i=>(i.paymentType||'Cash')==='Credit');
+  const upiPend    = allPending.filter(i=>(i.paymentType||'Cash')==='UPI'||(i.paymentType||'Cash')==='NEFT');
+  const total      = allPending.reduce((a,i)=>a+(billBalance(i)||0),0);
 
   const buildTable = (list, color) => `<div class="tw"><table>
     <thead><tr><th>Invoice</th><th>Date</th><th>Party</th><th>Pay Type</th><th style="text-align:right">Total</th><th style="text-align:right">Balance</th><th class="no-print">Action</th></tr></thead>
     <tbody>${list.map(i=>`<tr ondblclick="viewInvoice('${escHtml(i.id)}')">
       <td style="font-weight:700;color:var(--b);cursor:pointer" onclick="viewInvoice('${escHtml(i.id)}')">${escHtml(i.invoiceNo)}</td>
       <td>${fmtDate(i.date)}</td><td style="font-weight:500">${escHtml(i.partyName)}</td>
-      <td><span class="badge ${ptBadge(i.paymentType)}">${escHtml(i.paymentType)}</span></td>
+      <td><span class="badge ${ptBadge((i.paymentType||'Cash'))}">${escHtml((i.paymentType||'Cash'))}</span></td>
       <td style="text-align:right">${fc(i.total)}</td>
-      <td style="font-weight:700;color:var(--r);text-align:right">${fc(i.balance)}</td>
+      <td style="font-weight:700;color:var(--r);text-align:right">${fc(billBalance(i))}</td>
       <td class="no-print">
         <button class="btn btn-g btn-xs" onclick="openPayModal('${escHtml(i.id)}')">Pay</button>
         <button class="btn btn-b btn-xs" onclick="openSettlementModal('${escHtml(i.partyId||'')}',this.dataset.xlArg0)" data-xl-arg0="${escHtml(i.partyName||'')}">Settle</button>
       </td>
     </tr>`).join('')}</tbody>
-    <tfoot><tr><td colspan="4">Total</td><td style="text-align:right"></td><td style="color:var(--r);text-align:right">${fc(list.reduce((a,i)=>a+(i.balance||0),0))}</td><td></td></tr></tfoot>
+    <tfoot><tr><td colspan="4">Total</td><td style="text-align:right"></td><td style="color:var(--r);text-align:right">${fc(list.reduce((a,i)=>a+(billBalance(i)||0),0))}</td><td></td></tr></tfoot>
   </table></div>`;
 
   document.getElementById('rep-content').innerHTML=`
     <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px;margin-bottom:16px">
       <div class="sc" style="border-left:4px solid var(--r)"><div class="sc-lbl">Total Pending</div><div class="sc-val r">${fc(total)}</div></div>
-      <div class="sc"><div class="sc-lbl">Cash Due</div><div class="sc-val b">${fc(cashPend.reduce((a,i)=>a+(i.balance||0),0))}</div></div>
-      <div class="sc"><div class="sc-lbl">Credit Due</div><div class="sc-val o">${fc(credPend.reduce((a,i)=>a+(i.balance||0),0))}</div></div>
-      <div class="sc"><div class="sc-lbl">UPI/NEFT Due</div><div class="sc-val p">${fc(upiPend.reduce((a,i)=>a+(i.balance||0),0))}</div></div>
+      <div class="sc"><div class="sc-lbl">Cash Due</div><div class="sc-val b">${fc(cashPend.reduce((a,i)=>a+(billBalance(i)||0),0))}</div></div>
+      <div class="sc"><div class="sc-lbl">Credit Due</div><div class="sc-val o">${fc(credPend.reduce((a,i)=>a+(billBalance(i)||0),0))}</div></div>
+      <div class="sc"><div class="sc-lbl">UPI/NEFT Due</div><div class="sc-val p">${fc(upiPend.reduce((a,i)=>a+(billBalance(i)||0),0))}</div></div>
     </div>
     ${cashPend.length>0?`<div class="card"><div style="font-weight:700;font-size:14px;margin-bottom:10px;color:var(--b)">💵 Cash Due</div>${buildTable(cashPend,'var(--b)')}</div>`:''}
     ${credPend.length>0?`<div class="card"><div style="font-weight:700;font-size:14px;margin-bottom:10px;color:var(--o)">📋 Credit Due</div>${buildTable(credPend,'var(--o)')}</div>`:''}
@@ -8990,15 +8998,15 @@ window.renderPendingRep = function() {
 window.renderPurRep = function() {
   const purs = getPurchases();
   const mm = {};
-  purs.forEach(p=>{const m=(p.date||'').slice(0,7);if(!m)return;if(!mm[m])mm[m]={month:m,cnt:0,total:0,paid:0,bal:0};mm[m].cnt++;mm[m].total+=p.total||0;mm[m].paid+=(p.paid||0);mm[m].bal+=(p.balance||0);});
+  purs.forEach(p=>{const m=(p.date||'').slice(0,7);if(!m)return;if(!mm[m])mm[m]={month:m,cnt:0,total:0,paid:0,bal:0};mm[m].cnt++;mm[m].total+=p.total||0;mm[m].paid+=(p.paid||0);mm[m].bal+=(billBalance(p)||0);});
   const months = Object.values(mm).sort((a,b)=>b.month.localeCompare(a.month));
   const tT = purs.reduce((a,p)=>a+(p.total||0),0);
   const tP = purs.reduce((a,p)=>a+(p.paid||0),0);
-  const tB = purs.reduce((a,p)=>a+(p.balance||0),0);
+  const tB = purs.reduce((a,p)=>a+(billBalance(p)||0),0);
 
   // Top suppliers
   const sm = {};
-  purs.forEach(p=>{const k=p.partyName||'Cash';if(!sm[k])sm[k]={name:k,cnt:0,total:0,bal:0};sm[k].cnt++;sm[k].total+=p.total||0;sm[k].bal+=(p.balance||0);});
+  purs.forEach(p=>{const k=p.partyName||'Cash';if(!sm[k])sm[k]={name:k,cnt:0,total:0,bal:0};sm[k].cnt++;sm[k].total+=p.total||0;sm[k].bal+=(billBalance(p)||0);});
   const suppList = Object.values(sm).sort((a,b)=>b.total-a.total);
 
   document.getElementById('rep-content').innerHTML=`
@@ -9162,7 +9170,7 @@ window.renderParties = function() {
       const pidMatch = detailBtn.getAttribute('onclick')?.match(/openPartyDetail\('([^']+)'\)/);
       if (!pidMatch) return;
       const pid = pidMatch[1];
-      const due = invs.filter(x=>x.partyId===pid).reduce((a,x)=>a+(x.balance||0),0);
+      const due = invs.filter(x=>x.partyId===pid).reduce((a,x)=>a+(billBalance(x)||0),0);
       if (due > 0 && !actionCell.querySelector('.settle-inline-btn')) {
         const btn = document.createElement('button');
         btn.className = 'btn btn-xs settle-inline-btn';
@@ -9271,12 +9279,12 @@ window.renderSalesList = function() {
 
   // Pill filters — accurate status logic
   switch (pill) {
-    case 'cash-due':         f = f.filter(i => !isCancelled(i) && i.paymentType === 'Cash'   && (i.balance||0) > 0); break;
-    case 'credit-due':       f = f.filter(i => !isCancelled(i) && i.paymentType === 'Credit' && (i.balance||0) > 0); break;
-    case 'pending-dispatch': f = f.filter(i => !isCancelled(i) && (i.dispatchStatus||'pending')==='pending');   break;
-    case 'dispatched':       f = f.filter(i => !isCancelled(i) && i.dispatchStatus === 'dispatched'); break;
-    case 'draft':            f = f.filter(i => !isCancelled(i) && i.dispatchStatus === 'draft');      break;
-    case 'paid':             f = f.filter(i => !isCancelled(i) && (i.balance||0) <= 0 && i.total > 0); break;
+    case 'cash-due':         f = f.filter(i => !isCancelled(i) && (i.paymentType||'Cash') === 'Cash'   && (billBalance(i)||0) > 0); break;
+    case 'credit-due':       f = f.filter(i => !isCancelled(i) && (i.paymentType||'Cash') === 'Credit' && (billBalance(i)||0) > 0); break;
+    case 'pending-dispatch': f = f.filter(i => !isCancelled(i) && ((i.dispatchStatus||'pending')||'pending')==='pending');   break;
+    case 'dispatched':       f = f.filter(i => !isCancelled(i) && (i.dispatchStatus||'pending') === 'dispatched'); break;
+    case 'draft':            f = f.filter(i => !isCancelled(i) && (i.dispatchStatus||'pending') === 'draft');      break;
+    case 'paid':             f = f.filter(i => !isCancelled(i) && (billBalance(i)||0) <= 0 && i.total > 0); break;
     case 'cancelled':        f = f.filter(i =>  isCancelled(i)); break;
     default: break; // 'all' — show everything including cancelled
   }
@@ -9287,7 +9295,7 @@ window.renderSalesList = function() {
   const active = f.filter(i => !isCancelled(i));
   const tT = active.reduce((a,i) => a+(i.total||0), 0);
   const tP = active.reduce((a,i) => a+(i.paid||0),  0);
-  const tB = active.reduce((a,i) => a+(i.balance||0), 0);
+  const tB = active.reduce((a,i) => a+(billBalance(i)||0), 0);
 
   document.getElementById('sl-summary').innerHTML = `
     <div class="sg" style="grid-template-columns:repeat(4,1fr);margin-bottom:10px">
@@ -9316,9 +9324,9 @@ window.renderSalesList = function() {
           <div class="dot-menu-item" onclick="viewInvoice('${escHtml(inv.id)}');v16DotClose()">👁 View</div>
           ${!can ? `
           <div class="dot-menu-item" onclick="editInvoiceFromList('${escHtml(inv.id)}');v16DotClose()">✏️ Edit</div>
-          ${(inv.balance||0)>0 ? `<div class="dot-menu-item" onclick="openPayModal('${escHtml(inv.id)}');v16DotClose()">💰 Pay</div>` : ''}
+          ${(billBalance(inv)||0)>0 ? `<div class="dot-menu-item" onclick="openPayModal('${escHtml(inv.id)}');v16DotClose()">💰 Pay</div>` : ''}
           <div class="dot-menu-item" onclick="printFromList('${escHtml(inv.id)}');v16DotClose()">🖨️ Print</div>
-          ${inv.dispatchStatus !== 'dispatched' ? `<div class="dot-menu-item" onclick="quickDispatch('${escHtml(inv.id)}');v16DotClose()">🚚 Mark Dispatched</div>` : ''}
+          ${(inv.dispatchStatus||'pending') !== 'dispatched' ? `<div class="dot-menu-item" onclick="quickDispatch('${escHtml(inv.id)}');v16DotClose()">🚚 Mark Dispatched</div>` : ''}
           <div class="dot-menu-item" onclick="cancelInvoice('${escHtml(inv.id)}');v16DotClose()">✕ Cancel</div>
           <div class="dot-sep"></div>
           <div class="dot-menu-item danger" onclick="delInvoice('${escHtml(inv.id)}');v16DotClose()">🗑 Delete</div>
@@ -9333,11 +9341,11 @@ window.renderSalesList = function() {
 
   const statusBadgeLocal = inv => {
     if (isCancelled(inv))                           return '<span class="status-cancelled">✕ Cancelled</span>';
-    if ((inv.balance||0) <= 0 && inv.total>0) return '<span class="status-paid">✓ Paid</span>';
-    if (inv.paymentType==='Cash'   && (inv.balance||0)>0) return '<span class="status-cashdue">💵 Cash Due</span>';
-    if (inv.paymentType==='Credit' && (inv.balance||0)>0) return '<span class="status-creditdue">📋 Credit Due</span>';
-    if (inv.dispatchStatus==='dispatched') return '<span class="badge disp-done">🚚 Dispatched</span>';
-    if (inv.dispatchStatus==='draft')      return '<span class="badge disp-draft">📝 Draft</span>';
+    if ((billBalance(inv)||0) <= 0 && inv.total>0) return '<span class="status-paid">✓ Paid</span>';
+    if ((inv.paymentType||'Cash')==='Cash'   && (billBalance(inv)||0)>0) return '<span class="status-cashdue">💵 Cash Due</span>';
+    if ((inv.paymentType||'Cash')==='Credit' && (billBalance(inv)||0)>0) return '<span class="status-creditdue">📋 Credit Due</span>';
+    if ((inv.dispatchStatus||'pending')==='dispatched') return '<span class="badge disp-done">🚚 Dispatched</span>';
+    if ((inv.dispatchStatus||'pending')==='draft')      return '<span class="badge disp-draft">📝 Draft</span>';
     return '<span class="badge disp-pending">📦 Pending</span>';
   };
 
@@ -9360,12 +9368,12 @@ window.renderSalesList = function() {
         <td style="white-space:nowrap">${fmtDate(inv.date)}</td>
         <td style="font-weight:500;max-width:140px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${escHtml(inv.partyName||'Cash')}</td>
         <td style="font-weight:600;text-align:right">${fc(inv.total)}</td>
-        <td style="text-align:right;font-weight:700;color:${escHtml((inv.balance||0)>0?'var(--r)':'var(--gray-400)')}">${fc(inv.balance||0)}</td>
-        <td><span class="badge ${ptBadge(inv.paymentType)}">${escHtml(inv.paymentType||'Cash')}</span></td>
+        <td style="text-align:right;font-weight:700;color:${escHtml((billBalance(inv)||0)>0?'var(--r)':'var(--gray-400)')}">${fc(billBalance(inv)||0)}</td>
+        <td><span class="badge ${ptBadge((inv.paymentType||'Cash'))}">${escHtml((inv.paymentType||'Cash')||'Cash')}</span></td>
         <td>${statusBadgeLocal(inv)}</td>
         <td class="no-print" style="text-align:right;white-space:nowrap">
           <button class="btn btn-b btn-xs" onclick="viewInvoice('${escHtml(inv.id)}')">View</button>
-          ${!can && (inv.balance||0)>0 ? `<button class="btn btn-g btn-xs" onclick="openPayModal('${escHtml(inv.id)}')">Pay</button>` : ''}
+          ${!can && (billBalance(inv)||0)>0 ? `<button class="btn btn-g btn-xs" onclick="openPayModal('${escHtml(inv.id)}')">Pay</button>` : ''}
           ${dotMenu(inv)}
         </td>
       </tr>`;
@@ -9518,7 +9526,7 @@ window._poutBills = [];
 
 window.poutLoadBills = function(partyId, partyName) {
   const bills = getPurchases()
-    .filter(p => (p.partyId===partyId||p.partyName===partyName) && (p.balance||0)>0)
+    .filter(p => (p.partyId===partyId||p.partyName===partyName) && (billBalance(p)||0)>0)
     .slice().sort((a,b) => (a.date||'').localeCompare(b.date||'')); // oldest first (FIFO)
 
   window._poutBills = bills;
@@ -9529,7 +9537,7 @@ window.poutLoadBills = function(partyId, partyName) {
     return;
   }
 
-  const totalDue = bills.reduce((a,b)=>a+(b.balance||0),0);
+  const totalDue = bills.reduce((a,b)=>a+(billBalance(b)||0),0);
   wrap.innerHTML = `
     <div style="font-size:12px;color:var(--gray-500);margin-bottom:8px">
       ${escHtml(bills.length)} pending bill(s) | Total Due: <strong style="color:var(--r)">${fc(totalDue)}</strong>
@@ -9546,15 +9554,15 @@ window.poutLoadBills = function(partyId, partyName) {
       </tr></thead>
       <tbody id="pout-bill-rows">
         ${bills.map(b => `
-        <tr class="pout-bill-row ${escHtml((b.balance||0)<=0?'pout-zero':'')}">
+        <tr class="pout-bill-row ${escHtml((billBalance(b)||0)<=0?'pout-zero':'')}">
           <td style="padding:5px 8px;font-weight:700;color:var(--b)">${b.billNo||b.id.slice(-6)}</td>
           <td style="padding:5px 8px;color:var(--gray-500)">${fmtDate(b.date)}</td>
           <td style="padding:5px 8px;text-align:right">${fc(b.total)}</td>
-          <td class="pout-bal" style="padding:5px 8px;text-align:right;font-weight:700;color:var(--r)">${fc(b.balance)}</td>
+          <td class="pout-bal" style="padding:5px 8px;text-align:right;font-weight:700;color:var(--r)">${fc(billBalance(b))}</td>
           <td style="padding:3px 5px">
             <input type="number" class="fc fc-sm pout-inp" id="pi-${escHtml(b.id)}"
-              data-max="${escHtml(b.balance)}" data-bid="${escHtml(b.id)}"
-              placeholder="0.00" min="0" max="${escHtml(b.balance)}"
+              data-max="${escHtml(billBalance(b))}" data-bid="${escHtml(b.id)}"
+              placeholder="0.00" min="0" max="${escHtml(billBalance(b))}"
               oninput="poutRecalc()" style="text-align:right;width:88px">
           </td>
           <td style="padding:3px 8px;text-align:center">
@@ -9574,7 +9582,7 @@ window.poutToggleFull = function(bid, checked) {
   const bill = window._poutBills.find(b=>b.id===bid);
   const inp = document.getElementById('pi-'+bid);
   if (!inp || !bill) return;
-  inp.value = checked ? fp(bill.balance) : '';
+  inp.value = checked ? fp(billBalance(bill)) : '';
   poutRecalc();
 };
 
@@ -9588,9 +9596,9 @@ window.poutAutoAllocate = function() {
     const inp = document.getElementById('pi-'+bill.id);
     const cb  = document.getElementById('pfc-'+bill.id);
     if (!inp) return;
-    const alloc = Math.min(remaining, bill.balance||0);
+    const alloc = Math.min(remaining, billBalance(bill)||0);
     inp.value = alloc > 0 ? fp(alloc) : '';
-    if (cb) cb.checked = alloc >= (bill.balance||0);
+    if (cb) cb.checked = alloc >= (billBalance(bill)||0);
     remaining = Math.max(0, remaining - alloc);
   });
   poutRecalc();
@@ -9714,7 +9722,7 @@ window.openPayOutModal = function() {
 // ════════════════════════════════════════════════════════
 window.renderItemRep = function() {
   const invs = getInvoices().filter(i => {
-    return !(i.status==='cancelled'||i.dispatchStatus==='cancelled');
+    return !(i.status==='cancelled'||(i.dispatchStatus||'pending')==='cancelled');
   });
 
   const srch = (document.getElementById('item-rep-srch')?.value||'').toLowerCase();
@@ -9815,14 +9823,14 @@ window.itemRepToggle = function(id) {
 // FIX 5: Exclude cancelled from ALL reports
 // Override all report functions that missed this
 // ════════════════════════════════════════════════════════
-const _isCanV16 = i => i.status==='cancelled' || i.dispatchStatus==='cancelled';
+const _isCanV16 = i => i.status==='cancelled' || (i.dispatchStatus||'pending')==='cancelled';
 
 // Override dispatch report
 window.renderDispatchRep = function() {
   const invs = getInvoices().filter(i => !_isCanV16(i)); // EXCLUDE CANCELLED
-  const pend   = invs.filter(i=>(i.dispatchStatus||'pending')==='pending');
-  const done   = invs.filter(i=>i.dispatchStatus==='dispatched');
-  const draft  = invs.filter(i=>i.dispatchStatus==='draft');
+  const pend   = invs.filter(i=>((i.dispatchStatus||'pending')||'pending')==='pending');
+  const done   = invs.filter(i=>(i.dispatchStatus||'pending')==='dispatched');
+  const draft  = invs.filter(i=>(i.dispatchStatus||'pending')==='draft');
 
   const mkTable = (list, color) => list.length===0
     ? `<div class="empty" style="padding:20px">None</div>`
@@ -9831,10 +9839,10 @@ window.renderDispatchRep = function() {
       <tbody>${list.slice().reverse().map(i=>`<tr ondblclick="viewInvoice('${escHtml(i.id)}')">
         <td style="font-weight:700;color:var(--b);cursor:pointer" onclick="viewInvoice('${escHtml(i.id)}')">${escHtml(i.invoiceNo)}</td>
         <td>${fmtDate(i.date)}</td><td style="font-weight:500">${escHtml(i.partyName)}</td>
-        <td><span class="badge ${ptBadge(i.paymentType)}">${escHtml(i.paymentType||'Cash')}</span></td>
+        <td><span class="badge ${ptBadge((i.paymentType||'Cash'))}">${escHtml((i.paymentType||'Cash')||'Cash')}</span></td>
         <td style="font-weight:600;text-align:right;color:${color}">${fc(i.total)}</td>
         <td class="no-print">
-          ${i.dispatchStatus!=='dispatched'
+          ${(i.dispatchStatus||'pending')!=='dispatched'
             ? `<button class="btn btn-c btn-xs" onclick="quickDispatch('${escHtml(i.id)}');renderDispatchRep()">🚚 Dispatch</button>`
             : '<span style="color:var(--g);font-size:12px">✓ Done</span>'}
         </td>
@@ -9884,7 +9892,7 @@ function buildLedger(parties, invs, purs) {
       const pI = activeInvs.filter(i=>i.partyId===p.id);
       const pP = purs.filter(x=>x.partyId===p.id);
       const tS = pI.reduce((a,i)=>a+(i.total||0),0);
-      const tB = pI.reduce((a,i)=>a+(i.balance||0),0);
+      const tB = pI.reduce((a,i)=>a+(billBalance(i)||0),0);
       const tP = pP.reduce((a,x)=>a+(x.total||0),0);
       const last= [...pI].reverse()[0];
       return`<tr ondblclick="openPartyDetail('${escHtml(p.id)}')">
@@ -9931,7 +9939,7 @@ window.repTab = function(tab) {
 
 // Ensure outstanding report also excludes cancelled
 window.renderOutstandingRep = function() {
-  const invs = getInvoices().filter(i => !_isCanV16(i) && (i.balance||0)>0);
+  const invs = getInvoices().filter(i => !_isCanV16(i) && (billBalance(i)||0)>0);
   const now  = new Date();
   const pm   = {};
   invs.forEach(inv => {
@@ -9940,12 +9948,12 @@ window.renderOutstandingRep = function() {
     const days = Math.floor((now - new Date(inv.date)) / 86400000);
     pm[key].invoices.push({...inv, days});
   });
-  const parties   = Object.values(pm).sort((a,b)=>b.invoices.reduce((s,i)=>s+(i.balance||0),0)-a.invoices.reduce((s,i)=>s+(i.balance||0),0));
-  const grandTotal = invs.reduce((a,i)=>a+(i.balance||0),0);
-  const t0_30  = invs.filter(i=>Math.floor((now-new Date(i.date))/86400000)<=30).reduce((a,i)=>a+(i.balance||0),0);
-  const t31_60 = invs.filter(i=>{const d=Math.floor((now-new Date(i.date))/86400000);return d>30&&d<=60;}).reduce((a,i)=>a+(i.balance||0),0);
-  const t61_90 = invs.filter(i=>{const d=Math.floor((now-new Date(i.date))/86400000);return d>60&&d<=90;}).reduce((a,i)=>a+(i.balance||0),0);
-  const t90p   = invs.filter(i=>Math.floor((now-new Date(i.date))/86400000)>90).reduce((a,i)=>a+(i.balance||0),0);
+  const parties   = Object.values(pm).sort((a,b)=>b.invoices.reduce((s,i)=>s+(billBalance(i)||0),0)-a.invoices.reduce((s,i)=>s+(billBalance(i)||0),0));
+  const grandTotal = invs.reduce((a,i)=>a+(billBalance(i)||0),0);
+  const t0_30  = invs.filter(i=>Math.floor((now-new Date(i.date))/86400000)<=30).reduce((a,i)=>a+(billBalance(i)||0),0);
+  const t31_60 = invs.filter(i=>{const d=Math.floor((now-new Date(i.date))/86400000);return d>30&&d<=60;}).reduce((a,i)=>a+(billBalance(i)||0),0);
+  const t61_90 = invs.filter(i=>{const d=Math.floor((now-new Date(i.date))/86400000);return d>60&&d<=90;}).reduce((a,i)=>a+(billBalance(i)||0),0);
+  const t90p   = invs.filter(i=>Math.floor((now-new Date(i.date))/86400000)>90).reduce((a,i)=>a+(billBalance(i)||0),0);
 
   document.getElementById('rep-content').innerHTML = `
     <div class="sg" style="grid-template-columns:repeat(auto-fit,minmax(130px,1fr))">
@@ -9957,7 +9965,7 @@ window.renderOutstandingRep = function() {
     </div>
     ${parties.length===0 ? `<div class="empty" style="margin-top:20px"><div class="ic">✅</div>No outstanding balance!</div>` :
     parties.map(p => {
-      const partyTotal = p.invoices.reduce((a,i)=>a+(i.balance||0),0);
+      const partyTotal = p.invoices.reduce((a,i)=>a+(billBalance(i)||0),0);
       return `<div class="card" style="margin-bottom:12px">
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;flex-wrap:wrap;gap:8px">
           <div>
@@ -9978,7 +9986,7 @@ window.renderOutstandingRep = function() {
               <td style="font-weight:700;color:var(--b);cursor:pointer" onclick="viewInvoice('${escHtml(i.id)}')">${escHtml(i.invoiceNo)}</td>
               <td>${fmtDate(i.date)}</td><td>${fc(i.total)}</td>
               <td style="color:var(--g)">${fc(i.paid||0)}</td>
-              <td style="font-weight:700;color:var(--r)">${fc(i.balance)}</td>
+              <td style="font-weight:700;color:var(--r)">${fc(billBalance(i))}</td>
               <td style="font-weight:700;color:${ac}">${escHtml(i.days)}</td>
               <td>${al}</td>
               <td class="no-print"><button class="btn btn-g btn-xs" onclick="openPayModal('${escHtml(i.id)}')">💰 Pay</button></td>
