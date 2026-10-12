@@ -10,7 +10,7 @@ The app stages a logical operation in memory, validates it, writes and reads bac
 
 Web Locks coordinate cooperating tabs. A stale tab must reload; simultaneous submissions cannot create duplicate operations. Browsers without usable locks permit reading and raw recovery export but fail closed for writes. An old application copy can ignore locks: revision and snapshot checks detect many such changes, but cannot guarantee prevention. Close old copies before using this version. A lightweight snapshot fingerprint detects ordinary drift; SHA-256 checks journals and backups. Neither is an authentication signature or protection against an attacker who can replace all local data.
 
-The journal stores before and after values of changed collections, requiring extra quota headroom. It never deletes invoices or older backups to free space. Persistent quota errors may prevent immediate rollback; retain the profile and recovery export, then retry in a supported browser. Reads denied by the browser cannot be exported until access is restored.
+Operations exceeding the recovery reader’s 10,000-key limit are rejected before journal staging. The journal stores before and after values of changed collections, requiring extra quota headroom. It never deletes invoices or older backups to free space. Persistent quota errors may prevent immediate rollback; retain the profile and recovery export, then retry in a supported browser. Reads denied by the browser cannot be exported until access is restored.
 
 ## Backup contract
 

@@ -788,6 +788,7 @@ function createXLStorage(options){
           if(tx.failure)throw tx.failure;
           const changes=[...tx.changes.values()].filter(c=>c.before!==c.after);
           if(!changes.length)return result;
+          if(changes.length>10000)throw error('StorageValidationError','This operation exceeds the 10,000-key recovery limit. No changes were applied.');
           await options.validate?.(tx.current,before,runOptions);
           // The lock covers cooperating clients; check for uncoordinated changes too.
           if(read(keys.meta)!==beforeMeta||signature(rawSnapshot())!==signature(before))throw error('StorageStaleError','Records changed while this operation was being prepared. No changes were applied.');
