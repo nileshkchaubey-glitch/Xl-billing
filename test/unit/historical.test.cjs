@@ -29,3 +29,6 @@ test('money input rejects fractional paise, infinity and unsafe integers',()=>{
  const c=context();for(const value of ['0.006','-0.01','Infinity','1e100'])assert(Number.isNaN(c.parseMoneyInput(value)));
  for(const [value,want]of [['0.01',0.01],['0.10',0.1],['1.23',1.23],['',0]])assert.equal(c.parseMoneyInput(value),want);
 });
+test('removing the last dated receipt does not invent a new opening balance',()=>{
+ const c=context(),r=structuredClone(fixtures.discountedPurchase);c.preparePaymentHistory(r);r.payments.pop();c.reconcilePayment(r);assert.equal(r.paid,0);assert.equal(r.balance,490);
+});

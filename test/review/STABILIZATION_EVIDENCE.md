@@ -7,3 +7,5 @@ After the accounting fix: five targeted browser probes passed (legacy payments, 
 Startup/read tests: seven failed before the change and seven passed afterward in Chromium. This includes full legacy storage byte preservation across two reloads, legacy amount aliases, corrupt JSON, JSON null/wrong collection shapes, settings shape and denied reads. Four corresponding audit probes also pass.
 
 PIN/deletion tests: three new destructive/stale supplier cases failed before the fix and pass afterward. The old-bill PIN and real two-tab payment deletion audit probes now both pass. Confirmations stay visible on errors; whole selected records are compared before deletion, so a changed array index cannot delete a different payment. Clear-all, clear-audit and persisted custom-field removal share the PIN guard.
+
+The full regression run caught a last-receipt deletion regression (three browser failures): an emptied modern history was being treated as an opening aggregate. A new unit case reproduced it, then passed after explicit actions also persist openingPaid=0. This prevents inventing an opening payment when the final dated receipt is removed.
