@@ -90,8 +90,21 @@ async function adoptionPreview(page){
 }
 async function approve(page,pin='2468'){
   await page.locator('#xl-recovery-pin').fill(pin);await page.locator('#xl-recovery-confirm').check();await page.locator('#xl-recovery-apply').click();
+  await page.waitForFunction(()=>!XLStore.isBusy());
+}
+async function verified(page){
+  // Proof verification and preview validation cannot stand in for a committed recovery.
+  await expect(page.locator('#xl-recovery-error')).toHaveText(/^Recovery verified\./);
+  const state=await page.evaluate(()=>{const recovery=XLStore.rawRecovery();return {meta:JSON.parse(recovery.meta),journal:recovery.journal,signature:XLStore.fingerprint(recovery.records)};});
+  expect(state.meta.v).toBe(1);expect(Number.isSafeInteger(state.meta.revision)).toBe(true);
+  expect(state.meta.signature).toBe(state.signature);expect(state.journal).toBeNull();
 }
 async function assertUnchanged(page,before){expect(await raw(page)).toEqual(before);expect(await page.evaluate(()=>XLAppReady)).toBe(false);}
+async function denyOwnerAttempt(page,before){
+  if(await page.locator('#xl-recovery-apply').isEnabled())await approve(page);
+  expect(await page.locator('#xl-recovery-error').textContent()).not.toMatch(/^Recovery verified\./);
+  await assertUnchanged(page,before);
+}
 async function prepareLocked(page,kind='valid',withPin=true){await seed(page,withPin);await saveRealInvoice(page);await external(page,kind);await locked(page);}
 function privateFile(records){
   const backup={format:'xl-billing-private',version:1,createdAt:'2026-10-12T00:00:00.000Z',payload:{records:Object.keys(records).sort().map(key=>({key,value:records[key]}))}};
@@ -108,7 +121,7 @@ test('recovery lockout sequence adopts a valid external state only after saved e
   // An unselected owner confirmation must never authorize adoption.
   if(await page.locator('#xl-recovery-apply').isEnabled())await page.locator('#xl-recovery-apply').click();
   await assertUnchanged(page,before);
-  await approve(page);await expect(page.locator('#xl-recovery-error')).toContainText(/verified/i);
+  await approve(page);await verified(page);
   expect(await raw(page,true)).toEqual(business);expect(await page.evaluate(()=>XLAppReady)).toBe(false);
   await page.reload();await ready(page);expect(await raw(page,true)).toEqual(business);
   await page.locator('a.nl[data-pg="sales-list"]').click();await expect(page.locator('#sales-table')).toContainText('INV-1003');
@@ -116,7 +129,7 @@ test('recovery lockout sequence adopts a valid external state only after saved e
 
 test('recovery locked adoption preserves legitimate undated opening receipts and supplier discounts byte for byte',async({page},testInfo)=>{
   await prepareLocked(page,'history');const before=await raw(page,true);await recoveryProof(page,testInfo);await adoptionPreview(page);await approve(page);
-  await expect(page.locator('#xl-recovery-error')).toContainText(/verified/i);expect(await raw(page,true)).toEqual(before);
+  await verified(page);expect(await raw(page,true)).toEqual(before);
   const state=await page.evaluate(()=>({i:JSON.parse(localStorage.getItem('shop4_invoices'))[0],p:JSON.parse(localStorage.getItem('shop4_purchases'))[0]}));
   expect(state.i.payments).toBeUndefined();expect(state.i.paid).toBe(20);expect(state.p.discount).toBe(10);expect(state.p.balance).toBe(470);
 });
@@ -128,7 +141,7 @@ test('recovery a valid private backup restores exact records while normal app sc
   await external(page);await locked(page);await recoveryProof(page,testInfo);const lockedBefore=await raw(page);
   await expect(page.locator('#xl-recovery-backup')).toBeVisible();await page.locator('#xl-recovery-backup').setInputFiles(backupPath);
   await expect(page.locator('#xl-recovery-preview')).toContainText(/checksum.*verified|verified.*checksum/i);await assertUnchanged(page,lockedBefore);
-  await approve(page);await expect(page.locator('#xl-recovery-error')).toContainText(/verified/i);
+  await approve(page);await verified(page);
   expect(await raw(page,true)).toEqual(original);expect(await page.evaluate(()=>typeof window.importData)).toBe('undefined');
   await page.reload();await ready(page);expect(await raw(page,true)).toEqual(original);
 });
@@ -136,19 +149,19 @@ test('recovery a valid private backup restores exact records while normal app sc
 for(const kind of ['conflicting','duplicate-id','duplicate-number'])test('recovery rejects '+kind+' external records and preserves every original byte',async({page},testInfo)=>{
   await prepareLocked(page,kind);const before=await raw(page);await recoveryProof(page,testInfo);await page.locator('#xl-recovery-adopt').click();
   await expect(page.locator('#xl-recovery-error')).toContainText(kind==='conflicting'?/conflict|history|balance/i:/duplicate/i);
-  await assertUnchanged(page,before);expect(await page.locator('#xl-recovery-apply').isEnabled()).toBe(false);
+  await assertUnchanged(page,before);await denyOwnerAttempt(page,before);
 });
 
 test('recovery missing current PIN cannot be replaced by setup or an imported PIN',async({page},testInfo)=>{
   await prepareLocked(page,'valid',false);const before=await raw(page);await recoveryProof(page,testInfo);await page.locator('#xl-recovery-adopt').click();
   if(await page.locator('#xl-recovery-apply').isEnabled())await approve(page);
-  await expect(page.locator('#xl-recovery-error')).toContainText(/PIN.*missing|PIN.*unavailable|PIN.*configured|established.*PIN/i);await assertUnchanged(page,before);
+  await expect(page.locator('#xl-recovery-error')).toContainText(/PIN.*missing|PIN.*unavailable|PIN.*configured|PIN.*required|established.*PIN/i);await assertUnchanged(page,before);
 });
 
 test('recovery wrong PIN refuses adoption and preserves the same verified preview for a correct retry',async({page},testInfo)=>{
   await prepareLocked(page);const before=await raw(page);await recoveryProof(page,testInfo);await adoptionPreview(page);await approve(page,'1111');
   await expect(page.locator('#xl-recovery-error')).toContainText(/incorrect|wrong|does not match/i);await assertUnchanged(page,before);
-  await approve(page);await expect(page.locator('#xl-recovery-error')).toContainText(/verified/i);expect(await raw(page,true)).toEqual(Object.fromEntries(Object.entries(before).filter(([key])=>!key.startsWith('xl_storage_'))));
+  await approve(page);await verified(page);expect(await raw(page,true)).toEqual(Object.fromEntries(Object.entries(before).filter(([key])=>!key.startsWith('xl_storage_'))));
 });
 
 test('recovery refuses a saved proof when raw records changed after its download',async({page},testInfo)=>{
@@ -171,7 +184,7 @@ for(const kind of ['checksum','financial-history'])test('recovery locked restore
   const text=kind==='checksum'?JSON.stringify({...data,v:5,checksum:'synthetic-invalid'}):JSON.stringify({...data,v:5});
   await expect(page.locator('#xl-recovery-backup')).toBeVisible();await page.locator('#xl-recovery-backup').setInputFiles({name:'synthetic-invalid-backup.json',mimeType:'application/json',buffer:Buffer.from(text)});
   await expect(page.locator('#xl-recovery-error')).toContainText(kind==='checksum'?/checksum|unsupported|unverifiable/i:/conflict|history|balance/i);await assertUnchanged(page,before);
-  expect(await page.locator('#xl-recovery-apply').isEnabled()).toBe(false);
+  await denyOwnerAttempt(page,before);
 });
 
 test('recovery corrupt startup journal remains downloadable without evaluating any normal app script',async({page},testInfo)=>{
@@ -186,7 +199,12 @@ for(const key of ['xl_storage_journal_v1','shop4_invoices','shop4_settings','sho
   await seed(page);await enterRealInvoice(page);const before=await raw(page);
   await page.evaluate(key=>{const set=Storage.prototype.setItem;let once=true;Storage.prototype.setItem=function(k,v){if(k===key&&once){once=false;throw new DOMException('Synthetic quota failure','QuotaExceededError');}return set.call(this,k,v);};},key);
   await page.locator('#save-inv-btn').click();await expect(page.locator('#storage-error')).toBeVisible();
-  await expect(page.locator('#storage-error')).toContainText(/storage.*save|save.*storage/i);await expect(page.locator('#storage-error')).toContainText(/original records.*restored|rolled back/i);
+  await expect(page.locator('#storage-error')).toContainText(/storage.*save|save.*storage/i);
+  if(key==='xl_storage_journal_v1'){
+    await expect(page.locator('#storage-error')).toContainText(/no.*invoice.*counter.*changes|no.*changes.*applied/i);
+  }else{
+    await expect(page.locator('#storage-error')).toContainText(/original records.*restored|rolled back/i);
+  }
   expect(await raw(page)).toEqual(before);expect(await page.locator('#toast').textContent()).not.toMatch(/saved|success/i);
   await expect(page.locator('#inv-no')).toHaveValue('INV-1003');await expect(page.locator('#inv-party')).toHaveValue('Synthetic Customer');
   await page.locator('#save-inv-btn').click();await expect(page.locator('#toast')).toContainText(/saved/i);
@@ -218,7 +236,7 @@ for(const kind of ['checksum','different-snapshot'])test('recovery rejects '+kin
   }
   await page.locator('#xl-recovery-proof').setInputFiles({name:'synthetic-tampered-proof.json',mimeType:'application/json',buffer:Buffer.from(JSON.stringify(proof.content))});
   await expect(page.locator('#xl-recovery-error')).toContainText(kind==='checksum'?/checksum|verification|match/i:/snapshot|match|changed/i);
-  await assertUnchanged(page,before);expect(await page.locator('#xl-recovery-apply').isEnabled()).toBe(false);
+  await assertUnchanged(page,before);await denyOwnerAttempt(page,before);
   await page.locator('#xl-recovery-proof').setInputFiles([]);await assertUnchanged(page,before);
 });
 
@@ -246,7 +264,7 @@ test('recovery locked restore pending rollback retains both snapshots and return
   expect(journal.payload.after.records).toEqual(original);
   await locked(page);await assertUnchanged(page,before);
   await recoveryProof(page,testInfo);await page.locator('#xl-recovery-backup').setInputFiles(backup);await expect(page.locator('#xl-recovery-preview')).toContainText(/verified/i);
-  await approve(page);await expect(page.locator('#xl-recovery-error')).toContainText(/verified/i);expect(await raw(page,true)).toEqual(original);
+  await approve(page);await verified(page);expect(await raw(page,true)).toEqual(original);
 });
 
 test('recovery exported corrupt journal can be replaced by a valid backup while adoption remains refused',async({page},testInfo)=>{
@@ -255,7 +273,7 @@ test('recovery exported corrupt journal can be replaced by a valid backup while 
   const proof=await recoveryProof(page,testInfo);expect(proof.content.payload.journal).toBe(before.xl_storage_journal_v1);
   await page.locator('#xl-recovery-adopt').click();await expect(page.locator('#xl-recovery-error')).toContainText(/journal|unfinished|unresolved|recovery/i);await assertUnchanged(page,before);
   await page.locator('#xl-recovery-backup').setInputFiles(backup);await expect(page.locator('#xl-recovery-preview')).toContainText(/verified/i);
-  await approve(page);await expect(page.locator('#xl-recovery-error')).toContainText(/verified/i);expect(await raw(page,true)).toEqual(original);
+  await approve(page);await verified(page);expect(await raw(page,true)).toEqual(original);
   expect(await page.evaluate(()=>localStorage.getItem('xl_storage_journal_v1'))).toBeNull();
   expect(JSON.parse(await fs.readFile(proof.path,'utf8')).payload.journal).toBe(before.xl_storage_journal_v1);
 });
@@ -268,6 +286,6 @@ test('recovery works when all deferred application scripts are removed and valid
   await page.route('**/',route=>route.fulfill({status:200,contentType:'text/html',body:stripped}));
   await locked(page);expect(await page.locator('script[type="text/xl-app"]').count()).toBe(0);await assertUnchanged(page,before);
   await recoveryProof(page,testInfo);await page.locator('#xl-recovery-backup').setInputFiles(backup);await expect(page.locator('#xl-recovery-preview')).toContainText(/verified/i);
-  await approve(page);await expect(page.locator('#xl-recovery-error')).toContainText(/verified/i);expect(await raw(page,true)).toEqual(original);
+  await approve(page);await verified(page);expect(await raw(page,true)).toEqual(original);
   expect(await page.evaluate(()=>typeof window.nav)).toBe('undefined');
 });
