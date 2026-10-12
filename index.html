@@ -713,6 +713,16 @@ function isCancelled(record) { return !!record && (record.status === 'cancelled'
 function isDeleted(record) { return !!record && !!record.deletedAt; }
 function isActive(record) { return !!record && !isCancelled(record) && !isDeleted(record); }
 
+function normalizedInvoiceNo(value){return String(value||'').trim().toLocaleLowerCase('en');}
+function nextInvoiceNumber(prefix,records,start=1){
+  const used=new Set(records.map(r=>normalizedInvoiceNo(r.invoiceNo)));
+  let next=Math.max(1,Math.trunc(Number(start)||1));
+  const normalizedPrefix=normalizedInvoiceNo(prefix);
+  for(const record of records){const no=normalizedInvoiceNo(record.invoiceNo);if(no.startsWith(normalizedPrefix)&&/^\d+$/.test(no.slice(normalizedPrefix.length)))next=Math.max(next,Number(no.slice(normalizedPrefix.length))+1);}
+  while(used.has(normalizedInvoiceNo(prefix+next)))next++;
+  return {number:prefix+next,next:next+1};
+}
+
 function round2(value){return Math.round((Number(value)+Number.EPSILON)*100)/100;}
 function paymentError(inputId,message){
   let error=document.getElementById('payment-validation-error');
@@ -1149,7 +1159,7 @@ function saveSaleInvoice(andPrint) {
   } else {
     // CREATE new invoice
     const inv = {
-      id:genId(), invoiceNo:(s.prefix||'INV-')+(s.invNo||1001),
+      id:genId(), invoiceNo:nextInvoiceNumber(s.prefix||'INV-',getInvoices(),s.invNo||1001).number,
       date, due, partyId, partyName:partyName||'Cash', items:validItems,
       subtotal:t.sub, discount:t.disc, taxPct:t.tPct, taxAmt:t.tax,
       total:t.total, paid:t.paid, balance:t.bal, notes,
@@ -1159,7 +1169,7 @@ function saveSaleInvoice(andPrint) {
     };
     if(t.paid>0) inv.payments.push({date,amt:t.paid,mode:payType,note:''});
     const invs = getInvoices(); invs.push(inv); DB.set('invoices',invs);
-    const ns=getSettings(); ns.invNo=(ns.invNo||1001)+1; DB.set('settings',ns);
+    const ns=getSettings(); ns.invNo=Math.max(ns.invNo||1001,nextInvoiceNumber(ns.prefix||'INV-',invs,ns.invNo||1001).next-1); DB.set('settings',ns);
     toast(`Invoice ${inv.invoiceNo} saved! ✓`);
     if(andPrint) { viewInvoice(inv.id); setTimeout(()=>printInvoice(),400); }
     else nav('sales-list');
@@ -3156,6 +3166,19 @@ function pbSaveAll() {
     paymentError('bulk-party-name','Paid amount cannot exceed the old bill total.');return;
   }
   const invs = getInvoices();
+  const used=new Set(invs.map(r=>normalizedInvoiceNo(r.invoiceNo)));
+  const settings=getSettings();settings.pbCounters={...settings.pbCounters};
+  const prefix='PB-'+pName.slice(0,3).toUpperCase()+'-';
+  const numbers=[];
+  for(const row of validRows){
+    let number=String(row.billNo||'').trim();
+    if(!number){
+      const candidate=nextInvoiceNumber(prefix,[...invs,...numbers.map(invoiceNo=>({invoiceNo}))],settings.pbCounters[prefix]||1);
+      number=candidate.number;settings.pbCounters[prefix]=candidate.next;
+    }
+    if(used.has(normalizedInvoiceNo(number))){paymentError('bulk-party-name','Invoice number '+number+' is already used. Enter a unique number.');return;}
+    used.add(normalizedInvoiceNo(number));numbers.push(number);
+  }
   let count = 0;
   validRows.forEach((r, i) => {
     const total = parseFloat(r.total) || 0;
@@ -3163,7 +3186,7 @@ function pbSaveAll() {
     const bal   = Math.max(0, total - paid);
     invs.push({
       id: genId(),
-      invoiceNo: r.billNo || `PB-${pName.slice(0,3).toUpperCase()}-${(i+1).toString().padStart(3,'0')}`,
+      invoiceNo: numbers[i],
       date: r.date || today(),
       partyId: pId, partyName: pName,
       items: [], subtotal: total, discount: 0, taxPct: 0, taxAmt: 0,
@@ -3179,6 +3202,8 @@ function pbSaveAll() {
   });
 
   DB.set('invoices', invs);
+  DB.set('settings',settings);
+  if(typeof auditLog==='function')auditLog('create','invoice','old-bills','Previous bills imported',String(count)+' bills');
   toast(`✓ ${count} bills saved for "${pName}"!`, 3500);
 
   // Reset rows but keep party selected
