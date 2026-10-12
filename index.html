@@ -1376,6 +1376,20 @@ function customerOutstanding(party,invoices=getInvoices()){
   return round2(invoiceDue+customerOpeningBalance(party));
 }
 function allCustomerOpeningBalance(parties=getParties()){return reportMoneySum(parties,customerOpeningBalance);}
+function createFinancialReview(kind,partyId,partyName,records){
+  return Object.freeze({kind,token:genId(),partyId,partyName,records:Object.freeze(records.map(record=>Object.freeze({id:record.id,raw:JSON.stringify(record)})))});
+}
+function financialReviewRecords(review,token,kind,partyId,partyName,records,inputId){
+  const message='The selected party or financial records changed. Reopen the payment review before saving. No payment was changed.';
+  if(!review||review.token!==token||review.kind!==kind||!partyId||review.partyId!==partyId||review.partyName!==partyName||new Set(review.records.map(r=>r.id)).size!==review.records.length){paymentError(inputId,message);return null;}
+  const current=[];
+  for(const evidence of review.records){
+    const matches=records.filter(record=>record.id===evidence.id),record=matches[0],state=financialState(record);
+    if(matches.length!==1||record.partyId!==partyId||!isActive(record)||!state.valid||!state.consistent||JSON.stringify(record)!==evidence.raw){paymentError(inputId,message);return null;}
+    current.push(record);
+  }
+  return current;
+}
 function preparePaymentHistory(record){
   const state=financialState(record);
   if(!state.valid||!state.consistent)throw new Error('The bill has conflicting payment history. No payment was changed.');
@@ -9106,7 +9120,9 @@ window.savePurPayment = function() {
 };
 
 window.openSettlementModal = function(partyId, partyName) {
-  const invs = getInvoices().filter(i => (partyId?i.partyId===partyId:!i.partyId&&i.partyName===partyName) && isActive(i) && (billBalance(i)||0)>0);
+  window._settleReview=null;window._settleInvs=[];
+  if(!partyId){paymentError('settle-discount','A stable party association is required for party settlement. Review unlinked bills individually; no association was inferred from a name.');return;}
+  const invs=getInvoices().filter(i=>i.partyId===partyId&&isActive(i)&&billBalance(i)>0);
   if (!invs.length) { toast('No pending invoices for this party.'); return; }
 
   let modal = document.getElementById('settlement-modal');
@@ -9117,6 +9133,7 @@ window.openSettlementModal = function(partyId, partyName) {
     modal.addEventListener('click', e=>{ if(e.target===modal) modal.classList.remove('show'); });
   }
 
+  const review=createFinancialReview('settlement',partyId,partyName,invs);
   const totalDue=reportMoneySum(invs,billBalance);
   const party=partyId?getParties().find(p=>p.id===partyId):undefined;
   const opening=customerOpeningBalance(party);
@@ -9199,12 +9216,12 @@ window.openSettlementModal = function(partyId, partyName) {
       </div>
       <div class="mf">
         <button class="btn btn-out" onclick="closeModal('settlement-modal')">Cancel</button>
-        <button class="btn btn-g" onclick="saveSettlement('${escHtml(partyId)}',this.dataset.xlArg0)" data-xl-arg0="${escHtml(partyName)}">✓ Save Settlement</button>
+        <button class="btn btn-g" onclick="saveSettlement('${escHtml(partyId)}',this.dataset.xlArg0,'${escHtml(review.token)}')" data-xl-arg0="${escHtml(partyName)}">✓ Save Settlement</button>
       </div>
     </div>`;
 
   // Store invs for later reference
-  window._settleInvs = invs;
+  window._settleInvs=invs;window._settleReview=review;
   modal.classList.add('show');
 };
 
@@ -9236,8 +9253,12 @@ window.settleRecalc = function() {
   if (un) { un.textContent = fc(Math.abs(unalloc)); un.style.color = unalloc<0?'var(--r)':unalloc>0?'var(--o)':'var(--g)'; }
 };
 
-window.saveSettlement = function(partyId, partyName) {
-  const invs  = window._settleInvs || [];
+window.saveSettlement = function(partyId, partyName,reviewToken) {
+  const modal=document.getElementById('settlement-modal');
+  if(!modal?.classList.contains('show')){paymentError('settle-discount','Reopen the settlement review before saving.');return;}
+  const dbInvs=getInvoices();
+  const invs=financialReviewRecords(window._settleReview,reviewToken,'settlement',partyId,partyName,dbInvs,'settle-discount');
+  if(!invs)return;
   const mode  = document.getElementById('settle-mode')?.value || 'Cash';
   const date  = document.getElementById('settle-date')?.value || today();
   const disc = parseMoneyInput(document.getElementById('settle-discount')?.value||0);
@@ -9245,20 +9266,19 @@ window.saveSettlement = function(partyId, partyName) {
   const allAllocos = [];
   invs.forEach(inv => {
     const inp = document.getElementById('si-'+inv.id);
-    const amt = parseMoneyInput(inp?.value||0);
+    const amt=parseMoneyInput(inp&&modal.contains(inp)?inp.value:NaN);
     if (amt > 0) allAllocos.push({ invId: inv.id, invNo: inv.invoiceNo, amt });
   });
 
   if (!allAllocos.length && disc<=0) { toast('Enter at least one amount!'); return; }
 
-  const dbInvs = getInvoices();
-  const rawAmounts=invs.map(inv=>parseMoneyInput(document.getElementById('si-'+inv.id)?.value||0));
+  const rawAmounts=invs.map(inv=>{const input=document.getElementById('si-'+inv.id);return parseMoneyInput(input&&modal.contains(input)?input.value:NaN);});
   if(rawAmounts.some(n=>!Number.isFinite(n)||n<0)||!Number.isFinite(disc)||disc<0){paymentError('settle-discount','Enter valid non-negative amounts.');return;}
   for(const row of allAllocos){const record=dbInvs.find(i=>i.id===row.invId);if(!allowPayment(record,round2(row.amt),0,'si-'+row.invId))return;}
   const received=parseMoneyInput(document.getElementById('settle-total-inp')?.value||0);
   const allocated=round2(allAllocos.reduce((sum,r)=>sum+r.amt,0));
   if(!Number.isFinite(received)||(received>0&&moneyPaise(received)!==moneyPaise(allocated))){paymentError('settle-total-inp','Total received must match the allocated payments.');return;}
-  const discountRecord=dbInvs.find(i=>(i.partyId===partyId||i.partyName===partyName)&&isActive(i)&&billBalance(financialState(i))-(allAllocos.find(r=>r.invId===i.id)?.amt||0)>0);
+  const discountRecord=invs.find(i=>moneyPaise(billBalance(financialState(i)))-moneyPaise(allAllocos.find(r=>r.invId===i.id)?.amt||0)>0);
   if(disc>0&&(!discountRecord||!allowPayment(discountRecord,allAllocos.find(r=>r.invId===discountRecord.id)?.amt||0,disc,'settle-discount')))return;
   let totalApplied = 0;
 
@@ -11012,7 +11032,7 @@ function installXLStorageBindings(){
     window[name]=function(...args){if(store.isActive()&&!playing){defer(original,this,args);return;}return original.apply(this,args);};
   }
   const mutationNames=['quickAddParty','saveSaleInvoice','quickDispatch','toggleDispatch','savePayment','saveRetail','savePurchase','saveItem','saveParty','addCustomField','removeCustomField','saveSettings','saveQuickItem','savePrevBill','cloudPull','cloudPush','createNewBin','pbQuickAddParty','pbSaveAll','saveStandalonePayment','saveEditPayment','saveQuickParty','xlProcessCSV','saveGsUrl','savePrintSettings','savePrintSettingsUI','cancelInvoice','restoreInvoice','saveQuickPhone','purBulkQuickAdd','purBulkSaveAll','savePurPayment','saveSettlement','savePoutPayment','toggleSlCol','toggleCompactMode','gsPull','gsPush'];
-  for(const name of mutationNames){const original=window[name];if(typeof original!=='function')continue;window[name]=function(...args){return window.XLRunAction(name,()=>original.apply(this,args));};}
+  for(const name of mutationNames){const original=window[name];if(typeof original!=='function')continue;window[name]=function(...args){const callArgs=name==='saveSettlement'&&args[2]===undefined?[args[0],args[1],window._settleReview?.token]:args;return window.XLRunAction(name,()=>original.apply(this,callArgs));};}
   const pin=window.withDeletePin;
   window.withDeletePin=function(label,callback,changePin){return pin(label,()=>window.XLRunAction(label,callback,true),changePin);};
   const remove=Element.prototype.remove;
