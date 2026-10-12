@@ -1,0 +1,53 @@
+{
+  "owner_instruction": "https://github.com/nileshkchaubey-glitch/Xl-billing/pull/8#issuecomment-6126054996",
+  "tested_application_commit": "a8a01dd9f135b2c64af4b3c5b2b4fd13f35573e1",
+  "tested_commit": "a8a01dd9f135b2c64af4b3c5b2b4fd13f35573e1",
+  "source_sha256": "ea65b50bd2bd9dbaf2222cad496a167dd25d868a3f66ee5f3fc14c21d66509a6",
+  "baseline_commit": "29aeb20225bccfc653b192651de608491185096c",
+  "runner_sha256": "76d02cf86924484c172faafe1e3a871389c8cc145952700bf93c61c3d1e183f5",
+  "browser": "chromium",
+  "synthetic_only": true,
+  "summary": {
+    "pass": 0,
+    "fail": 1,
+    "harness_errors": 0
+  },
+  "results": [
+    {
+      "id": "stored-print-text-xss",
+      "title": "Stored packing text remains literal in the actual invoice view and both print layouts",
+      "browser": "chromium",
+      "width": 1366,
+      "classification": "BLOCKER",
+      "status": "FAIL",
+      "duration_ms": 1387,
+      "pass": false,
+      "expected": "Name, packing summary, fallback pack type and colour payloads render as literal text; no event script executes in real view/A4/A5 output; totals80 and raw bytes preserved",
+      "observed": {
+        "view": {
+          "executed": true,
+          "injected_elements": 3,
+          "literals": false
+        },
+        "outputs": [
+          {
+            "paper": "A4",
+            "executed": true,
+            "injected_elements": 3,
+            "literals": false,
+            "total_present": true
+          },
+          {
+            "paper": "A5",
+            "executed": true,
+            "injected_elements": 3,
+            "literals": false,
+            "total_present": true
+          }
+        ],
+        "bytes_preserved": true
+      },
+      "note": "Payloads only toggle a synthetic window flag. No secret or real profile is accessed."
+    }
+  ]
+}
