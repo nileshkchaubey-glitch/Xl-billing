@@ -1,0 +1,701 @@
+{
+  "kind": "xl-billing-recovery-followup-final",
+  "version": 1,
+  "synthetic_data_only": true,
+  "application_source": {
+    "runtime_commit": "d8cf42091e0d3f4d45f3bcd47da5a120240cd1e3",
+    "html_sha256": "37cb3c09b5d165768666d3ccefae9478b10f08a7dc20f1dcc219cad91e596933"
+  },
+  "pull_request": "https://github.com/nileshkchaubey-glitch/Xl-billing/pull/8",
+  "baseline_recovery_evidence": "RECOVERY_FOLLOWUP_BEFORE.json",
+  "baseline_date_evidence": "business-date-evidence.json",
+  "core_initial_failure": {
+    "source_commit": "5063d5b",
+    "application_html_sha256": "acf710663fa22807a215f3a5cc334bbc566313de68d4a090a4de7d546957f88b",
+    "tests": 9,
+    "passed": 0,
+    "failed": 9,
+    "actual_error": "TypeError: s.exportRecovery is not a function",
+    "cases": [
+      "locked adoption requires a verified export, full validation, current PIN and explicit confirmation",
+      "valid private backup can replace externally modified records while locked",
+      "conflicting candidate and stale export proof are rejected without byte changes",
+      "wrong PIN, missing current PIN, stale preview and changed credentials preserve all bytes",
+      "recovery failure at xl_storage_journal_v1 restores exact original records and coordination bytes",
+      "recovery failure at shop4_invoices restores exact original records and coordination bytes",
+      "recovery failure at xl_storage_meta_v1 restores exact original records and coordination bytes",
+      "failed recovery rollback retains checked originals; fresh boot restores them",
+      "restore preserves superseded corrupt journal in rollback rather than dropping recovery evidence"
+    ]
+  },
+  "local_full_before_alert_fix": {
+    "source_revision": "54cba2f",
+    "application_html_sha256": "8d6f7cb3b6d1eef64127ce121ca8ab86eedb291168cf0432d4fe59e185e277cc",
+    "summary": {
+      "startTime": "2026-10-12T12:00:29.421Z",
+      "duration": 465643.50200000004,
+      "expected": 432,
+      "skipped": 0,
+      "unexpected": 3,
+      "flaky": 0
+    },
+    "limitation": "Not final verification. Three overpayment cases failed at an inactive empty alert strict-locator collision; assertions were preserved."
+  },
+  "alert_correction": {
+    "source_revision": "61177f7",
+    "application_html_sha256": "93c4a03a3bde5e9f44578a2d9f2d44555dc3abe912c41e2d9bcee9d04b943c3e",
+    "started_at": "2026-10-12T12:10:39.093Z",
+    "summary": {
+      "startTime": "2026-10-12T12:10:39.093Z",
+      "duration": 5875.093000000001,
+      "expected": 3,
+      "skipped": 0,
+      "unexpected": 0,
+      "flaky": 0
+    },
+    "cases": [
+      {
+        "title": "P0-4 overpayment rejected without invoice or audit writes",
+        "browser": "chromium",
+        "status": "expected"
+      },
+      {
+        "title": "P0-4 overpayment rejected without invoice or audit writes",
+        "browser": "firefox",
+        "status": "expected"
+      },
+      {
+        "title": "P0-4 overpayment rejected without invoice or audit writes",
+        "browser": "webkit",
+        "status": "expected"
+      }
+    ]
+  },
+  "cleanup_message_before": {
+    "source_revision": "b2983bd",
+    "application_html_sha256": "93c4a03a3bde5e9f44578a2d9f2d44555dc3abe912c41e2d9bcee9d04b943c3e",
+    "started_at": "2026-10-12T13:32:18.322Z",
+    "summary": {
+      "startTime": "2026-10-12T13:32:18.322Z",
+      "duration": 3589.808,
+      "expected": 0,
+      "skipped": 0,
+      "unexpected": 2,
+      "flaky": 0
+    },
+    "cases": [
+      {
+        "title": "recovery invoice save cleanup read denial never claims a removed journal exists",
+        "browser": "chromium",
+        "status": "unexpected",
+        "failure": "Error: expect(received).not.toMatch(expected)\n\nExpected pattern: not /states remain in the journal|keep the checked recovery journal|verified restored|rollback succeeded/i\nReceived string:      \"Recovery is pending. Do not repeat the save. Checked original states remain in the journal; keep a raw recovery export and retry recovery.\""
+      },
+      {
+        "title": "recovery locked restore cleanup read denial never claims a removed journal exists",
+        "browser": "chromium",
+        "status": "unexpected",
+        "failure": "Error: expect(received).not.toMatch(expected)\n\nExpected pattern: not /states remain in the journal|keep the checked recovery journal|verified restored|rollback succeeded/i\nReceived string:      \"Recovery is pending. Do not repeat the operation. Keep the profile and any checked recovery journal; automatic rollback could not be verified. Keep the checked recovery journal and do not retry the operation.\""
+      }
+    ]
+  },
+  "cleanup_message_after": {
+    "source_revision": "d8cf420",
+    "application_html_sha256": "37cb3c09b5d165768666d3ccefae9478b10f08a7dc20f1dcc219cad91e596933",
+    "started_at": "2026-10-12T13:32:40.518Z",
+    "summary": {
+      "startTime": "2026-10-12T13:32:40.518Z",
+      "duration": 15340.923,
+      "expected": 6,
+      "skipped": 0,
+      "unexpected": 0,
+      "flaky": 0
+    },
+    "cases": [
+      {
+        "title": "recovery invoice save cleanup read denial never claims a removed journal exists",
+        "browser": "chromium",
+        "status": "expected"
+      },
+      {
+        "title": "recovery locked restore cleanup read denial never claims a removed journal exists",
+        "browser": "chromium",
+        "status": "expected"
+      },
+      {
+        "title": "recovery invoice save cleanup read denial never claims a removed journal exists",
+        "browser": "firefox",
+        "status": "expected"
+      },
+      {
+        "title": "recovery locked restore cleanup read denial never claims a removed journal exists",
+        "browser": "firefox",
+        "status": "expected"
+      },
+      {
+        "title": "recovery invoice save cleanup read denial never claims a removed journal exists",
+        "browser": "webkit",
+        "status": "expected"
+      },
+      {
+        "title": "recovery locked restore cleanup read denial never claims a removed journal exists",
+        "browser": "webkit",
+        "status": "expected"
+      }
+    ]
+  },
+  "final_local_node": {
+    "application_html_sha256": "37cb3c09b5d165768666d3ccefae9478b10f08a7dc20f1dcc219cad91e596933",
+    "tests": 63,
+    "passed": 63,
+    "failed": 0,
+    "skipped": 0,
+    "original_tests_preserved": 44,
+    "new_calendar_tests": 4,
+    "new_recovery_tests": 15,
+    "parcel_vm": "PASS: parcel/open-box calculation, decimals, immediate totals, invalid inputs, legacy quantities, settings preservation."
+  },
+  "final_local_safety_audits": [
+    {
+      "group": "stabilization",
+      "browser": "chromium",
+      "source_revision": "d8cf42091e0d3f4d45f3bcd47da5a120240cd1e3",
+      "application_html_sha256": "37cb3c09b5d165768666d3ccefae9478b10f08a7dc20f1dcc219cad91e596933",
+      "runner_sha256": "9e9e1a0aaaf78bbf9695978365bd45a04db21c9e2907ab73b81a15f4d49c766e",
+      "summary": {
+        "pass": 12,
+        "fail": 0,
+        "harnessErrors": 0
+      },
+      "cases": [
+        {
+          "id": "legacy-payment",
+          "status": "PASS",
+          "page_errors": []
+        },
+        {
+          "id": "historical-purchase-discount",
+          "status": "PASS",
+          "page_errors": []
+        },
+        {
+          "id": "legacy-discount",
+          "status": "PASS",
+          "page_errors": []
+        },
+        {
+          "id": "settlement-rounding",
+          "status": "PASS",
+          "page_errors": []
+        },
+        {
+          "id": "payout-rounding",
+          "status": "PASS",
+          "page_errors": []
+        },
+        {
+          "id": "startup-mutation",
+          "status": "PASS",
+          "page_errors": []
+        },
+        {
+          "id": "fractional-total-reload",
+          "status": "PASS",
+          "page_errors": []
+        },
+        {
+          "id": "corrupt-storage",
+          "status": "PASS",
+          "page_errors": [
+            "Another tab or app copy changed the records. Reload before making further changes."
+          ]
+        },
+        {
+          "id": "read-denied",
+          "status": "PASS",
+          "page_errors": []
+        },
+        {
+          "id": "old-bill-delete-pin",
+          "status": "PASS",
+          "page_errors": []
+        },
+        {
+          "id": "stale-payment-delete",
+          "status": "PASS",
+          "page_errors": []
+        },
+        {
+          "id": "stored-text-xss",
+          "status": "PASS",
+          "page_errors": []
+        }
+      ]
+    },
+    {
+      "group": "stabilization",
+      "browser": "firefox",
+      "source_revision": "03069fadf81ff18a198ca81f72f1fd38efefc8d8",
+      "application_html_sha256": "37cb3c09b5d165768666d3ccefae9478b10f08a7dc20f1dcc219cad91e596933",
+      "runner_sha256": "9e9e1a0aaaf78bbf9695978365bd45a04db21c9e2907ab73b81a15f4d49c766e",
+      "summary": {
+        "pass": 12,
+        "fail": 0,
+        "harnessErrors": 0
+      },
+      "cases": [
+        {
+          "id": "legacy-payment",
+          "status": "PASS",
+          "page_errors": []
+        },
+        {
+          "id": "historical-purchase-discount",
+          "status": "PASS",
+          "page_errors": []
+        },
+        {
+          "id": "legacy-discount",
+          "status": "PASS",
+          "page_errors": []
+        },
+        {
+          "id": "settlement-rounding",
+          "status": "PASS",
+          "page_errors": []
+        },
+        {
+          "id": "payout-rounding",
+          "status": "PASS",
+          "page_errors": []
+        },
+        {
+          "id": "startup-mutation",
+          "status": "PASS",
+          "page_errors": []
+        },
+        {
+          "id": "fractional-total-reload",
+          "status": "PASS",
+          "page_errors": []
+        },
+        {
+          "id": "corrupt-storage",
+          "status": "PASS",
+          "page_errors": [
+            "Another tab or app copy changed the records. Reload before making further changes.",
+            "Another tab or app copy changed the records. Reload before making further changes."
+          ]
+        },
+        {
+          "id": "read-denied",
+          "status": "PASS",
+          "page_errors": [
+            "Synthetic denied read"
+          ]
+        },
+        {
+          "id": "old-bill-delete-pin",
+          "status": "PASS",
+          "page_errors": []
+        },
+        {
+          "id": "stale-payment-delete",
+          "status": "PASS",
+          "page_errors": []
+        },
+        {
+          "id": "stored-text-xss",
+          "status": "PASS",
+          "page_errors": []
+        }
+      ]
+    },
+    {
+      "group": "stabilization",
+      "browser": "webkit",
+      "source_revision": "03069fadf81ff18a198ca81f72f1fd38efefc8d8",
+      "application_html_sha256": "37cb3c09b5d165768666d3ccefae9478b10f08a7dc20f1dcc219cad91e596933",
+      "runner_sha256": "9e9e1a0aaaf78bbf9695978365bd45a04db21c9e2907ab73b81a15f4d49c766e",
+      "summary": {
+        "pass": 12,
+        "fail": 0,
+        "harnessErrors": 0
+      },
+      "cases": [
+        {
+          "id": "legacy-payment",
+          "status": "PASS",
+          "page_errors": []
+        },
+        {
+          "id": "historical-purchase-discount",
+          "status": "PASS",
+          "page_errors": []
+        },
+        {
+          "id": "legacy-discount",
+          "status": "PASS",
+          "page_errors": []
+        },
+        {
+          "id": "settlement-rounding",
+          "status": "PASS",
+          "page_errors": []
+        },
+        {
+          "id": "payout-rounding",
+          "status": "PASS",
+          "page_errors": []
+        },
+        {
+          "id": "startup-mutation",
+          "status": "PASS",
+          "page_errors": []
+        },
+        {
+          "id": "fractional-total-reload",
+          "status": "PASS",
+          "page_errors": []
+        },
+        {
+          "id": "corrupt-storage",
+          "status": "PASS",
+          "page_errors": [
+            "Another tab or app copy changed the records. Reload before making further changes."
+          ]
+        },
+        {
+          "id": "read-denied",
+          "status": "PASS",
+          "page_errors": [
+            "Stored invoices data is unreadable."
+          ]
+        },
+        {
+          "id": "old-bill-delete-pin",
+          "status": "PASS",
+          "page_errors": []
+        },
+        {
+          "id": "stale-payment-delete",
+          "status": "PASS",
+          "page_errors": []
+        },
+        {
+          "id": "stored-text-xss",
+          "status": "PASS",
+          "page_errors": []
+        }
+      ]
+    },
+    {
+      "group": "foundation",
+      "browser": "chromium",
+      "source_revision": "03069fadf81ff18a198ca81f72f1fd38efefc8d8",
+      "application_html_sha256": "37cb3c09b5d165768666d3ccefae9478b10f08a7dc20f1dcc219cad91e596933",
+      "runner_sha256": "9e9e1a0aaaf78bbf9695978365bd45a04db21c9e2907ab73b81a15f4d49c766e",
+      "summary": {
+        "pass": 11,
+        "fail": 0,
+        "harnessErrors": 0
+      },
+      "cases": [
+        {
+          "id": "failed-write-invoices",
+          "status": "PASS",
+          "page_errors": [
+            "Save recovery is pending. Do not repeat the operation. Keep the profile and any checked recovery journal; reload or download a raw recovery export."
+          ]
+        },
+        {
+          "id": "failed-write-settings",
+          "status": "PASS",
+          "page_errors": []
+        },
+        {
+          "id": "failed-write-audit",
+          "status": "PASS",
+          "page_errors": []
+        },
+        {
+          "id": "restore-truncated",
+          "status": "PASS",
+          "page_errors": []
+        },
+        {
+          "id": "restore-wrong-schema",
+          "status": "PASS",
+          "page_errors": []
+        },
+        {
+          "id": "restore-tampered-checksum",
+          "status": "PASS",
+          "page_errors": []
+        },
+        {
+          "id": "restore-legacy-valid",
+          "status": "PASS",
+          "page_errors": []
+        },
+        {
+          "id": "restore-partial-write",
+          "status": "PASS",
+          "page_errors": []
+        },
+        {
+          "id": "backup-completeness",
+          "status": "PASS",
+          "page_errors": []
+        },
+        {
+          "id": "backup-rollback",
+          "status": "PASS",
+          "page_errors": []
+        },
+        {
+          "id": "failed-delete-feedback",
+          "status": "PASS",
+          "page_errors": []
+        }
+      ]
+    },
+    {
+      "group": "foundation",
+      "browser": "firefox",
+      "source_revision": "03069fadf81ff18a198ca81f72f1fd38efefc8d8",
+      "application_html_sha256": "37cb3c09b5d165768666d3ccefae9478b10f08a7dc20f1dcc219cad91e596933",
+      "runner_sha256": "9e9e1a0aaaf78bbf9695978365bd45a04db21c9e2907ab73b81a15f4d49c766e",
+      "summary": {
+        "pass": 11,
+        "fail": 0,
+        "harnessErrors": 0
+      },
+      "cases": [
+        {
+          "id": "failed-write-invoices",
+          "status": "PASS",
+          "page_errors": []
+        },
+        {
+          "id": "failed-write-settings",
+          "status": "PASS",
+          "page_errors": []
+        },
+        {
+          "id": "failed-write-audit",
+          "status": "PASS",
+          "page_errors": []
+        },
+        {
+          "id": "restore-truncated",
+          "status": "PASS",
+          "page_errors": []
+        },
+        {
+          "id": "restore-wrong-schema",
+          "status": "PASS",
+          "page_errors": []
+        },
+        {
+          "id": "restore-tampered-checksum",
+          "status": "PASS",
+          "page_errors": []
+        },
+        {
+          "id": "restore-legacy-valid",
+          "status": "PASS",
+          "page_errors": []
+        },
+        {
+          "id": "restore-partial-write",
+          "status": "PASS",
+          "page_errors": [
+            "Save recovery is pending. Do not repeat the operation. Keep the profile and any checked recovery journal; reload or download a raw recovery export."
+          ]
+        },
+        {
+          "id": "backup-completeness",
+          "status": "PASS",
+          "page_errors": []
+        },
+        {
+          "id": "backup-rollback",
+          "status": "PASS",
+          "page_errors": []
+        },
+        {
+          "id": "failed-delete-feedback",
+          "status": "PASS",
+          "page_errors": []
+        }
+      ]
+    },
+    {
+      "group": "foundation",
+      "browser": "webkit",
+      "source_revision": "03069fadf81ff18a198ca81f72f1fd38efefc8d8",
+      "application_html_sha256": "37cb3c09b5d165768666d3ccefae9478b10f08a7dc20f1dcc219cad91e596933",
+      "runner_sha256": "9e9e1a0aaaf78bbf9695978365bd45a04db21c9e2907ab73b81a15f4d49c766e",
+      "summary": {
+        "pass": 11,
+        "fail": 0,
+        "harnessErrors": 0
+      },
+      "cases": [
+        {
+          "id": "failed-write-invoices",
+          "status": "PASS",
+          "page_errors": []
+        },
+        {
+          "id": "failed-write-settings",
+          "status": "PASS",
+          "page_errors": []
+        },
+        {
+          "id": "failed-write-audit",
+          "status": "PASS",
+          "page_errors": []
+        },
+        {
+          "id": "restore-truncated",
+          "status": "PASS",
+          "page_errors": []
+        },
+        {
+          "id": "restore-wrong-schema",
+          "status": "PASS",
+          "page_errors": []
+        },
+        {
+          "id": "restore-tampered-checksum",
+          "status": "PASS",
+          "page_errors": []
+        },
+        {
+          "id": "restore-legacy-valid",
+          "status": "PASS",
+          "page_errors": []
+        },
+        {
+          "id": "restore-partial-write",
+          "status": "PASS",
+          "page_errors": []
+        },
+        {
+          "id": "backup-completeness",
+          "status": "PASS",
+          "page_errors": []
+        },
+        {
+          "id": "backup-rollback",
+          "status": "PASS",
+          "page_errors": []
+        },
+        {
+          "id": "failed-delete-feedback",
+          "status": "PASS",
+          "page_errors": []
+        }
+      ]
+    }
+  ],
+  "lint_build": {
+    "errors": 0,
+    "legacy_warnings": 143,
+    "build_equals_source": true
+  },
+  "final_ci": {
+    "source_commit": "03069fadf81ff18a198ca81f72f1fd38efefc8d8",
+    "run_id": 38256578493,
+    "url": "https://github.com/nileshkchaubey-glitch/Xl-billing/actions/runs/38256578493",
+    "status": "in_progress",
+    "limitations": "Stabilization and foundation jobs passed. Full CI job is still installing browser dependencies; it has not executed its full test gate. Complete final-source local Node and complementary browser runs passed; no CI completion is claimed.",
+    "jobs": [
+      {
+        "id": 114836099829,
+        "name": "Storage and backup acceptance gate",
+        "status": "completed",
+        "conclusion": "success"
+      },
+      {
+        "id": 114836100197,
+        "name": "Release 1 stabilization gate",
+        "status": "completed",
+        "conclusion": "success"
+      },
+      {
+        "id": 114836100279,
+        "name": "tests",
+        "status": "in_progress",
+        "current_step": "Run npx playwright install --with-deps chromium firefox webkit"
+      }
+    ]
+  },
+  "final_local_functional": {
+    "application_html_sha256": "37cb3c09b5d165768666d3ccefae9478b10f08a7dc20f1dcc219cad91e596933",
+    "command": "XL_REPORT=/tmp/xl-followup-final-functional.json npm test -- --grep-invert 'visual evidence'",
+    "summary": {
+      "startTime": "2026-10-12T13:38:46.807Z",
+      "duration": 465542.669,
+      "expected": 441,
+      "skipped": 0,
+      "unexpected": 0,
+      "flaky": 0
+    },
+    "report_sha256": "2a8041b30d0f6ea354dd0d1428c389adcb94dadf37ba1723fb27b97f8705acad",
+    "per_browser_files": {
+      "chromium": {
+        "automatic-backup.spec.cjs": 7,
+        "backup.spec.cjs": 11,
+        "business-date.spec.cjs": 20,
+        "foundation.spec.cjs": 10,
+        "hotfix.spec.cjs": 21,
+        "recovery-followup.spec.cjs": 39,
+        "stabilization.spec.cjs": 17,
+        "storage-workflows.spec.cjs": 22
+      },
+      "firefox": {
+        "automatic-backup.spec.cjs": 7,
+        "backup.spec.cjs": 11,
+        "business-date.spec.cjs": 20,
+        "foundation.spec.cjs": 10,
+        "hotfix.spec.cjs": 21,
+        "recovery-followup.spec.cjs": 39,
+        "stabilization.spec.cjs": 17,
+        "storage-workflows.spec.cjs": 22
+      },
+      "webkit": {
+        "automatic-backup.spec.cjs": 7,
+        "backup.spec.cjs": 11,
+        "business-date.spec.cjs": 20,
+        "foundation.spec.cjs": 10,
+        "hotfix.spec.cjs": 21,
+        "recovery-followup.spec.cjs": 39,
+        "stabilization.spec.cjs": 17,
+        "storage-workflows.spec.cjs": 22
+      }
+    },
+    "node_tests": 63,
+    "passed_node_tests": 63,
+    "functional_acceptance": {
+      "original": 264,
+      "new_recovery": 117,
+      "new_dates": 60
+    }
+  },
+  "final_local_visual": {
+    "application_html_sha256": "37cb3c09b5d165768666d3ccefae9478b10f08a7dc20f1dcc219cad91e596933",
+    "command": "XL_REPORT=/tmp/xl-followup-final-visual.json npx playwright test --grep 'visual evidence'",
+    "summary": {
+      "startTime": "2026-10-12T13:46:48.415Z",
+      "duration": 7126.74,
+      "expected": 1,
+      "skipped": 2,
+      "unexpected": 0,
+      "flaky": 0
+    },
+    "report_sha256": "9e9be77617893b5ea74f6408d4cc675ceada18cb42bc592f1aa9ab26c40c278a",
+    "note": "Complementary final-source run covers the existing screenshot test. One Chromium evidence capture passed; Firefox and WebKit skip this capture by existing design. All their functional tests passed."
+  }
+}

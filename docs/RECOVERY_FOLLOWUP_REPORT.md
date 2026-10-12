@@ -1,6 +1,6 @@
 # PR #7 recovery and business-date follow-up
 
-Branch: `codex/xl-recovery-date-followup`, based on Draft PR [#7](https://github.com/nileshkchaubey-glitch/Xl-billing/pull/7), commit `aa9b03c5ff1968445a1a92197302796a26a3e824`. This is a separate draft for review. Main, PR #7, hosting and real business data have not been modified; no PR has been merged.
+Branch: `codex/xl-recovery-date-followup`, based on Draft PR [#7](https://github.com/nileshkchaubey-glitch/Xl-billing/pull/7), commit `aa9b03c5ff1968445a1a92197302796a26a3e824`. Follow-up: Draft PR [#8](https://github.com/nileshkchaubey-glitch/Xl-billing/pull/8). This is a separate draft for review. Main, PR #7, hosting and real business data have not been modified; no PR has been merged.
 
 ## Completed implementation
 
@@ -27,11 +27,13 @@ The final runtime is commit `d8cf420`; HTML SHA-256 is `37cb3c09b5d165768666d3cc
 | Full local functional run before final alert fix | 432 passed, 3 failed. All three failures were the same existing overpayment test: a hidden empty recovery alert conflicted with its strict alert locator. |
 | Corrective alert check at `61177f7` | The three unchanged overpayment assertions passed in Chromium, Firefox and WebKit after the inactive output became a status region. Actual recovery errors still use an alert. Six additional cleanup-message cases passed at the final runtime. |
 | New browser acceptance in the full local run | All 111 recovery and 60 date cases passed across Chromium, Firefox and WebKit. |
-| Final full-suite CI | Pending publication and completion; no final combined pass is claimed yet. |
-| Separate safety audits | Final source-bound three-engine stabilization and foundation reruns are pending. |
+| Final full local functional run | **441 passed**, zero failures/skips/flaky results: 147 per engine, including 264 existing, 117 recovery and 60 date cases. The same invocation passed all 63 Node tests and parcel VM checks. |
+| Existing visual evidence case | Complementary final-source run: 1 Chromium capture passed, 2 other-engine captures skipped by existing design. This covers all 444 browser suite entries with 442 passes and 2 intentional screenshot skips; no functional case was skipped. |
+| CI | [Run 38256578493](https://github.com/nileshkchaubey-glitch/Xl-billing/actions/runs/38256578493), head `03069fadf81ff18a198ca81f72f1fd38efefc8d8`: stabilization and foundation jobs passed. Full CI is still installing browser dependencies; its full test gate is pending and is not claimed passed. |
+| Separate safety audits | 69 passed at the final HTML hash: 36 stabilization and 33 foundation cases across Chromium, Firefox and WebKit; no failures or harness errors. |
 | Lint/build | Zero lint errors, 143 existing warnings; self-contained build is byte-identical to the runtime HTML. |
 
-The final CI gate runs the complete suite rather than inferring a full pass from the union of prior and corrective runs. Its screenshot case is evidence capture, not an extra functional acceptance case; two other engine screenshot cases are intentionally skipped. Reports will retain exact counts and source/CI links when complete.
+[RECOVERY_FOLLOWUP_FINAL.json](../test/review/RECOVERY_FOLLOWUP_FINAL.json) retains source hashes, actual before failures, corrective results, the final full functional run, complementary screenshot run and all 69 separate audit results. Both final browser commands used the same final runtime and unchanged tests; the final pass is not inferred from earlier runtime versions. The screenshot case captures evidence rather than adding a functional assertion. Generated screenshot/log bundles were not added to this follow-up. CI status is reported separately and remains unverified for its full test job.
 
 ## Remaining limitations and blocked operations
 

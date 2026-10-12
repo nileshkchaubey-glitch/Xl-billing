@@ -1,6 +1,6 @@
 # Unimplemented and unverified work
 
-The independent recovery/date follow-up is implemented; its final combined CI gate is pending in [RECOVERY_FOLLOWUP_REPORT.md](RECOVERY_FOLLOWUP_REPORT.md). Support for recovery files larger than 20 MiB and recovery mutation without cooperative Web Locks is not implemented. No physical export durability is claimed.
+The independent recovery/date follow-up and all final local acceptance tests are complete; its full CI gate remains pending browser installation in [RECOVERY_FOLLOWUP_REPORT.md](RECOVERY_FOLLOWUP_REPORT.md). Support for recovery files larger than 20 MiB and recovery mutation without cooperative Web Locks is not implemented. No physical export durability is claimed.
 
 P0-6/P0-7/P0-8 are implemented on the foundation branch, with limits in FOUNDATION_REPORT.md. Other Release 2/3/4 items have not been completed by implication.
 
