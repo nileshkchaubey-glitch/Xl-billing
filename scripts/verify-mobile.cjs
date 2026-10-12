@@ -69,12 +69,14 @@ async function main() {
   browser = await engines[browserName].launch({headless: true});
   await run('mobile-real-touch-routes-390', 390, async page => {
     await requireShortcuts(page);
+    fs.mkdirSync(path.dirname(output), {recursive: true});
+    await page.screenshot({path: path.join(path.dirname(output), `${browserName}-home-390.png`)});
     const before = await raw(page), reached = [];
     for (const route of allRoutes) {
       const button = page.locator(`.mobile-workflows button[data-mobile-workflow="${route}"]`);
       assert.equal(await button.isVisible(), true, 'Discoverable route: ' + route);
       const bounds = await button.boundingBox();
-      assert.ok(bounds.height >= 44 && bounds.width >= 44, 'Touch target: ' + route);
+      assert.ok(bounds.height >= 44 && bounds.width >= 44, 'Touch target: ' + route + ' ' + JSON.stringify(bounds));
       await button.tap();
       assert.equal(await page.locator('#page-' + route).isVisible(), true, 'Touch opened route: ' + route);
       reached.push(route);
@@ -113,6 +115,9 @@ async function main() {
     const before = await raw(page);
     const purchase = page.locator('.mobile-workflows button[data-mobile-workflow="new-purchase"]');
     await purchase.focus();
+    await purchase.press('Tab');
+    assert.equal(await page.evaluate(() => document.activeElement?.dataset.mobileWorkflow), 'purchase-list', 'Native Tab order reaches the next visible workflow.');
+    await purchase.focus();
     await purchase.press('Enter');
     assert.equal(await page.locator('#page-new-purchase').isVisible(), true);
     const homeButton = page.locator('.mn-item[data-mpg="dashboard"]');
@@ -138,9 +143,13 @@ async function main() {
     });
     assert.ok(layout.panel_scroll_width <= layout.panel_width, 'Shortcut panel must not overflow horizontally.');
     for (const control of layout.controls) assert.ok(control.left >= 0 && control.right <= layout.viewport && control.height >= 44, 'Visible touch target within viewport: ' + control.label);
+    await page.emulateMedia({media: 'print'});
+    assert.equal(await page.locator('.mobile-workflows').isVisible(), false, 'Workflow navigation must not print.');
+    assert.equal(await page.locator('.mnav').isVisible(), false, 'Primary navigation must not print.');
+    await page.emulateMedia({media: 'screen'});
     await page.locator('.mobile-workflows button[data-mobile-workflow="payments"]').tap();
     assert.equal(await page.locator('#page-payments').isVisible(), true);
-    return layout;
+    return {...layout, print_navigation_hidden: true};
   });
   await run('desktop-navigation-1366', 1366, async page => {
     assert.equal(await page.locator('.mobile-workflows').isVisible(), false, 'Shortcuts are mobile-only.');
@@ -159,7 +168,7 @@ main().catch(error => results.push({id: 'runner', status: 'HARNESS_ERROR', error
   await new Promise(resolve => server ? server.close(resolve) : resolve());
   const summary = {pass: results.filter(r => r.status === 'PASS').length, fail: results.filter(r => r.status === 'FAIL').length, harness_errors: results.filter(r => r.status === 'HARNESS_ERROR').length};
   fs.mkdirSync(path.dirname(output), {recursive: true});
-  fs.writeFileSync(output, JSON.stringify({browser: browserName, source_sha256: crypto.createHash('sha256').update(source).digest('hex'), tested_commit: cp.execFileSync('git', ['rev-parse', 'HEAD'], {cwd: root, encoding: 'utf8'}).trim(), synthetic_only: true, summary, results}, null, 2) + '\n');
+  fs.writeFileSync(output, JSON.stringify({browser: browserName, source_sha256: crypto.createHash('sha256').update(source).digest('hex'), runner_sha256: crypto.createHash('sha256').update(fs.readFileSync(__filename)).digest('hex'), tested_commit: cp.execFileSync('git', ['rev-parse', 'HEAD'], {cwd: root, encoding: 'utf8'}).trim(), synthetic_only: true, summary, results}, null, 2) + '\n');
   console.log('Mobile gate: ' + JSON.stringify(summary));
   process.exitCode = summary.harness_errors ? 2 : summary.fail ? 1 : 0;
 });

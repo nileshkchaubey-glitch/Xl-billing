@@ -157,11 +157,19 @@ tfoot td{background:var(--gray-50)!important;font-weight:700;border-top:2px soli
   .pb{padding:12px 14px}.ph{padding:10px 14px}
   .sg{grid-template-columns:1fr 1fr}
   .mnav{display:flex!important}
+  .mobile-workflows{display:block!important}
 }
-.mnav{display:none;position:fixed;bottom:0;left:0;right:0;background:#fff;border-top:1px solid var(--gray-200);z-index:99}
-.mn-item{flex:1;display:flex;flex-direction:column;align-items:center;padding:7px 4px 6px;font-size:10px;cursor:pointer;color:var(--gray-500);gap:1px}
+.mnav{display:none;position:fixed;bottom:0;left:0;right:0;background:#fff;border-top:1px solid var(--gray-200);z-index:99;padding-bottom:env(safe-area-inset-bottom,0px)}
+.mn-item{flex:1;min-width:0;min-height:48px;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:7px 4px 6px;font:inherit;font-size:10px;cursor:pointer;color:var(--gray-500);gap:1px;background:none;border:none}
 .mn-item.active{color:var(--g)}
 .mn-item .ic{font-size:19px}
+.mobile-workflows{display:none;margin:12px 14px}
+.mobile-workflows h2{font-size:14px;margin-bottom:10px}
+.mobile-workflow-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+.mobile-workflow-grid button{min-width:0;min-height:48px;padding:9px 10px;text-align:left;white-space:normal;overflow-wrap:anywhere}
+.mobile-workflows button:focus-visible,.mn-item:focus-visible{outline:3px solid var(--b);outline-offset:-3px}
+@media(max-width:860px){.main{padding-bottom:calc(62px + env(safe-area-inset-bottom,0px))}}
+@media print{.mnav,.mobile-workflows{display:none!important}}
 input[type=number]{-moz-appearance:textfield}
 input[type=number]::-webkit-inner-spin-button,input[type=number]::-webkit-outer-spin-button{-webkit-appearance:none}
 /* Dispatch badge colors */
@@ -210,12 +218,12 @@ input[type=number]::-webkit-inner-spin-button,input[type=number]::-webkit-outer-
 </nav>
 
 <!-- MOBILE NAV -->
-<nav class="mnav">
-  <div class="mn-item active" onclick="nav('dashboard')" data-mpg="dashboard"><div class="ic">📊</div>Home</div>
-  <div class="mn-item" onclick="nav('new-sale')" data-mpg="new-sale"><div class="ic">➕</div>Invoice</div>
-  <div class="mn-item" onclick="nav('retail-entry')" data-mpg="retail-entry"><div class="ic">🏷️</div>Retail</div>
-  <div class="mn-item" onclick="nav('reports')" data-mpg="reports"><div class="ic">📈</div>Reports</div>
-  <div class="mn-item" onclick="nav('settings')" data-mpg="settings"><div class="ic">⚙️</div>Settings</div>
+<nav class="mnav no-print" aria-label="Primary navigation">
+  <button type="button" class="mn-item active" onclick="nav('dashboard')" data-mpg="dashboard" aria-current="page"><span class="ic" aria-hidden="true">📊</span>Home</button>
+  <button type="button" class="mn-item" onclick="nav('new-sale')" data-mpg="new-sale"><span class="ic" aria-hidden="true">➕</span>Invoice</button>
+  <button type="button" class="mn-item" onclick="nav('retail-entry')" data-mpg="retail-entry"><span class="ic" aria-hidden="true">🏷️</span>Retail</button>
+  <button type="button" class="mn-item" onclick="nav('reports')" data-mpg="reports"><span class="ic" aria-hidden="true">📈</span>Reports</button>
+  <button type="button" class="mn-item" onclick="nav('settings')" data-mpg="settings"><span class="ic" aria-hidden="true">⚙️</span>Settings</button>
 </nav>
 
 <main class="main">
@@ -228,6 +236,27 @@ input[type=number]::-webkit-inner-spin-button,input[type=number]::-webkit-outer-
       <button class="btn btn-out btn-sm" onclick="nav('retail-entry')">🏷️ Retail Entry</button>
     </div>
   </div>
+  <nav class="mobile-workflows card no-print" aria-labelledby="mobile-workflows-title">
+    <h2 id="mobile-workflows-title">Business workflows</h2>
+    <div class="mobile-workflow-grid">
+      <button type="button" class="btn btn-out" onclick="nav('sales-list')" data-mobile-workflow="sales-list">Sale List</button>
+      <button type="button" class="btn btn-out" onclick="nav('prev-bills')" data-mobile-workflow="prev-bills">Import Previous Bills</button>
+      <button type="button" class="btn btn-out" onclick="nav('new-purchase')" data-mobile-workflow="new-purchase">New Purchase</button>
+      <button type="button" class="btn btn-out" onclick="nav('purchase-list')" data-mobile-workflow="purchase-list">Purchase List</button>
+      <button type="button" class="btn btn-out" onclick="nav('pur-bulk')" data-mobile-workflow="pur-bulk">Bulk Purchase</button>
+      <button type="button" class="btn btn-out" onclick="nav('pur-pay')" data-mobile-workflow="pur-pay">Purchase Payments</button>
+      <button type="button" class="btn btn-out" onclick="nav('items')" data-mobile-workflow="items">Items</button>
+      <button type="button" class="btn btn-out" onclick="nav('parties')" data-mobile-workflow="parties">Parties</button>
+      <button type="button" class="btn btn-out" onclick="nav('payments')" data-mobile-workflow="payments">Payment Ledger</button>
+      <button type="button" class="btn btn-out" onclick="nav('txn-log')" data-mobile-workflow="txn-log">All Transactions</button>
+      <button type="button" class="btn btn-out" onclick="openStandalonePayModal()" data-mobile-action="payment-in">Payment In</button>
+      <button type="button" class="btn btn-out" onclick="openPayOutModal()" data-mobile-action="payment-out">Payment Out</button>
+      <button type="button" class="btn btn-out" onclick="nav('excel-connect')" data-mobile-workflow="excel-connect">Excel / Sheets</button>
+      <button type="button" class="btn btn-out" onclick="nav('audit-log')" data-mobile-workflow="audit-log">Audit Log</button>
+      <button type="button" class="btn btn-out" onclick="nav('learn')" data-mobile-workflow="learn">How to Customize</button>
+      <button type="button" class="btn btn-out" onclick="nav('github-guide')" data-mobile-workflow="github-guide">GitHub Hosting Guide</button>
+    </div>
+  </nav>
   <div class="pb" id="dash-body"></div>
 </div>
 
@@ -1461,7 +1490,7 @@ function nav(pg) {
   document.querySelectorAll('.page').forEach(p => p.style.display='none');
   const el = document.getElementById('page-'+pg); if(el) el.style.display='block';
   document.querySelectorAll('.nl').forEach(l => {l.classList.remove('active');if(l.dataset.pg===pg)l.classList.add('active');});
-  document.querySelectorAll('.mn-item').forEach(l => {l.classList.remove('active');if(l.dataset.mpg===pg)l.classList.add('active');});
+  document.querySelectorAll('.mn-item').forEach(l => {l.classList.remove('active');l.removeAttribute('aria-current');if(l.dataset.mpg===pg){l.classList.add('active');l.setAttribute('aria-current','page');}});
   currentPage = pg;
   const map = {
     dashboard:renderDashboard,
