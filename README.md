@@ -1,47 +1,67 @@
 # Xl-billing
 
-Browser-based billing application. The app is maintained in `index.html` and
-stores billing data in browser localStorage.
+One self-contained offline-capable billing HTML app. This branch is a **draft
+critical hotfix**, not a fully finalized production release. The live app has
+not been changed. Read [remaining risks](docs/RISK_REGISTER.md) before considering
+an upgrade. Data lives in each browser's localStorage and belongs to its URL/file
+origin; changing that address does not move records.
 
-Live app: https://nileshkchaubey-glitch.github.io/Xl-billing/
+## Run
 
-## Development environment
-
-Use Node.js 24 LTS (see `.nvmrc`) and npm.
+Double-click `index.html` to open it from disk, without Node, a server or internet.
+For development, install Node.js 24 LTS and use:
 
 ```sh
 npm ci
 npm run dev
 ```
 
-Open the URL printed by Vite, normally http://localhost:5173.
-The server listens on all interfaces for cloud workspace previews.
-On a phone, use the workspace's forwarded preview URL; localhost refers to
-the phone itself and will not reach the cloud workspace.
+Vite prints the development URL, normally http://localhost:5173. A phone needs a
+forwarded workspace URL; the phone's localhost cannot reach the cloud workspace.
+No backend, database, environment file or API key is required for core billing.
+Optional sync remains legacy opt-in functionality, not verified safe by this draft.
 
-## Verification and build
+## Tests and build
 
 ```sh
+npm ci
+npx playwright install --with-deps chromium firefox webkit
 npm test
+npm run lint
 npm run build
-npm run preview
+npm run mutations
+npm run test:baseline
+npm run htmlcheck
 ```
 
-The existing invoice regression checks run using Node.js. The build produces
-`dist/` with the `/Xl-billing/` base path for GitHub Pages. The production preview
-normally runs at http://localhost:4173/Xl-billing/.
-`qa/mobile.html` provides the existing mobile QA page.
+`npm test` runs the preserved parcel VM checks, node:test properties and three
+browser engines. `test:baseline` intentionally fails on original baseline bugs;
+`mutations` expects all five recreated critical defects to be caught.
+Lint no-undef errors must be zero, but legacy unused/redeclare warnings remain.
+HTML validation currently reports legacy markup errors and exits nonzero; it is
+an honest diagnostic, not a passed acceptance check.
 
-GitHub Pages can continue serving the root `index.html`; using the local build
-does not change the deployed site or its publishing configuration.
+Build copies `index.html` to `dist/index.html`. Both files contain all runtime
+code and can be opened directly offline. The test-only CI workflow does not deploy.
+This task does not change hosting or instruct production deployment.
 
-## Data and optional integrations
+If browser installation cannot install system libraries in this managed workspace,
+see [environment notes](docs/ENVIRONMENT.md). A clean standard CI uses the command
+above and does not need the workspace's temporary-library fallback.
 
-No environment variables, backend, database server, or API keys are required
-for the core app. Optional JSONBin and Google Sheets sync are configured through
-the app's settings using your own accounts.
+## Data and documentation
 
-Browser storage is separate for each origin and browser. Development and
-production do not share billing records automatically. Use the app's backup
-export/import or configured cloud sync when moving records between devices.
-Do not commit real billing exports or integration credentials to this repository.
+Keep independent daily exported backups outside the browser and keep older copies.
+Restore only in a separate test profile until complete backup/restore verification
+is delivered. Use one master device and one tab; stale-tab protection is pending.
+Legacy exports omit audit and can include credentials, so treat backup files as private.
+
+- [Owner guide](docs/OWNER_GUIDE.md) and [20-minute test rehearsal](docs/OWNER_SMOKE_TEST.md)
+- [Verification and command outputs](docs/VERIFICATION.md)
+- [Every minor-check status](docs/MINOR_CHECKS.md)
+- [Architecture](docs/ARCHITECTURE.md) and [baseline inventory](docs/ARCHITECTURE_BASELINE.md)
+- [Decisions](docs/DECISIONS.md), [migration status](docs/MIGRATION.md), [changelog](docs/CHANGELOG.md)
+- [Known limitations](docs/KNOWN_LIMITATIONS.md) and [ranked risks](docs/RISK_REGISTER.md)
+
+The existing app shortcuts remain. PIN dialog: Enter confirms, Escape cancels,
+Tab/Shift+Tab stay within the dialog. A complete keyboard-first redesign is pending.
