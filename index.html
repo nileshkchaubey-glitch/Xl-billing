@@ -838,7 +838,7 @@ function createXLCSV(options){
   const fail=message=>{throw new Error('CSV rejected: '+message+' No records were imported.');};
   const collections=options.collections||{};
   function parse(text){
-    if(typeof text!=='string'||text.length>20*1024*1024)fail('The file is invalid or exceeds the 20 MiB limit.');
+    if(typeof text!=='string'||text.length>20*1024*1024)fail('The file is invalid or exceeds the supported size limit.');
     text=text.replace(/^\ufeff/,'');
     const rows=[];let row=[],cell='',quoted=false,closed=false,started=false;
     const endCell=()=>{row.push(cell);cell='';closed=false;started=false;};
@@ -958,7 +958,7 @@ function createXLCSV(options){
       }else{
         const value=(key,fallback)=>headers.includes(normalize(key))?row[normalize(key)]:fallback;
         const numeric=(key,fallback=0,negative=false)=>number(value(key,String(fallback)),key,2,negative);
-        r={id:value('id','')||options.genId()};
+        r={id:headers.includes('id')?value('id',''):options.genId()};
         if(type==='items')Object.assign(r,{name:value('name',''),unit:value('unit','Pcs'),saleRate:numeric('saleRate'),purchaseRate:numeric('purchaseRate'),gst:numeric('gst'),hsn:value('hsn',''),updatedAt:options.today()});
         if(type==='parties')Object.assign(r,{name:value('name',''),phone:value('phone',''),type:value('type','both'),area:value('area',''),description:value('description',''),address:value('address',''),gstin:value('gstin',''),openingBal:numeric('openingBal',0,true),updatedAt:options.today()});
         if(type==='retail')Object.assign(r,{date:date(value('date',''),'date'),amount:numeric('amount'),notes:value('notes','')});

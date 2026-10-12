@@ -37,6 +37,9 @@ test('Blank declared paid and wrong declared balance are refused',()=>{
 test('Unknown, ambiguous and unsupported financial schemas are rejected',()=>{
  for(const text of ['invoiceNo,date,partyName,total,refund\nX,2026-10-12,Synthetic Customer,10,2','name,saleRate,phone\nSynthetic,5,0000','invoiceNo,date,partyName,total,payments\nX,2026-10-12,Synthetic Customer,10,[]'])reject(()=>csv().build(text));
 });
+test('An explicit blank identifier is refused instead of silently creating another identity',()=>{
+ reject(()=>csv().build('name,saleRate,id\nSynthetic blank identity,1,'));
+});
 test('Own invoice export preserves exact fields, histories, relationships and unknown fields',()=>{
  const c=csv(masters),p=c.build(c.export('invoices',[invoice]));assert.deepEqual(same(p.records),[invoice]);assert.equal(p.warning,'');
 });
