@@ -195,7 +195,7 @@ test('recovery corrupt startup journal remains downloadable without evaluating a
   expect(recovery.payload.records.shop4_future).toBe(before.shop4_future);await assertUnchanged(page,before);
 });
 
-for(const key of ['xl_storage_journal_v1','shop4_invoices','shop4_settings','shop4_audit','xl_storage_meta_v1'])test('quota real New Invoice Save at '+key+' rolls back without reserving or acknowledging a number',async({page})=>{
+for(const key of ['xl_storage_journal_v1','shop4_invoices','shop4_settings','shop4_audit','xl_storage_meta_v1'])test('quota real New Invoice Save at '+key+' keeps originals without reserving or acknowledging a number',async({page})=>{
   await seed(page);await enterRealInvoice(page);const before=await raw(page);
   await page.evaluate(key=>{const set=Storage.prototype.setItem;let once=true;Storage.prototype.setItem=function(k,v){if(k===key&&once){once=false;throw new DOMException('Synthetic quota failure','QuotaExceededError');}return set.call(this,k,v);};},key);
   await page.locator('#save-inv-btn').click();await expect(page.locator('#storage-error')).toBeVisible();
