@@ -354,7 +354,7 @@ input[type=number]::-webkit-inner-spin-button,input[type=number]::-webkit-outer-
             <div class="tot-row"><span>Discount</span><span id="t-disc" style="color:var(--r)">-₹0.00</span></div>
             <div class="tot-row"><span>Tax</span><span id="t-tax">₹0.00</span></div>
             <div class="tot-row grand"><span>TOTAL</span><span id="t-total">₹0.00</span></div>
-            <div class="tot-row" style="color:var(--g)"><span>Received</span><span id="t-paid">₹0.00</span></div>
+            <div class="tot-row" style="color:var(--g)"><span>Settled</span><span id="t-paid">₹0.00</span></div>
             <div class="tot-row" style="color:var(--r);font-weight:700"><span>Balance Due</span><span id="t-bal">₹0.00</span></div>
           </div>
         </div>
@@ -1366,6 +1366,16 @@ function reportMoneySum(rows,amount=row=>row.amt){
   return rows.reduce((sum,row)=>sum+moneyPaise(amount(row)),0)/100;
 }
 function invoiceOpeningSettled(record){return financialState(record).opening;}
+// Owner policy for every party: positive openingBal is receivable; negative is credit.
+// Purchase payables remain separate; no automatic opening allocation or netting.
+function customerOpeningBalance(party){
+  return Number(party?.openingBal||0);
+}
+function customerOutstanding(party,invoices=getInvoices()){
+  const invoiceDue=reportMoneySum(invoices.filter(i=>i.partyId===party.id&&isActive(i)),billBalance);
+  return round2(invoiceDue+customerOpeningBalance(party));
+}
+function allCustomerOpeningBalance(parties=getParties()){return reportMoneySum(parties,customerOpeningBalance);}
 function preparePaymentHistory(record){
   const state=financialState(record);
   if(!state.valid||!state.consistent)throw new Error('The bill has conflicting payment history. No payment was changed.');
@@ -1935,7 +1945,7 @@ function renderSalesList() {
   document.getElementById('sl-summary').innerHTML=`
     <div class="sg" style="grid-template-columns:repeat(3,1fr)">
       <div class="sc"><div class="sc-lbl">Total Sale</div><div class="sc-val g">${fc(tT)}</div></div>
-      <div class="sc"><div class="sc-lbl">Received</div><div class="sc-val b">${fc(tP)}</div></div>
+      <div class="sc"><div class="sc-lbl">Settled</div><div class="sc-val b">${fc(tP)}</div></div>
       <div class="sc"><div class="sc-lbl">Pending</div><div class="sc-val r">${fc(tB)}</div></div>
     </div>`;
   const c=document.getElementById('sales-table');
@@ -2053,7 +2063,7 @@ function viewInvoice(id){
           ${inv.discount>0?`<div class="tot-row"><span>Discount</span><span style="color:var(--r)">-${fc(inv.discount)}</span></div>`:''}
           ${inv.taxAmt>0?`<div class="tot-row"><span>Tax (${escHtml(inv.taxPct)}%)</span><span>${fc(inv.taxAmt)}</span></div>`:''}
           <div class="tot-row grand"><span>TOTAL</span><span>${fc(inv.total)}</span></div>
-          ${inv.paid>0?`<div class="tot-row" style="color:var(--g)"><span>Received</span><span>${fc(inv.paid)}</span></div>`:''}
+          ${inv.paid>0?`<div class="tot-row" style="color:var(--g)"><span>Settled</span><span>${fc(inv.paid)}</span></div>`:''}
           ${(billBalance(inv)||0)>0?`<div class="tot-row" style="color:var(--r);font-weight:700"><span>BALANCE DUE</span><span>${fc(billBalance(inv))}</span></div>`:''}
         </div>
       </div>
@@ -3097,7 +3107,7 @@ window.renderOutstandingRep = function() {
           <div style="font-size:17px;font-weight:800;color:var(--r)">${fc(partyTotal)}</div>
         </div>
         <div class="tw"><table>
-          <thead><tr><th>Invoice No</th><th>Date</th><th>Total</th><th>Paid</th><th>Balance</th><th>Days</th><th>Age</th><th>Pay Type</th><th class="no-print">Action</th></tr></thead>
+          <thead><tr><th>Invoice No</th><th>Date</th><th>Total</th><th>Settled</th><th>Balance</th><th>Days</th><th>Age</th><th>Pay Type</th><th class="no-print">Action</th></tr></thead>
           <tbody>${p.invoices.sort((a,b)=>a.days-b.days).map(i => {
             const ageColor = i.days > 90 ? 'var(--r)' : i.days > 60 ? '#d97706' : i.days > 30 ? '#ca8a04' : 'var(--g)';
             const ageLabel = i.days > 90 ? '🔴 Very Old' : i.days > 60 ? '🟠 Old' : i.days > 30 ? '🟡 Aging' : '🟢 Fresh';
@@ -5148,7 +5158,7 @@ window.renderSalesList = function(){
   document.getElementById('sl-summary').innerHTML=`
     <div class="sg" style="grid-template-columns:repeat(3,1fr)">
       <div class="sc"><div class="sc-lbl">Total Sale</div><div class="sc-val g">${fc(tT)}</div></div>
-      <div class="sc"><div class="sc-lbl">Received</div><div class="sc-val b">${fc(tP)}</div></div>
+      <div class="sc"><div class="sc-lbl">Settled</div><div class="sc-val b">${fc(tP)}</div></div>
       <div class="sc"><div class="sc-lbl">Pending</div><div class="sc-val r">${fc(tB)}</div></div>
     </div>`;
 
@@ -7225,7 +7235,7 @@ window.renderSalesList = function() {
   document.getElementById('sl-summary').innerHTML=`
     <div class="sg" style="grid-template-columns:repeat(4,1fr);margin-bottom:10px">
       <div class="sc"><div class="sc-lbl">Total Sale</div><div class="sc-val g">${fc(tT)}</div></div>
-      <div class="sc"><div class="sc-lbl">Received</div><div class="sc-val b">${fc(tP)}</div></div>
+      <div class="sc"><div class="sc-lbl">Settled</div><div class="sc-val b">${fc(tP)}</div></div>
       <div class="sc"><div class="sc-lbl">Balance Due</div><div class="sc-val r">${fc(tB)}</div></div>
       <div class="sc"><div class="sc-lbl">Records</div><div class="sc-val" style="color:var(--gray-600)">${escHtml(f.length)}</div></div>
     </div>`;
@@ -7495,7 +7505,8 @@ window.renderParties = function() {
     <tbody>${pageRows.map((p,idx)=>{
       const pI = invs.filter(i=>i.partyId===p.id && !isCancelled(i));
       const tS = pI.reduce((a,i)=>a+(i.total||0),0);
-      const tB = pI.reduce((a,i)=>a+(billBalance(i)||0),0);
+      const invoiceDue=reportMoneySum(pI,billBalance);
+      const tB=round2(invoiceDue+customerOpeningBalance(p));
       const last = [...pI].reverse()[0];
       return `<tr style="cursor:pointer" ondblclick="openPartyDetail('${escHtml(p.id)}')">
         <td style="color:var(--gray-400);font-size:11px">${(pgState.parties-1)*PAGE_SIZE+idx+1}</td>
@@ -7504,7 +7515,7 @@ window.renderParties = function() {
         <td>${escHtml(p.area||'-')}</td>
         <td>${escHtml({customer:'<span class="badge bg">Customer</span>',supplier:'<span class="badge bb">Supplier</span>',both:'<span class="badge bo">Both</span>'}[p.type]||'-')}</td>
         <td style="color:var(--g);font-weight:600">${fc(tS)}</td>
-        <td style="${escHtml(tB>0?'color:var(--r);':'color:var(--gray-400);')}font-weight:600">${fc(tB)}</td>
+        <td style="${escHtml(tB>0?'color:var(--r);':'color:var(--gray-400);')}font-weight:600">${fc(tB)}<div style="font-size:10px;color:var(--gray-500)">Invoice due ${fc(invoiceDue)} · opening ${fc(customerOpeningBalance(p))}</div></td>
         <td style="font-size:12px">${last?`${fmtDate(last.date)} · ${fc(last.total)}`:'-'}</td>
         <td class="no-print" style="text-align:right">
           <button class="btn btn-b btn-xs" onclick="openPartyDetail('${escHtml(p.id)}')">Detail</button>
@@ -7527,7 +7538,8 @@ window.openPartyDetail = function(partyId) {
   const invs = getInvoices().filter(i=>i.partyId===partyId);
   const active = invs.filter(i=>!isCancelled(i));
   const tSale = active.reduce((a,i)=>a+(i.total||0),0);
-  const tBal  = active.reduce((a,i)=>a+(billBalance(i)||0),0);
+  const invoiceDue=reportMoneySum(active,billBalance);
+  const tBal=customerOutstanding(p,invs);
   const tPaid = active.reduce((a,i)=>a+(i.paid||0),0);
   const recent = [...invs].reverse().slice(0,8);
 
@@ -7562,11 +7574,11 @@ window.openPartyDetail = function(partyId) {
         <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:16px">
           <div class="pd-stat"><div class="pd-stat-val" style="color:var(--g)">${fc(tSale)}</div><div class="pd-stat-lbl">Total Sale</div></div>
           <div class="pd-stat"><div class="pd-stat-val" style="color:var(--b)">${fc(tPaid)}</div><div class="pd-stat-lbl">Active Invoice Settled</div></div>
-          <div class="pd-stat"><div class="pd-stat-val" style="color:${escHtml(tBal>0?'var(--r)':'var(--g)')}">${fc(tBal)}</div><div class="pd-stat-lbl">Invoice Outstanding</div></div>
+          <div class="pd-stat"><div class="pd-stat-val" style="color:${escHtml(tBal>0?'var(--r)':'var(--g)')}">${fc(tBal)}</div><div class="pd-stat-lbl">Receivable Outstanding</div></div>
           <div class="pd-stat"><div class="pd-stat-val" style="color:var(--gray-600)">${escHtml(invs.length)}</div><div class="pd-stat-lbl">Invoices</div></div>
         </div>
 
-        <div id="party-opening-policy" style="font-size:12px;color:var(--gray-500);margin-bottom:12px">Recorded party opening balance: ${fc(p.openingBal||0)}. It is not included in invoice outstanding; its receivable/payable sign and settlement treatment require owner policy. Active Invoice Settled includes opening settlements and noncash discounts/credits, and is not a cash-received total.</div>
+        <div id="party-opening-policy" style="font-size:12px;color:var(--gray-500);margin-bottom:12px">Invoice due: ${fc(invoiceDue)}. Recorded opening balance: ${fc(customerOpeningBalance(p))}. Positive is receivable; negative is credit, for every party type. Receivable outstanding = invoice due + signed opening balance. Opening balances are not automatically applied to invoice histories or supplier purchase payables. Active Invoice Settled includes opening settlements and noncash discounts/credits, and is not a cash-received total.</div>
 
         <!-- Contact Info -->
         <div style="display:flex;gap:14px;margin-bottom:14px;flex-wrap:wrap;font-size:13px">
@@ -7586,7 +7598,7 @@ window.openPartyDetail = function(partyId) {
         <div id="pd-tab-inv">
           ${recent.length===0?'<div class="empty">No invoices</div>':`
           <div class="tw"><table>
-            <thead><tr><th>Invoice</th><th>Date</th><th>Total</th><th>Paid</th><th>Balance</th><th>Status</th><th>Actions</th></tr></thead>
+            <thead><tr><th>Invoice</th><th>Date</th><th>Total</th><th>Settled</th><th>Balance</th><th>Status</th><th>Actions</th></tr></thead>
             <tbody>${recent.map(i=>`<tr>
               <td style="font-weight:700;color:var(--b)">${escHtml(i.invoiceNo)}</td>
               <td>${fmtDate(i.date)}</td>
@@ -7663,6 +7675,9 @@ window.renderDashboard = function() {
   const monthlyReceipts=reportMoneySum(monthlyPayments.filter(p=>p.type==='payment'));
   const monthlyNoncash=reportMoneySum(monthlyPayments.filter(p=>['discount','noncash'].includes(p.type)));
   const monthlyUnknown=reportMoneySum(monthlyPayments.filter(p=>p.type==='unclassified'));
+  const customerOpening=allCustomerOpeningBalance();
+  const invoiceDue=reportMoneySum(activeInvs,billBalance);
+  const customerDue=round2(invoiceDue+customerOpening);
 
   document.getElementById('dash-body').innerHTML = `
     <div class="sg" style="grid-template-columns:repeat(auto-fit,minmax(140px,1fr))">
@@ -7675,8 +7690,11 @@ window.renderDashboard = function() {
       <div class="sc"><div class="sc-lbl">Invoice Receipts (Month)</div><div class="sc-val g">${fc(monthlyReceipts)}</div></div>
       <div class="sc"><div class="sc-lbl">Invoice Noncash Settlements (Month)</div><div class="sc-val o">${fc(monthlyNoncash)}</div></div>
       <div class="sc"><div class="sc-lbl">Unclassified Invoice Payments (Month)</div><div class="sc-val o">${fc(monthlyUnknown)}</div></div>
+      <div class="sc"><div class="sc-lbl">Invoice Outstanding</div><div class="sc-val r">${fc(invoiceDue)}</div></div>
+      <div class="sc"><div class="sc-lbl">Opening Receivable / Credit</div><div class="sc-val o">${fc(customerOpening)}</div></div>
+      <div class="sc"><div class="sc-lbl">Receivable Outstanding</div><div class="sc-val r">${fc(customerDue)}</div></div>
     </div>
-    <p style="font-size:12px;color:var(--gray-500);margin:0 0 12px">Sales and invoice dues exclude cancelled invoices. Dated invoice receipts include retained payments on cancelled invoices; discounts/credits and unknown modes are separate. Undated opening settlements and retail sales totals are not inferred to be dated invoice cash receipts.</p>
+    <p style="font-size:12px;color:var(--gray-500);margin:0 0 12px">Sales and invoice dues exclude cancelled invoices. Dated invoice receipts include retained payments on cancelled invoices; discounts/credits and unknown modes are separate. Undated opening settlements and retail sales totals are not inferred to be dated invoice cash receipts. Receivable outstanding adds signed opening balances for every party: positive is receivable, negative is credit. Purchase payables are separate; opening balances are not automatically applied or netted against them.</p>
     <div class="fr2">
       <div class="card">
         <div style="font-weight:700;font-size:14px;margin-bottom:10px;display:flex;justify-content:space-between;align-items:center">
@@ -7785,7 +7803,7 @@ window.renderSaleRep = function() {
     <div class="card">
       <div style="font-weight:700;font-size:14px;margin-bottom:12px">👥 Party-wise Summary</div>
       ${pList.length===0?`<div class="empty">No data</div>`:`<div class="tw"><table>
-        <thead><tr><th>Party</th><th style="text-align:center">Invoices</th><th style="text-align:right">Total Sale</th><th style="text-align:right">Received</th><th style="text-align:right">Outstanding</th><th>Last Sale</th></tr></thead>
+        <thead><tr><th>Party</th><th style="text-align:center">Invoices</th><th style="text-align:right">Total Sale</th><th style="text-align:right">Settled</th><th style="text-align:right">Outstanding</th><th>Last Sale</th></tr></thead>
         <tbody>${pList.map(p=>`<tr>
           <td style="font-weight:600">${escHtml(p.name)}</td>
           <td style="text-align:center">${escHtml(p.cnt)}</td>
@@ -8360,7 +8378,7 @@ window.purBulkShowHistory = function(partyId, partyName) {
         </span>
       </div>
       <div class="tw"><table>
-        <thead><tr><th>Date</th><th>Bill No</th><th>Total</th><th>Paid</th><th>Balance</th><th>Pay Type</th><th>Actions</th></tr></thead>
+        <thead><tr><th>Date</th><th>Bill No</th><th>Total</th><th>Settled</th><th>Balance</th><th>Pay Type</th><th>Actions</th></tr></thead>
         <tbody>${bills.map(b=>`<tr>
           <td>${fmtDate(b.date)}</td>
           <td style="font-weight:600">${escHtml(b.billNo||'-')}</td>
@@ -8544,7 +8562,7 @@ window.renderPurchaseList = function() {
   document.getElementById('pl-summary').innerHTML=`
     <div class="sg" style="grid-template-columns:repeat(auto-fit,minmax(130px,1fr));margin-bottom:8px">
       <div class="sc"><div class="sc-lbl">Total Purchase</div><div class="sc-val b">${fc(tT)}</div></div>
-      <div class="sc"><div class="sc-lbl">Total Paid</div><div class="sc-val g">${fc(tP)}</div></div>
+      <div class="sc"><div class="sc-lbl">Total Settled</div><div class="sc-val g">${fc(tP)}</div></div>
       <div class="sc"><div class="sc-lbl">Outstanding</div><div class="sc-val r">${fc(tB)}</div></div>
       <div class="sc"><div class="sc-lbl">Bills Due</div><div class="sc-val" style="color:${escHtml(dueCnt>0?'var(--r)':'var(--g)')}">${dueCnt}</div></div>
     </div>
@@ -8565,7 +8583,7 @@ window.renderPurchaseList = function() {
     <thead><tr>
       <th>#</th><th>Date</th><th>Supplier</th><th>Bill No</th>
       <th style="text-align:right">Total</th>
-      <th style="text-align:right">Paid</th>
+      <th style="text-align:right">Settled</th>
       <th style="text-align:right">Balance</th>
       <th>Pay Type</th><th>Photo</th>
       <th class="no-print" style="text-align:right">Actions</th>
@@ -8655,7 +8673,7 @@ window.renderPurPayPage = function() {
           <thead><tr>
             <th>Date</th><th>Supplier</th><th>Bill No</th>
             <th style="text-align:right">Total</th>
-            <th style="text-align:right">Paid</th>
+            <th style="text-align:right">Settled</th>
             <th style="text-align:right">Balance</th>
             <th>Actions</th>
           </tr></thead>
@@ -9081,7 +9099,7 @@ window.savePurPayment = function() {
 };
 
 window.openSettlementModal = function(partyId, partyName) {
-  const invs = getInvoices().filter(i => (i.partyId===partyId||i.partyName===partyName) && !isCancelled(i) && (billBalance(i)||0)>0);
+  const invs = getInvoices().filter(i => (partyId?i.partyId===partyId:!i.partyId&&i.partyName===partyName) && isActive(i) && (billBalance(i)||0)>0);
   if (!invs.length) { toast('No pending invoices for this party.'); return; }
 
   let modal = document.getElementById('settlement-modal');
@@ -9092,7 +9110,10 @@ window.openSettlementModal = function(partyId, partyName) {
     modal.addEventListener('click', e=>{ if(e.target===modal) modal.classList.remove('show'); });
   }
 
-  const totalDue = invs.reduce((a,i)=>a+(billBalance(i)||0),0);
+  const totalDue=reportMoneySum(invs,billBalance);
+  const party=partyId?getParties().find(p=>p.id===partyId):undefined;
+  const opening=customerOpeningBalance(party);
+  const netOutstanding=round2(totalDue+opening);
 
   modal.innerHTML = `
     <div class="md" style="max-width:580px">
@@ -9102,8 +9123,8 @@ window.openSettlementModal = function(partyId, partyName) {
       </div>
       <div class="mb">
         <div style="background:var(--gray-50);border-radius:8px;padding:10px 14px;margin-bottom:14px;font-size:13px">
-          <strong>${escHtml(partyName)}</strong> — Total Pending: <strong style="color:var(--r)">${fc(totalDue)}</strong><br>
-          <span style="font-size:12px;color:var(--gray-500)">Enter amount against each invoice. Total collected is auto-calculated.</span>
+          <strong>${escHtml(partyName)}</strong> — Invoice Pending: <strong style="color:var(--r)">${fc(totalDue)}</strong><br>
+          <span id="settlement-opening-summary" style="font-size:12px;color:var(--gray-500)">Opening receivable / credit: ${fc(opening)}; receivable outstanding: ${fc(netOutstanding)}. Positive is receivable; negative is credit. Enter payments only against the listed invoices; opening balances are unchanged. Opening credits are not automatically consumed or added to receipts. ${party?'':'No master party association has been inferred from this name.'}</span>
         </div>
 
         <!-- Quick fill -->
@@ -9592,13 +9613,13 @@ window.renderPurRep = function() {
   document.getElementById('rep-content').innerHTML=`
     <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:16px">
       <div class="sc"><div class="sc-lbl">Total Purchase</div><div class="sc-val b">${fc(tT)}</div></div>
-      <div class="sc"><div class="sc-lbl">Total Paid</div><div class="sc-val g">${fc(tP)}</div></div>
+      <div class="sc"><div class="sc-lbl">Total Settled</div><div class="sc-val g">${fc(tP)}</div></div>
       <div class="sc"><div class="sc-lbl">Outstanding</div><div class="sc-val r">${fc(tB)}</div></div>
     </div>
     <div class="card">
       <div style="font-weight:700;font-size:14px;margin-bottom:12px">📅 Month-wise Purchase</div>
       ${months.length===0?`<div class="empty">No data</div>`:`<div class="tw"><table>
-        <thead><tr><th>Month</th><th style="text-align:right">Total</th><th style="text-align:right">Paid</th><th style="text-align:right">Balance</th><th style="text-align:center">Bills</th></tr></thead>
+        <thead><tr><th>Month</th><th style="text-align:right">Total</th><th style="text-align:right">Settled</th><th style="text-align:right">Balance</th><th style="text-align:center">Bills</th></tr></thead>
         <tbody>${months.map(m=>`<tr>
           <td style="font-weight:600">${fmtMonth(m.month)}</td>
           <td style="color:var(--b);text-align:right">${fc(m.total)}</td>
@@ -9880,7 +9901,7 @@ window.renderSalesList = function() {
   document.getElementById('sl-summary').innerHTML = `
     <div class="sg" style="grid-template-columns:repeat(4,1fr);margin-bottom:10px">
       <div class="sc"><div class="sc-lbl">Total Sale</div><div class="sc-val g">${fc(tT)}</div></div>
-      <div class="sc"><div class="sc-lbl">Received</div><div class="sc-val b">${fc(tP)}</div></div>
+      <div class="sc"><div class="sc-lbl">Settled</div><div class="sc-val b">${fc(tP)}</div></div>
       <div class="sc"><div class="sc-lbl">Balance Due</div><div class="sc-val r">${fc(tB)}</div></div>
       <div class="sc"><div class="sc-lbl">Records</div><div class="sc-val" style="color:var(--gray-600)">${escHtml(f.length)}</div></div>
     </div>`;
@@ -10462,7 +10483,9 @@ function buildLedger(parties, invs, purs) {
     <thead><tr>
       <th>Party</th><th>Phone</th>
       <th style="text-align:right">Total Sale</th>
-      <th style="text-align:right">Sale Due</th>
+      <th style="text-align:right">Invoice Due</th>
+      <th style="text-align:right">Opening Receivable / Credit</th>
+      <th style="text-align:right">Receivable Outstanding</th>
       <th style="text-align:right">Total Purchase</th>
       <th style="text-align:center">Invoices</th>
       <th>Last Sale</th>
@@ -10480,6 +10503,8 @@ function buildLedger(parties, invs, purs) {
         <td>${escHtml(p.phone||'-')}</td>
         <td style="color:var(--g);font-weight:600;text-align:right">${fc(tS)}</td>
         <td style="${escHtml(tB>0?'color:var(--r);':'color:var(--gray-400);')}font-weight:600;text-align:right">${fc(tB)}</td>
+        <td style="text-align:right">${fc(customerOpeningBalance(p))}</td>
+        <td style="text-align:right">${fc(round2(tB+customerOpeningBalance(p)))}</td>
         <td style="color:var(--b);text-align:right">${fc(tP)}</td>
         <td style="text-align:center">${escHtml(pI.length)}</td>
         <td style="font-size:12px">${last?fmtDate(last.date)+' · '+fc(last.total):'-'}</td>
@@ -10519,17 +10544,16 @@ window.repTab = function(tab) {
 
 // Ensure outstanding report also excludes cancelled
 window.renderOutstandingRep = function() {
-  const invs = getInvoices().filter(i => !_isCanV16(i) && (billBalance(i)||0)>0);
-  const asOf = today();
-  const pm   = {};
-  invs.forEach(inv => {
-    const key = inv.partyName||'Cash';
-    if (!pm[key]) pm[key] = { name:key, invoices:[] };
-    const days = businessAgeDays(inv.date,asOf);
-    pm[key].invoices.push({...inv, days});
+  const invs=getInvoices().filter(i=>isActive(i)&&billBalance(i)>0);
+  const asOf=today(),masters=getParties(),byId=new Map(masters.map(p=>[p.id,p])),pm=new Map();
+  invs.forEach(inv=>{
+    const master=byId.get(inv.partyId),key=master?'party:'+master.id:'unlinked:'+(inv.partyId||inv.partyName||inv.id);
+    if(!pm.has(key))pm.set(key,{name:master?master.name:(inv.partyName||'Cash')+' (unlinked)',partyId:master?.id||'',invoices:[],opening:0});
+    pm.get(key).invoices.push({...inv,days:businessAgeDays(inv.date,asOf)});
   });
-  const parties   = Object.values(pm).sort((a,b)=>b.invoices.reduce((s,i)=>s+(billBalance(i)||0),0)-a.invoices.reduce((s,i)=>s+(billBalance(i)||0),0));
-  const grandTotal = invs.reduce((a,i)=>a+(billBalance(i)||0),0);
+  masters.forEach(p=>{const opening=customerOpeningBalance(p);if(!opening)return;const key='party:'+p.id;if(!pm.has(key))pm.set(key,{name:p.name,partyId:p.id,invoices:[],opening:0});pm.get(key).opening=opening;});
+  const parties=[...pm.values()].sort((a,b)=>b.invoices.reduce((sum,i)=>sum+billBalance(i),b.opening)-a.invoices.reduce((sum,i)=>sum+billBalance(i),a.opening));
+  const invoiceTotal=reportMoneySum(invs,billBalance),openingTotal=allCustomerOpeningBalance(masters),grandTotal=round2(invoiceTotal+openingTotal);
   const t0_30  = invs.filter(i=>businessAgeDays(i.date,asOf)<=30).reduce((a,i)=>a+(billBalance(i)||0),0);
   const t31_60 = invs.filter(i=>{const d=businessAgeDays(i.date,asOf);return d>30&&d<=60;}).reduce((a,i)=>a+(billBalance(i)||0),0);
   const t61_90 = invs.filter(i=>{const d=businessAgeDays(i.date,asOf);return d>60&&d<=90;}).reduce((a,i)=>a+(billBalance(i)||0),0);
@@ -10541,24 +10565,28 @@ window.renderOutstandingRep = function() {
       <div class="sc"><div class="sc-lbl">31–60 Days</div><div class="sc-val o">${fc(t31_60)}</div></div>
       <div class="sc"><div class="sc-lbl">61–90 Days</div><div class="sc-val r">${fc(t61_90)}</div></div>
       <div class="sc"><div class="sc-lbl">90+ Days</div><div class="sc-val r">${fc(t90p)}</div></div>
+      <div class="sc"><div class="sc-lbl">Invoice Outstanding</div><div class="sc-val r">${fc(invoiceTotal)}</div></div>
+      <div class="sc"><div class="sc-lbl">Opening Receivable / Credit</div><div class="sc-val o">${fc(openingTotal)}</div></div>
       <div class="sc"><div class="sc-lbl">Grand Outstanding</div><div class="sc-val r">${fc(grandTotal)}</div></div>
     </div>
+    <p style="font-size:12px;color:var(--gray-500);margin:12px 0">Aging buckets contain invoice balances only. Grand outstanding adds signed opening balances: positive is receivable; negative is credit for every party type. Invoice associations use party IDs; name matches do not assign an opening balance. Supplier purchase payables remain separate. Opening balances are unchanged by invoice settlement.</p>
     ${parties.length===0 ? `<div class="empty" style="margin-top:20px"><div class="ic">✅</div>No outstanding balance!</div>` :
     parties.map(p => {
-      const partyTotal = p.invoices.reduce((a,i)=>a+(billBalance(i)||0),0);
+      const invoiceDue=reportMoneySum(p.invoices,billBalance);
+      const partyTotal=round2(invoiceDue+p.opening);
       return `<div class="card" style="margin-bottom:12px">
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;flex-wrap:wrap;gap:8px">
           <div>
             <div style="font-weight:700;font-size:15px">${escHtml(p.name)}</div>
-            <div style="font-size:12px;color:var(--gray-500)">${escHtml(p.invoices.length)} invoice(s) pending</div>
+            <div style="font-size:12px;color:var(--gray-500)">${escHtml(p.invoices.length)} invoice(s) pending · Invoice due ${fc(invoiceDue)} · opening receivable / credit ${fc(p.opening)}</div>
           </div>
           <div style="display:flex;align-items:center;gap:8px">
             <div style="font-size:17px;font-weight:800;color:var(--r)">${fc(partyTotal)}</div>
-            <button class="btn btn-g btn-xs" onclick="openSettlementModal('',this.dataset.xlArg0)" data-xl-arg0="${escHtml(p.name)}">🧾 Settle</button>
+            ${p.invoices.length?`<button class="btn btn-g btn-xs" onclick="openSettlementModal('${escHtml(p.partyId)}',this.dataset.xlArg0)" data-xl-arg0="${escHtml(p.name.replace(/ \(unlinked\)$/,''))}">🧾 Settle Invoices</button>`:''}
           </div>
         </div>
         <div class="tw"><table>
-          <thead><tr><th>Invoice</th><th>Date</th><th>Total</th><th>Paid</th><th>Balance</th><th>Days</th><th>Age</th><th class="no-print">Action</th></tr></thead>
+          <thead><tr><th>Invoice</th><th>Date</th><th>Total</th><th>Settled</th><th>Balance</th><th>Days</th><th>Age</th><th class="no-print">Action</th></tr></thead>
           <tbody>${p.invoices.sort((a,b)=>a.days-b.days).map(i=>{
             const ac = i.days>90?'var(--r)':i.days>60?'#d97706':i.days>30?'#ca8a04':'var(--g)';
             const al = i.days>90?'🔴 Very Old':i.days>60?'🟠 Old':i.days>30?'🟡 Aging':'🟢 Fresh';
