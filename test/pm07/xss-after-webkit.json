@@ -1,0 +1,236 @@
+{
+  "owner_instruction": "https://github.com/nileshkchaubey-glitch/Xl-billing/pull/8#issuecomment-6126054996",
+  "tested_application_commit": "381b402facfa356f1c2a0b2e77e0b59a2aed87c3",
+  "tested_commit": "381b402facfa356f1c2a0b2e77e0b59a2aed87c3",
+  "source_sha256": "2e0b6de76fedfed78b98ba702d61db50f4ebb790e608aa829b79f62b2636a978",
+  "baseline_commit": "29aeb20225bccfc653b192651de608491185096c",
+  "runner_sha256": "b7ab232d5b08b6f49dd018ae090848a5f2f9eb30510aa56161dec0af8e531efb",
+  "browser": "webkit",
+  "synthetic_only": true,
+  "summary": {
+    "pass": 10,
+    "fail": 0,
+    "harness_errors": 0
+  },
+  "results": [
+    {
+      "id": "print-A4-1",
+      "title": "Generated A4 printable invoice retains 1 lines and financial totals",
+      "browser": "webkit",
+      "width": 1366,
+      "classification": "OWNER ACCEPTANCE REQUIRED",
+      "status": "PASS",
+      "duration_ms": 1474,
+      "pass": true,
+      "expected": "Every selected line and total remains visible; A5 is two copies on A4, without silent clipping",
+      "observed": {
+        "lines": 1,
+        "visible_lines": 1,
+        "clipped": false,
+        "text": " Synthetic XL Shop INVOICE No: INV-1001 Date: 09/10/2026 Credit 📦Pend FY: 2026-27 BILL TO Synthetic Customer 📞 9876543210 # # Item Description Packing Qty Rate Amount 1 1 SYNTHETIC-LINE-1 Pcs 1 ₹20.00 ₹20.00 Subtotal₹20.00 TOTAL₹20.00 BALANCE DUE₹20.00 Thank you for your business! Authorized Signature document.title=\"INV-1001_SYNTHETIC-CUSTOMER\";setTimeout(()=>window.print(),300); ",
+        "pdf": null
+      },
+      "note": "Software layout/PDF only. Physical printer, native mobile print dialog and paper calibration NOT VERIFIED."
+    },
+    {
+      "id": "print-A5-1",
+      "title": "Generated A5 printable invoice retains 1 lines and financial totals",
+      "browser": "webkit",
+      "width": 1366,
+      "classification": "OWNER ACCEPTANCE REQUIRED",
+      "status": "PASS",
+      "duration_ms": 1831,
+      "pass": true,
+      "expected": "Every selected line and total remains visible; A5 is two copies on A4, without silent clipping",
+      "observed": {
+        "lines": 1,
+        "visible_lines": 1,
+        "clipped": false,
+        "half_height": 558,
+        "content_height": 558,
+        "text": " Synthetic XL Shop INVOICE No: INV-1001 Date: 09/10/2026 Credit 📦Pend FY: 2026-27 BILL TO Synthetic Customer 📞 9876543210 # # Item Description Packing Qty Rate Amount 1 1 SYNTHETIC-LINE-1 Pcs 1 ₹20.00 ₹20.00 Subtotal₹20.00 TOTAL₹20.00 BALANCE DUE₹20.00 Thank you for your business! Authorized Signature ",
+        "pdf": null
+      },
+      "note": "Software layout/PDF only. Physical printer, native mobile print dialog and paper calibration NOT VERIFIED."
+    },
+    {
+      "id": "print-A4-40",
+      "title": "Generated A4 printable invoice retains 40 lines and financial totals",
+      "browser": "webkit",
+      "width": 1366,
+      "classification": "OWNER ACCEPTANCE REQUIRED",
+      "status": "PASS",
+      "duration_ms": 1613,
+      "pass": true,
+      "expected": "Every selected line and total remains visible; A5 is two copies on A4, without silent clipping",
+      "observed": {
+        "lines": 40,
+        "visible_lines": 40,
+        "clipped": false,
+        "text": "E-31 Pcs 1 ₹20.00 ₹20.00 32 32 SYNTHETIC-LINE-32 Pcs 1 ₹20.00 ₹20.00 33 33 SYNTHETIC-LINE-33 Pcs 1 ₹20.00 ₹20.00 34 34 SYNTHETIC-LINE-34 Pcs 1 ₹20.00 ₹20.00 35 35 SYNTHETIC-LINE-35 Pcs 1 ₹20.00 ₹20.00 36 36 SYNTHETIC-LINE-36 Pcs 1 ₹20.00 ₹20.00 37 37 SYNTHETIC-LINE-37 Pcs 1 ₹20.00 ₹20.00 38 38 SYNTHETIC-LINE-38 Pcs 1 ₹20.00 ₹20.00 39 39 SYNTHETIC-LINE-39 Pcs 1 ₹20.00 ₹20.00 40 40 SYNTHETIC-LINE-40 Pcs 1 ₹20.00 ₹20.00 Subtotal₹800.00 TOTAL₹800.00 BALANCE DUE₹800.00 Thank you for your business! Authorized Signature document.title=\"INV-1001_SYNTHETIC-CUSTOMER\";setTimeout(()=>window.print(),300); ",
+        "pdf": null
+      },
+      "note": "Software layout/PDF only. Physical printer, native mobile print dialog and paper calibration NOT VERIFIED."
+    },
+    {
+      "id": "print-A5-40",
+      "title": "Generated A5 printable invoice retains 40 lines and financial totals",
+      "browser": "webkit",
+      "width": 1366,
+      "classification": "OWNER ACCEPTANCE REQUIRED",
+      "status": "PASS",
+      "duration_ms": 1536,
+      "pass": true,
+      "expected": "Every selected line and total remains visible; A5 is two copies on A4, without silent clipping",
+      "observed": {
+        "lines": 40,
+        "visible_lines": 40,
+        "clipped": false,
+        "text": "s 1 ₹20.00 ₹20.00 30 30 SYNTHETIC-LINE-30 Pcs 1 ₹20.00 ₹20.00 31 31 SYNTHETIC-LINE-31 Pcs 1 ₹20.00 ₹20.00 32 32 SYNTHETIC-LINE-32 Pcs 1 ₹20.00 ₹20.00 33 33 SYNTHETIC-LINE-33 Pcs 1 ₹20.00 ₹20.00 34 34 SYNTHETIC-LINE-34 Pcs 1 ₹20.00 ₹20.00 35 35 SYNTHETIC-LINE-35 Pcs 1 ₹20.00 ₹20.00 36 36 SYNTHETIC-LINE-36 Pcs 1 ₹20.00 ₹20.00 37 37 SYNTHETIC-LINE-37 Pcs 1 ₹20.00 ₹20.00 38 38 SYNTHETIC-LINE-38 Pcs 1 ₹20.00 ₹20.00 39 39 SYNTHETIC-LINE-39 Pcs 1 ₹20.00 ₹20.00 40 40 SYNTHETIC-LINE-40 Pcs 1 ₹20.00 ₹20.00 Subtotal₹800.00 TOTAL₹800.00 BALANCE DUE₹800.00 Thank you for your business! Authorized Signature ",
+        "pdf": null
+      },
+      "note": "Software layout/PDF only. Physical printer, native mobile print dialog and paper calibration NOT VERIFIED."
+    },
+    {
+      "id": "print-A5-two-copies",
+      "title": "Short two-up A5 output contains two complete copies on one A4 page",
+      "browser": "webkit",
+      "width": 1366,
+      "classification": "BLOCKER",
+      "status": "PASS",
+      "duration_ms": 1744,
+      "pass": true,
+      "expected": "Both copies contain four lines, total and balance; Chromium PDF is one A4 page with every copy label twice; stored bytes unchanged",
+      "observed": {
+        "halves": [
+          {
+            "rows": 4,
+            "clipped": false,
+            "totals": true
+          },
+          {
+            "rows": 4,
+            "clipped": false,
+            "totals": true
+          }
+        ],
+        "pdf": null,
+        "bytes_preserved": true
+      },
+      "note": "Native /usr/bin/pdftotext checks actual PDF bytes. Physical print output remains NOT VERIFIED."
+    },
+    {
+      "id": "print-A5-wrapped-80",
+      "title": "Oversized wrapped A5 request visibly falls back to complete A4 output",
+      "browser": "webkit",
+      "width": 1366,
+      "classification": "BLOCKER",
+      "status": "PASS",
+      "duration_ms": 2193,
+      "pass": true,
+      "expected": "Visible A4 fallback; all 80 wrapped line labels and totals in complete paginated output; no stored bytes changed",
+      "observed": {
+        "notice": "This invoice exceeds a half A4 page. A4 layout will be used so every line and total is included.",
+        "fallback": true,
+        "rows": 80,
+        "hidden_overflow": false,
+        "totals": true,
+        "pdf": null,
+        "bytes_preserved": true
+      },
+      "note": "PDF text/page extraction requires Poppler development tools; physical printer and native mobile print remain NOT VERIFIED."
+    },
+    {
+      "id": "print-A4-unbroken-fields",
+      "title": "Long unbroken invoice fields remain within printable width and retain their PDF endpoints",
+      "browser": "webkit",
+      "width": 1366,
+      "classification": "BLOCKER",
+      "status": "PASS",
+      "duration_ms": 1457,
+      "pass": true,
+      "expected": "All five long unbroken stored text fields wrap within printable width; actual Chromium PDF retains their beginning/end markers and financial content; exact stored bytes unchanged",
+      "observed": {
+        "width": 760,
+        "content_width": 760,
+        "half_overflow": false,
+        "hidden_overflow": false,
+        "pdf": null,
+        "bytes_preserved": true
+      },
+      "note": "Native raw glyph order and whitespace removal locate markers without interleaving neighboring columns. Independent native word bounds must fit within every physical PDF page. No PDF content or financial data is altered."
+    },
+    {
+      "id": "print-A5-unbroken-fields",
+      "title": "Long unbroken invoice fields remain within printable width and retain their PDF endpoints",
+      "browser": "webkit",
+      "width": 1366,
+      "classification": "BLOCKER",
+      "status": "PASS",
+      "duration_ms": 1691,
+      "pass": true,
+      "expected": "All five long unbroken stored text fields wrap within printable width; actual Chromium PDF retains their beginning/end markers and financial content; exact stored bytes unchanged",
+      "observed": {
+        "width": 718,
+        "content_width": 718,
+        "half_overflow": false,
+        "hidden_overflow": false,
+        "pdf": null,
+        "bytes_preserved": true
+      },
+      "note": "Native raw glyph order and whitespace removal locate markers without interleaving neighboring columns. Independent native word bounds must fit within every physical PDF page. No PDF content or financial data is altered."
+    },
+    {
+      "id": "print-A5-measurement-refused",
+      "title": "Failed A5 layout measurement visibly refuses printing without touching data",
+      "browser": "webkit",
+      "width": 1366,
+      "classification": "BLOCKER",
+      "status": "PASS",
+      "duration_ms": 1023,
+      "pass": true,
+      "expected": "Measurement failure opens no print window, explains refusal and preserves exact business bytes",
+      "observed": {
+        "opened_print_windows": 0,
+        "notice": "A5 printing could not verify that every line and total fits. Printing was stopped. Use the A4 Print button or try again.",
+        "bytes_preserved": true
+      }
+    },
+    {
+      "id": "stored-print-text-xss",
+      "title": "Stored packing text remains literal in the actual invoice view and both print layouts",
+      "browser": "webkit",
+      "width": 1366,
+      "classification": "BLOCKER",
+      "status": "PASS",
+      "duration_ms": 2831,
+      "pass": true,
+      "expected": "Name, packing summary, fallback pack type and colour payloads render as literal text; no event script executes in real view/A4/A5 output; totals80 and raw bytes preserved",
+      "observed": {
+        "view": {
+          "executed": false,
+          "injected_elements": 0,
+          "literals": true
+        },
+        "outputs": [
+          {
+            "paper": "A4",
+            "executed": false,
+            "injected_elements": 0,
+            "literals": true,
+            "total_present": true
+          },
+          {
+            "paper": "A5",
+            "executed": false,
+            "injected_elements": 0,
+            "literals": true,
+            "total_present": true
+          }
+        ],
+        "bytes_preserved": true
+      },
+      "note": "Payloads only toggle a synthetic window flag. No secret or real profile is accessed."
+    }
+  ]
+}

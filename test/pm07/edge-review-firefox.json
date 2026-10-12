@@ -1,0 +1,124 @@
+{
+  "source_sha256": "ea65b50bd2bd9dbaf2222cad496a167dd25d868a3f66ee5f3fc14c21d66509a6",
+  "tested_commit": "a8a01dd9f135b2c64af4b3c5b2b4fd13f35573e1",
+  "engine": "firefox",
+  "records": [
+    {
+      "id": "boundary-4",
+      "notice": "",
+      "geometry": {
+        "layout": "a5-two-up",
+        "half_height": 558,
+        "half_content": 558,
+        "body_width": 1280,
+        "body_content_width": 1280,
+        "clipped_halves": false,
+        "overflowing": []
+      },
+      "pdf": null,
+      "bytes_preserved": true
+    },
+    {
+      "id": "boundary-5",
+      "notice": "",
+      "geometry": {
+        "layout": "a5-two-up",
+        "half_height": 558,
+        "half_content": 558,
+        "body_width": 1280,
+        "body_content_width": 1280,
+        "clipped_halves": false,
+        "overflowing": []
+      },
+      "pdf": null,
+      "bytes_preserved": true
+    },
+    {
+      "id": "boundary-6",
+      "notice": "",
+      "geometry": {
+        "layout": "a5-two-up",
+        "half_height": 558,
+        "half_content": 558,
+        "body_width": 1280,
+        "body_content_width": 1280,
+        "clipped_halves": false,
+        "overflowing": []
+      },
+      "pdf": null,
+      "bytes_preserved": true
+    },
+    {
+      "id": "boundary-7",
+      "notice": "This invoice exceeds a half A4 page. A4 layout will be used so every line and total is included.",
+      "geometry": {
+        "layout": "a4-fallback",
+        "body_width": 718,
+        "body_content_width": 718,
+        "clipped_halves": false,
+        "overflowing": []
+      },
+      "pdf": null,
+      "bytes_preserved": true
+    },
+    {
+      "id": "boundary-8",
+      "notice": "This invoice exceeds a half A4 page. A4 layout will be used so every line and total is included.",
+      "geometry": {
+        "layout": "a4-fallback",
+        "body_width": 718,
+        "body_content_width": 718,
+        "clipped_halves": false,
+        "overflowing": []
+      },
+      "pdf": null,
+      "bytes_preserved": true
+    },
+    {
+      "id": "oversized-single-row",
+      "notice": "This invoice exceeds a half A4 page. A4 layout will be used so every line and total is included.",
+      "geometry": {
+        "layout": "a4-fallback",
+        "body_width": 718,
+        "body_content_width": 718,
+        "clipped_halves": false,
+        "overflowing": []
+      },
+      "pdf": null,
+      "bytes_preserved": true
+    },
+    {
+      "id": "dynamic-fields",
+      "notice": "This invoice exceeds a half A4 page. A4 layout will be used so every line and total is included.",
+      "geometry": {
+        "layout": "a4-fallback",
+        "body_width": 718,
+        "body_content_width": 718,
+        "clipped_halves": false,
+        "overflowing": []
+      },
+      "pdf": null,
+      "bytes_preserved": true
+    },
+    {
+      "id": "unbroken-custom-field",
+      "notice": "This invoice exceeds a half A4 page. A4 layout will be used so every line and total is included.",
+      "geometry": {
+        "layout": "a4-fallback",
+        "body_width": 718,
+        "body_content_width": 718,
+        "clipped_halves": false,
+        "overflowing": []
+      },
+      "pdf": null,
+      "bytes_preserved": true
+    },
+    {
+      "id": "stale-notice",
+      "notice_before": "This invoice exceeds a half A4 page. A4 layout will be used so every line and total is included.",
+      "notice_after_view": "",
+      "short_two_up": true,
+      "notice_after_print": ""
+    }
+  ]
+}
