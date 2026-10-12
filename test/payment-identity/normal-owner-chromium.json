@@ -1,0 +1,348 @@
+{
+  "owner_instruction": "https://github.com/nileshkchaubey-glitch/Xl-billing/pull/8#issuecomment-6126054996",
+  "tested_application_commit": "76847d17c6364aa68a7b894f644128e71d7fb691",
+  "tested_commit": "76847d17c6364aa68a7b894f644128e71d7fb691",
+  "source_sha256": "f43b8efd20923da5101ee38724a7b29f36a92b6259f22ebc9ed59b63149dbe56",
+  "baseline_commit": "29aeb20225bccfc653b192651de608491185096c",
+  "runner_sha256": "98d4425d11f9c7d28c37fc874a5920c681ca5a29ee25bc81670c1df288d1e3b3",
+  "browser": "chromium",
+  "synthetic_only": true,
+  "summary": {
+    "pass": 6,
+    "fail": 0,
+    "harness_errors": 0
+  },
+  "results": [
+    {
+      "id": "real-payment-out",
+      "title": "Real UPI payment-out allocation reconciles supplier history and paise",
+      "browser": "chromium",
+      "width": 1366,
+      "classification": "BLOCKER",
+      "status": "PASS",
+      "duration_ms": 1303,
+      "pass": true,
+      "expected": "Original cash 20 + UPI 12.34 = paid 32.34; remaining 467.66",
+      "observed": {
+        "id": "u1",
+        "date": "2026-10-09",
+        "partyId": "p2",
+        "partyName": "Synthetic Supplier",
+        "billNo": "P-1",
+        "mode": "amount",
+        "total": 500,
+        "paid": 32.34,
+        "balance": 467.66,
+        "items": [],
+        "notes": "",
+        "payments": [
+          {
+            "date": "2026-10-09",
+            "amt": 20,
+            "mode": "Cash",
+            "note": ""
+          },
+          {
+            "date": "2026-10-13",
+            "amt": 12.34,
+            "mode": "UPI",
+            "note": "Payment Out"
+          }
+        ],
+        "createdAt": "2026-10-09T08:00:00Z",
+        "openingPaid": 0,
+        "updatedAt": "2026-10-12T19:10:03.694Z"
+      }
+    },
+    {
+      "id": "opening-receipt-discounts",
+      "title": "Opening receipt plus actual cash and settlement discount, supplier discount preserved",
+      "browser": "chromium",
+      "width": 1366,
+      "classification": "BLOCKER",
+      "status": "PASS",
+      "duration_ms": 1497,
+      "pass": true,
+      "expected": "Original opening 20 + cash 10 + settlement discount 10 = settled 40, due 60; supplier paid 20 + discount 10 + due 470 = 500",
+      "observed": {
+        "i": {
+          "id": "s0",
+          "invoiceNo": "INV-1001",
+          "date": "2026-10-09",
+          "partyId": "p1",
+          "partyName": "Synthetic Customer",
+          "items": [
+            {
+              "id": "line0",
+              "itemId": "i1",
+              "name": "Paper Cups",
+              "qty": 5,
+              "rate": 20,
+              "amt": 100,
+              "unit": "Pcs"
+            }
+          ],
+          "subtotal": 100,
+          "discount": 0,
+          "taxPct": 0,
+          "taxAmt": 0,
+          "total": 100,
+          "paid": 40,
+          "balance": 60,
+          "notes": "",
+          "paymentType": "Credit",
+          "dispatchStatus": "pending",
+          "createdAt": "2026-10-09T08:00:00Z",
+          "openingPaid": 20,
+          "payments": [
+            {
+              "date": "2026-10-13",
+              "amt": 10,
+              "mode": "UPI",
+              "note": ""
+            },
+            {
+              "date": "2026-10-13",
+              "amt": 10,
+              "mode": "Discount",
+              "note": "Settlement discount"
+            }
+          ],
+          "updatedAt": "2026-10-12T19:10:05.141Z"
+        },
+        "p": {
+          "id": "u1",
+          "date": "2026-10-09",
+          "partyId": "p2",
+          "partyName": "Synthetic Supplier",
+          "billNo": "P-1",
+          "mode": "amount",
+          "total": 500,
+          "paid": 20,
+          "balance": 470,
+          "items": [],
+          "notes": "",
+          "payments": [
+            {
+              "date": "2026-10-09",
+              "amt": 20,
+              "mode": "Cash",
+              "note": ""
+            }
+          ],
+          "createdAt": "2026-10-09T08:00:00Z",
+          "discount": 10,
+          "discounts": [
+            {
+              "amt": 10,
+              "date": "2026-10-09"
+            }
+          ]
+        },
+        "payments": [
+          {
+            "_invId": "s0",
+            "_payIdx": 0,
+            "_invNo": "INV-1001",
+            "_party": "Synthetic Customer",
+            "_invTotal": 100,
+            "_invBal": 60,
+            "_cancelled": false,
+            "date": "2026-10-13",
+            "amt": 10,
+            "mode": "UPI",
+            "note": "",
+            "type": "payment"
+          },
+          {
+            "_invId": "s0",
+            "_payIdx": 1,
+            "_invNo": "INV-1001",
+            "_party": "Synthetic Customer",
+            "_invTotal": 100,
+            "_invBal": 60,
+            "_cancelled": false,
+            "date": "2026-10-13",
+            "amt": 10,
+            "mode": "Discount",
+            "note": "Settlement discount",
+            "type": "discount"
+          },
+          {
+            "_invId": "s1",
+            "_payIdx": 0,
+            "_invNo": "INV-1002",
+            "_party": "Synthetic Customer",
+            "_invTotal": 100,
+            "_invBal": 80,
+            "_cancelled": false,
+            "date": "2026-10-09",
+            "amt": 20,
+            "mode": "Cash",
+            "note": "",
+            "type": "payment"
+          }
+        ]
+      }
+    },
+    {
+      "id": "cancel-restore-accounting",
+      "title": "Cancellation preserves actual receipts and restore reopens original balances",
+      "browser": "chromium",
+      "width": 1366,
+      "classification": "BLOCKER",
+      "status": "PASS",
+      "duration_ms": 1098,
+      "pass": true,
+      "expected": "No cash receipt deletion on cancellation; restore retains 20 paid and 80 due",
+      "observed": {
+        "cancelled": {
+          "id": "s0",
+          "invoiceNo": "INV-1001",
+          "date": "2026-10-09",
+          "partyId": "p1",
+          "partyName": "Synthetic Customer",
+          "items": [
+            {
+              "id": "line0",
+              "itemId": "i1",
+              "name": "Paper Cups",
+              "qty": 5,
+              "rate": 20,
+              "amt": 100,
+              "unit": "Pcs"
+            }
+          ],
+          "subtotal": 100,
+          "discount": 0,
+          "taxPct": 0,
+          "taxAmt": 0,
+          "total": 100,
+          "paid": 20,
+          "balance": 80,
+          "notes": "",
+          "paymentType": "Credit",
+          "dispatchStatus": "cancelled",
+          "payments": [
+            {
+              "date": "2026-10-09",
+              "amt": 20,
+              "mode": "Cash",
+              "note": ""
+            }
+          ],
+          "createdAt": "2026-10-09T08:00:00Z",
+          "status": "cancelled",
+          "cancelledAt": "2026-10-12T19:10:06.006Z"
+        },
+        "restored": {
+          "id": "s0",
+          "invoiceNo": "INV-1001",
+          "date": "2026-10-09",
+          "partyId": "p1",
+          "partyName": "Synthetic Customer",
+          "items": [
+            {
+              "id": "line0",
+              "itemId": "i1",
+              "name": "Paper Cups",
+              "qty": 5,
+              "rate": 20,
+              "amt": 100,
+              "unit": "Pcs"
+            }
+          ],
+          "subtotal": 100,
+          "discount": 0,
+          "taxPct": 0,
+          "taxAmt": 0,
+          "total": 100,
+          "paid": 20,
+          "balance": 80,
+          "notes": "",
+          "paymentType": "Credit",
+          "dispatchStatus": "pending",
+          "payments": [
+            {
+              "date": "2026-10-09",
+              "amt": 20,
+              "mode": "Cash",
+              "note": ""
+            }
+          ],
+          "createdAt": "2026-10-09T08:00:00Z"
+        }
+      }
+    },
+    {
+      "id": "transaction-discount-cash",
+      "title": "Cash-in transaction filter excludes settlement discounts",
+      "browser": "chromium",
+      "width": 1366,
+      "classification": "BLOCKER",
+      "status": "PASS",
+      "duration_ms": 935,
+      "pass": true,
+      "expected": "Cash/UPI receipts 40; settlement discount 10 is noncash",
+      "observed": {
+        "transaction_summary": [
+          "₹40.00",
+          "₹0.00",
+          "₹40.00",
+          "₹0.00",
+          "₹0.00",
+          "₹0.00",
+          "₹0.00",
+          "₹0.00",
+          "₹0.00",
+          "2"
+        ],
+        "payment_ledger_cash": 40
+      }
+    },
+    {
+      "id": "party-opening-ledger",
+      "title": "Party opening receivable is reflected consistently in displayed outstanding",
+      "browser": "chromium",
+      "width": 1366,
+      "classification": "OWNER ACCEPTANCE REQUIRED",
+      "status": "PASS",
+      "duration_ms": 782,
+      "pass": true,
+      "expected": "25 opening receivable + two invoices with 80 due each = 185",
+      "observed": {
+        "party_stats": [
+          "₹200.00",
+          "₹40.00",
+          "₹185.00",
+          "2"
+        ]
+      },
+      "note": "Whether party openingBal is informational or an actual receivable requires owner policy; it is never silently discarded from stored bytes."
+    },
+    {
+      "id": "legacy-item-report",
+      "title": "Supported legacy amount field reconciles with the item financial report",
+      "browser": "chromium",
+      "width": 1366,
+      "classification": "BLOCKER",
+      "status": "PASS",
+      "duration_ms": 898,
+      "pass": true,
+      "expected": "Legacy qty 2 × rate 3 / saved amount 6 contributes 6 to Total Amount without rewriting bytes",
+      "observed": {
+        "report_cells": [
+          "▶",
+          "Synthetic Legacy Line",
+          "2",
+          "1",
+          "₹6.00",
+          "1"
+        ],
+        "stored_total": 6,
+        "stored_line_amount": 6,
+        "bytes_preserved": true
+      }
+    }
+  ]
+}
