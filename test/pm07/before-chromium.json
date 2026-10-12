@@ -1,0 +1,171 @@
+{
+  "owner_instruction": "https://github.com/nileshkchaubey-glitch/Xl-billing/pull/8#issuecomment-6126054996",
+  "tested_application_commit": "5d3fb7991586d7acef84d49cdd26a003b290d912",
+  "tested_commit": "5d3fb7991586d7acef84d49cdd26a003b290d912",
+  "source_sha256": "37cb3c09b5d165768666d3ccefae9478b10f08a7dc20f1dcc219cad91e596933",
+  "baseline_commit": "29aeb20225bccfc653b192651de608491185096c",
+  "runner_sha256": "8fc3fbaf60b411e2b60814db16ac5395339fab57a52439baab661ef62f5e392e",
+  "browser": "chromium",
+  "synthetic_only": true,
+  "summary": {
+    "pass": 2,
+    "fail": 4,
+    "harness_errors": 0
+  },
+  "results": [
+    {
+      "id": "print-A4-1",
+      "title": "Generated A4 printable invoice retains 1 lines and financial totals",
+      "browser": "chromium",
+      "width": 1366,
+      "classification": "OWNER ACCEPTANCE REQUIRED",
+      "status": "PASS",
+      "duration_ms": 487,
+      "pass": true,
+      "expected": "Every selected line and total remains visible; A5 is two copies on A4, without silent clipping",
+      "observed": {
+        "lines": 1,
+        "visible_lines": 1,
+        "clipped": false,
+        "text": " Synthetic XL Shop INVOICE No: INV-1001 Date: 09/10/2026 Credit 📦Pend FY: 2026-27 BILL TO Synthetic Customer 📞 9876543210 # # Item Description Packing Qty Rate Amount 1 1 SYNTHETIC-LINE-1 Pcs 1 ₹20.00 ₹20.00 Subtotal₹20.00 TOTAL₹20.00 BALANCE DUE₹20.00 Thank you for your business! Authorized Signature document.title=\"INV-1001_SYNTHETIC-CUSTOMER\";setTimeout(()=>window.print(),300); ",
+        "pdf": {
+          "sha256": "501940c59cae5f432667bba8838768be97bc84f543a5d63b14b016ab90d70383",
+          "bytes": 50755,
+          "media_box": [
+            "595.91998",
+            "842.88"
+          ],
+          "page_objects": 1
+        }
+      },
+      "note": "Software layout/PDF only. Physical printer, native mobile print dialog and paper calibration NOT VERIFIED."
+    },
+    {
+      "id": "print-A5-1",
+      "title": "Generated A5 printable invoice retains 1 lines and financial totals",
+      "browser": "chromium",
+      "width": 1366,
+      "classification": "OWNER ACCEPTANCE REQUIRED",
+      "status": "FAIL",
+      "duration_ms": 411,
+      "pass": false,
+      "expected": "Every selected line and total remains visible; A5 is two copies on A4, without silent clipping",
+      "observed": {
+        "lines": 1,
+        "visible_lines": 1,
+        "clipped": false,
+        "half_height": 560,
+        "content_height": 560,
+        "text": " Synthetic XL Shop INVOICE No: INV-1001 Date: 09/10/2026 Credit 📦Pend FY: 2026-27 BILL TO Synthetic Customer 📞 9876543210 # # Item Description Packing Qty Rate Amount 1 1 SYNTHETIC-LINE-1 Pcs 1 ₹20.00 ₹20.00 Subtotal₹20.00 TOTAL₹20.00 BALANCE DUE₹20.00 Thank you for your business! Authorized Signature ",
+        "pdf": {
+          "sha256": "d1a2ae8b1ae7f32d47b0253210bdd37901ed89fc865a6279b3ce68a47be58a54",
+          "bytes": 61771,
+          "media_box": [
+            "594.95996",
+            "841.91998"
+          ],
+          "page_objects": 2
+        }
+      },
+      "note": "Software layout/PDF only. Physical printer, native mobile print dialog and paper calibration NOT VERIFIED."
+    },
+    {
+      "id": "print-A4-40",
+      "title": "Generated A4 printable invoice retains 40 lines and financial totals",
+      "browser": "chromium",
+      "width": 1366,
+      "classification": "OWNER ACCEPTANCE REQUIRED",
+      "status": "PASS",
+      "duration_ms": 450,
+      "pass": true,
+      "expected": "Every selected line and total remains visible; A5 is two copies on A4, without silent clipping",
+      "observed": {
+        "lines": 40,
+        "visible_lines": 40,
+        "clipped": false,
+        "text": "E-31 Pcs 1 ₹20.00 ₹20.00 32 32 SYNTHETIC-LINE-32 Pcs 1 ₹20.00 ₹20.00 33 33 SYNTHETIC-LINE-33 Pcs 1 ₹20.00 ₹20.00 34 34 SYNTHETIC-LINE-34 Pcs 1 ₹20.00 ₹20.00 35 35 SYNTHETIC-LINE-35 Pcs 1 ₹20.00 ₹20.00 36 36 SYNTHETIC-LINE-36 Pcs 1 ₹20.00 ₹20.00 37 37 SYNTHETIC-LINE-37 Pcs 1 ₹20.00 ₹20.00 38 38 SYNTHETIC-LINE-38 Pcs 1 ₹20.00 ₹20.00 39 39 SYNTHETIC-LINE-39 Pcs 1 ₹20.00 ₹20.00 40 40 SYNTHETIC-LINE-40 Pcs 1 ₹20.00 ₹20.00 Subtotal₹800.00 TOTAL₹800.00 BALANCE DUE₹800.00 Thank you for your business! Authorized Signature document.title=\"INV-1001_SYNTHETIC-CUSTOMER\";setTimeout(()=>window.print(),300); ",
+        "pdf": {
+          "sha256": "47d55a35bf8f9a4699e2b5b2619b0d1af4e64144bb1f1c230a604e4b3f06aece",
+          "bytes": 54291,
+          "media_box": [
+            "595.91998",
+            "842.88"
+          ],
+          "page_objects": 2
+        }
+      },
+      "note": "Software layout/PDF only. Physical printer, native mobile print dialog and paper calibration NOT VERIFIED."
+    },
+    {
+      "id": "print-A5-40",
+      "title": "Generated A5 printable invoice retains 40 lines and financial totals",
+      "browser": "chromium",
+      "width": 1366,
+      "classification": "OWNER ACCEPTANCE REQUIRED",
+      "status": "FAIL",
+      "duration_ms": 433,
+      "pass": false,
+      "expected": "Every selected line and total remains visible; A5 is two copies on A4, without silent clipping",
+      "observed": {
+        "lines": 40,
+        "visible_lines": 12,
+        "clipped": true,
+        "half_height": 560,
+        "content_height": 1395,
+        "text": "s 1 ₹20.00 ₹20.00 30 30 SYNTHETIC-LINE-30 Pcs 1 ₹20.00 ₹20.00 31 31 SYNTHETIC-LINE-31 Pcs 1 ₹20.00 ₹20.00 32 32 SYNTHETIC-LINE-32 Pcs 1 ₹20.00 ₹20.00 33 33 SYNTHETIC-LINE-33 Pcs 1 ₹20.00 ₹20.00 34 34 SYNTHETIC-LINE-34 Pcs 1 ₹20.00 ₹20.00 35 35 SYNTHETIC-LINE-35 Pcs 1 ₹20.00 ₹20.00 36 36 SYNTHETIC-LINE-36 Pcs 1 ₹20.00 ₹20.00 37 37 SYNTHETIC-LINE-37 Pcs 1 ₹20.00 ₹20.00 38 38 SYNTHETIC-LINE-38 Pcs 1 ₹20.00 ₹20.00 39 39 SYNTHETIC-LINE-39 Pcs 1 ₹20.00 ₹20.00 40 40 SYNTHETIC-LINE-40 Pcs 1 ₹20.00 ₹20.00 Subtotal₹800.00 TOTAL₹800.00 BALANCE DUE₹800.00 Thank you for your business! Authorized Signature ",
+        "pdf": {
+          "sha256": "4e7dcb2a1a81e529c436a85c8ce35f204ec65c3b2ef23f43c52cc862e5cad281",
+          "bytes": 60584,
+          "media_box": [
+            "594.95996",
+            "841.91998"
+          ],
+          "page_objects": 2
+        }
+      },
+      "note": "Software layout/PDF only. Physical printer, native mobile print dialog and paper calibration NOT VERIFIED."
+    },
+    {
+      "id": "print-A5-wrapped-80",
+      "title": "Oversized wrapped A5 request visibly falls back to complete A4 output",
+      "browser": "chromium",
+      "width": 1366,
+      "classification": "BLOCKER",
+      "status": "FAIL",
+      "duration_ms": 691,
+      "pass": false,
+      "expected": "Visible A4 fallback; all 80 wrapped line labels and totals in complete paginated output; no stored bytes changed",
+      "observed": {
+        "notice": "",
+        "fallback": false,
+        "rows": 160,
+        "hidden_overflow": true,
+        "totals": true,
+        "pdf": {
+          "distinct_lines": 9,
+          "total_present": false,
+          "balance_present": false,
+          "page_count": 2
+        },
+        "bytes_preserved": true
+      },
+      "note": "PDF text/page extraction requires Poppler development tools; physical printer and native mobile print remain NOT VERIFIED."
+    },
+    {
+      "id": "print-A5-measurement-refused",
+      "title": "Failed A5 layout measurement visibly refuses printing without touching data",
+      "browser": "chromium",
+      "width": 1366,
+      "classification": "BLOCKER",
+      "status": "FAIL",
+      "duration_ms": 363,
+      "pass": false,
+      "expected": "Measurement failure opens no print window, explains refusal and preserves exact business bytes",
+      "observed": {
+        "opened_print_windows": 1,
+        "notice": "",
+        "bytes_preserved": true
+      }
+    }
+  ]
+}
