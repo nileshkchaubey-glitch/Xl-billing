@@ -310,3 +310,29 @@ for(const mode of ['adopt','restore'])for(const kind of ['items-object','custom-
   await expect(page.locator('#xl-recovery-error')).toContainText(/invalid|unsupported|shape|must|array|object|number|date|collection/i);
   await assertUnchanged(page,before);await denyOwnerAttempt(page,before);
 });
+
+test('recovery valid backup replaces archived conflicting current history without inventing before counts or differences',async({page},testInfo)=>{
+  await seed(page);await saveRealInvoice(page);const original=await raw(page,true),backup=privateFile(original);
+  await external(page,'conflicting');await locked(page);const before=await raw(page),proof=await recoveryProof(page,testInfo);
+  await page.locator('#xl-recovery-backup').setInputFiles(backup);
+  await expect(page.locator('#xl-recovery-preview')).toContainText(/before counts.*differences.*unavailable/i);
+  expect(await page.locator('#xl-recovery-preview').textContent()).not.toMatch(/\b\d+\s+(?:added|removed|changed)\b/i);
+  await assertUnchanged(page,before);await approve(page);await verified(page);expect(await raw(page,true)).toEqual(original);
+  const archived=JSON.parse(await fs.readFile(proof.path,'utf8'));expect(archived.payload.records.shop4_invoices).toBe(before.shop4_invoices);
+  expect(JSON.parse(archived.payload.records.shop4_invoices)[0].paid).toBe(70);
+});
+
+test('recovery locked legacy v5 restore requires the current PIN and preserves the selected opening balances, discounts and PIN settings',async({page},testInfo)=>{
+  await prepareLocked(page);const before=await raw(page),data=fixtures();
+  data.settings.deletePinSalt='synthetic-restored-legacy';data.settings.deletePinHash=crypto.createHash('sha256').update('synthetic-restored-legacy:8642').digest('hex');
+  delete data.invoices[0].payments;data.purchases[0].discount=10;data.purchases[0].discounts=[{date:'2026-10-09',amt:10}];data.purchases[0].balance=470;
+  const expected=Object.fromEntries(Object.entries(data).map(([key,value])=>['shop4_'+key,JSON.stringify(value)]));
+  await recoveryProof(page,testInfo);await page.locator('#xl-recovery-backup').setInputFiles({name:'synthetic-legacy-v5.json',mimeType:'application/json',buffer:Buffer.from(JSON.stringify({...data,v:5}))});
+  await expect(page.locator('#xl-recovery-preview')).toContainText(/legacy.*no checksum|legacy.*without.*checksum/i);
+  await approve(page,'8642');await expect(page.locator('#xl-recovery-error')).toContainText(/incorrect|wrong|does not match/i);await assertUnchanged(page,before);
+  await approve(page,'2468');await verified(page);expect(await raw(page,true)).toEqual(expected);
+  await page.reload();await ready(page);await page.evaluate(()=>delInvoice('s0'));await expect(page.locator('#del-pin-overlay')).toBeVisible();
+  await page.locator('#del-pin-inp').fill('2468');await page.locator('#del-pin-inp').press('Enter');await expect(page.locator('#del-pin-overlay')).toBeVisible();expect(await raw(page,true)).toEqual(expected);
+  await page.locator('#del-pin-inp').fill('8642');await page.locator('#del-pin-ok').click();await expect(page.locator('#del-pin-overlay')).toHaveCount(0);
+  expect(await page.evaluate(()=>JSON.parse(localStorage.getItem('shop4_invoices')).length)).toBe(1);
+});
