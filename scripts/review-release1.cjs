@@ -324,7 +324,8 @@ async function main() {
   await browser.close();browser=null;await new Promise(resolve=>server.close(resolve));server=null;
   if(!results.length) throw new Error('No safety probes selected; the gate cannot pass without evidence.');
   const workspaceCommit=cp.execFileSync('git',['rev-parse','HEAD'],{encoding:'utf8'}).trim();
-  const report={workspaceCommit,sourceRevision:process.env.XL_REVIEW_REVISION || (process.env.XL_HTML ? null : workspaceCommit),sourceSha256:crypto.createHash('sha256').update(html).digest('hex'),runnerSha256:crypto.createHash('sha256').update(fs.readFileSync(__filename)).digest('hex'),browser:browserName,results,summary:{pass:results.filter(r=>r.status==='PASS').length,fail:results.filter(r=>r.status==='FAIL').length,harnessErrors:results.filter(r=>r.status==='HARNESS_ERROR').length}};
+  const committedSource=cp.execFileSync('git',['show',workspaceCommit+':index.html']);
+  const report={workspaceCommit,sourceRevision:process.env.XL_REVIEW_REVISION || (html.equals(committedSource) ? workspaceCommit : null),sourceSha256:crypto.createHash('sha256').update(html).digest('hex'),runnerSha256:crypto.createHash('sha256').update(fs.readFileSync(__filename)).digest('hex'),browser:browserName,results,summary:{pass:results.filter(r=>r.status==='PASS').length,fail:results.filter(r=>r.status==='FAIL').length,harnessErrors:results.filter(r=>r.status==='HARNESS_ERROR').length}};
   const output=process.env.XL_REVIEW_REPORT || path.resolve('test-results/review/'+group+'-'+browserName+'.json');
   fs.mkdirSync(path.dirname(output),{recursive:true});
   fs.writeFileSync(output,JSON.stringify(report,null,2)+'\n');

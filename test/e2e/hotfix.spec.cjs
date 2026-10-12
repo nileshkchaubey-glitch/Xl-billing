@@ -53,7 +53,7 @@ test('characterization: file origin works offline without outgoing requests',asy
  const ctx=await browser.newContext(),pg=await ctx.newPage(),errors=[],requests=[];pg.on('pageerror',e=>errors.push(e.message));pg.on('request',r=>{if(/^https?:/.test(r.url()))requests.push(r.url());});pg.on('dialog',d=>d.accept());await ctx.setOffline(true);await pg.goto(require('node:url').pathToFileURL(require('node:path').resolve('index.html')).href);await ready(pg);await pg.evaluate(()=>nav('new-sale'));expect(errors).toEqual([]);expect(requests).toEqual([]);await ctx.close();
 });
 test('visual evidence: desktop and mobile pages',async({page,browserName})=>{
- if(browserName!=='chromium')return;
+ test.skip(browserName!=='chromium','Screenshot evidence is captured in Chromium.');
  const fs=require('node:fs');fs.mkdirSync('test-results/screenshots',{recursive:true});
  for(const [width,height]of [[1366,768],[390,844]]){await page.setViewportSize({width,height});for(const pg of ['dashboard','new-sale','sales-list','retail-entry','new-purchase','purchase-list','items','parties','reports','settings','prev-bills','payments','learn','excel-connect','github-guide','pur-bulk','pur-pay','audit-log','txn-log']){await page.evaluate(p=>nav(p),pg);await page.screenshot({path:`test-results/screenshots/${pg}-${width}.png`});}}
 });

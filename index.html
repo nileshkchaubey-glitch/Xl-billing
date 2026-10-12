@@ -10299,7 +10299,7 @@ function createXLBackup(options){
   const maxBytes=20*1024*1024,core=['settings','items','parties','invoices','purchases','retail','audit'];
   const permitted=key=>typeof key==='string'&&(key.startsWith('shop4_')||['v8_slcols','v8_compact','xl_backup_config','xl_backup_state'].includes(key));
   const plain=value=>value&&typeof value==='object'&&!Array.isArray(value);
-  function validate(records){
+  function validate(records,forRestore=true){
     if(!plain(records)||Object.keys(records).length>10000)throw new Error('Unsupported backup record map.');
     for(const [key,raw]of Object.entries(records)){
       if(!permitted(key)||typeof raw!=='string')throw new Error('Backup contains an unsupported key or value.');
@@ -10315,12 +10315,12 @@ function createXLBackup(options){
         }
       }
     }
-    options.validate?.(records);return records;
+    if(forRestore)options.validate?.(records);return records;
   }
   async function digest(value){if(!options.crypto?.subtle)throw new Error('Backup verification requires browser cryptography.');const bytes=await options.crypto.subtle.digest('SHA-256',new TextEncoder().encode(value));return Array.from(new Uint8Array(bytes),b=>b.toString(16).padStart(2,'0')).join('');}
   const signed=b=>JSON.stringify({format:b.format,version:b.version,createdAt:b.createdAt,payload:b.payload});
   async function encode(records){
-    validate(records);const backup={format:'xl-billing-private',version:1,createdAt:new Date().toISOString(),payload:{records:Object.keys(records).sort().map(key=>({key,value:records[key]}))}};
+    validate(records,false);const backup={format:'xl-billing-private',version:1,createdAt:new Date().toISOString(),payload:{records:Object.keys(records).sort().map(key=>({key,value:records[key]}))}};
     if(new TextEncoder().encode(signed(backup)).length>maxBytes)throw new Error('Backup exceeds the supported 20 MiB limit. Use raw recovery export for review.');
     backup.checksum={algorithm:'SHA-256',value:await digest(signed(backup))};if(new TextEncoder().encode(JSON.stringify(backup)).length>maxBytes)throw new Error('Backup exceeds the supported 20 MiB limit.');return backup;
   }
@@ -10337,9 +10337,9 @@ function createXLBackup(options){
       return {records:validate(records),verified:true,createdAt:b.createdAt,format:b.format};
     }
     if(![4,5].includes(b.v)||Object.hasOwn(b,'checksum')||core.slice(0,6).some(key=>!Object.hasOwn(b,key)))throw new Error('Legacy backup is incomplete, unsupported, or has an unverifiable checksum.');
-    if(Object.keys(b).some(k=>!['v','exportDate',...core].includes(k)))throw new Error('Legacy backup contains unsupported fields.');
+    if(Object.keys(b).some(k=>!['v','exportDate','ts',...core].includes(k)))throw new Error('Legacy backup contains unsupported fields.');
     const records=Object.fromEntries(core.filter(k=>Object.hasOwn(b,k)).map(k=>['shop4_'+k,JSON.stringify(b[k])]));
-    return {records:validate(records),verified:false,createdAt:b.exportDate||null,format:'legacy-v'+b.v};
+    return {records:validate(records),verified:false,createdAt:b.exportDate||b.ts||null,format:'legacy-v'+b.v};
   }
   return {maxBytes,encode,decode,validate};
 }
