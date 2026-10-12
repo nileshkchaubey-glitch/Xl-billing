@@ -1,0 +1,660 @@
+{
+  "synthetic_only": true,
+  "baseline_commit": "5d3fb7991586d7acef84d49cdd26a003b290d912",
+  "baseline_source_sha256": "37cb3c09b5d165768666d3ccefae9478b10f08a7dc20f1dcc219cad91e596933",
+  "after_application_commit": "d00ae4b53805867fba609be3581b513e1d9b15ab",
+  "after_source_sha256": "8c89415c6a198038fb57ad379bf40e411874d5d45dba5a196f18c80c668706c5",
+  "unit_before": {
+    "tests": 27,
+    "pass": 0,
+    "fail": 27,
+    "skipped": 0
+  },
+  "unit_after": {
+    "tests": 27,
+    "pass": 27,
+    "fail": 0,
+    "skipped": 0
+  },
+  "owner_before_chromium": {
+    "pass": 3,
+    "fail": 4,
+    "harness_errors": 0
+  },
+  "owner_after": {
+    "chromium": {
+      "pass": 7,
+      "fail": 0,
+      "harness_errors": 0
+    },
+    "firefox": {
+      "pass": 7,
+      "fail": 0,
+      "harness_errors": 0
+    },
+    "webkit": {
+      "pass": 7,
+      "fail": 0,
+      "harness_errors": 0
+    }
+  },
+  "browser_before": {
+    "stats": {
+      "startTime": "2026-10-12T18:45:00.128Z",
+      "duration": 10558.056,
+      "expected": 0,
+      "skipped": 0,
+      "unexpected": 2,
+      "flaky": 0
+    },
+    "results": [
+      {
+        "name": "CSV previous: mixed valid then malformed paid leaves all business bytes unchanged",
+        "browser": "chromium",
+        "status": "unexpected",
+        "results": [
+          {
+            "status": "failed",
+            "error": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoEqual\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // deep equality\u001b[22m\n\n\u001b[32m- Expected  - 1\u001b[39m\n\u001b[31m+ Received  + 1\u001b[39m\n\n\u001b[33m@@ -1,9 +1,9 @@\u001b[39m\n\u001b[2m  Object {\u001b[22m\n\u001b[2m    \"shop4_audit\": \"[]\",\u001b[22m\n\u001b[2m    \"shop4_future\": \"opaque synthetic CSV fixture\",\u001b[22m\n\u001b[32m-   \"shop4_invoices\": \"[{\\\"id\\\":\\\"s0\\\",\\\"invoiceNo\\\":\\\"INV-1001\\\",\\\"date\\\":\\\"2026-10-09\\\",\\\"partyId\\\":\\\"p1\\\",\\\"partyName\\\":\\\"Synthetic Customer\\\",\\\"items\\\":[{\\\"id\\\":\\\"line0\\\",\\\"itemId\\\":\\\"i1\\\",\\\"name\\\":\\\"Paper Cups\\\",\\\"qty\\\":5,\\\"rate\\\":20,\\\"amt\\\":100,\\\"unit\\\":\\\"Pcs\\\"}],\\\"subtotal\\\":100,\\\"discount\\\":0,\\\"taxPct\\\":0,\\\"taxAmt\\\":0,\\\"total\\\":100,\\\"paid\\\":20,\\\"balance\\\":80,\\\"notes\\\":\\\"\\\",\\\"paymentType\\\":\\\"Credit\\\",\\\"dispatchStatus\\\":\\\"pending\\\",\\\"payments\\\":[{\\\"date\\\":\\\"2026-10-09\\\",\\\"amt\\\":20,\\\"mode\\\":\\\"Cash\\\",\\\"note\\\":\\\"\\\"}],\\\"createdAt\\\":\\\"2026-10-09T08:00:00Z\\\"},{\\\"id\\\":\\\"s1\\\",\\\"invoiceNo\\\":\\\"INV-1002\\\",\\\"date\\\":\\\"2026-10-09\\\",\\\"partyId\\\":\\\"p1\\\",\\\"partyName\\\":\\\"Synthetic Customer\\\",\\\"items\\\":[{\\\"id\\\":\\\"line1\\\",\\\"itemId\\\":\\\"i1\\\",\\\"name\\\":\\\"Paper Cups\\\",\\\"qty\\\":5,\\\"rate\\\":20,\\\"amt\\\":100,\\\"unit\\\":\\\"Pcs\\\"}],\\\"subtotal\\\":100,\\\"discount\\\":0,\\\"taxPct\\\":0,\\\"taxAmt\\\":0,\\\"total\\\":100,\\\"paid\\\":20,\\\"balance\\\":80,\\\"notes\\\":\\\"\\\",\\\"paymentType\\\":\\\"Credit\\\",\\\"dispatchStatus\\\":\\\"pending\\\",\\\"payments\\\":[{\\\"date\\\":\\\"2026-10-09\\\",\\\"amt\\\":20,\\\"mode\\\":\\\"Cash\\\",\\\"note\\\":\\\"\\\"}],\\\"createdAt\\\":\\\"2026-10-09T08:00:00Z\\\"}]\",\u001b[39m\n\u001b[31m+   \"shop4_invoices\": \"[{\\\"id\\\":\\\"s0\\\",\\\"invoiceNo\\\":\\\"INV-1001\\\",\\\"date\\\":\\\"2026-10-09\\\",\\\"partyId\\\":\\\"p1\\\",\\\"partyName\\\":\\\"Synthetic Customer\\\",\\\"items\\\":[{\\\"id\\\":\\\"line0\\\",\\\"itemId\\\":\\\"i1\\\",\\\"name\\\":\\\"Paper Cups\\\",\\\"qty\\\":5,\\\"rate\\\":20,\\\"amt\\\":100,\\\"unit\\\":\\\"Pcs\\\"}],\\\"subtotal\\\":100,\\\"discount\\\":0,\\\"taxPct\\\":0,\\\"taxAmt\\\":0,\\\"total\\\":100,\\\"paid\\\":20,\\\"balance\\\":80,\\\"notes\\\":\\\"\\\",\\\"paymentType\\\":\\\"Credit\\\",\\\"dispatchStatus\\\":\\\"pending\\\",\\\"payments\\\":[{\\\"date\\\":\\\"2026-10-09\\\",\\\"amt\\\":20,\\\"mode\\\":\\\"Cash\\\",\\\"note\\\":\\\"\\\"}],\\\"createdAt\\\":\\\"2026-10-09T08:00:00Z\\\"},{\\\"id\\\":\\\"s1\\\",\\\"invoiceNo\\\":\\\"INV-1002\\\",\\\"date\\\":\\\"2026-10-09\\\",\\\"partyId\\\":\\\"p1\\\",\\\"partyName\\\":\\\"Synthetic Customer\\\",\\\"items\\\":[{\\\"id\\\":\\\"line1\\\",\\\"itemId\\\":\\\"i1\\\",\\\"name\\\":\\\"Paper Cups\\\",\\\"qty\\\":5,\\\"rate\\\":20,\\\"amt\\\":100,\\\"unit\\\":\\\"Pcs\\\"}],\\\"subtotal\\\":100,\\\"discount\\\":0,\\\"taxPct\\\":0,\\\"taxAmt\\\":0,\\\"total\\\":100,\\\"paid\\\":20,\\\"balance\\\":80,\\\"notes\\\":\\\"\\\",\\\"paymentType\\\":\\\"Credit\\\",\\\"dispatchStatus\\\":\\\"pending\\\",\\\"payments\\\":[{\\\"date\\\":\\\"2026-10-09\\\",\\\"amt\\\":20,\\\"mode\\\":\\\"Cash\\\",\\\"note\\\":\\\"\\\"}],\\\"createdAt\\\":\\\"2026-10-09T08:00:00Z\\\"},{\\\"id\\\":\\\"mv5lqkv6-fd20dc3a-7448-45ce-b44c-d481be4e9b96\\\",\\\"invoiceNo\\\":\\\"GOOD-ROW\\\",\\\"date\\\":\\\"2026-10-12\\\",\\\"partyId\\\":\\\"\\\",\\\"partyName\\\":\\\"Synthetic Customer\\\",\\\"items\\\":[],\\\"subtotal\\\":100,\\\"discount\\\":0,\\\"taxPct\\\":0,\\\"taxAmt\\\":0,\\\"total\\\":100,\\\"paid\\\":20,\\\"balance\\\":80,\\\"paymentType\\\":\\\"Cash\\\",\\\"dispatchStatus\\\":\\\"dispatched\\\",\\\"notes\\\":\\\" [CSV Import]\\\",\\\"isManual\\\":true,\\\"payments\\\":[{\\\"date\\\":\\\"2026-10-12\\\",\\\"amt\\\":20,\\\"mode\\\":\\\"Cash\\\",\\\"note\\\":\\\"CSV import\\\"}],\\\"createdAt\\\":\\\"2026-10-12T18:45:05.442Z\\\"},{\\\"id\\\":\\\"mv5lqkv6-88c8b75d-ed9b-452a-a2c2-940c60ca4ba7\\\",\\\"invoiceNo\\\":\\\"BAD-ROW\\\",\\\"date\\\":\\\"2026-10-12\\\",\\\"partyId\\\":\\\"\\\",\\\"partyName\\\":\\\"Synthetic Customer\\\",\\\"items\\\":[],\\\"subtotal\\\":100,\\\"discount\\\":0,\\\"taxPct\\\":0,\\\"taxAmt\\\":0,\\\"total\\\":100,\\\"paid\\\":0,\\\"balance\\\":100,\\\"paymentType\\\":\\\"Cash\\\",\\\"dispatchStatus\\\":\\\"dispatched\\\",\\\"notes\\\":\\\" [CSV Import]\\\",\\\"isManual\\\":true,\\\"payments\\\":[],\\\"createdAt\\\":\\\"2026-10-12T18:45:05.442Z\\\"}]\",\u001b[39m\n\u001b[2m    \"shop4_items\": \"[{\\\"id\\\":\\\"i1\\\",\\\"name\\\":\\\"Paper Cups\\\",\\\"unit\\\":\\\"Pcs\\\",\\\"saleRate\\\":20,\\\"purchaseRate\\\":10,\\\"gst\\\":5},{\\\"id\\\":\\\"i2\\\",\\\"name\\\":\\\"Plates\\\",\\\"unit\\\":\\\"Pcs\\\",\\\"saleRate\\\":30,\\\"purchaseRate\\\":15,\\\"gst\\\":12}]\",\u001b[22m\n\u001b[2m    \"shop4_parties\": \"[{\\\"id\\\":\\\"p1\\\",\\\"name\\\":\\\"Synthetic Customer\\\",\\\"phone\\\":\\\"9876543210\\\",\\\"type\\\":\\\"both\\\",\\\"openingBal\\\":0},{\\\"id\\\":\\\"p2\\\",\\\"name\\\":\\\"Synthetic Supplier\\\",\\\"type\\\":\\\"supplier\\\",\\\"openingBal\\\":0}]\",\u001b[22m\n\u001b[2m    \"shop4_purchases\": \"[{\\\"id\\\":\\\"u1\\\",\\\"date\\\":\\\"2026-10-09\\\",\\\"partyId\\\":\\\"p2\\\",\\\"partyName\\\":\\\"Synthetic Supplier\\\",\\\"billNo\\\":\\\"P-1\\\",\\\"mode\\\":\\\"amount\\\",\\\"total\\\":500,\\\"paid\\\":20,\\\"balance\\\":480,\\\"items\\\":[],\\\"notes\\\":\\\"\\\",\\\"payments\\\":[{\\\"date\\\":\\\"2026-10-09\\\",\\\"amt\\\":20,\\\"mode\\\":\\\"Cash\\\",\\\"note\\\":\\\"\\\"}],\\\"createdAt\\\":\\\"2026-10-09T08:00:00Z\\\"}]\",\u001b[22m\n\u001b[2m    \"shop4_retail\": \"[{\\\"id\\\":\\\"r1\\\",\\\"date\\\":\\\"2026-10-09\\\",\\\"amount\\\":50,\\\"notes\\\":\\\"\\\"}]\",\u001b[22m\n\u001b[2m    \"shop4_settings\": \"{\\\"shopName\\\":\\\"Synthetic XL Shop\\\",\\\"prefix\\\":\\\"INV-\\\",\\\"invNo\\\":1003,\\\"fy\\\":\\\"2026-27\\\",\\\"terms\\\":\\\"\\\",\\\"bank\\\":\\\"\\\",\\\"customFields\\\":[],\\\"modules\\\":{\\\"packing\\\":true,\\\"dispatch\\\":true,\\\"retail\\\":true,\\\"gst\\\":true},\\\"deletePinSalt\\\":\\\"synthetic-csv\\\",\\\"deletePinHash\\\":\\\"47cdd4ad1ce2f5577507ea00c057782a1e85914f7387f884736c9c37da118e75\\\"}\",\u001b[22m"
+          }
+        ]
+      },
+      {
+        "name": "CSV excel: mixed valid then malformed paid leaves all business bytes unchanged",
+        "browser": "chromium",
+        "status": "unexpected",
+        "results": [
+          {
+            "status": "failed",
+            "error": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoEqual\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // deep equality\u001b[22m\n\n\u001b[32m- Expected  - 1\u001b[39m\n\u001b[31m+ Received  + 1\u001b[39m\n\n\u001b[33m@@ -1,9 +1,9 @@\u001b[39m\n\u001b[2m  Object {\u001b[22m\n\u001b[2m    \"shop4_audit\": \"[]\",\u001b[22m\n\u001b[2m    \"shop4_future\": \"opaque synthetic CSV fixture\",\u001b[22m\n\u001b[32m-   \"shop4_invoices\": \"[{\\\"id\\\":\\\"s0\\\",\\\"invoiceNo\\\":\\\"INV-1001\\\",\\\"date\\\":\\\"2026-10-09\\\",\\\"partyId\\\":\\\"p1\\\",\\\"partyName\\\":\\\"Synthetic Customer\\\",\\\"items\\\":[{\\\"id\\\":\\\"line0\\\",\\\"itemId\\\":\\\"i1\\\",\\\"name\\\":\\\"Paper Cups\\\",\\\"qty\\\":5,\\\"rate\\\":20,\\\"amt\\\":100,\\\"unit\\\":\\\"Pcs\\\"}],\\\"subtotal\\\":100,\\\"discount\\\":0,\\\"taxPct\\\":0,\\\"taxAmt\\\":0,\\\"total\\\":100,\\\"paid\\\":20,\\\"balance\\\":80,\\\"notes\\\":\\\"\\\",\\\"paymentType\\\":\\\"Credit\\\",\\\"dispatchStatus\\\":\\\"pending\\\",\\\"payments\\\":[{\\\"date\\\":\\\"2026-10-09\\\",\\\"amt\\\":20,\\\"mode\\\":\\\"Cash\\\",\\\"note\\\":\\\"\\\"}],\\\"createdAt\\\":\\\"2026-10-09T08:00:00Z\\\"},{\\\"id\\\":\\\"s1\\\",\\\"invoiceNo\\\":\\\"INV-1002\\\",\\\"date\\\":\\\"2026-10-09\\\",\\\"partyId\\\":\\\"p1\\\",\\\"partyName\\\":\\\"Synthetic Customer\\\",\\\"items\\\":[{\\\"id\\\":\\\"line1\\\",\\\"itemId\\\":\\\"i1\\\",\\\"name\\\":\\\"Paper Cups\\\",\\\"qty\\\":5,\\\"rate\\\":20,\\\"amt\\\":100,\\\"unit\\\":\\\"Pcs\\\"}],\\\"subtotal\\\":100,\\\"discount\\\":0,\\\"taxPct\\\":0,\\\"taxAmt\\\":0,\\\"total\\\":100,\\\"paid\\\":20,\\\"balance\\\":80,\\\"notes\\\":\\\"\\\",\\\"paymentType\\\":\\\"Credit\\\",\\\"dispatchStatus\\\":\\\"pending\\\",\\\"payments\\\":[{\\\"date\\\":\\\"2026-10-09\\\",\\\"amt\\\":20,\\\"mode\\\":\\\"Cash\\\",\\\"note\\\":\\\"\\\"}],\\\"createdAt\\\":\\\"2026-10-09T08:00:00Z\\\"}]\",\u001b[39m\n\u001b[31m+   \"shop4_invoices\": \"[{\\\"id\\\":\\\"s0\\\",\\\"invoiceNo\\\":\\\"INV-1001\\\",\\\"date\\\":\\\"2026-10-09\\\",\\\"partyId\\\":\\\"p1\\\",\\\"partyName\\\":\\\"Synthetic Customer\\\",\\\"items\\\":[{\\\"id\\\":\\\"line0\\\",\\\"itemId\\\":\\\"i1\\\",\\\"name\\\":\\\"Paper Cups\\\",\\\"qty\\\":5,\\\"rate\\\":20,\\\"amt\\\":100,\\\"unit\\\":\\\"Pcs\\\"}],\\\"subtotal\\\":100,\\\"discount\\\":0,\\\"taxPct\\\":0,\\\"taxAmt\\\":0,\\\"total\\\":100,\\\"paid\\\":20,\\\"balance\\\":80,\\\"notes\\\":\\\"\\\",\\\"paymentType\\\":\\\"Credit\\\",\\\"dispatchStatus\\\":\\\"pending\\\",\\\"payments\\\":[{\\\"date\\\":\\\"2026-10-09\\\",\\\"amt\\\":20,\\\"mode\\\":\\\"Cash\\\",\\\"note\\\":\\\"\\\"}],\\\"createdAt\\\":\\\"2026-10-09T08:00:00Z\\\"},{\\\"id\\\":\\\"s1\\\",\\\"invoiceNo\\\":\\\"INV-1002\\\",\\\"date\\\":\\\"2026-10-09\\\",\\\"partyId\\\":\\\"p1\\\",\\\"partyName\\\":\\\"Synthetic Customer\\\",\\\"items\\\":[{\\\"id\\\":\\\"line1\\\",\\\"itemId\\\":\\\"i1\\\",\\\"name\\\":\\\"Paper Cups\\\",\\\"qty\\\":5,\\\"rate\\\":20,\\\"amt\\\":100,\\\"unit\\\":\\\"Pcs\\\"}],\\\"subtotal\\\":100,\\\"discount\\\":0,\\\"taxPct\\\":0,\\\"taxAmt\\\":0,\\\"total\\\":100,\\\"paid\\\":20,\\\"balance\\\":80,\\\"notes\\\":\\\"\\\",\\\"paymentType\\\":\\\"Credit\\\",\\\"dispatchStatus\\\":\\\"pending\\\",\\\"payments\\\":[{\\\"date\\\":\\\"2026-10-09\\\",\\\"amt\\\":20,\\\"mode\\\":\\\"Cash\\\",\\\"note\\\":\\\"\\\"}],\\\"createdAt\\\":\\\"2026-10-09T08:00:00Z\\\"},{\\\"id\\\":\\\"mv5lqo25-630dfb49-062d-45c9-a4db-0cbf5fb5d911\\\",\\\"invoiceNo\\\":\\\"GOOD-ROW\\\",\\\"date\\\":\\\"2026-10-12\\\",\\\"partyId\\\":\\\"\\\",\\\"partyName\\\":\\\"Synthetic Customer\\\",\\\"items\\\":[],\\\"subtotal\\\":100,\\\"discount\\\":0,\\\"taxPct\\\":0,\\\"taxAmt\\\":0,\\\"total\\\":100,\\\"paid\\\":20,\\\"balance\\\":80,\\\"paymentType\\\":\\\"Cash\\\",\\\"dispatchStatus\\\":\\\"dispatched\\\",\\\"notes\\\":\\\" [CSV Import]\\\",\\\"isManual\\\":true,\\\"payments\\\":[],\\\"createdAt\\\":\\\"2026-10-12T18:45:09.581Z\\\"},{\\\"id\\\":\\\"mv5lqo25-50d54c2d-ffb8-4294-802b-b0339521e1e8\\\",\\\"invoiceNo\\\":\\\"BAD-ROW\\\",\\\"date\\\":\\\"2026-10-12\\\",\\\"partyId\\\":\\\"\\\",\\\"partyName\\\":\\\"Synthetic Customer\\\",\\\"items\\\":[],\\\"subtotal\\\":100,\\\"discount\\\":0,\\\"taxPct\\\":0,\\\"taxAmt\\\":0,\\\"total\\\":100,\\\"paid\\\":0,\\\"balance\\\":100,\\\"paymentType\\\":\\\"Cash\\\",\\\"dispatchStatus\\\":\\\"dispatched\\\",\\\"notes\\\":\\\" [CSV Import]\\\",\\\"isManual\\\":true,\\\"payments\\\":[],\\\"createdAt\\\":\\\"2026-10-12T18:45:09.581Z\\\"}]\",\u001b[39m\n\u001b[2m    \"shop4_items\": \"[{\\\"id\\\":\\\"i1\\\",\\\"name\\\":\\\"Paper Cups\\\",\\\"unit\\\":\\\"Pcs\\\",\\\"saleRate\\\":20,\\\"purchaseRate\\\":10,\\\"gst\\\":5},{\\\"id\\\":\\\"i2\\\",\\\"name\\\":\\\"Plates\\\",\\\"unit\\\":\\\"Pcs\\\",\\\"saleRate\\\":30,\\\"purchaseRate\\\":15,\\\"gst\\\":12}]\",\u001b[22m\n\u001b[2m    \"shop4_parties\": \"[{\\\"id\\\":\\\"p1\\\",\\\"name\\\":\\\"Synthetic Customer\\\",\\\"phone\\\":\\\"9876543210\\\",\\\"type\\\":\\\"both\\\",\\\"openingBal\\\":0},{\\\"id\\\":\\\"p2\\\",\\\"name\\\":\\\"Synthetic Supplier\\\",\\\"type\\\":\\\"supplier\\\",\\\"openingBal\\\":0}]\",\u001b[22m\n\u001b[2m    \"shop4_purchases\": \"[{\\\"id\\\":\\\"u1\\\",\\\"date\\\":\\\"2026-10-09\\\",\\\"partyId\\\":\\\"p2\\\",\\\"partyName\\\":\\\"Synthetic Supplier\\\",\\\"billNo\\\":\\\"P-1\\\",\\\"mode\\\":\\\"amount\\\",\\\"total\\\":500,\\\"paid\\\":20,\\\"balance\\\":480,\\\"items\\\":[],\\\"notes\\\":\\\"\\\",\\\"payments\\\":[{\\\"date\\\":\\\"2026-10-09\\\",\\\"amt\\\":20,\\\"mode\\\":\\\"Cash\\\",\\\"note\\\":\\\"\\\"}],\\\"createdAt\\\":\\\"2026-10-09T08:00:00Z\\\"}]\",\u001b[22m\n\u001b[2m    \"shop4_retail\": \"[{\\\"id\\\":\\\"r1\\\",\\\"date\\\":\\\"2026-10-09\\\",\\\"amount\\\":50,\\\"notes\\\":\\\"\\\"}]\",\u001b[22m\n\u001b[2m    \"shop4_settings\": \"{\\\"shopName\\\":\\\"Synthetic XL Shop\\\",\\\"prefix\\\":\\\"INV-\\\",\\\"invNo\\\":1003,\\\"fy\\\":\\\"2026-27\\\",\\\"terms\\\":\\\"\\\",\\\"bank\\\":\\\"\\\",\\\"customFields\\\":[],\\\"modules\\\":{\\\"packing\\\":true,\\\"dispatch\\\":true,\\\"retail\\\":true,\\\"gst\\\":true},\\\"deletePinSalt\\\":\\\"synthetic-csv\\\",\\\"deletePinHash\\\":\\\"47cdd4ad1ce2f5577507ea00c057782a1e85914f7387f884736c9c37da118e75\\\"}\",\u001b[22m"
+          }
+        ]
+      }
+    ]
+  },
+  "browser_after": {
+    "stats": {
+      "startTime": "2026-10-12T18:48:21.303Z",
+      "duration": 90036.099,
+      "expected": 51,
+      "skipped": 0,
+      "unexpected": 0,
+      "flaky": 0
+    },
+    "results": [
+      {
+        "name": "CSV previous: mixed valid then malformed paid leaves all business bytes unchanged",
+        "browser": "chromium",
+        "status": "expected",
+        "results": [
+          {
+            "status": "passed",
+            "error": null
+          }
+        ]
+      },
+      {
+        "name": "CSV previous: sub-paise monetary value leaves all business bytes unchanged",
+        "browser": "chromium",
+        "status": "expected",
+        "results": [
+          {
+            "status": "passed",
+            "error": null
+          }
+        ]
+      },
+      {
+        "name": "CSV previous: extra row cells leaves all business bytes unchanged",
+        "browser": "chromium",
+        "status": "expected",
+        "results": [
+          {
+            "status": "passed",
+            "error": null
+          }
+        ]
+      },
+      {
+        "name": "CSV previous: unsupported historical column leaves all business bytes unchanged",
+        "browser": "chromium",
+        "status": "expected",
+        "results": [
+          {
+            "status": "passed",
+            "error": null
+          }
+        ]
+      },
+      {
+        "name": "CSV previous: missing declared relationship leaves all business bytes unchanged",
+        "browser": "chromium",
+        "status": "expected",
+        "results": [
+          {
+            "status": "passed",
+            "error": null
+          }
+        ]
+      },
+      {
+        "name": "CSV previous: duplicate within file leaves all business bytes unchanged",
+        "browser": "chromium",
+        "status": "expected",
+        "results": [
+          {
+            "status": "passed",
+            "error": null
+          }
+        ]
+      },
+      {
+        "name": "CSV excel: mixed valid then malformed paid leaves all business bytes unchanged",
+        "browser": "chromium",
+        "status": "expected",
+        "results": [
+          {
+            "status": "passed",
+            "error": null
+          }
+        ]
+      },
+      {
+        "name": "CSV excel: sub-paise monetary value leaves all business bytes unchanged",
+        "browser": "chromium",
+        "status": "expected",
+        "results": [
+          {
+            "status": "passed",
+            "error": null
+          }
+        ]
+      },
+      {
+        "name": "CSV excel: extra row cells leaves all business bytes unchanged",
+        "browser": "chromium",
+        "status": "expected",
+        "results": [
+          {
+            "status": "passed",
+            "error": null
+          }
+        ]
+      },
+      {
+        "name": "CSV excel: unsupported historical column leaves all business bytes unchanged",
+        "browser": "chromium",
+        "status": "expected",
+        "results": [
+          {
+            "status": "passed",
+            "error": null
+          }
+        ]
+      },
+      {
+        "name": "CSV excel: missing declared relationship leaves all business bytes unchanged",
+        "browser": "chromium",
+        "status": "expected",
+        "results": [
+          {
+            "status": "passed",
+            "error": null
+          }
+        ]
+      },
+      {
+        "name": "CSV excel: duplicate within file leaves all business bytes unchanged",
+        "browser": "chromium",
+        "status": "expected",
+        "results": [
+          {
+            "status": "passed",
+            "error": null
+          }
+        ]
+      },
+      {
+        "name": "CSV previous: legacy summaries retain opening receipt without fabricated events",
+        "browser": "chromium",
+        "status": "expected",
+        "results": [
+          {
+            "status": "passed",
+            "error": null
+          }
+        ]
+      },
+      {
+        "name": "CSV excel: legacy summaries retain opening receipt without fabricated events",
+        "browser": "chromium",
+        "status": "expected",
+        "results": [
+          {
+            "status": "passed",
+            "error": null
+          }
+        ]
+      },
+      {
+        "name": "CSV real export and upload preserve invoice histories, IDs and unknown fields exactly",
+        "browser": "chromium",
+        "status": "expected",
+        "results": [
+          {
+            "status": "passed",
+            "error": null
+          }
+        ]
+      },
+      {
+        "name": "CSV own text literals retain actual apostrophes and every formula prefix on reimport",
+        "browser": "chromium",
+        "status": "expected",
+        "results": [
+          {
+            "status": "passed",
+            "error": null
+          }
+        ]
+      },
+      {
+        "name": "CSV dual representation tampering rejects the entire file through real upload",
+        "browser": "chromium",
+        "status": "expected",
+        "results": [
+          {
+            "status": "passed",
+            "error": null
+          }
+        ]
+      },
+      {
+        "name": "CSV previous: mixed valid then malformed paid leaves all business bytes unchanged",
+        "browser": "firefox",
+        "status": "expected",
+        "results": [
+          {
+            "status": "passed",
+            "error": null
+          }
+        ]
+      },
+      {
+        "name": "CSV previous: sub-paise monetary value leaves all business bytes unchanged",
+        "browser": "firefox",
+        "status": "expected",
+        "results": [
+          {
+            "status": "passed",
+            "error": null
+          }
+        ]
+      },
+      {
+        "name": "CSV previous: extra row cells leaves all business bytes unchanged",
+        "browser": "firefox",
+        "status": "expected",
+        "results": [
+          {
+            "status": "passed",
+            "error": null
+          }
+        ]
+      },
+      {
+        "name": "CSV previous: unsupported historical column leaves all business bytes unchanged",
+        "browser": "firefox",
+        "status": "expected",
+        "results": [
+          {
+            "status": "passed",
+            "error": null
+          }
+        ]
+      },
+      {
+        "name": "CSV previous: missing declared relationship leaves all business bytes unchanged",
+        "browser": "firefox",
+        "status": "expected",
+        "results": [
+          {
+            "status": "passed",
+            "error": null
+          }
+        ]
+      },
+      {
+        "name": "CSV previous: duplicate within file leaves all business bytes unchanged",
+        "browser": "firefox",
+        "status": "expected",
+        "results": [
+          {
+            "status": "passed",
+            "error": null
+          }
+        ]
+      },
+      {
+        "name": "CSV excel: mixed valid then malformed paid leaves all business bytes unchanged",
+        "browser": "firefox",
+        "status": "expected",
+        "results": [
+          {
+            "status": "passed",
+            "error": null
+          }
+        ]
+      },
+      {
+        "name": "CSV excel: sub-paise monetary value leaves all business bytes unchanged",
+        "browser": "firefox",
+        "status": "expected",
+        "results": [
+          {
+            "status": "passed",
+            "error": null
+          }
+        ]
+      },
+      {
+        "name": "CSV excel: extra row cells leaves all business bytes unchanged",
+        "browser": "firefox",
+        "status": "expected",
+        "results": [
+          {
+            "status": "passed",
+            "error": null
+          }
+        ]
+      },
+      {
+        "name": "CSV excel: unsupported historical column leaves all business bytes unchanged",
+        "browser": "firefox",
+        "status": "expected",
+        "results": [
+          {
+            "status": "passed",
+            "error": null
+          }
+        ]
+      },
+      {
+        "name": "CSV excel: missing declared relationship leaves all business bytes unchanged",
+        "browser": "firefox",
+        "status": "expected",
+        "results": [
+          {
+            "status": "passed",
+            "error": null
+          }
+        ]
+      },
+      {
+        "name": "CSV excel: duplicate within file leaves all business bytes unchanged",
+        "browser": "firefox",
+        "status": "expected",
+        "results": [
+          {
+            "status": "passed",
+            "error": null
+          }
+        ]
+      },
+      {
+        "name": "CSV previous: legacy summaries retain opening receipt without fabricated events",
+        "browser": "firefox",
+        "status": "expected",
+        "results": [
+          {
+            "status": "passed",
+            "error": null
+          }
+        ]
+      },
+      {
+        "name": "CSV excel: legacy summaries retain opening receipt without fabricated events",
+        "browser": "firefox",
+        "status": "expected",
+        "results": [
+          {
+            "status": "passed",
+            "error": null
+          }
+        ]
+      },
+      {
+        "name": "CSV real export and upload preserve invoice histories, IDs and unknown fields exactly",
+        "browser": "firefox",
+        "status": "expected",
+        "results": [
+          {
+            "status": "passed",
+            "error": null
+          }
+        ]
+      },
+      {
+        "name": "CSV own text literals retain actual apostrophes and every formula prefix on reimport",
+        "browser": "firefox",
+        "status": "expected",
+        "results": [
+          {
+            "status": "passed",
+            "error": null
+          }
+        ]
+      },
+      {
+        "name": "CSV dual representation tampering rejects the entire file through real upload",
+        "browser": "firefox",
+        "status": "expected",
+        "results": [
+          {
+            "status": "passed",
+            "error": null
+          }
+        ]
+      },
+      {
+        "name": "CSV previous: mixed valid then malformed paid leaves all business bytes unchanged",
+        "browser": "webkit",
+        "status": "expected",
+        "results": [
+          {
+            "status": "passed",
+            "error": null
+          }
+        ]
+      },
+      {
+        "name": "CSV previous: sub-paise monetary value leaves all business bytes unchanged",
+        "browser": "webkit",
+        "status": "expected",
+        "results": [
+          {
+            "status": "passed",
+            "error": null
+          }
+        ]
+      },
+      {
+        "name": "CSV previous: extra row cells leaves all business bytes unchanged",
+        "browser": "webkit",
+        "status": "expected",
+        "results": [
+          {
+            "status": "passed",
+            "error": null
+          }
+        ]
+      },
+      {
+        "name": "CSV previous: unsupported historical column leaves all business bytes unchanged",
+        "browser": "webkit",
+        "status": "expected",
+        "results": [
+          {
+            "status": "passed",
+            "error": null
+          }
+        ]
+      },
+      {
+        "name": "CSV previous: missing declared relationship leaves all business bytes unchanged",
+        "browser": "webkit",
+        "status": "expected",
+        "results": [
+          {
+            "status": "passed",
+            "error": null
+          }
+        ]
+      },
+      {
+        "name": "CSV previous: duplicate within file leaves all business bytes unchanged",
+        "browser": "webkit",
+        "status": "expected",
+        "results": [
+          {
+            "status": "passed",
+            "error": null
+          }
+        ]
+      },
+      {
+        "name": "CSV excel: mixed valid then malformed paid leaves all business bytes unchanged",
+        "browser": "webkit",
+        "status": "expected",
+        "results": [
+          {
+            "status": "passed",
+            "error": null
+          }
+        ]
+      },
+      {
+        "name": "CSV excel: sub-paise monetary value leaves all business bytes unchanged",
+        "browser": "webkit",
+        "status": "expected",
+        "results": [
+          {
+            "status": "passed",
+            "error": null
+          }
+        ]
+      },
+      {
+        "name": "CSV excel: extra row cells leaves all business bytes unchanged",
+        "browser": "webkit",
+        "status": "expected",
+        "results": [
+          {
+            "status": "passed",
+            "error": null
+          }
+        ]
+      },
+      {
+        "name": "CSV excel: unsupported historical column leaves all business bytes unchanged",
+        "browser": "webkit",
+        "status": "expected",
+        "results": [
+          {
+            "status": "passed",
+            "error": null
+          }
+        ]
+      },
+      {
+        "name": "CSV excel: missing declared relationship leaves all business bytes unchanged",
+        "browser": "webkit",
+        "status": "expected",
+        "results": [
+          {
+            "status": "passed",
+            "error": null
+          }
+        ]
+      },
+      {
+        "name": "CSV excel: duplicate within file leaves all business bytes unchanged",
+        "browser": "webkit",
+        "status": "expected",
+        "results": [
+          {
+            "status": "passed",
+            "error": null
+          }
+        ]
+      },
+      {
+        "name": "CSV previous: legacy summaries retain opening receipt without fabricated events",
+        "browser": "webkit",
+        "status": "expected",
+        "results": [
+          {
+            "status": "passed",
+            "error": null
+          }
+        ]
+      },
+      {
+        "name": "CSV excel: legacy summaries retain opening receipt without fabricated events",
+        "browser": "webkit",
+        "status": "expected",
+        "results": [
+          {
+            "status": "passed",
+            "error": null
+          }
+        ]
+      },
+      {
+        "name": "CSV real export and upload preserve invoice histories, IDs and unknown fields exactly",
+        "browser": "webkit",
+        "status": "expected",
+        "results": [
+          {
+            "status": "passed",
+            "error": null
+          }
+        ]
+      },
+      {
+        "name": "CSV own text literals retain actual apostrophes and every formula prefix on reimport",
+        "browser": "webkit",
+        "status": "expected",
+        "results": [
+          {
+            "status": "passed",
+            "error": null
+          }
+        ]
+      },
+      {
+        "name": "CSV dual representation tampering rejects the entire file through real upload",
+        "browser": "webkit",
+        "status": "expected",
+        "results": [
+          {
+            "status": "passed",
+            "error": null
+          }
+        ]
+      }
+    ]
+  },
+  "tool_installations": [],
+  "lint": {
+    "errors": 0,
+    "warnings": 143
+  },
+  "build": "self-contained static copy passed",
+  "limitations": [
+    "No physical spreadsheet executable opened",
+    "CSV is row transfer, not complete private backup",
+    "No main, merge, deploy or real data access",
+    "Combined final branch evidence is separate"
+  ]
+}

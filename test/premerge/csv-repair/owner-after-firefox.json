@@ -1,0 +1,134 @@
+{
+  "owner_instruction": "https://github.com/nileshkchaubey-glitch/Xl-billing/pull/8#issuecomment-6126054996",
+  "tested_application_commit": "d00ae4b53805867fba609be3581b513e1d9b15ab",
+  "tested_commit": "d00ae4b53805867fba609be3581b513e1d9b15ab",
+  "source_sha256": "8c89415c6a198038fb57ad379bf40e411874d5d45dba5a196f18c80c668706c5",
+  "baseline_commit": "29aeb20225bccfc653b192651de608491185096c",
+  "runner_sha256": "98d4425d11f9c7d28c37fc874a5920c681ca5a29ee25bc81670c1df288d1e3b3",
+  "browser": "firefox",
+  "synthetic_only": true,
+  "summary": {
+    "pass": 7,
+    "fail": 0,
+    "harness_errors": 0
+  },
+  "results": [
+    {
+      "id": "csv-invalid-paid",
+      "title": "Invoice CSV rejects malformed financial input rather than silently coercing it to zero",
+      "browser": "firefox",
+      "width": 1366,
+      "classification": "BLOCKER",
+      "status": "PASS",
+      "duration_ms": 5716,
+      "pass": true,
+      "expected": "Invalid explicit paid value rejected without byte changes",
+      "observed": {
+        "preserved": true,
+        "imported_invoice": null,
+        "result": ""
+      }
+    },
+    {
+      "id": "csv-reject-duplicate",
+      "title": "CSV preflight rejects duplicate invoices before mutation",
+      "browser": "firefox",
+      "width": 1366,
+      "classification": "BLOCKER",
+      "status": "PASS",
+      "duration_ms": 3119,
+      "pass": true,
+      "expected": "Reject invalid CSV with exact original business bytes",
+      "observed": {
+        "preserved": true,
+        "error": "CSV rejected: An invoice number already exists or is repeated in this file. No records were imported."
+      }
+    },
+    {
+      "id": "csv-reject-overpaid",
+      "title": "CSV preflight rejects overpaid invoices before mutation",
+      "browser": "firefox",
+      "width": 1366,
+      "classification": "BLOCKER",
+      "status": "PASS",
+      "duration_ms": 2418,
+      "pass": true,
+      "expected": "Reject invalid CSV with exact original business bytes",
+      "observed": {
+        "preserved": true,
+        "error": "CSV rejected: balance is outside its supported range. No records were imported."
+      }
+    },
+    {
+      "id": "csv-reject-invalid-date",
+      "title": "CSV preflight rejects invalid-date invoices before mutation",
+      "browser": "firefox",
+      "width": 1366,
+      "classification": "BLOCKER",
+      "status": "PASS",
+      "duration_ms": 2910,
+      "pass": true,
+      "expected": "Reject invalid CSV with exact original business bytes",
+      "observed": {
+        "preserved": true,
+        "error": "CSV rejected: date is not a valid calendar date. No records were imported."
+      }
+    },
+    {
+      "id": "csv-round-trip",
+      "title": "Quoted and multiline CSV fields preserve exact master values on reimport",
+      "browser": "firefox",
+      "width": 1366,
+      "classification": "BLOCKER",
+      "status": "PASS",
+      "duration_ms": 2039,
+      "pass": true,
+      "expected": [
+        "Synthetic \"Quoted\" item",
+        "Synthetic\nMultiline"
+      ],
+      "observed": {
+        "imported": [
+          "Synthetic \"Quoted\" item",
+          "Synthetic\nMultiline"
+        ],
+        "exported_csv": "name,unit,saleRate,purchaseRate,gst,hsn,id,xlCSV,recordJSON\r\n\"'Synthetic \"\"Quoted\"\" item\",'Pcs,1,0,0,,'q1,XL-CSV-1:items,\"'{\"\"id\"\":\"\"q1\"\",\"\"name\"\":\"\"Synthetic \\\"\"Quoted\\\"\" item\"\",\"\"unit\"\":\"\"Pcs\"\",\"\"saleRate\"\":1,\"\"purchaseRate\"\":0,\"\"gst\"\":0}\"\r\n\"'Synthetic\nMultiline\",'Pcs,2,0,0,,'q2,XL-CSV-1:items,\"'{\"\"id\"\":\"\"q2\"\",\"\"name\"\":\"\"Synthetic\\nMultiline\"\",\"\"unit\"\":\"\"Pcs\"\",\"\"saleRate\"\":2,\"\"purchaseRate\"\":0,\"\"gst\"\":0}\""
+      }
+    },
+    {
+      "id": "csv-formula-neutralization",
+      "title": "Spreadsheet exports neutralize stored formula prefixes",
+      "browser": "firefox",
+      "width": 1366,
+      "classification": "BLOCKER",
+      "status": "PASS",
+      "duration_ms": 1428,
+      "pass": true,
+      "expected": "Spreadsheet cell is a literal stored name, not an active formula",
+      "observed": {
+        "row": "'=1+1,'Pcs,1,0,0,,'f1,XL-CSV-1:items,\"'{\"\"id\"\":\"\"f1\"\",\"\"name\"\":\"\"=1+1\"\",\"\"unit\"\":\"\"Pcs\"\",\"\"saleRate\"\":1,\"\"purchaseRate\"\":0,\"\"gst\"\":0}\""
+      },
+      "note": "No spreadsheet executable was opened; emitted bytes prove the unneutralized prefix, not execution in a physical Office installation."
+    },
+    {
+      "id": "csv-invoice-financial-round-trip",
+      "title": "Own invoice CSV preserves subtotal/discount/tax/total arithmetic",
+      "browser": "firefox",
+      "width": 1366,
+      "classification": "BLOCKER",
+      "status": "PASS",
+      "duration_ms": 1153,
+      "pass": true,
+      "expected": "Own export subtotal 100 \u2212 discount 10 + tax 0 = total 90",
+      "observed": {
+        "subtotal": 100,
+        "discount": 10,
+        "tax": 0,
+        "total": 90,
+        "paid": 20,
+        "balance": 70,
+        "derived_total": 90
+      }
+    }
+  ]
+}
