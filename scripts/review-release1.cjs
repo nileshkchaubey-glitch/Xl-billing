@@ -52,15 +52,15 @@ async function attemptSave(page) {
   return page.evaluate(async () => { try { await saveSaleInvoice(false); return null; } catch(e) { return e.name; } });
 }
 async function importText(page, content) {
-  // Real FileReader with a synthetic File. Observe completion before the app's reload timer.
-  await page.evaluate(content => new Promise(resolve => {
-    const original = FileReader.prototype.readAsText;
-    FileReader.prototype.readAsText = function(file) {
-      this.addEventListener('loadend', () => resolve(), {once:true});
-      return original.call(this, file);
-    };
-    importData({files:[new File([content], 'synthetic-backup.json', {type:'application/json'})],value:''});
-  }), content);
+  await page.evaluate(async content => {if(window.XLBackup)await importData({files:[new File([content], 'synthetic-backup.json', {type:'application/json'})],value:''});else await new Promise(resolve=>{const original=FileReader.prototype.readAsText;FileReader.prototype.readAsText=function(file){this.addEventListener('loadend',resolve,{once:true});return original.call(this,file);};importData({files:[new File([content],'synthetic.json')],value:''});});}, content);
+  if(await page.locator('#xl-restore-confirm').count()){
+    await page.locator('#xl-restore-confirm').click();
+    if(await page.locator('#del-pin-overlay').count()){
+      await page.locator('#del-pin-inp').fill('2468');await page.locator('#del-pin-ok').click();
+      await page.waitForFunction(()=>!window.XLStore?.isBusy());
+      await page.waitForFunction(()=>!document.getElementById('del-pin-overlay')||!!document.getElementById('del-pin-error')?.textContent);
+    }
+  }
 }
 async function exportedBackup(page) {
   return page.evaluate(() => new Promise(resolve => {
@@ -79,7 +79,7 @@ async function probe(id, body, modify = () => {}) {
   page.on('dialog', dialog => dialog.accept());
   const pageErrors = [];
   page.on('pageerror', error => pageErrors.push(error.message));
-  const data = shop(2); modify(data);
+  const data = shop(2);if(group==='foundation')Object.assign(data.settings,hashedPin); modify(data);
   await page.addInitScript(data => {
     // Seed once; preserve bytes across reloads and interruption probes.
     if (!localStorage.getItem('__synthetic_review_seeded')) {
@@ -241,7 +241,7 @@ async function main() {
   });
   await probe('backup-completeness', async page => {
     const data = await exportedBackup(page);
-    return {safe:Array.isArray(data.audit) && !!data.checksum,observed:{exportedKeys:Object.keys(data),auditIncluded:'audit' in data,checksumIncluded:'checksum' in data,syntheticSecretExported:data.settings.jsonbinKey === 'synthetic-secret-only'}};
+    const raw=data.payload?.records?Object.fromEntries(data.payload.records.map(r=>[r.key,r.value])):null;return {safe:raw?Array.isArray(JSON.parse(raw.shop4_audit))&&!!data.checksum:Array.isArray(data.audit)&&!!data.checksum,observed:{exportedKeys:Object.keys(data),auditIncluded:raw?Object.hasOwn(raw,'shop4_audit'):'audit' in data,checksumIncluded:'checksum' in data,privateCredentialsIncluded:raw?JSON.parse(raw.shop4_settings).jsonbinKey==='synthetic-secret-only':data.settings.jsonbinKey==='synthetic-secret-only'}};
   }, data => { data.settings.jsonbinKey = 'synthetic-secret-only';data.audit=[{id:'a',type:'create',label:'Synthetic audit',ts:'2026-10-09T08:00:00Z'}]; });
   await probe('backup-rollback', async page => {
     const before=await snapshot(page), backup=await exportedBackup(page);
@@ -250,6 +250,7 @@ async function main() {
     await page.waitForFunction(() => !document.getElementById('del-pin-ok').disabled);
     await page.locator('#del-pin-ok').click();
     await page.waitForFunction(() => !document.getElementById('del-pin-overlay') || !!document.getElementById('del-pin-error')?.textContent);
+    if((await records(page)).length!==1)throw new Error('Synthetic deletion did not complete before restore.');
     await importText(page,JSON.stringify(backup));
     const after=await snapshot(page);
     return {safe:JSON.stringify(before)===JSON.stringify(after),observed:{invoiceCount:(await records(page)).length,auditEntries:(await records(page,'audit')).length,changedKeys:Object.keys(after).filter(k=>before[k]!==after[k])}};

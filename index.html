@@ -736,7 +736,7 @@ function createXLStorage(options){
   async function recover(){
     const raw=read(keys.journal);if(raw===null){observe();return;}
     let journal;
-    try{journal=JSON.parse(raw);}catch{throw error('StorageRecoveryError','The recovery journal is unreadable. No records were changed. Keep a raw recovery export.');}
+    try{journal=JSON.parse(raw);}catch{throw error('StorageRecoveryError','The recovery journal is unreadable. No records were changed. Keep a private raw recovery export.');}
     const p=journal?.payload;
     if(!p||p.v!==1||!Array.isArray(p.changes)||!p.changes.length||p.changes.length>10000||typeof p.beforeSignature!=='string'||typeof p.afterSignature!=='string'||typeof p.afterMeta!=='string'||!(p.beforeMeta===null||typeof p.beforeMeta==='string')||typeof journal.checksum!=='string')throw error('StorageRecoveryError','The recovery journal has an unsupported shape. No records were changed.');
     if(await sha256(JSON.stringify(p))!==journal.checksum)throw error('StorageRecoveryError','The recovery journal checksum does not match. No records were changed.');
@@ -4602,6 +4602,7 @@ let slCols = { invno:true, date:true, party:true, paytype:true, total:true, bala
 function loadSlCols(){ try{ const s=window.XLStore.getRaw('v8_slcols'); if(s) slCols={...slCols,...JSON.parse(s)}; }catch{} }
 function saveSlCols(){ window.XLStore.setRaw('v8_slcols',JSON.stringify(slCols)); }
 loadSlCols();
+window.XLDomainState=window.XLDomainState||{};window.XLDomainState.saleColumns={capture:()=>structuredClone(slCols),restore:value=>{slCols=value;}};
 
 // ═══════════════════════════════════════════════════════
 // 1. AUTO-FOCUS CUSTOMER FIELD on New Invoice
@@ -10293,8 +10294,100 @@ window.saveSaleInvoice=function(andPrint){
 })();
 </script>
 
+<script id="xl-backup-core">
+function createXLBackup(options){
+  const maxBytes=20*1024*1024,core=['settings','items','parties','invoices','purchases','retail','audit'];
+  const permitted=key=>typeof key==='string'&&(key.startsWith('shop4_')||['v8_slcols','v8_compact','xl_backup_config','xl_backup_state'].includes(key));
+  const plain=value=>value&&typeof value==='object'&&!Array.isArray(value);
+  function validate(records){
+    if(!plain(records)||Object.keys(records).length>10000)throw new Error('Unsupported backup record map.');
+    for(const [key,raw]of Object.entries(records)){
+      if(!permitted(key)||typeof raw!=='string')throw new Error('Backup contains an unsupported key or value.');
+      const name=key.slice(6);if(!key.startsWith('shop4_')||!core.includes(name))continue;
+      let value;try{value=JSON.parse(raw);}catch{throw new Error('Backup '+name+' is not valid JSON.');}
+      if(name==='settings'){if(!plain(value))throw new Error('Backup settings must be an object.');continue;}
+      if(!Array.isArray(value))throw new Error('Backup '+name+' must be a collection.');
+      const ids=new Set();for(const row of value){
+        if(!plain(row)||typeof row.id!=='string'||!row.id||ids.has(row.id))throw new Error('Backup '+name+' contains invalid or duplicate identifiers.');ids.add(row.id);
+        if(['invoices','purchases'].includes(name)){
+          if(!Number.isFinite(row.total)||row.total<0||!Number.isFinite(row.paid)||row.paid<0)throw new Error('Backup bill amounts are invalid.');
+          for(const list of ['payments','discounts'])if(row[list]!==undefined){if(!Array.isArray(row[list])||row[list].some(p=>!plain(p)||!Number.isFinite(p.amt)||p.amt<0))throw new Error('Backup payment or discount history is invalid.');}
+        }
+      }
+    }
+    options.validate?.(records);return records;
+  }
+  async function digest(value){if(!options.crypto?.subtle)throw new Error('Backup verification requires browser cryptography.');const bytes=await options.crypto.subtle.digest('SHA-256',new TextEncoder().encode(value));return Array.from(new Uint8Array(bytes),b=>b.toString(16).padStart(2,'0')).join('');}
+  const signed=b=>JSON.stringify({format:b.format,version:b.version,createdAt:b.createdAt,payload:b.payload});
+  async function encode(records){
+    validate(records);const backup={format:'xl-billing-private',version:1,createdAt:new Date().toISOString(),payload:{records:Object.keys(records).sort().map(key=>({key,value:records[key]}))}};
+    if(new TextEncoder().encode(signed(backup)).length>maxBytes)throw new Error('Backup exceeds the supported 20 MiB limit. Use raw recovery export for review.');
+    backup.checksum={algorithm:'SHA-256',value:await digest(signed(backup))};return backup;
+  }
+  async function decode(text){
+    if(typeof text!=='string'||new TextEncoder().encode(text).length>maxBytes)throw new Error('Backup exceeds the supported 20 MiB limit.');
+    let b;try{b=JSON.parse(text);}catch{throw new Error('Backup is truncated or is not valid JSON.');}
+    if(!plain(b))throw new Error('Unsupported backup format.');
+    if(b.format!==undefined){
+      if(b.format!=='xl-billing-private'||b.version!==1||typeof b.createdAt!=='string'||!Number.isFinite(Date.parse(b.createdAt))||!plain(b.payload)||!Array.isArray(b.payload.records)||b.payload.records.length>10000||b.checksum?.algorithm!=='SHA-256'||!/^[a-f0-9]{64}$/.test(b.checksum.value))throw new Error('Unsupported backup format or checksum.');
+      if(Object.keys(b).some(k=>!['format','version','createdAt','payload','checksum'].includes(k))||Object.keys(b.payload).some(k=>k!=='records'))throw new Error('Unsupported backup fields.');
+      if(await digest(signed(b))!==b.checksum.value)throw new Error('Backup checksum does not match. No records were changed.');
+      const records=Object.create(null);
+      for(const r of b.payload.records){if(!plain(r)||Object.keys(r).length!==2||!permitted(r.key)||typeof r.value!=='string'||Object.hasOwn(records,r.key))throw new Error('Backup contains invalid or duplicate storage keys.');records[r.key]=r.value;}
+      return {records:validate(records),verified:true,createdAt:b.createdAt,format:b.format};
+    }
+    if(![4,5].includes(b.v)||Object.hasOwn(b,'checksum')||core.slice(0,6).some(key=>!Object.hasOwn(b,key)))throw new Error('Legacy backup is incomplete, unsupported, or has an unverifiable checksum.');
+    if(Object.keys(b).some(k=>!['v','exportDate',...core].includes(k)))throw new Error('Legacy backup contains unsupported fields.');
+    const records=Object.fromEntries(core.filter(k=>Object.hasOwn(b,k)).map(k=>['shop4_'+k,JSON.stringify(b[k])]));
+    return {records:validate(records),verified:false,createdAt:b.exportDate||null,format:'legacy-v'+b.v};
+  }
+  return {maxBytes,encode,decode,validate};
+}
+</script>
 <script id="xl-bootstrap">
 // All code in deferred app scripts is authored application code, never imported data.
+function xlDownloadJSON(data,name){
+  const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'}),url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);
+}
+function xlRecoveryControls(){
+  if(document.getElementById('xl-recovery-controls'))return;
+  const row=document.createElement('div');row.id='xl-recovery-controls';row.style.cssText='position:relative;z-index:10002;padding:8px;background:#fff7ed';
+  const exportButton=document.createElement('button');exportButton.id='xl-recovery-export';exportButton.textContent='Download private raw recovery';exportButton.onclick=async()=>{try{const payload=XLStore.rawRecovery(),checksum=await XLStore.checksum(JSON.stringify(payload));xlDownloadJSON({format:'xl-billing-raw-recovery',version:1,createdAt:new Date().toISOString(),payload,checksum},'xl-private-raw-recovery-'+Date.now()+'.json');}catch(e){xlStorageMessage(e);}};
+  const retry=document.createElement('button');retry.textContent='Retry recovery and reload';retry.onclick=async()=>{try{await XLStore.retryRecovery();location.reload();}catch(e){xlStorageMessage(e);}};
+  row.append(exportButton,retry);document.body.prepend(row);
+}
+function installXLBackup(){
+  const codec=createXLBackup({crypto,validate:records=>validateXLTransaction(records,{}, {restore:true})});window.XLBackup=codec;let pending=null;
+  const message=error=>{let el=document.getElementById('xl-backup-error');if(!el){el=document.createElement('div');el.id='xl-backup-error';el.setAttribute('role','alert');el.style.cssText='position:sticky;top:0;z-index:10003;padding:14px;background:#fef2f2;color:#991b1b';document.body.prepend(el);}el.textContent=error.message||String(error);};
+  window.exportData=async function(){try{const backup=await codec.encode(XLStore.snapshot());xlDownloadJSON(backup,'xl-private-backup-'+Date.now()+'.json');window.dispatchEvent(new Event('xl:manual-backup'));toast('Private backup download requested. Keep the file outside this browser profile; it includes settings and credentials.');return backup;}catch(e){message(e);return false;}};
+  window.xlPreviewBackup=async function(text){
+    pending=null;document.getElementById('xl-restore-preview')?.remove();document.getElementById('xl-backup-error')?.remove();
+    try{
+      const decoded=await codec.decode(text),before=XLStore.snapshot(),prior=await codec.encode(before);
+      pending={decoded,before,prior};const panel=document.createElement('div');panel.id='xl-restore-preview';panel.style.cssText='position:fixed;inset:12% 5%;overflow:auto;z-index:900;background:white;border:3px solid #334155;padding:24px';
+      const textNode=document.createElement('p');const counts=['invoices','purchases','parties','items','retail','audit'].map(key=>key+': '+(decoded.records['shop4_'+key]?JSON.parse(decoded.records['shop4_'+key]).length:0));
+      textNode.textContent='Restore preview — '+(decoded.verified?'SHA-256 checksum verified.':'Legacy backup has no checksum; its schema was validated.')+' '+counts.join(', ')+'. Restore replaces this profile, including settings and credentials. Absent keys will be removed. A private pre-restore backup download will be requested before any changes. Confirm that independent backups are retained.';
+      const ok=document.createElement('button');ok.id='xl-restore-confirm';ok.textContent='Restore this backup';ok.onclick=()=>{
+        const selected=pending;if(!selected)return;
+        const apply=()=>{
+          if(XLStore.fingerprint(selected.before)!==XLStore.fingerprint(XLStore.recoverySnapshot()))throw new Error('Profile changed after the preview. Open the backup again before restoring.');
+          xlDownloadJSON(selected.prior,'xl-private-before-restore-'+Date.now()+'.json');
+          for(const key of Object.keys(selected.before))if(!Object.hasOwn(selected.decoded.records,key))XLStore.deleteRaw(key);
+          for(const [key,value]of Object.entries(selected.decoded.records))XLStore.setRaw(key,value);
+          // Imported records were already validated; the storage layer validates again.
+          setTimeout(()=>{pending=null;panel.remove();toast('Restore verified. Reload before entering further records.');},0);
+        };
+        if(Object.keys(selected.before).length)withDeletePin('Replace this billing profile with the previewed backup?',apply);
+        else window.XLRunAction('Restore initial profile',apply,true,{restore:true}).catch(message);
+      };
+      const cancel=document.createElement('button');cancel.textContent='Cancel restore';cancel.onclick=()=>{pending=null;panel.remove();};panel.append(textNode,ok,cancel);document.body.appendChild(panel);return decoded;
+    }catch(e){message(e);return false;}
+  };
+  window.importData=async function(input){const file=input.files?.[0];if(!file)return false;try{if(file.size>codec.maxBytes)throw new Error('Backup exceeds the supported 20 MiB limit.');return await window.xlPreviewBackup(await file.text());}catch(e){message(e);return false;}finally{input.value='';}};
+  // Optional legacy cloud downloads use the same reviewed restore path.
+  window.cloudPull=async function(){try{const s=getSettings();if(!s.jsonbinKey||!s.jsonbinId){toast('Configure the optional cloud connection first.');return false;}const response=await fetch('https://api.jsonbin.io/v3/b/'+encodeURIComponent(s.jsonbinId)+'/latest',{headers:{'X-Master-Key':s.jsonbinKey}});if(!response.ok)throw new Error('Cloud backup download failed.');const json=await response.json();return window.xlPreviewBackup(JSON.stringify(json.record));}catch(e){message(e);return false;}};
+}
+
 function xlStorageMessage(error){
   let box=document.getElementById('storage-error');
   if(!box){box=document.createElement('div');box.id='storage-error';box.setAttribute('role','alert');box.style.cssText='position:sticky;top:0;z-index:10001;padding:14px;background:#fef2f2;color:#991b1b;border:2px solid #dc2626';document.body.prepend(box);}
@@ -10302,6 +10395,7 @@ function xlStorageMessage(error){
   if(error?.name==='SecurityError')error=new Error('Browser access to billing storage is denied. No new changes were confirmed. Keep the original profile intact.');
   box.textContent=quota?'Browser storage could not complete this save. Original records were restored. Keep your entries and export an independent backup before retrying.':(error?.message||'Billing changes could not be confirmed. Keep the original records and retry after review.');
   box.dataset.kind=error?.name||'StorageError';
+  if(window.XLStore)xlRecoveryControls();
 }
 function xlSaving(active){
   let box=document.getElementById('xl-saving');
@@ -10387,6 +10481,6 @@ function installXLStorageBindings(){
     validate:(after,before,options)=>validateXLTransaction(after,before,options),onCommit:detail=>window.dispatchEvent(new CustomEvent('xl:committed',{detail}))});
   try{await window.XLStore.ready;}catch(e){loading.remove();xlStorageMessage(e);window.XLAppReady=false;return;}
   for(const source of document.querySelectorAll('script[type="text/xl-app"]')){const script=document.createElement('script');script.textContent=source.textContent;document.body.appendChild(script);}
-  installXLStorageBindings();window.XLAppReady=true;window.dispatchEvent(new Event('xl:ready'));loading.remove();
+  installXLStorageBindings();installXLBackup();window.XLAppReady=true;window.dispatchEvent(new Event('xl:ready'));loading.remove();
 })();
 </script>
