@@ -684,6 +684,91 @@ input[type=number]::-webkit-inner-spin-button,input[type=number]::-webkit-outer-
   </div>
 </div>
 
+<script id="xl-backup-import-guard">
+/* Import v4 backups only into a separate, unpopulated browser profile.
+   Never silently replace existing business records. */
+function createXLLegacyImportGuard(){
+  'use strict';
+  const marker='shop4_import_pending';
+  const sections=['settings','items','parties','invoices','purchases','retail'];
+  const collections=['items','parties','invoices','purchases','retail'];
+  const maxBytes=20*1024*1024;
+  const object=v=>v!==null&&typeof v==='object'&&!Array.isArray(v);
+  function parse(text){
+    if(typeof text!=='string'||new TextEncoder().encode(text).length>maxBytes)throw new Error('Backup exceeds the 20 MiB limit.');
+    let b;try{b=JSON.parse(text);}catch{throw new Error('Backup is not valid JSON.');}
+    if(!object(b)||b.v!==4)throw new Error('Expected an original XL Billing version 4 backup.');
+    const allowed=['v','exportDate',...sections,'audit'];
+    if(Object.keys(b).some(k=>!allowed.includes(k)))throw new Error('Backup has fields this version cannot safely restore.');
+    for(const k of sections)if(!Object.hasOwn(b,k))throw new Error('Backup is incomplete: missing '+k+'.');
+    if(!object(b.settings))throw new Error('Backup settings are invalid.');
+    for(const k of [...collections,...(Object.hasOwn(b,'audit')?['audit']:[])]){
+      if(!Array.isArray(b[k]))throw new Error('Backup '+k+' must be an array.');
+      const ids=new Set();
+      for(const row of b[k]){
+        if(!object(row)||typeof row.id!=='string'||!row.id||ids.has(row.id))throw new Error('Backup '+k+' contains missing or duplicate IDs.');
+        ids.add(row.id);
+        if(['invoices','purchases'].includes(k)){
+          if(!Number.isFinite(row.total)||row.total<0||!Number.isFinite(row.paid??0)||row.paid<0)
+            throw new Error('Backup '+k+' has an invalid bill total or payment.');
+          if(row.payments!==undefined&&(!Array.isArray(row.payments)||row.payments.some(p=>!object(p)||!Number.isFinite(p.amt)||p.amt<0)))
+            throw new Error('Backup '+k+' has an invalid payment history.');
+        }
+      }
+    }
+    const keys=[...sections,...(Object.hasOwn(b,'audit')?['audit']:[])];
+    return {rows:keys.map(k=>['shop4_'+k,JSON.stringify(b[k])]),counts:Object.fromEntries(collections.map(k=>[k,b[k].length])),date:b.exportDate||''};
+  }
+  function occupied(storage){
+    const found=[];
+    for(let i=0;i<storage.length;i++){
+      const k=storage.key(i);
+      // A new blank browser may receive this harmless version marker at startup.
+      if(k&&k.startsWith('shop4_')&&k!=='shop4_app_version')found.push(k);
+    }
+    return found;
+  }
+  function restore(storage,parsed){
+    if(!parsed||!Array.isArray(parsed.rows))throw new Error('Select and validate a backup before restoring.');
+    if(occupied(storage).length)throw new Error('Existing billing data detected. Import is blocked to protect your invoices. Use a separate empty browser profile.');
+    const written=[];
+    storage.setItem(marker,JSON.stringify({v:1,startedAt:new Date().toISOString(),expectedKeys:parsed.rows.map(r=>r[0])}));
+    try{
+      for(const [key,value]of parsed.rows){
+        if(storage.getItem(key)!==null)throw new Error('The browser data changed during import. No existing record was replaced.');
+        storage.setItem(key,value);written.push(key);
+        if(storage.getItem(key)!==value)throw new Error('Could not verify a restored record.');
+      }
+      for(const [key,value]of parsed.rows)if(storage.getItem(key)!==value)throw new Error('Restore verification failed.');
+      storage.removeItem(marker);
+      if(storage.getItem(marker)!==null)throw new Error('Restore completion marker could not be cleared.');
+      return parsed.counts;
+    }catch(error){
+      const failures=[];
+      for(const key of written.reverse()){
+        try{storage.removeItem(key);if(storage.getItem(key)!==null)failures.push(key);}catch{failures.push(key);}
+      }
+      if(!failures.length){
+        try{storage.removeItem(marker);if(storage.getItem(marker)!==null)failures.push(marker);}catch{failures.push(marker);}
+      }
+      if(failures.length)throw new Error('IMPORT INTERRUPTED: partial data may remain. Keep this browser profile unchanged and request recovery help. '+error.message);
+      throw new Error('Import failed and newly written records were rolled back. '+error.message);
+    }
+  }
+  return {marker,parse,occupied,restore};
+}
+window.XLLegacyImportGuard=createXLLegacyImportGuard();
+document.addEventListener('DOMContentLoaded',()=>{
+  try{
+    if(localStorage.getItem(window.XLLegacyImportGuard.marker)===null)return;
+    const notice=document.createElement('main');
+    notice.style.cssText='margin:7vh auto;max-width:670px;padding:32px;font:16px system-ui;border:3px solid #991b1b;border-radius:12px;background:#fff5f5;color:#7f1d1d;line-height:1.6';
+    notice.textContent='XL Billing import was interrupted. This browser may contain partial restored records. Do not create bills, clear storage, or import again here. Keep your original backup and ask for recovery assistance.';
+    document.body.replaceChildren(notice);
+  }catch(e){console.error('XL Billing import recovery notice could not load:',e);}
+});
+</script>
+
 <script>
 // ═══════════════════════════════════
 // DATA LAYER
@@ -1983,20 +2068,28 @@ function exportData(){
   toast('Backup exported! ✓');
 }
 function importData(input){
-  const file=input.files[0]; if(!file) return;
-  const r=new FileReader(); r.onload=e=>{
+  const file=input.files[0]; if(!file)return;
+  input.value='';
+  if(file.size>20*1024*1024){toast('Backup is larger than 20 MiB. Import cancelled.');return;}
+  const reader=new FileReader();
+  reader.onerror=()=>toast('The backup file could not be read. No records were changed.');
+  reader.onload=()=>{
     try{
-      const d=JSON.parse(e.target.result);
-      if(d.settings)  DB.set('settings',d.settings);
-      if(d.items)     DB.set('items',d.items);
-      if(d.parties)   DB.set('parties',d.parties);
-      if(d.invoices)  DB.set('invoices',d.invoices);
-      if(d.purchases) DB.set('purchases',d.purchases);
-      if(d.retail)    DB.set('retail',d.retail);
-      toast('Data imported! Reloading...'); setTimeout(()=>location.reload(),1500);
-    }catch{toast('Error: Invalid backup file!');}
+      const parsed=window.XLLegacyImportGuard.parse(String(reader.result||''));
+      if(window.XLLegacyImportGuard.occupied(localStorage).length)
+        throw new Error('Existing billing data detected. Do NOT restore over live records. Use a separate empty browser profile.');
+      const counts=parsed.counts;
+      const summary='Restore this backup into this EMPTY browser profile?\n\n'+
+        'Invoices: '+counts.invoices+' | Parties: '+counts.parties+' | Items: '+counts.items+
+        '\nPurchases: '+counts.purchases+' | Retail: '+counts.retail+
+        '\n\nThis cannot merge records. Do not use a live billing profile.';
+      if(!confirm(summary))return;
+      window.XLLegacyImportGuard.restore(localStorage,parsed);
+      toast('Backup restored into empty profile. Reloading...');
+      setTimeout(()=>location.reload(),1200);
+    }catch(e){toast('Import cancelled: '+(e.message||String(e)),7000);}
   };
-  r.readAsText(file); input.value='';
+  reader.readAsText(file);
 }
 function clearAllData(){
   if(!confirm('⚠️ WARNING: ALL data will be permanently deleted!\n\nExport a backup first!\n\nAre you absolutely sure?')) return;
@@ -2051,6 +2144,7 @@ document.addEventListener('keydown',e=>{
 const APP_VERSION = 5;
 
 function runMigrations() {
+  if(localStorage.getItem('shop4_import_pending')!==null)return;
   const storedVer = parseInt(localStorage.getItem('shop4_app_version') || '0');
   if (storedVer >= APP_VERSION) return;
 
