@@ -1,0 +1,31 @@
+name: Payment Ledger pagination regression
+
+on:
+  pull_request:
+    paths:
+      - index.html
+      - qa/verify-payment-ledger-pagination.cjs
+      - .github/workflows/payment-ledger-pagination.yml
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  payment-ledger:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Check test syntax
+        run: node --check qa/verify-payment-ledger-pagination.cjs
+      - name: Run ledger pagination regression
+        run: node qa/verify-payment-ledger-pagination.cjs
+      - name: Verify existing lists
+        run: node qa/verify-pagination.cjs
+      - name: Verify both backup formats
+        run: |
+          node qa/verify-backup-import.cjs
+          node qa/verify-complete-backup.cjs

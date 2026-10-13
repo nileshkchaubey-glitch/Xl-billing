@@ -4125,6 +4125,29 @@ window.saveEditPayment = function(invId, payIdx){
   renderPaymentLedger();
 };
 
+// Payment Ledger shows 20 payment entries per page, with per-filter totals unchanged.
+let xlLedgerPage = 1;
+window.xlLedgerGoPage = function(page){
+  if(!Number.isInteger(page)||page<1)return;
+  xlLedgerPage=page;
+  renderPaymentLedger();
+  document.getElementById('page-payments')?.scrollIntoView({block:'start',behavior:'auto'});
+};
+window.xlLedgerFilterChanged = function(kind){
+  xlLedgerPage=1;
+  const fieldId=kind==='party'?'pay-filter-party':'pay-filter-date';
+  const previous=document.getElementById(fieldId);
+  const caret=kind==='party'?previous?.selectionStart:null;
+  renderPaymentLedger();
+  if(kind==='party'){
+    const current=document.getElementById(fieldId);
+    current?.focus({preventScroll:true});
+    if(Number.isInteger(caret)){
+      try{current.setSelectionRange(caret,caret);}catch{}
+    }
+  }
+};
+
 // Fix 2: renderPaymentLedger — proper filter before grouping
 window.renderPaymentLedger = function(){
   const el = document.getElementById('page-payments'); if(!el) return;
@@ -4132,17 +4155,25 @@ window.renderPaymentLedger = function(){
   
   // Apply filters first
   const fDate  = document.getElementById('pay-filter-date')?.value  || '';
-  const fParty = (document.getElementById('pay-filter-party')?.value||'').toLowerCase();
+  const fPartyRaw = document.getElementById('pay-filter-party')?.value||'';
+  const fParty = fPartyRaw.toLowerCase();
   if(fDate)  pays = pays.filter(p => p.date === fDate);
   if(fParty) pays = pays.filter(p => p._party.toLowerCase().includes(fParty));
   
   const tTotal    = pays.filter(p=>p.type==='payment').reduce((a,p)=>a+p.amt, 0);
   const tDiscount = pays.filter(p=>p.type==='discount').reduce((a,p)=>a+p.amt, 0);
   
-  // Group by date
+  // Apply pagination AFTER filtering. Summary totals continue covering all matching payments.
+  const pageSize=window.PAGE_SIZE||20;
+  const totalPages=Math.max(1,Math.ceil(pays.length/pageSize));
+  xlLedgerPage=Math.min(Math.max(1,xlLedgerPage),totalPages);
+  const pagePays=pays.slice((xlLedgerPage-1)*pageSize,xlLedgerPage*pageSize);
+
+  // Group only the visible page by date. A single date can span multiple pages.
   const byDate = {};
-  pays.forEach(p=>{ const d=p.date||'Unknown'; if(!byDate[d]) byDate[d]=[]; byDate[d].push(p); });
+  pagePays.forEach(p=>{ const d=p.date||'Unknown'; if(!byDate[d]) byDate[d]=[]; byDate[d].push(p); });
   
+  const safePartyValue=fPartyRaw.replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
   el.innerHTML = `
     <div class="ph" style="position:sticky;top:0;z-index:50;background:#fff;border-bottom:1px solid var(--gray-200);padding:12px 22px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px">
       <h1>💰 Payment Ledger</h1>
@@ -4150,11 +4181,11 @@ window.renderPaymentLedger = function(){
         <button class="btn btn-g btn-sm" onclick="openStandalonePayModal()">+ Record Payment</button>
         <div>
           <label class="fl" style="margin-bottom:2px">Filter Date</label>
-          <input type="date" class="fc fc-sm" id="pay-filter-date" value="${fDate}" style="width:150px" onchange="renderPaymentLedger()">
+          <input type="date" class="fc fc-sm" id="pay-filter-date" value="${fDate}" style="width:150px" onchange="xlLedgerFilterChanged('date')">
         </div>
         <div>
           <label class="fl" style="margin-bottom:2px">Search Party</label>
-          <input class="fc fc-sm" id="pay-filter-party" value="${fParty}" placeholder="Party name..." style="width:160px" oninput="renderPaymentLedger()">
+          <input class="fc fc-sm" id="pay-filter-party" value="${safePartyValue}" placeholder="Party name..." style="width:160px" oninput="xlLedgerFilterChanged('party')">
         </div>
         ${fDate||fParty?`<button class="btn btn-out btn-sm" onclick="clearPayFilters()">✕ Clear</button>`:''}
       </div>
@@ -4173,7 +4204,7 @@ window.renderPaymentLedger = function(){
           <div class="pay-card">
             <div class="pay-card-hdr">
               <div style="font-weight:700;font-size:13.5px">${fmtDate(date)}</div>
-              <div style="font-size:13px;font-weight:600;color:var(--g)">${fc(dayTotal)} received · ${dp.length} entries</div>
+              <div style="font-size:13px;font-weight:600;color:var(--g)">${fc(dayTotal)} received on this page · ${dp.length} entries</div>
             </div>
             <div class="pay-card-body">
               ${dp.map((p,i)=>`
@@ -4202,10 +4233,18 @@ window.renderPaymentLedger = function(){
             </div>
           </div>`;
         }).join('')}
+      ${pays.length>pageSize && typeof window.renderPageBtns==='function'
+        ? window.renderPageBtns(pays.length,xlLedgerPage,'xlLedgerGoPage','page-payments')
+        : ''}
     </div>`;
 };
 
 window.clearPayFilters = function(){
+  const date=document.getElementById('pay-filter-date');
+  const party=document.getElementById('pay-filter-party');
+  if(date)date.value='';
+  if(party)party.value='';
+  xlLedgerPage=1;
   renderPaymentLedger();
 };
 
@@ -9270,7 +9309,6 @@ console.log('v15 applied ✓ — Audit Log | Delete PIN | Settlement Modal | Par
 
 })(); // end v15
 </script>
-cat >> /home/claude/v9base.html << 'V16_END'
 <!-- ═══════════════════════════════════════════════════════════════
      V16 FIX PATCH
      1. Sale list filter — no auto-reset, FY dates removed
@@ -10083,8 +10121,6 @@ console.log('v16 applied ✓ — Sale filter fixed | 3-dot restored | Payment Ou
 
 })(); // end v16
 </script>
-V16_END
-echo "Done. Lines: $(wc -l < /home/claude/v9base.html)"
 <!-- Focused invoice-entry patch. Existing storage keys, totals and printing use qty as final quantity. -->
 <style>
 .entry-setting{display:flex;justify-content:space-between;align-items:center;gap:16px;padding:11px 0;border-bottom:1px solid var(--gray-100)}
