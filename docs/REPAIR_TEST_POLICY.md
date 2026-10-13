@@ -2,7 +2,7 @@
 
 Authority: [owner repair assignment](https://github.com/nileshkchaubey-glitch/Xl-billing/pull/9#issuecomment-6128013121), based on reviewed commit `5d3fb7991586d7acef84d49cdd26a003b290d912`.
 
-All original independent owner assertions remain active. The unsupported older-writer race and undefined party-opening-balance semantics remain individually reported failures until their actual requirements are resolved. No expected-failure conversion, silent skip or green gate claim is permitted.
+All original independent owner assertions remain active. The unsupported older-writer race remains an individually reported failure. The owner has explicitly resolved the opening-balance policy, as recorded below. No expected-failure conversion, silent skip or green gate claim is permitted.
 
 One old safety assertion is corrected under an explicit owner domain decision: `cancelled-payment-ledger` previously required zero receipt entries after cancellation. The owner instructed: “Do not erase legitimate cash or automatically reinterpret old financial records.” The synthetic invoice has an actual Cash receipt of 20. The corrected assertion requires that receipt to remain 20 and that the cancelled invoice be excluded from active receivables. This strengthens the accounting checks instead of removing the receipt. Original failing results are preserved in `test/premerge/safety-*.json`; the independent `cancel-restore-accounting` test remains unchanged.
 

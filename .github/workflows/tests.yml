@@ -77,6 +77,7 @@ jobs:
             XL_PREMERGE_BROWSER="$owner_gate_browser" node scripts/verify-premerge.cjs || owner_gate_result=1
             XL_PM_REPORT_BROWSER="$owner_gate_browser" node scripts/verify-pm-reports.cjs || owner_gate_result=1
             XL_PAYMENT_IDENTITY_BROWSER="$owner_gate_browser" node scripts/verify-payment-identity.cjs || owner_gate_result=1
+            XL_PARTY_CLICK_BROWSER="$owner_gate_browser" node scripts/verify-party-click.cjs || owner_gate_result=1
             XL_MOBILE_BROWSER="$owner_gate_browser" node scripts/verify-mobile.cjs || owner_gate_result=1
           done
           exit "$owner_gate_result"

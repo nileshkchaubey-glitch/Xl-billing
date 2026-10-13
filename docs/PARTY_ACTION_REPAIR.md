@@ -1,0 +1,11 @@
+# Party action stability and stored phone text
+
+The last `renderParties` override previously inserted Settle buttons after an 80 ms timer. A pointer held on Detail across that insertion could land on Edit instead: opening balances were correct, but the requested detail never opened. A final report probe intermittently timed out for this reason. This was an application interaction defect, not evidence of an incorrect signed opening balance.
+
+Commit `1727bf8` adds actual pointer-down/up tests before the repair. The retained Firefox result has **1 PASS, 3 FAIL, 0 harness errors**. It reproduces a Detail-to-Edit pointer target change, the missing immediate Settle action, and execution of a synthetic stored-phone HTML payload. An independent Firefox diagnostic also reproduced the lost click twice in 15 attempts. The opening-only case already passed.
+
+Commit `2812d97` inserts the existing Settle action synchronously before rendering returns and escapes stored phone text. Its invoice-due eligibility, party identity, button styling and settlement accounting are unchanged. In particular, an invoice due of 80 remains selectable when an opening credit of -200 produces net receivable outstanding -120; the opening credit is not automatically consumed. An opening-only receivable does not fabricate an invoice settlement target.
+
+The unchanged four new assertions pass in each of Chromium, Firefox and WebKit: **12 PASS, 0 FAIL, 0 harness errors**. Every case retains exact synthetic business bytes. Evidence: [before Firefox](../test/party-actions/before-firefox.json), [after Chromium](../test/party-actions/after-chromium.json), [after Firefox](../test/party-actions/after-firefox.json), [after WebKit](../test/party-actions/after-webkit.json). After reports bind source SHA-256 `990c1f10db9e25ed1fc98a5f76d04e7ed9bab2062f5ba9477402ede78d0ec6dd` and tested commit `2812d971eb00173b824f1c04d240f531fdbd8f55`.
+
+`scripts/verify-party-click.cjs` holds the real pointer across the old timer boundary using the browser clock. It does not retry a lost click, bypass normal navigation or accept an invisible modal. The per-engine CI gate now runs it alongside the original owner acceptance tests. Stored-text safety is verified on the tested surfaces; this does not claim universal XSS coverage of the entire legacy application.
