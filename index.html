@@ -7532,7 +7532,7 @@ window.renderParties = function() {
       return `<tr style="cursor:pointer" ondblclick="openPartyDetail('${escHtml(p.id)}')">
         <td style="color:var(--gray-400);font-size:11px">${(pgState.parties-1)*PAGE_SIZE+idx+1}</td>
         <td style="font-weight:700">${escHtml(p.name)}${!p.phone?`<span class="phone-missing-badge" style="margin-left:4px">No Phone</span>`:''}</td>
-        <td>${p.phone||'<span style="color:var(--gray-400)">—</span>'}</td>
+        <td>${p.phone?escHtml(p.phone):'<span style="color:var(--gray-400)">—</span>'}</td>
         <td>${escHtml(p.area||'-')}</td>
         <td>${escHtml({customer:'<span class="badge bg">Customer</span>',supplier:'<span class="badge bb">Supplier</span>',both:'<span class="badge bo">Both</span>'}[p.type]||'-')}</td>
         <td style="color:var(--g);font-weight:600">${fc(tS)}</td>
@@ -9786,8 +9786,9 @@ window.saveItem = function() {
 const _origRenderPartiesV15 = window.renderParties;
 window.renderParties = function() {
   if (typeof _origRenderPartiesV15==='function') _origRenderPartiesV15();
-  // After render, add Settle button to each party row with outstanding
-  setTimeout(()=>{
+  // Add the action before rendering returns, so a pointer gesture cannot
+  // target a different button after an asynchronous layout shift.
+  {
     const invs = getInvoices().filter(i=>!isCancelled(i));
     document.querySelectorAll('#parties-table tbody tr').forEach((tr,i)=>{
       const actionCell = tr.querySelector('td:last-child');
@@ -9809,7 +9810,7 @@ window.renderParties = function() {
         actionCell.appendChild(btn);
       }
     });
-  }, 80);
+  }
 };
 
 // ════════════════════════════════════════════════════════
