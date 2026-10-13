@@ -1,0 +1,206 @@
+{
+  "browser": "chromium",
+  "source_sha256": "0b59624aa83af362c884c0bc32d214b10d7df5bd203e55cab55507861601c0df",
+  "runner_sha256": "0df92a39901f8e7d110ae202040933f6b274408dde0d4cc7f8b3ff38cf74245d",
+  "tested_commit": "817b7224675870711faf88f8e3b795a84af6229a",
+  "synthetic_only": true,
+  "summary": {
+    "pass": 5,
+    "fail": 0,
+    "harness_errors": 0
+  },
+  "results": [
+    {
+      "id": "mobile-real-touch-routes-390",
+      "width": 390,
+      "status": "PASS",
+      "observations": {
+        "reached": [
+          "sales-list",
+          "new-purchase",
+          "prev-bills",
+          "items",
+          "parties",
+          "payments",
+          "purchase-list",
+          "pur-bulk",
+          "pur-pay",
+          "txn-log",
+          "excel-connect",
+          "audit-log",
+          "learn",
+          "github-guide"
+        ],
+        "touch_targets_minimum_px": 44,
+        "business_bytes_preserved": true
+      },
+      "duration_ms": 1962
+    },
+    {
+      "id": "mobile-payment-in-and-out-390",
+      "width": 390,
+      "status": "PASS",
+      "observations": {
+        "invoice_paid": 25,
+        "invoice_due": 75,
+        "purchase_paid": 30,
+        "purchase_due": 470
+      },
+      "duration_ms": 717
+    },
+    {
+      "id": "mobile-keyboard-navigation-390",
+      "width": 390,
+      "status": "PASS",
+      "observations": {
+        "enter_route": "new-purchase",
+        "space_route": "items",
+        "primary_controls": "native buttons",
+        "business_bytes_preserved": true
+      },
+      "duration_ms": 275
+    },
+    {
+      "id": "mobile-navigation-layout-320",
+      "width": 320,
+      "status": "PASS",
+      "observations": {
+        "viewport": 320,
+        "panel_width": 290,
+        "panel_scroll_width": 290,
+        "controls": [
+          {
+            "label": "Sale List",
+            "left": 31,
+            "right": 156,
+            "width": 125,
+            "height": 50
+          },
+          {
+            "label": "Import Previous Bills",
+            "left": 164,
+            "right": 289,
+            "width": 125,
+            "height": 50
+          },
+          {
+            "label": "New Purchase",
+            "left": 31,
+            "right": 156,
+            "width": 125,
+            "height": 48
+          },
+          {
+            "label": "Purchase List",
+            "left": 164,
+            "right": 289,
+            "width": 125,
+            "height": 48
+          },
+          {
+            "label": "Bulk Purchase",
+            "left": 31,
+            "right": 156,
+            "width": 125,
+            "height": 50
+          },
+          {
+            "label": "Purchase Payments",
+            "left": 164,
+            "right": 289,
+            "width": 125,
+            "height": 50
+          },
+          {
+            "label": "Items",
+            "left": 31,
+            "right": 156,
+            "width": 125,
+            "height": 48
+          },
+          {
+            "label": "Parties",
+            "left": 164,
+            "right": 289,
+            "width": 125,
+            "height": 48
+          },
+          {
+            "label": "Payment Ledger",
+            "left": 31,
+            "right": 156,
+            "width": 125,
+            "height": 48
+          },
+          {
+            "label": "All Transactions",
+            "left": 164,
+            "right": 289,
+            "width": 125,
+            "height": 48
+          },
+          {
+            "label": "Payment In",
+            "left": 31,
+            "right": 156,
+            "width": 125,
+            "height": 48
+          },
+          {
+            "label": "Payment Out",
+            "left": 164,
+            "right": 289,
+            "width": 125,
+            "height": 48
+          },
+          {
+            "label": "Excel / Sheets",
+            "left": 31,
+            "right": 156,
+            "width": 125,
+            "height": 48
+          },
+          {
+            "label": "Audit Log",
+            "left": 164,
+            "right": 289,
+            "width": 125,
+            "height": 48
+          },
+          {
+            "label": "How to Customize",
+            "left": 31,
+            "right": 156,
+            "width": 125,
+            "height": 50
+          },
+          {
+            "label": "GitHub Hosting Guide",
+            "left": 164,
+            "right": 289,
+            "width": 125,
+            "height": 50
+          }
+        ],
+        "print_navigation_hidden": true
+      },
+      "duration_ms": 242
+    },
+    {
+      "id": "desktop-navigation-1366",
+      "width": 1366,
+      "status": "PASS",
+      "observations": {
+        "desktop_sidebar_preserved": true,
+        "reached": [
+          "new-purchase",
+          "prev-bills",
+          "items",
+          "parties",
+          "payments"
+        ]
+      },
+      "duration_ms": 448
+    }
+  ]
+}

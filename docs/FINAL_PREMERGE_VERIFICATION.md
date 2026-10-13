@@ -1,5 +1,7 @@
 # Final owner pre-merge verification
 
+**Historical PR #9 verification of the original PR #8 runtime.** Its failures and exact reviewed bytes are retained below. Owner-authorized repairs and their new final verification are in [BLOCKER_REPAIR_VERIFICATION.md](BLOCKER_REPAIR_VERIFICATION.md); this older report does not describe the repaired PR #10 runtime.
+
 **Decision: MERGE BLOCKED.** The combined application passes its existing automated regressions, but the independent owner gate fails financial/import, historical-report, purchase-number compatibility and printing requirements. Green PR #8 CI does not supersede these failures. Do not merge the stack, deploy it or update a live browser profile on this evidence.
 
 Authority: [owner comment #6126054996](https://github.com/nileshkchaubey-glitch/Xl-billing/pull/8#issuecomment-6126054996). This review-only branch is `codex/xl-final-premerge-verification`, based on the owner's pinned PR #8 head. It adds tests, test-only CI and this report; **application `index.html` is unchanged**. No main changes, merge, deployment, real profile/record/key access, paid service or mandatory backend was performed. Physical printers and native mobile capabilities are **NOT VERIFIED**.

@@ -1,0 +1,1417 @@
+{
+  "owner_instruction": "https://github.com/nileshkchaubey-glitch/Xl-billing/pull/8#issuecomment-6126054996",
+  "tested_application_commit": "1b703b0febe55b86caff6f9741efb937004b6da8",
+  "tested_commit": "1b703b0febe55b86caff6f9741efb937004b6da8",
+  "source_sha256": "990c1f10db9e25ed1fc98a5f76d04e7ed9bab2062f5ba9477402ede78d0ec6dd",
+  "baseline_commit": "29aeb20225bccfc653b192651de608491185096c",
+  "runner_sha256": "370841d79be0dc5ce946cc6bcad195db6d87b60e4a599607822db9e5a6d3dde6",
+  "browser": "chromium",
+  "synthetic_only": true,
+  "summary": {
+    "pass": 48,
+    "fail": 2,
+    "harness_errors": 0
+  },
+  "results": [
+    {
+      "id": "real-sale-1366",
+      "title": "Real New Invoice entry, paise oracle, audit and keyboard focus",
+      "browser": "chromium",
+      "width": 1366,
+      "classification": "BLOCKER",
+      "status": "PASS",
+      "duration_ms": 743,
+      "pass": true,
+      "expected": "One INV-1003, total/balance 100, paid 0, counter 1004, create audit after verified Save",
+      "observed": {
+        "total": 100,
+        "paid": 0,
+        "balance": 100,
+        "number": "INV-1003",
+        "counter": 1004,
+        "audit": [
+          "create"
+        ],
+        "tab_focus": "srt-mv5ye8rt-4a8381f6-f76d-4dda-8888-810ec0763b2c"
+      }
+    },
+    {
+      "id": "mobile-workflow-reachability-1366",
+      "title": "Visible navigation reaches all required business workflows",
+      "browser": "chromium",
+      "width": 1366,
+      "classification": "OWNER ACCEPTANCE REQUIRED",
+      "status": "PASS",
+      "duration_ms": 216,
+      "pass": true,
+      "expected": "Visible, interactive navigation for purchases, previous bills, masters and payment ledger",
+      "observed": {
+        "new-purchase": true,
+        "prev-bills": true,
+        "items": true,
+        "parties": true,
+        "payments": true
+      },
+      "note": "Hidden sidebar links and scripted nav() are not counted as mobile acceptance."
+    },
+    {
+      "id": "real-packs-1366",
+      "title": "Real packs, quantity arithmetic and keyboard entry",
+      "browser": "chromium",
+      "width": 1366,
+      "classification": "BLOCKER",
+      "status": "PASS",
+      "duration_ms": 743,
+      "pass": true,
+      "expected": "0.1 units per pack × 3 packs = 0.3 final units; rate 20 gives total/due 6",
+      "observed": {
+        "shown_final": "0.3",
+        "qty": 0.3,
+        "pack_count": 3,
+        "total": 6,
+        "balance": 6
+      }
+    },
+    {
+      "id": "retail-reports-1366",
+      "title": "Real retail Save and actual sales/party report tab controls",
+      "browser": "chromium",
+      "width": 1366,
+      "classification": "BLOCKER",
+      "status": "PASS",
+      "duration_ms": 451,
+      "pass": true,
+      "expected": "Wholesale 200 + retail 50 + 12.34 = 262.34; party invoice due 160",
+      "observed": {
+        "retail_amount": 12.34,
+        "sale_report_contains_262_34": true,
+        "party_report_contains_due_160": true
+      }
+    },
+    {
+      "id": "real-sale-390",
+      "title": "Real New Invoice entry, paise oracle, audit and keyboard focus",
+      "browser": "chromium",
+      "width": 390,
+      "classification": "BLOCKER",
+      "status": "PASS",
+      "duration_ms": 675,
+      "pass": true,
+      "expected": "One INV-1003, total/balance 100, paid 0, counter 1004, create audit after verified Save",
+      "observed": {
+        "total": 100,
+        "paid": 0,
+        "balance": 100,
+        "number": "INV-1003",
+        "counter": 1004,
+        "audit": [
+          "create"
+        ],
+        "tab_focus": "srt-mv5yeaej-bcb1879e-b56d-4980-8a7e-12fa3be77be0"
+      }
+    },
+    {
+      "id": "mobile-workflow-reachability-390",
+      "title": "Visible navigation reaches all required business workflows",
+      "browser": "chromium",
+      "width": 390,
+      "classification": "OWNER ACCEPTANCE REQUIRED",
+      "status": "PASS",
+      "duration_ms": 584,
+      "pass": true,
+      "expected": "Visible, interactive navigation for purchases, previous bills, masters and payment ledger",
+      "observed": {
+        "new-purchase": true,
+        "prev-bills": true,
+        "items": true,
+        "parties": true,
+        "payments": true
+      },
+      "note": "Hidden sidebar links and scripted nav() are not counted as mobile acceptance."
+    },
+    {
+      "id": "real-packs-390",
+      "title": "Real packs, quantity arithmetic and keyboard entry",
+      "browser": "chromium",
+      "width": 390,
+      "classification": "BLOCKER",
+      "status": "PASS",
+      "duration_ms": 664,
+      "pass": true,
+      "expected": "0.1 units per pack × 3 packs = 0.3 final units; rate 20 gives total/due 6",
+      "observed": {
+        "shown_final": "0.3",
+        "qty": 0.3,
+        "pack_count": 3,
+        "total": 6,
+        "balance": 6
+      }
+    },
+    {
+      "id": "retail-reports-390",
+      "title": "Real retail Save and actual sales/party report tab controls",
+      "browser": "chromium",
+      "width": 390,
+      "classification": "BLOCKER",
+      "status": "PASS",
+      "duration_ms": 3538,
+      "pass": true,
+      "expected": "Wholesale 200 + retail 50 + 12.34 = 262.34; party invoice due 160",
+      "observed": {
+        "retail_amount": 12.34,
+        "sale_report_contains_262_34": true,
+        "party_report_contains_due_160": true
+      }
+    },
+    {
+      "id": "real-previous-bills",
+      "title": "Previous Bills real Save, duplicate refusal and PIN deletion",
+      "browser": "chromium",
+      "width": 1366,
+      "classification": "BLOCKER",
+      "status": "PASS",
+      "duration_ms": 1509,
+      "pass": true,
+      "expected": "Historical bill paid 20/due 80; duplicate is byte-preserving; deletion requires configured PIN",
+      "observed": {
+        "paid": 20,
+        "balance": 80,
+        "duplicate_refused": true,
+        "deleted_after_pin": true
+      }
+    },
+    {
+      "id": "real-payment-out",
+      "title": "Real UPI payment-out allocation reconciles supplier history and paise",
+      "browser": "chromium",
+      "width": 1366,
+      "classification": "BLOCKER",
+      "status": "FAIL",
+      "duration_ms": 504,
+      "pass": false,
+      "expected": "Original cash 20 + UPI 12.34 = paid 32.34; remaining 467.66",
+      "observed": {
+        "id": "u1",
+        "date": "2026-10-09",
+        "partyId": "p2",
+        "partyName": "Synthetic Supplier",
+        "billNo": "P-1",
+        "mode": "amount",
+        "total": 500,
+        "paid": 20,
+        "balance": 480,
+        "items": [],
+        "notes": "",
+        "payments": [
+          {
+            "date": "2026-10-09",
+            "amt": 20,
+            "mode": "Cash",
+            "note": ""
+          }
+        ],
+        "createdAt": "2026-10-09T08:00:00Z"
+      }
+    },
+    {
+      "id": "different-supplier-bill-number",
+      "title": "Baseline-supported supplier-issued numbers are scoped to supplier identity",
+      "browser": "chromium",
+      "width": 1366,
+      "classification": "BLOCKER",
+      "status": "PASS",
+      "duration_ms": 494,
+      "pass": true,
+      "expected": "Supplier p2 P-1 and supplier p3 P-1 are distinct histories, as the baseline UI supports",
+      "observed": {
+        "purchase_count": 2,
+        "second_supplier_saved": true,
+        "original_bytes_preserved_on_refusal": false,
+        "error": null
+      },
+      "note": "Resolve supplier/FY uniqueness policy explicitly; never rewrite existing vendor numbers to manufacture global uniqueness."
+    },
+    {
+      "id": "different-supplier-backup-restore",
+      "title": "Complete private backup can restore distinct suppliers sharing an external bill number",
+      "browser": "chromium",
+      "width": 1366,
+      "classification": "BLOCKER",
+      "status": "PASS",
+      "duration_ms": 270,
+      "pass": true,
+      "expected": "Two unambiguous supplier-linked P-1 records remain a restorable complete snapshot",
+      "observed": {
+        "verified": true,
+        "error": null,
+        "original_bytes_preserved": true
+      }
+    },
+    {
+      "id": "real-master-creation",
+      "title": "Actual item and party form creation preserves opening balance",
+      "browser": "chromium",
+      "width": 1366,
+      "classification": "BLOCKER",
+      "status": "PASS",
+      "duration_ms": 918,
+      "pass": true,
+      "expected": "Saved exact rates and legitimate opening balance 25",
+      "observed": {
+        "i": {
+          "id": "mv5yeh7t-ead17ffb-a6f2-4528-bbbd-2103f393a890",
+          "name": "Synthetic Owner Item",
+          "unit": "Pcs",
+          "hsn": "",
+          "saleRate": 12.5,
+          "purchaseRate": 7.25,
+          "gst": 0,
+          "updatedAt": "2026-10-13"
+        },
+        "p": {
+          "id": "mv5yehfo-672f86cc-363c-4edd-94a6-6a6cc13b68ee",
+          "name": "Synthetic Owner Party",
+          "phone": "",
+          "type": "both",
+          "address": "",
+          "area": "",
+          "description": "",
+          "desc": "",
+          "gstin": "",
+          "openingBal": 25,
+          "updatedAt": "2026-10-13"
+        }
+      }
+    },
+    {
+      "id": "real-purchase-payment",
+      "title": "New Purchase and actual supplier UPI payment reconcile",
+      "browser": "chromium",
+      "width": 1366,
+      "classification": "BLOCKER",
+      "status": "PASS",
+      "duration_ms": 779,
+      "pass": true,
+      "expected": "125.50 = paid 35.50 + due 90; two UPI records",
+      "observed": {
+        "id": "mv5yehu5-4fc89b02-1e4d-444a-be79-87e2724a2e43",
+        "date": "2026-10-13",
+        "partyId": "p2",
+        "partyName": "Synthetic Supplier",
+        "billNo": "OWNER-PUR-1",
+        "mode": "amount",
+        "total": 125.5,
+        "paid": 35.5,
+        "balance": 90,
+        "payType": "UPI",
+        "items": [],
+        "notes": "",
+        "payments": [
+          {
+            "date": "2026-10-13",
+            "amt": 25.5,
+            "mode": "UPI",
+            "note": "Initial payment"
+          },
+          {
+            "date": "2026-10-13",
+            "amt": 10,
+            "mode": "UPI",
+            "note": ""
+          }
+        ],
+        "photoData": null,
+        "createdAt": "2026-10-13T00:39:36.653Z",
+        "openingPaid": 0,
+        "updatedAt": "2026-10-13T00:39:36.922Z"
+      }
+    },
+    {
+      "id": "opening-receipt-discounts",
+      "title": "Opening receipt plus actual cash and settlement discount, supplier discount preserved",
+      "browser": "chromium",
+      "width": 1366,
+      "classification": "BLOCKER",
+      "status": "PASS",
+      "duration_ms": 772,
+      "pass": true,
+      "expected": "Original opening 20 + cash 10 + settlement discount 10 = settled 40, due 60; supplier paid 20 + discount 10 + due 470 = 500",
+      "observed": {
+        "i": {
+          "id": "s0",
+          "invoiceNo": "INV-1001",
+          "date": "2026-10-09",
+          "partyId": "p1",
+          "partyName": "Synthetic Customer",
+          "items": [
+            {
+              "id": "line0",
+              "itemId": "i1",
+              "name": "Paper Cups",
+              "qty": 5,
+              "rate": 20,
+              "amt": 100,
+              "unit": "Pcs"
+            }
+          ],
+          "subtotal": 100,
+          "discount": 0,
+          "taxPct": 0,
+          "taxAmt": 0,
+          "total": 100,
+          "paid": 40,
+          "balance": 60,
+          "notes": "",
+          "paymentType": "Credit",
+          "dispatchStatus": "pending",
+          "createdAt": "2026-10-09T08:00:00Z",
+          "openingPaid": 20,
+          "payments": [
+            {
+              "date": "2026-10-13",
+              "amt": 10,
+              "mode": "UPI",
+              "note": ""
+            },
+            {
+              "date": "2026-10-13",
+              "amt": 10,
+              "mode": "Discount",
+              "note": "Settlement discount"
+            }
+          ],
+          "updatedAt": "2026-10-13T00:39:37.701Z"
+        },
+        "p": {
+          "id": "u1",
+          "date": "2026-10-09",
+          "partyId": "p2",
+          "partyName": "Synthetic Supplier",
+          "billNo": "P-1",
+          "mode": "amount",
+          "total": 500,
+          "paid": 20,
+          "balance": 470,
+          "items": [],
+          "notes": "",
+          "payments": [
+            {
+              "date": "2026-10-09",
+              "amt": 20,
+              "mode": "Cash",
+              "note": ""
+            }
+          ],
+          "createdAt": "2026-10-09T08:00:00Z",
+          "discount": 10,
+          "discounts": [
+            {
+              "amt": 10,
+              "date": "2026-10-09"
+            }
+          ]
+        },
+        "payments": [
+          {
+            "_invId": "s0",
+            "_payIdx": 0,
+            "_invNo": "INV-1001",
+            "_party": "Synthetic Customer",
+            "_invTotal": 100,
+            "_invBal": 60,
+            "_cancelled": false,
+            "date": "2026-10-13",
+            "amt": 10,
+            "mode": "UPI",
+            "note": "",
+            "type": "payment"
+          },
+          {
+            "_invId": "s0",
+            "_payIdx": 1,
+            "_invNo": "INV-1001",
+            "_party": "Synthetic Customer",
+            "_invTotal": 100,
+            "_invBal": 60,
+            "_cancelled": false,
+            "date": "2026-10-13",
+            "amt": 10,
+            "mode": "Discount",
+            "note": "Settlement discount",
+            "type": "discount"
+          },
+          {
+            "_invId": "s1",
+            "_payIdx": 0,
+            "_invNo": "INV-1002",
+            "_party": "Synthetic Customer",
+            "_invTotal": 100,
+            "_invBal": 80,
+            "_cancelled": false,
+            "date": "2026-10-09",
+            "amt": 20,
+            "mode": "Cash",
+            "note": "",
+            "type": "payment"
+          }
+        ]
+      }
+    },
+    {
+      "id": "partial-history-rejected",
+      "title": "Ambiguous partial historical receipts are never silently rewritten",
+      "browser": "chromium",
+      "width": 1366,
+      "classification": "BLOCKER",
+      "status": "PASS",
+      "duration_ms": 512,
+      "pass": true,
+      "expected": "Block payment and preserve exact ambiguous paid/history bytes",
+      "observed": {
+        "preserved": true,
+        "alerts": [
+          "Payment history does not match this bill. The original record has been preserved for review."
+        ]
+      }
+    },
+    {
+      "id": "edit-reversal-pin",
+      "title": "Invoice edit, payment reversal and PIN change use real confirmation UI",
+      "browser": "chromium",
+      "width": 1366,
+      "classification": "BLOCKER",
+      "status": "PASS",
+      "duration_ms": 1358,
+      "pass": true,
+      "expected": "Edit retains 20 receipt; setup does not delete; changed PIN rejects old value; approved reversal returns due 120",
+      "observed": {
+        "edited": true,
+        "setup_preserved": true,
+        "old_pin_denied": true,
+        "invoice": {
+          "id": "s0",
+          "invoiceNo": "INV-1001",
+          "date": "2026-10-09",
+          "partyId": "p1",
+          "partyName": "Synthetic Customer",
+          "items": [
+            {
+              "id": "line0",
+              "itemId": "i1",
+              "name": "Paper Cups",
+              "qty": 6,
+              "rate": 20,
+              "amt": 120,
+              "unit": "Pcs"
+            }
+          ],
+          "subtotal": 120,
+          "discount": 0,
+          "taxPct": 0,
+          "taxAmt": 0,
+          "total": 120,
+          "paid": 0,
+          "balance": 120,
+          "notes": "",
+          "paymentType": "Credit",
+          "dispatchStatus": "pending",
+          "payments": [],
+          "createdAt": "2026-10-09T08:00:00Z",
+          "due": "",
+          "customFieldValues": {},
+          "updatedAt": "2026-10-13T00:39:39.588Z",
+          "openingPaid": 0
+        }
+      }
+    },
+    {
+      "id": "cancel-restore-accounting",
+      "title": "Cancellation preserves actual receipts and restore reopens original balances",
+      "browser": "chromium",
+      "width": 1366,
+      "classification": "BLOCKER",
+      "status": "PASS",
+      "duration_ms": 477,
+      "pass": true,
+      "expected": "No cash receipt deletion on cancellation; restore retains 20 paid and 80 due",
+      "observed": {
+        "cancelled": {
+          "id": "s0",
+          "invoiceNo": "INV-1001",
+          "date": "2026-10-09",
+          "partyId": "p1",
+          "partyName": "Synthetic Customer",
+          "items": [
+            {
+              "id": "line0",
+              "itemId": "i1",
+              "name": "Paper Cups",
+              "qty": 5,
+              "rate": 20,
+              "amt": 100,
+              "unit": "Pcs"
+            }
+          ],
+          "subtotal": 100,
+          "discount": 0,
+          "taxPct": 0,
+          "taxAmt": 0,
+          "total": 100,
+          "paid": 20,
+          "balance": 80,
+          "notes": "",
+          "paymentType": "Credit",
+          "dispatchStatus": "cancelled",
+          "payments": [
+            {
+              "date": "2026-10-09",
+              "amt": 20,
+              "mode": "Cash",
+              "note": ""
+            }
+          ],
+          "createdAt": "2026-10-09T08:00:00Z",
+          "status": "cancelled",
+          "cancelledAt": "2026-10-13T00:39:39.939Z"
+        },
+        "restored": {
+          "id": "s0",
+          "invoiceNo": "INV-1001",
+          "date": "2026-10-09",
+          "partyId": "p1",
+          "partyName": "Synthetic Customer",
+          "items": [
+            {
+              "id": "line0",
+              "itemId": "i1",
+              "name": "Paper Cups",
+              "qty": 5,
+              "rate": 20,
+              "amt": 100,
+              "unit": "Pcs"
+            }
+          ],
+          "subtotal": 100,
+          "discount": 0,
+          "taxPct": 0,
+          "taxAmt": 0,
+          "total": 100,
+          "paid": 20,
+          "balance": 80,
+          "notes": "",
+          "paymentType": "Credit",
+          "dispatchStatus": "pending",
+          "payments": [
+            {
+              "date": "2026-10-09",
+              "amt": 20,
+              "mode": "Cash",
+              "note": ""
+            }
+          ],
+          "createdAt": "2026-10-09T08:00:00Z"
+        }
+      }
+    },
+    {
+      "id": "csv-invalid-paid",
+      "title": "Invoice CSV rejects malformed financial input rather than silently coercing it to zero",
+      "browser": "chromium",
+      "width": 1366,
+      "classification": "BLOCKER",
+      "status": "PASS",
+      "duration_ms": 369,
+      "pass": true,
+      "expected": "Invalid explicit paid value rejected without byte changes",
+      "observed": {
+        "preserved": true,
+        "imported_invoice": null,
+        "result": ""
+      }
+    },
+    {
+      "id": "csv-reject-duplicate",
+      "title": "CSV preflight rejects duplicate invoices before mutation",
+      "browser": "chromium",
+      "width": 1366,
+      "classification": "BLOCKER",
+      "status": "PASS",
+      "duration_ms": 363,
+      "pass": true,
+      "expected": "Reject invalid CSV with exact original business bytes",
+      "observed": {
+        "preserved": true,
+        "error": "CSV rejected: An invoice number already exists or is repeated in this file. No records were imported."
+      }
+    },
+    {
+      "id": "csv-reject-overpaid",
+      "title": "CSV preflight rejects overpaid invoices before mutation",
+      "browser": "chromium",
+      "width": 1366,
+      "classification": "BLOCKER",
+      "status": "PASS",
+      "duration_ms": 406,
+      "pass": true,
+      "expected": "Reject invalid CSV with exact original business bytes",
+      "observed": {
+        "preserved": true,
+        "error": "CSV rejected: balance is outside its supported range. No records were imported."
+      }
+    },
+    {
+      "id": "csv-reject-invalid-date",
+      "title": "CSV preflight rejects invalid-date invoices before mutation",
+      "browser": "chromium",
+      "width": 1366,
+      "classification": "BLOCKER",
+      "status": "PASS",
+      "duration_ms": 375,
+      "pass": true,
+      "expected": "Reject invalid CSV with exact original business bytes",
+      "observed": {
+        "preserved": true,
+        "error": "CSV rejected: date is not a valid calendar date. No records were imported."
+      }
+    },
+    {
+      "id": "csv-round-trip",
+      "title": "Quoted and multiline CSV fields preserve exact master values on reimport",
+      "browser": "chromium",
+      "width": 1366,
+      "classification": "BLOCKER",
+      "status": "PASS",
+      "duration_ms": 389,
+      "pass": true,
+      "expected": [
+        "Synthetic \"Quoted\" item",
+        "Synthetic\nMultiline"
+      ],
+      "observed": {
+        "imported": [
+          "Synthetic \"Quoted\" item",
+          "Synthetic\nMultiline"
+        ],
+        "exported_csv": "name,unit,saleRate,purchaseRate,gst,hsn,id,xlCSV,recordJSON\r\n\"'Synthetic \"\"Quoted\"\" item\",'Pcs,1,0,0,,'q1,XL-CSV-1:items,\"'{\"\"id\"\":\"\"q1\"\",\"\"name\"\":\"\"Synthetic \\\"\"Quoted\\\"\" item\"\",\"\"unit\"\":\"\"Pcs\"\",\"\"saleRate\"\":1,\"\"purchaseRate\"\":0,\"\"gst\"\":0}\"\r\n\"'Synthetic\nMultiline\",'Pcs,2,0,0,,'q2,XL-CSV-1:items,\"'{\"\"id\"\":\"\"q2\"\",\"\"name\"\":\"\"Synthetic\\nMultiline\"\",\"\"unit\"\":\"\"Pcs\"\",\"\"saleRate\"\":2,\"\"purchaseRate\"\":0,\"\"gst\"\":0}\""
+      }
+    },
+    {
+      "id": "csv-formula-neutralization",
+      "title": "Spreadsheet exports neutralize stored formula prefixes",
+      "browser": "chromium",
+      "width": 1366,
+      "classification": "BLOCKER",
+      "status": "PASS",
+      "duration_ms": 193,
+      "pass": true,
+      "expected": "Spreadsheet cell is a literal stored name, not an active formula",
+      "observed": {
+        "row": "'=1+1,'Pcs,1,0,0,,'f1,XL-CSV-1:items,\"'{\"\"id\"\":\"\"f1\"\",\"\"name\"\":\"\"=1+1\"\",\"\"unit\"\":\"\"Pcs\"\",\"\"saleRate\"\":1,\"\"purchaseRate\"\":0,\"\"gst\"\":0}\""
+      },
+      "note": "No spreadsheet executable was opened; emitted bytes prove the unneutralized prefix, not execution in a physical Office installation."
+    },
+    {
+      "id": "csv-invoice-financial-round-trip",
+      "title": "Own invoice CSV preserves subtotal/discount/tax/total arithmetic",
+      "browser": "chromium",
+      "width": 1366,
+      "classification": "BLOCKER",
+      "status": "PASS",
+      "duration_ms": 381,
+      "pass": true,
+      "expected": "Own export subtotal 100 − discount 10 + tax 0 = total 90",
+      "observed": {
+        "subtotal": 100,
+        "discount": 10,
+        "tax": 0,
+        "total": 90,
+        "paid": 20,
+        "balance": 70,
+        "derived_total": 90
+      }
+    },
+    {
+      "id": "older-tab-before-save",
+      "title": "Uncoordinated old-tab bytes block stale Save without overwriting the external state",
+      "browser": "chromium",
+      "width": 1366,
+      "classification": "BLOCKER",
+      "status": "PASS",
+      "duration_ms": 860,
+      "pass": true,
+      "expected": "Old initialization/foreign writes are retained; stale current form cannot write invoice/counter",
+      "observed": {
+        "external_preserved": true,
+        "error": "Another tab or app copy changed the records. Reload before making further changes."
+      },
+      "note": "This tests detectable drift before commit, not exclusion of uncoordinated writes between a read and setItem."
+    },
+    {
+      "id": "older-writer-read-write-race",
+      "title": "Unsupported older writer between check and setItem cannot be assumed isolated",
+      "browser": "chromium",
+      "width": 1366,
+      "classification": "OWNER ACCEPTANCE REQUIRED",
+      "status": "FAIL",
+      "duration_ms": 686,
+      "pass": false,
+      "expected": "No claim that unsupported older writers are excluded; the synthetic 5 receipt exposes the read/write race",
+      "observed": {
+        "older_writer_receipt": 5,
+        "persisted_paid": 20,
+        "persisted_history": [
+          {
+            "date": "2026-10-09",
+            "amt": 20,
+            "mode": "Cash",
+            "note": ""
+          }
+        ],
+        "toast": "Invoice INV-1003 saved! ✓"
+      },
+      "note": "Deliberate unsupported noncooperating race injection, not a cooperating Web Locks transaction. Closing every older copy before a live update is mandatory; localStorage has no compare-and-swap."
+    },
+    {
+      "id": "transaction-discount-cash",
+      "title": "Cash-in transaction filter excludes settlement discounts",
+      "browser": "chromium",
+      "width": 1366,
+      "classification": "BLOCKER",
+      "status": "PASS",
+      "duration_ms": 250,
+      "pass": true,
+      "expected": "Cash/UPI receipts 40; settlement discount 10 is noncash",
+      "observed": {
+        "transaction_summary": [
+          "₹40.00",
+          "₹0.00",
+          "₹40.00",
+          "₹0.00",
+          "₹0.00",
+          "₹0.00",
+          "₹0.00",
+          "₹0.00",
+          "₹0.00",
+          "2"
+        ],
+        "payment_ledger_cash": 40
+      }
+    },
+    {
+      "id": "party-opening-ledger",
+      "title": "Party opening receivable is reflected consistently in displayed outstanding",
+      "browser": "chromium",
+      "width": 1366,
+      "classification": "OWNER ACCEPTANCE REQUIRED",
+      "status": "PASS",
+      "duration_ms": 292,
+      "pass": true,
+      "expected": "25 opening receivable + two invoices with 80 due each = 185",
+      "observed": {
+        "party_stats": [
+          "₹200.00",
+          "₹40.00",
+          "₹185.00",
+          "2"
+        ]
+      },
+      "note": "Whether party openingBal is informational or an actual receivable requires owner policy; it is never silently discarded from stored bytes."
+    },
+    {
+      "id": "legacy-item-report",
+      "title": "Supported legacy amount field reconciles with the item financial report",
+      "browser": "chromium",
+      "width": 1366,
+      "classification": "BLOCKER",
+      "status": "PASS",
+      "duration_ms": 282,
+      "pass": true,
+      "expected": "Legacy qty 2 × rate 3 / saved amount 6 contributes 6 to Total Amount without rewriting bytes",
+      "observed": {
+        "report_cells": [
+          "▶",
+          "Synthetic Legacy Line",
+          "2",
+          "1",
+          "₹6.00",
+          "1"
+        ],
+        "stored_total": 6,
+        "stored_line_amount": 6,
+        "bytes_preserved": true
+      }
+    },
+    {
+      "id": "invoice-cleanup-remove-failed",
+      "title": "Real Invoice Save distinguishes verified commit from uncertain cleanup remove-failed",
+      "browser": "chromium",
+      "width": 1366,
+      "classification": "BLOCKER",
+      "status": "PASS",
+      "duration_ms": 763,
+      "pass": true,
+      "expected": "Commit remains verified; no rollback claim or repeat reservation; reload recovers committed INV-1003 once",
+      "observed": {
+        "outcome": "committed-reload-required",
+        "count": 3,
+        "counter": 1004,
+        "journal_present": true,
+        "message": "The invoice changes and commit marker were verified, but journal cleanup could not be confirmed. Do not repeat the save. Reload and inspect the saved records.",
+        "toast": ""
+      }
+    },
+    {
+      "id": "invoice-cleanup-cleanup-read-denied",
+      "title": "Real Invoice Save distinguishes verified commit from uncertain cleanup cleanup-read-denied",
+      "browser": "chromium",
+      "width": 1366,
+      "classification": "BLOCKER",
+      "status": "PASS",
+      "duration_ms": 719,
+      "pass": true,
+      "expected": "Commit remains verified; no rollback claim or repeat reservation; reload recovers committed INV-1003 once",
+      "observed": {
+        "outcome": "committed-reload-required",
+        "count": 3,
+        "counter": 1004,
+        "journal_present": false,
+        "message": "The invoice changes and commit marker were verified, but journal cleanup could not be confirmed. Do not repeat the save. Reload and inspect the saved records.",
+        "toast": ""
+      }
+    },
+    {
+      "id": "baseline-upgrade-http",
+      "title": "Same-origin baseline main to candidate upgrade retains legacy raw bytes http",
+      "browser": "chromium",
+      "width": 1366,
+      "classification": "BLOCKER",
+      "status": "PASS",
+      "duration_ms": 318,
+      "pass": true,
+      "expected": "All shop4_* and preference strings identical; missing histories/balances and unknown fields preserved",
+      "observed": {
+        "candidate_core_initialized": true,
+        "same_origin": true,
+        "secure_context": true,
+        "preserved": true,
+        "before_keys": [
+          "shop4_audit",
+          "shop4_future",
+          "shop4_invoices",
+          "shop4_items",
+          "shop4_parties",
+          "shop4_purchases",
+          "shop4_retail",
+          "shop4_settings",
+          "v8_compact"
+        ],
+        "after_keys": [
+          "shop4_audit",
+          "shop4_future",
+          "shop4_invoices",
+          "shop4_items",
+          "shop4_parties",
+          "shop4_purchases",
+          "shop4_retail",
+          "shop4_settings",
+          "v8_compact"
+        ]
+      },
+      "note": "Synthetic baseline profile only; TLS certificate is generated for this isolated runner and trusted only by its disposable context."
+    },
+    {
+      "id": "baseline-upgrade-https",
+      "title": "Same-origin baseline main to candidate upgrade retains legacy raw bytes https",
+      "browser": "chromium",
+      "width": 1366,
+      "classification": "BLOCKER",
+      "status": "PASS",
+      "duration_ms": 367,
+      "pass": true,
+      "expected": "All shop4_* and preference strings identical; missing histories/balances and unknown fields preserved",
+      "observed": {
+        "candidate_core_initialized": true,
+        "same_origin": true,
+        "secure_context": true,
+        "preserved": true,
+        "before_keys": [
+          "shop4_audit",
+          "shop4_future",
+          "shop4_invoices",
+          "shop4_items",
+          "shop4_parties",
+          "shop4_purchases",
+          "shop4_retail",
+          "shop4_settings",
+          "v8_compact"
+        ],
+        "after_keys": [
+          "shop4_audit",
+          "shop4_future",
+          "shop4_invoices",
+          "shop4_items",
+          "shop4_parties",
+          "shop4_purchases",
+          "shop4_retail",
+          "shop4_settings",
+          "v8_compact"
+        ]
+      },
+      "note": "Synthetic baseline profile only; TLS certificate is generated for this isolated runner and trusted only by its disposable context."
+    },
+    {
+      "id": "baseline-upgrade-file",
+      "title": "Same-origin baseline main to candidate upgrade retains legacy raw bytes file",
+      "browser": "chromium",
+      "width": 1366,
+      "classification": "BLOCKER",
+      "status": "PASS",
+      "duration_ms": 362,
+      "pass": true,
+      "expected": "All shop4_* and preference strings identical; missing histories/balances and unknown fields preserved",
+      "observed": {
+        "candidate_core_initialized": true,
+        "same_origin": true,
+        "secure_context": true,
+        "preserved": true,
+        "before_keys": [
+          "shop4_audit",
+          "shop4_future",
+          "shop4_invoices",
+          "shop4_items",
+          "shop4_parties",
+          "shop4_purchases",
+          "shop4_retail",
+          "shop4_settings",
+          "v8_compact"
+        ],
+        "after_keys": [
+          "shop4_audit",
+          "shop4_future",
+          "shop4_invoices",
+          "shop4_items",
+          "shop4_parties",
+          "shop4_purchases",
+          "shop4_retail",
+          "shop4_settings",
+          "v8_compact"
+        ]
+      },
+      "note": "Synthetic baseline profile only; TLS certificate is generated for this isolated runner and trusted only by its disposable context."
+    },
+    {
+      "id": "private-backup-complete",
+      "title": "Private backup verifies checksum and exact credential/unknown/preference bytes",
+      "browser": "chromium",
+      "width": 1366,
+      "classification": "BLOCKER",
+      "status": "PASS",
+      "duration_ms": 187,
+      "pass": true,
+      "expected": "Verified private backup retains every captured compatible key, audit, settings and synthetic credentials",
+      "observed": {
+        "verified": true,
+        "keys": [
+          "shop4_audit",
+          "shop4_future",
+          "shop4_invoices",
+          "shop4_items",
+          "shop4_parties",
+          "shop4_purchases",
+          "shop4_retail",
+          "shop4_settings",
+          "v8_compact"
+        ],
+        "bytes_equal": true,
+        "contains_private_credentials": true
+      },
+      "note": "Private backups are deliberately not redacted. No real credential was read or sent."
+    },
+    {
+      "id": "print-A4-1",
+      "title": "Generated A4 printable invoice retains 1 lines and financial totals",
+      "browser": "chromium",
+      "width": 1366,
+      "classification": "OWNER ACCEPTANCE REQUIRED",
+      "status": "PASS",
+      "duration_ms": 412,
+      "pass": true,
+      "expected": "Every selected line and total remains visible; A5 is two copies on A4, without silent clipping",
+      "observed": {
+        "lines": 1,
+        "visible_lines": 1,
+        "clipped": false,
+        "text": " Synthetic XL Shop INVOICE No: INV-1001 Date: 09/10/2026 Credit 📦Pend FY: 2026-27 BILL TO Synthetic Customer 📞 9876543210 # # Item Description Packing Qty Rate Amount 1 1 SYNTHETIC-LINE-1 Pcs 1 ₹20.00 ₹20.00 Subtotal₹20.00 TOTAL₹20.00 BALANCE DUE₹20.00 Thank you for your business! Authorized Signature document.title=\"INV-1001_SYNTHETIC-CUSTOMER\";setTimeout(()=>window.print(),300); ",
+        "pdf": {
+          "sha256": "cab215c5839ae0ee4bf02351a1633c11abf17cc106052571129596e70455a0e5",
+          "bytes": 50755,
+          "media_box": [
+            "595.91998",
+            "842.88"
+          ],
+          "page_objects": 1
+        }
+      },
+      "note": "Software layout/PDF only. Physical printer, native mobile print dialog and paper calibration NOT VERIFIED."
+    },
+    {
+      "id": "print-A5-1",
+      "title": "Generated A5 printable invoice retains 1 lines and financial totals",
+      "browser": "chromium",
+      "width": 1366,
+      "classification": "OWNER ACCEPTANCE REQUIRED",
+      "status": "PASS",
+      "duration_ms": 413,
+      "pass": true,
+      "expected": "Every selected line and total remains visible; A5 is two copies on A4, without silent clipping",
+      "observed": {
+        "lines": 1,
+        "visible_lines": 1,
+        "clipped": false,
+        "half_height": 558,
+        "content_height": 558,
+        "text": " Synthetic XL Shop INVOICE No: INV-1001 Date: 09/10/2026 Credit 📦Pend FY: 2026-27 BILL TO Synthetic Customer 📞 9876543210 # # Item Description Packing Qty Rate Amount 1 1 SYNTHETIC-LINE-1 Pcs 1 ₹20.00 ₹20.00 Subtotal₹20.00 TOTAL₹20.00 BALANCE DUE₹20.00 Thank you for your business! Authorized Signature ",
+        "pdf": {
+          "sha256": "c4fcf4caa9191fdad006636473f3e9184266b5e7932266bdb7a3b811fbc497b4",
+          "bytes": 53502,
+          "media_box": [
+            "594.95996",
+            "841.91998"
+          ],
+          "page_objects": 1
+        }
+      },
+      "note": "Software layout/PDF only. Physical printer, native mobile print dialog and paper calibration NOT VERIFIED."
+    },
+    {
+      "id": "print-A4-40",
+      "title": "Generated A4 printable invoice retains 40 lines and financial totals",
+      "browser": "chromium",
+      "width": 1366,
+      "classification": "OWNER ACCEPTANCE REQUIRED",
+      "status": "PASS",
+      "duration_ms": 401,
+      "pass": true,
+      "expected": "Every selected line and total remains visible; A5 is two copies on A4, without silent clipping",
+      "observed": {
+        "lines": 40,
+        "visible_lines": 40,
+        "clipped": false,
+        "text": "E-31 Pcs 1 ₹20.00 ₹20.00 32 32 SYNTHETIC-LINE-32 Pcs 1 ₹20.00 ₹20.00 33 33 SYNTHETIC-LINE-33 Pcs 1 ₹20.00 ₹20.00 34 34 SYNTHETIC-LINE-34 Pcs 1 ₹20.00 ₹20.00 35 35 SYNTHETIC-LINE-35 Pcs 1 ₹20.00 ₹20.00 36 36 SYNTHETIC-LINE-36 Pcs 1 ₹20.00 ₹20.00 37 37 SYNTHETIC-LINE-37 Pcs 1 ₹20.00 ₹20.00 38 38 SYNTHETIC-LINE-38 Pcs 1 ₹20.00 ₹20.00 39 39 SYNTHETIC-LINE-39 Pcs 1 ₹20.00 ₹20.00 40 40 SYNTHETIC-LINE-40 Pcs 1 ₹20.00 ₹20.00 Subtotal₹800.00 TOTAL₹800.00 BALANCE DUE₹800.00 Thank you for your business! Authorized Signature document.title=\"INV-1001_SYNTHETIC-CUSTOMER\";setTimeout(()=>window.print(),300); ",
+        "pdf": {
+          "sha256": "4a9d58162fef0ab5953e945d84dc660a4f080900ba2a5dc1f2be29c850074db1",
+          "bytes": 54569,
+          "media_box": [
+            "595.91998",
+            "842.88"
+          ],
+          "page_objects": 2
+        }
+      },
+      "note": "Software layout/PDF only. Physical printer, native mobile print dialog and paper calibration NOT VERIFIED."
+    },
+    {
+      "id": "print-A5-40",
+      "title": "Generated A5 printable invoice retains 40 lines and financial totals",
+      "browser": "chromium",
+      "width": 1366,
+      "classification": "OWNER ACCEPTANCE REQUIRED",
+      "status": "PASS",
+      "duration_ms": 435,
+      "pass": true,
+      "expected": "Every selected line and total remains visible; A5 is two copies on A4, without silent clipping",
+      "observed": {
+        "lines": 40,
+        "visible_lines": 40,
+        "clipped": false,
+        "text": "s 1 ₹20.00 ₹20.00 30 30 SYNTHETIC-LINE-30 Pcs 1 ₹20.00 ₹20.00 31 31 SYNTHETIC-LINE-31 Pcs 1 ₹20.00 ₹20.00 32 32 SYNTHETIC-LINE-32 Pcs 1 ₹20.00 ₹20.00 33 33 SYNTHETIC-LINE-33 Pcs 1 ₹20.00 ₹20.00 34 34 SYNTHETIC-LINE-34 Pcs 1 ₹20.00 ₹20.00 35 35 SYNTHETIC-LINE-35 Pcs 1 ₹20.00 ₹20.00 36 36 SYNTHETIC-LINE-36 Pcs 1 ₹20.00 ₹20.00 37 37 SYNTHETIC-LINE-37 Pcs 1 ₹20.00 ₹20.00 38 38 SYNTHETIC-LINE-38 Pcs 1 ₹20.00 ₹20.00 39 39 SYNTHETIC-LINE-39 Pcs 1 ₹20.00 ₹20.00 40 40 SYNTHETIC-LINE-40 Pcs 1 ₹20.00 ₹20.00 Subtotal₹800.00 TOTAL₹800.00 BALANCE DUE₹800.00 Thank you for your business! Authorized Signature ",
+        "pdf": {
+          "sha256": "2e650d980c4d1867b3a8289fa7a2e8c355a843784296a5e0a320d7dbdc6ff5fb",
+          "bytes": 54027,
+          "media_box": [
+            "594.95996",
+            "841.91998"
+          ],
+          "page_objects": 2
+        }
+      },
+      "note": "Software layout/PDF only. Physical printer, native mobile print dialog and paper calibration NOT VERIFIED."
+    },
+    {
+      "id": "print-A5-two-copies",
+      "title": "Short two-up A5 output contains two complete copies on one A4 page",
+      "browser": "chromium",
+      "width": 1366,
+      "classification": "BLOCKER",
+      "status": "PASS",
+      "duration_ms": 433,
+      "pass": true,
+      "expected": "Both copies contain four lines, total and balance; Chromium PDF is one A4 page with every copy label twice; stored bytes unchanged",
+      "observed": {
+        "halves": [
+          {
+            "rows": 4,
+            "clipped": false,
+            "totals": true
+          },
+          {
+            "rows": 4,
+            "clipped": false,
+            "totals": true
+          }
+        ],
+        "pdf": {
+          "line_occurrences": 8,
+          "total_occurrences": 2,
+          "balance_occurrences": 2,
+          "page_objects": 1
+        },
+        "bytes_preserved": true
+      },
+      "note": "Native /usr/bin/pdftotext checks actual PDF bytes. Physical print output remains NOT VERIFIED."
+    },
+    {
+      "id": "print-A5-wrapped-80",
+      "title": "Oversized wrapped A5 request visibly falls back to complete A4 output",
+      "browser": "chromium",
+      "width": 1366,
+      "classification": "BLOCKER",
+      "status": "PASS",
+      "duration_ms": 511,
+      "pass": true,
+      "expected": "Visible A4 fallback; all 80 wrapped line labels and totals in complete paginated output; no stored bytes changed",
+      "observed": {
+        "notice": "This invoice exceeds a half A4 page. A4 layout will be used so every line and total is included.",
+        "fallback": true,
+        "rows": 80,
+        "hidden_overflow": false,
+        "totals": true,
+        "pdf": {
+          "distinct_lines": 80,
+          "total_present": true,
+          "balance_present": true,
+          "page_count": 3
+        },
+        "bytes_preserved": true
+      },
+      "note": "PDF text/page extraction requires Poppler development tools; physical printer and native mobile print remain NOT VERIFIED."
+    },
+    {
+      "id": "print-A4-unbroken-fields",
+      "title": "Long unbroken invoice fields remain within printable width and retain their PDF endpoints",
+      "browser": "chromium",
+      "width": 1366,
+      "classification": "BLOCKER",
+      "status": "PASS",
+      "duration_ms": 517,
+      "pass": true,
+      "expected": "All five long unbroken stored text fields wrap within printable width; actual Chromium PDF retains their beginning/end markers and financial content; exact stored bytes unchanged",
+      "observed": {
+        "width": 760,
+        "content_width": 760,
+        "half_overflow": false,
+        "hidden_overflow": false,
+        "pdf": {
+          "words_within_page": true,
+          "word_count": 185,
+          "field_endpoints": {
+            "ADDRESS": true,
+            "BANK": true,
+            "TERMS": true,
+            "NOTES": true,
+            "CUSTOM": true
+          },
+          "line_present": true,
+          "total_present": true,
+          "balance_present": true
+        },
+        "bytes_preserved": true
+      },
+      "note": "Native raw glyph order and whitespace removal locate markers without interleaving neighboring columns. Independent native word bounds must fit within every physical PDF page. No PDF content or financial data is altered."
+    },
+    {
+      "id": "print-A5-unbroken-fields",
+      "title": "Long unbroken invoice fields remain within printable width and retain their PDF endpoints",
+      "browser": "chromium",
+      "width": 1366,
+      "classification": "BLOCKER",
+      "status": "PASS",
+      "duration_ms": 553,
+      "pass": true,
+      "expected": "All five long unbroken stored text fields wrap within printable width; actual Chromium PDF retains their beginning/end markers and financial content; exact stored bytes unchanged",
+      "observed": {
+        "width": 718,
+        "content_width": 718,
+        "half_overflow": false,
+        "hidden_overflow": false,
+        "pdf": {
+          "words_within_page": true,
+          "word_count": 178,
+          "field_endpoints": {
+            "ADDRESS": true,
+            "BANK": true,
+            "TERMS": true,
+            "NOTES": true,
+            "CUSTOM": true
+          },
+          "line_present": true,
+          "total_present": true,
+          "balance_present": true
+        },
+        "bytes_preserved": true
+      },
+      "note": "Native raw glyph order and whitespace removal locate markers without interleaving neighboring columns. Independent native word bounds must fit within every physical PDF page. No PDF content or financial data is altered."
+    },
+    {
+      "id": "print-A5-measurement-refused",
+      "title": "Failed A5 layout measurement visibly refuses printing without touching data",
+      "browser": "chromium",
+      "width": 1366,
+      "classification": "BLOCKER",
+      "status": "PASS",
+      "duration_ms": 373,
+      "pass": true,
+      "expected": "Measurement failure opens no print window, explains refusal and preserves exact business bytes",
+      "observed": {
+        "opened_print_windows": 0,
+        "notice": "A5 printing could not verify that every line and total fits. Printing was stopped. Use the A4 Print button or try again.",
+        "bytes_preserved": true
+      }
+    },
+    {
+      "id": "stored-print-text-xss",
+      "title": "Stored packing text remains literal in the actual invoice view and both print layouts",
+      "browser": "chromium",
+      "width": 1366,
+      "classification": "BLOCKER",
+      "status": "PASS",
+      "duration_ms": 1089,
+      "pass": true,
+      "expected": "Name, packing summary, fallback pack type and colour payloads render as literal text; no event script executes in real view/A4/A5 output; totals80 and raw bytes preserved",
+      "observed": {
+        "view": {
+          "executed": false,
+          "injected_elements": 0,
+          "literals": true
+        },
+        "outputs": [
+          {
+            "paper": "A4",
+            "executed": false,
+            "injected_elements": 0,
+            "literals": true,
+            "total_present": true
+          },
+          {
+            "paper": "A5",
+            "executed": false,
+            "injected_elements": 0,
+            "literals": true,
+            "total_present": true
+          }
+        ],
+        "bytes_preserved": true
+      },
+      "note": "Payloads only toggle a synthetic window flag. No secret or real profile is accessed."
+    },
+    {
+      "id": "stored-purchase-payment-text-xss",
+      "title": "Stored vendor bill numbers remain literal in real supplier payment and Payment Out workflows",
+      "browser": "chromium",
+      "width": 1366,
+      "classification": "BLOCKER",
+      "status": "PASS",
+      "duration_ms": 849,
+      "pass": true,
+      "expected": "Vendor bill payload appears as literal text in the actual Pay modal and selected-supplier Payment Out table; no event execution or inserted payload element; original480 due and all stored bytes unchanged",
+      "observed": {
+        "modal": {
+          "executed": false,
+          "injected_elements": 0,
+          "literal": true,
+          "balance_input": "480.00"
+        },
+        "payout": {
+          "executed": false,
+          "injected_elements": 0,
+          "literal": true,
+          "bill_rows": 1
+        },
+        "bytes_preserved": true
+      },
+      "note": "Only real navigation, Pay and supplier-selection controls are used. No payment is saved; payload only changes a synthetic window flag."
+    },
+    {
+      "id": "scale-500",
+      "title": "Real Invoice Save with 500 synthetic invoices measures capacity and safe quota failure",
+      "browser": "chromium",
+      "width": 1366,
+      "classification": "OWNER ACCEPTANCE REQUIRED",
+      "status": "PASS",
+      "duration_ms": 1208,
+      "pass": true,
+      "expected": "Either verified unique invoice commit or visible quota refusal preserving all business bytes and counters",
+      "observed": {
+        "starting_invoices": 500,
+        "starting_snapshot_utf8_bytes": 274126,
+        "elapsed_ms": 632,
+        "result": "committed",
+        "preserved_on_refusal": false,
+        "error": "",
+        "outcome": "",
+        "count": 501,
+        "counter": 1502,
+        "toast": "Invoice INV-1501 saved! ✓"
+      },
+      "note": "Measured synthetic count/bytes, not a production capacity guarantee. Journal copies need extra headroom."
+    },
+    {
+      "id": "scale-2000",
+      "title": "Real Invoice Save with 2000 synthetic invoices measures capacity and safe quota failure",
+      "browser": "chromium",
+      "width": 1366,
+      "classification": "OWNER ACCEPTANCE REQUIRED",
+      "status": "PASS",
+      "duration_ms": 2322,
+      "pass": true,
+      "expected": "Either verified unique invoice commit or visible quota refusal preserving all business bytes and counters",
+      "observed": {
+        "starting_invoices": 2000,
+        "starting_snapshot_utf8_bytes": 1095126,
+        "elapsed_ms": 952,
+        "result": "committed",
+        "preserved_on_refusal": false,
+        "error": "",
+        "outcome": "",
+        "count": 2001,
+        "counter": 3002,
+        "toast": "Invoice INV-3001 saved! ✓"
+      },
+      "note": "Measured synthetic count/bytes, not a production capacity guarantee. Journal copies need extra headroom."
+    },
+    {
+      "id": "scale-5000",
+      "title": "Real Invoice Save with 5000 synthetic invoices measures capacity and safe quota failure",
+      "browser": "chromium",
+      "width": 1366,
+      "classification": "OWNER ACCEPTANCE REQUIRED",
+      "status": "PASS",
+      "duration_ms": 4666,
+      "pass": true,
+      "expected": "Either verified unique invoice commit or visible quota refusal preserving all business bytes and counters",
+      "observed": {
+        "starting_invoices": 5000,
+        "starting_snapshot_utf8_bytes": 2739126,
+        "elapsed_ms": 1246,
+        "result": "refused",
+        "preserved_on_refusal": true,
+        "error": "Browser storage could not stage this save. No invoice or counter changes were applied. Keep your entries and preserve an independent backup.",
+        "outcome": "not-written",
+        "count": 5000,
+        "counter": 6001,
+        "toast": ""
+      },
+      "note": "Measured synthetic count/bytes, not a production capacity guarantee. Journal copies need extra headroom."
+    }
+  ]
+}

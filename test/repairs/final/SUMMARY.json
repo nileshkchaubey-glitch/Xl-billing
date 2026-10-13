@@ -1,0 +1,362 @@
+{
+  "scope": "Owner-authorized PM-01 through PM-07 and final repair verification",
+  "synthetic_only": true,
+  "repair_base": "5d3fb7991586d7acef84d49cdd26a003b290d912",
+  "final_runtime_commit": "817b7224675870711faf88f8e3b795a84af6229a",
+  "source_sha256": "0b59624aa83af362c884c0bc32d214b10d7df5bd203e55cab55507861601c0df",
+  "local_report_commits": [
+    "1aa78248586f87dd31935306f8898b824c87238a",
+    "817b7224675870711faf88f8e3b795a84af6229a"
+  ],
+  "strict_gate_decision": "FAIL: MERGE BLOCKED under strict owner acceptance",
+  "remaining_failed_case": "older-writer-read-write-race in all three browsers; unsupported noncooperating older code has no localStorage compare-and-swap",
+  "gates": [
+    {
+      "path": "identity-chromium.json",
+      "sha256": "0d17d9a965e353bf26d71feb825d3d2d38025d50b3618ba2bfdc4a56e725c785",
+      "tested_commit": "817b7224675870711faf88f8e3b795a84af6229a",
+      "runner_sha256": "286950f232c2f73c58cd3a7805e0652a60d6c1935ee338bfe414bde0b9f96a58",
+      "summary": {
+        "pass": 10,
+        "fail": 0,
+        "harness_errors": 0
+      },
+      "failed_cases": []
+    },
+    {
+      "path": "identity-firefox.json",
+      "sha256": "0a600e7dcde597d0ba274a97a5454fe5c2762ae06907b5894faa5056562c8482",
+      "tested_commit": "1aa78248586f87dd31935306f8898b824c87238a",
+      "runner_sha256": "286950f232c2f73c58cd3a7805e0652a60d6c1935ee338bfe414bde0b9f96a58",
+      "summary": {
+        "pass": 10,
+        "fail": 0,
+        "harness_errors": 0
+      },
+      "failed_cases": []
+    },
+    {
+      "path": "identity-webkit.json",
+      "sha256": "87a0593d5c6d7b9f9868c057ef20fd0cdb3e2ce8553f77f3c978ec50e994a68d",
+      "tested_commit": "1aa78248586f87dd31935306f8898b824c87238a",
+      "runner_sha256": "286950f232c2f73c58cd3a7805e0652a60d6c1935ee338bfe414bde0b9f96a58",
+      "summary": {
+        "pass": 10,
+        "fail": 0,
+        "harness_errors": 0
+      },
+      "failed_cases": []
+    },
+    {
+      "path": "mobile-chromium.json",
+      "sha256": "8f3462994b2b9daf6f2b6ebc38ce04e29c97f8079369393ebeddd947c3c5dc1b",
+      "tested_commit": "817b7224675870711faf88f8e3b795a84af6229a",
+      "runner_sha256": "0df92a39901f8e7d110ae202040933f6b274408dde0d4cc7f8b3ff38cf74245d",
+      "summary": {
+        "pass": 5,
+        "fail": 0,
+        "harness_errors": 0
+      },
+      "failed_cases": []
+    },
+    {
+      "path": "mobile-firefox.json",
+      "sha256": "6fd1c459d04c9016a0d6bfccfe12a706818988e9d218be576640c134ea23adef",
+      "tested_commit": "1aa78248586f87dd31935306f8898b824c87238a",
+      "runner_sha256": "0df92a39901f8e7d110ae202040933f6b274408dde0d4cc7f8b3ff38cf74245d",
+      "summary": {
+        "pass": 5,
+        "fail": 0,
+        "harness_errors": 0
+      },
+      "failed_cases": []
+    },
+    {
+      "path": "mobile-webkit.json",
+      "sha256": "19ce7b67af9f899799b9cff3e29ffde9f25b165bb0fcd2d13d68af859c3e560d",
+      "tested_commit": "1aa78248586f87dd31935306f8898b824c87238a",
+      "runner_sha256": "0df92a39901f8e7d110ae202040933f6b274408dde0d4cc7f8b3ff38cf74245d",
+      "summary": {
+        "pass": 5,
+        "fail": 0,
+        "harness_errors": 0
+      },
+      "failed_cases": []
+    },
+    {
+      "path": "owner-chromium.json",
+      "sha256": "5408ba79d76561a95ff8984b944e8217146f84189b678515fbacb2f2a396f0f1",
+      "tested_commit": "817b7224675870711faf88f8e3b795a84af6229a",
+      "runner_sha256": "370841d79be0dc5ce946cc6bcad195db6d87b60e4a599607822db9e5a6d3dde6",
+      "summary": {
+        "pass": 49,
+        "fail": 1,
+        "harness_errors": 0
+      },
+      "failed_cases": [
+        "older-writer-read-write-race"
+      ]
+    },
+    {
+      "path": "owner-firefox.json",
+      "sha256": "68ce968ec389d65056be03cced0ddd540e67dab3556c1dae9c5b6e3f0e55822a",
+      "tested_commit": "1aa78248586f87dd31935306f8898b824c87238a",
+      "runner_sha256": "370841d79be0dc5ce946cc6bcad195db6d87b60e4a599607822db9e5a6d3dde6",
+      "summary": {
+        "pass": 49,
+        "fail": 1,
+        "harness_errors": 0
+      },
+      "failed_cases": [
+        "older-writer-read-write-race"
+      ]
+    },
+    {
+      "path": "owner-webkit.json",
+      "sha256": "5e3f6acf5fd78286494ac55788a97ab47405fd756735d4546fc30489d6f335b0",
+      "tested_commit": "1aa78248586f87dd31935306f8898b824c87238a",
+      "runner_sha256": "370841d79be0dc5ce946cc6bcad195db6d87b60e4a599607822db9e5a6d3dde6",
+      "summary": {
+        "pass": 49,
+        "fail": 1,
+        "harness_errors": 0
+      },
+      "failed_cases": [
+        "older-writer-read-write-race"
+      ]
+    },
+    {
+      "path": "party-chromium.json",
+      "sha256": "c0ceadf8eac33ed41c5b14da3b3f57d10a728ce710a9fb93d1b7388f395f39aa",
+      "tested_commit": "817b7224675870711faf88f8e3b795a84af6229a",
+      "runner_sha256": "f3113047f6d12324c13949860fec23e07bd75d5e9e7f37118b1bd2f00038183c",
+      "summary": {
+        "pass": 5,
+        "fail": 0,
+        "harness_errors": 0
+      },
+      "failed_cases": []
+    },
+    {
+      "path": "party-firefox.json",
+      "sha256": "b0fbbdfead23fadc7a340c5a2ea60046ff4088b39d6496d610771a8011447162",
+      "tested_commit": "1aa78248586f87dd31935306f8898b824c87238a",
+      "runner_sha256": "f3113047f6d12324c13949860fec23e07bd75d5e9e7f37118b1bd2f00038183c",
+      "summary": {
+        "pass": 5,
+        "fail": 0,
+        "harness_errors": 0
+      },
+      "failed_cases": []
+    },
+    {
+      "path": "party-webkit.json",
+      "sha256": "5fd192e0215aa9aa69dd7aef6609afda09b1ff97e63eb02e95790635b649aa47",
+      "tested_commit": "1aa78248586f87dd31935306f8898b824c87238a",
+      "runner_sha256": "f3113047f6d12324c13949860fec23e07bd75d5e9e7f37118b1bd2f00038183c",
+      "summary": {
+        "pass": 5,
+        "fail": 0,
+        "harness_errors": 0
+      },
+      "failed_cases": []
+    },
+    {
+      "path": "reports-chromium.json",
+      "sha256": "a83414bc57ffc9f60907c938242adb10361209368f9dcca456cd6850c0a93fd7",
+      "tested_commit": "817b7224675870711faf88f8e3b795a84af6229a",
+      "runner_sha256": "f48b8688bf4a7cf6dfd916470d3e9a4586d55c7b29f4db89c80f67f222376b15",
+      "summary": {
+        "pass": 9,
+        "fail": 0,
+        "harness_errors": 0
+      },
+      "failed_cases": []
+    },
+    {
+      "path": "reports-firefox.json",
+      "sha256": "9f8be67d3e4291466fd06fb7ca781a85057b654b9d399af181283c4821df4ca8",
+      "tested_commit": "1aa78248586f87dd31935306f8898b824c87238a",
+      "runner_sha256": "f48b8688bf4a7cf6dfd916470d3e9a4586d55c7b29f4db89c80f67f222376b15",
+      "summary": {
+        "pass": 9,
+        "fail": 0,
+        "harness_errors": 0
+      },
+      "failed_cases": []
+    },
+    {
+      "path": "reports-webkit.json",
+      "sha256": "ed195ef259ae264ae86f6c6052104c294b46509543ae17e34004a19d0e03bdea",
+      "tested_commit": "1aa78248586f87dd31935306f8898b824c87238a",
+      "runner_sha256": "f48b8688bf4a7cf6dfd916470d3e9a4586d55c7b29f4db89c80f67f222376b15",
+      "summary": {
+        "pass": 9,
+        "fail": 0,
+        "harness_errors": 0
+      },
+      "failed_cases": []
+    },
+    {
+      "path": "safety-chromium.json",
+      "sha256": "e44c699bbfeec8e461cdf8f8f39019da21988d19505d8b793422c35051e69502",
+      "tested_commit": "817b7224675870711faf88f8e3b795a84af6229a",
+      "runner_sha256": "6888311c7bf2baccc13a2ac14a703efa4635938817ba0031db5313e1e858a627",
+      "summary": {
+        "pass": 27,
+        "fail": 0,
+        "harnessErrors": 0
+      },
+      "failed_cases": []
+    },
+    {
+      "path": "safety-firefox.json",
+      "sha256": "d4e41652840077313b0fdbf543c8b32804960b3971af1cbcf529e807dd8af8e9",
+      "tested_commit": "817b7224675870711faf88f8e3b795a84af6229a",
+      "runner_sha256": "6888311c7bf2baccc13a2ac14a703efa4635938817ba0031db5313e1e858a627",
+      "summary": {
+        "pass": 27,
+        "fail": 0,
+        "harnessErrors": 0
+      },
+      "failed_cases": []
+    },
+    {
+      "path": "safety-webkit.json",
+      "sha256": "795df160896c3dc0c049e9a037b9bfaccd7b5c196768873995edb82eca5331a3",
+      "tested_commit": "1aa78248586f87dd31935306f8898b824c87238a",
+      "runner_sha256": "6888311c7bf2baccc13a2ac14a703efa4635938817ba0031db5313e1e858a627",
+      "summary": {
+        "pass": 27,
+        "fail": 0,
+        "harnessErrors": 0
+      },
+      "failed_cases": []
+    }
+  ],
+  "parcel_vm": "PASS: existing assertions retained",
+  "node": {
+    "pass": 110,
+    "fail": 0,
+    "skip": 0,
+    "original_cases_retained": 63,
+    "new_supplier_cases": 17,
+    "new_sales_collision_cases": 3,
+    "new_csv_cases": 27,
+    "log_sha256": "e30bf2629fb2fd7cda0578f99d9559da8f2e5f34afbe12e1350e336efa9c6028"
+  },
+  "lint": {
+    "errors": 0,
+    "warnings": 143,
+    "log_sha256": "7198ebf5afc8dc7daafaa75e29bd4a7a133b927cbda346dc44dcba97b8e57571"
+  },
+  "build": {
+    "pass": true,
+    "byte_identical_to_source": true
+  },
+  "full_browser_regression": {
+    "precursor_source_sha256": "6832ff9ab7914f8bd82d1623cd58c25430f1b4611921f03440bc504d562132e6",
+    "local_pass": 508,
+    "intentional_capture_skips": 2,
+    "functional_failures": 0,
+    "final_source_full_run": "Verified separately in final exact-head GitHub CI; immutable ledger and artifact digest recorded in PR #10 after the report commit runs CI."
+  },
+  "baseline_reports_preserved": "test/premerge/* and focused before/after evidence; failed combined timing probes retained in test/repairs/before/",
+  "changed_committed_paths_before_report": [
+    "M\t.github/workflows/tests.yml",
+    "A\tdocs/MOBILE_REPAIR.md",
+    "A\tdocs/PARTY_ACTION_REPAIR.md",
+    "A\tdocs/PAYMENT_FOCUS_REPAIR.md",
+    "A\tdocs/PAYMENT_IDENTITY_REPAIR.md",
+    "A\tdocs/PAYMENT_TEXT_SECURITY_REPAIR.md",
+    "A\tdocs/PM01_BROWSER_RECOVERY.md",
+    "A\tdocs/PM01_REPAIR.md",
+    "A\tdocs/PM020304_REPAIR.md",
+    "A\tdocs/PM0506_REPAIR.md",
+    "A\tdocs/PM07_REPAIR.md",
+    "A\tdocs/REPAIR_TEST_POLICY.md",
+    "A\tdocs/REPAIR_TOOLING.md",
+    "M\tindex.html",
+    "M\tqa/verify-invoice-entry.cjs",
+    "M\tscripts/review-release1.cjs",
+    "A\tscripts/verify-mobile.cjs",
+    "A\tscripts/verify-party-click.cjs",
+    "A\tscripts/verify-payment-identity.cjs",
+    "A\tscripts/verify-pm-reports.cjs",
+    "M\tscripts/verify-premerge.cjs",
+    "A\ttest/e2e/csv-safety.spec.cjs",
+    "A\ttest/e2e/supplier-recovery.spec.cjs",
+    "A\ttest/foundation/sales-number-collision.test.cjs",
+    "A\ttest/foundation/supplier-identity.test.cjs",
+    "A\ttest/party-actions/after-chromium.json",
+    "A\ttest/party-actions/after-firefox.json",
+    "A\ttest/party-actions/after-webkit.json",
+    "A\ttest/party-actions/before-firefox.json",
+    "A\ttest/party-actions/payout-focus-after-chromium.json",
+    "A\ttest/party-actions/payout-focus-after-firefox.json",
+    "A\ttest/party-actions/payout-focus-after-webkit.json",
+    "A\ttest/party-actions/payout-focus-before-chromium.json",
+    "A\ttest/party-actions/payout-focus-owner-after-chromium.json",
+    "A\ttest/party-actions/payout-focus-owner-after-firefox.json",
+    "A\ttest/party-actions/payout-focus-owner-after-webkit.json",
+    "A\ttest/payment-identity/after-final-chromium.json",
+    "A\ttest/payment-identity/after-final-firefox.json",
+    "A\ttest/payment-identity/after-final-webkit.json",
+    "A\ttest/payment-identity/after-payment-out-chromium.json",
+    "A\ttest/payment-identity/after-settlement-chromium.json",
+    "A\ttest/payment-identity/before-chromium.json",
+    "A\ttest/payment-identity/normal-owner-after-wait-chromium.json",
+    "A\ttest/payment-identity/normal-owner-after-wait-firefox.json",
+    "A\ttest/payment-identity/normal-owner-after-wait-webkit.json",
+    "A\ttest/payment-identity/normal-owner-chromium.json",
+    "A\ttest/payment-identity/normal-owner-firefox.json",
+    "A\ttest/payment-identity/normal-owner-webkit.json",
+    "A\ttest/payment-security/after-chromium.json",
+    "A\ttest/payment-security/after-firefox.json",
+    "A\ttest/payment-security/after-webkit.json",
+    "A\ttest/payment-security/before-chromium.json",
+    "A\ttest/pm-reports/after-final-chromium.json",
+    "A\ttest/pm-reports/after-final-firefox.json",
+    "A\ttest/pm-reports/after-final-webkit.json",
+    "A\ttest/pm-reports/after-pm05-chromium.json",
+    "A\ttest/pm-reports/after-pm06-chromium.json",
+    "A\ttest/pm-reports/before-chromium.json",
+    "A\ttest/pm-reports/opening-policy-after-chromium.json",
+    "A\ttest/pm-reports/opening-policy-all-roles-before-chromium.json",
+    "A\ttest/pm-reports/opening-policy-before-chromium.json",
+    "A\ttest/pm-reports/owner-after-final-chromium.json",
+    "A\ttest/pm-reports/owner-after-final-firefox.json",
+    "A\ttest/pm-reports/owner-after-final-webkit.json",
+    "A\ttest/pm-reports/owner-before-chromium.json",
+    "A\ttest/pm07/after-chromium.json",
+    "A\ttest/pm07/after-firefox.json",
+    "A\ttest/pm07/after-webkit.json",
+    "A\ttest/pm07/before-chromium.json",
+    "A\ttest/pm07/edge-review-chromium.json",
+    "A\ttest/pm07/edge-review-firefox.json",
+    "A\ttest/pm07/edge-review-webkit.json",
+    "A\ttest/pm07/pdf-evidence.json",
+    "A\ttest/pm07/width-after-chromium.json",
+    "A\ttest/pm07/width-after-firefox.json",
+    "A\ttest/pm07/width-after-webkit.json",
+    "A\ttest/pm07/width-before-chromium.json",
+    "A\ttest/pm07/xss-after-chromium.json",
+    "A\ttest/pm07/xss-after-firefox.json",
+    "A\ttest/pm07/xss-after-webkit.json",
+    "A\ttest/pm07/xss-before-chromium.json",
+    "A\ttest/premerge/csv-repair/SUMMARY.json",
+    "A\ttest/premerge/csv-repair/owner-after-chromium.json",
+    "A\ttest/premerge/csv-repair/owner-after-firefox.json",
+    "A\ttest/premerge/csv-repair/owner-after-webkit.json",
+    "A\ttest/repairs/before/deferred-views-chromium.json",
+    "A\ttest/repairs/pm01/after-chromium.json",
+    "A\ttest/repairs/pm01/after-firefox.json",
+    "A\ttest/repairs/pm01/after-webkit.json",
+    "A\ttest/repairs/pm01/before-chromium.json",
+    "A\ttest/repairs/pm01/browser-recovery-before-after.json",
+    "A\ttest/repairs/pm01/node-before-after.json",
+    "A\ttest/repairs/pm01/sales-collision-before-after.json",
+    "A\ttest/unit/csv-safety.test.cjs"
+  ],
+  "installations": "No new local dependencies/plugins installed. CI uses locked npm/Playwright and official Ubuntu Poppler; versions and sources in docs/REPAIR_TOOLING.md."
+}

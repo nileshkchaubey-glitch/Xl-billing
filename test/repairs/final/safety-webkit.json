@@ -1,0 +1,347 @@
+{
+  "workspaceCommit": "1aa78248586f87dd31935306f8898b824c87238a",
+  "sourceRevision": "1aa78248586f87dd31935306f8898b824c87238a",
+  "sourceSha256": "0b59624aa83af362c884c0bc32d214b10d7df5bd203e55cab55507861601c0df",
+  "runnerSha256": "6888311c7bf2baccc13a2ac14a703efa4635938817ba0031db5313e1e858a627",
+  "browser": "webkit",
+  "results": [
+    {
+      "id": "legacy-payment",
+      "status": "PASS",
+      "safe": true,
+      "observed": {
+        "paid": 30,
+        "balance": 70
+      },
+      "pageErrors": []
+    },
+    {
+      "id": "historical-purchase-discount",
+      "status": "PASS",
+      "safe": true,
+      "observed": {
+        "paid": 20,
+        "discount": 10,
+        "total": 500,
+        "balance": 470,
+        "unchanged": true
+      },
+      "pageErrors": []
+    },
+    {
+      "id": "legacy-discount",
+      "status": "PASS",
+      "safe": true,
+      "observed": {
+        "paid": 30,
+        "balance": 70,
+        "history": [
+          {
+            "date": "2026-10-13",
+            "amt": 10,
+            "mode": "Discount",
+            "note": "Settlement discount"
+          }
+        ],
+        "unchanged": false
+      },
+      "pageErrors": []
+    },
+    {
+      "id": "settlement-rounding",
+      "status": "PASS",
+      "safe": true,
+      "observed": {
+        "received": 0.01,
+        "applied": 0
+      },
+      "pageErrors": []
+    },
+    {
+      "id": "payout-rounding",
+      "status": "PASS",
+      "safe": true,
+      "observed": {
+        "received": 0.01,
+        "applied": 0
+      },
+      "pageErrors": []
+    },
+    {
+      "id": "startup-mutation",
+      "status": "PASS",
+      "safe": true,
+      "observed": {
+        "paidBefore": 150,
+        "paidAfter": 150,
+        "paymentHistoryTotal": 150,
+        "audit": []
+      },
+      "pageErrors": []
+    },
+    {
+      "id": "fractional-total-reload",
+      "status": "PASS",
+      "safe": true,
+      "observed": {
+        "total": 2719.4895,
+        "paidBeforeReload": 2719.49,
+        "paidAfterReload": 2719.49,
+        "paymentHistoryTotal": 2719.49
+      },
+      "pageErrors": []
+    },
+    {
+      "id": "corrupt-storage",
+      "status": "PASS",
+      "safe": true,
+      "observed": {
+        "error": null,
+        "originalBytesPreserved": true,
+        "invoiceCount": null
+      },
+      "pageErrors": [
+        "Another tab or app copy changed the records. Reload before making further changes."
+      ]
+    },
+    {
+      "id": "read-denied",
+      "status": "PASS",
+      "safe": true,
+      "observed": {
+        "error": null,
+        "originalIdsPreserved": true,
+        "invoiceCount": 2
+      },
+      "pageErrors": [
+        "Stored invoices data is unreadable."
+      ]
+    },
+    {
+      "id": "failed-write-invoices",
+      "status": "PASS",
+      "safe": true,
+      "observed": {
+        "error": null,
+        "changedKeys": [],
+        "toast": "",
+        "recoveredToPreviousSnapshot": true,
+        "invoiceCount": 2
+      },
+      "pageErrors": []
+    },
+    {
+      "id": "failed-write-settings",
+      "status": "PASS",
+      "safe": true,
+      "observed": {
+        "error": null,
+        "changedKeys": [
+          "shop4_invoices"
+        ],
+        "toast": "",
+        "recoveredToPreviousSnapshot": true,
+        "invoiceCount": 2
+      },
+      "pageErrors": []
+    },
+    {
+      "id": "failed-write-audit",
+      "status": "PASS",
+      "safe": true,
+      "observed": {
+        "error": null,
+        "changedKeys": [
+          "shop4_invoices",
+          "shop4_settings"
+        ],
+        "toast": "",
+        "recoveredToPreviousSnapshot": true,
+        "invoiceCount": 2
+      },
+      "pageErrors": []
+    },
+    {
+      "id": "restore-truncated",
+      "status": "PASS",
+      "safe": true,
+      "observed": {
+        "toast": ""
+      },
+      "pageErrors": []
+    },
+    {
+      "id": "restore-wrong-schema",
+      "status": "PASS",
+      "safe": true,
+      "observed": {
+        "invoiceCount": 2,
+        "toast": ""
+      },
+      "pageErrors": []
+    },
+    {
+      "id": "restore-tampered-checksum",
+      "status": "PASS",
+      "safe": true,
+      "observed": {
+        "tamperedTotal": 100,
+        "tamperedInputApplied": false,
+        "toast": ""
+      },
+      "pageErrors": []
+    },
+    {
+      "id": "restore-legacy-valid",
+      "status": "PASS",
+      "safe": true,
+      "observed": {
+        "invoiceCount": 2,
+        "paid": 20,
+        "quantity": 5,
+        "legacyNoteRestored": true
+      },
+      "pageErrors": []
+    },
+    {
+      "id": "restore-partial-write",
+      "status": "PASS",
+      "safe": true,
+      "observed": {
+        "changedKeysBeforeRecovery": [
+          "shop4_settings"
+        ],
+        "recoveryJournalRetained": true,
+        "failedRestoreReported": true,
+        "furtherChangesBlocked": true,
+        "recoveredToExactOriginal": true
+      },
+      "pageErrors": []
+    },
+    {
+      "id": "backup-completeness",
+      "status": "PASS",
+      "safe": true,
+      "observed": {
+        "exportedKeys": [
+          "format",
+          "version",
+          "createdAt",
+          "payload",
+          "checksum"
+        ],
+        "auditIncluded": true,
+        "checksumIncluded": true,
+        "privateCredentialsIncluded": true
+      },
+      "pageErrors": []
+    },
+    {
+      "id": "backup-rollback",
+      "status": "PASS",
+      "safe": true,
+      "observed": {
+        "invoiceCount": 2,
+        "auditEntries": 1,
+        "changedKeys": []
+      },
+      "pageErrors": []
+    },
+    {
+      "id": "old-bill-delete-pin",
+      "status": "PASS",
+      "safe": true,
+      "observed": {
+        "invoiceCount": 2,
+        "pinDialogCount": 1,
+        "auditEntries": 0
+      },
+      "pageErrors": []
+    },
+    {
+      "id": "stale-payment-delete",
+      "status": "PASS",
+      "safe": true,
+      "observed": {
+        "payments": [
+          {
+            "amt": 30,
+            "date": "2026-10-09",
+            "mode": "Cash",
+            "note": "second payment"
+          }
+        ],
+        "paid": 30
+      },
+      "pageErrors": []
+    },
+    {
+      "id": "failed-delete-feedback",
+      "status": "PASS",
+      "safe": true,
+      "observed": {
+        "invoiceCount": 2,
+        "auditEntries": 0,
+        "visibleAlertCount": 2,
+        "toast": ""
+      },
+      "pageErrors": []
+    },
+    {
+      "id": "stored-text-xss",
+      "status": "PASS",
+      "safe": true,
+      "observed": {
+        "harmlessScriptExecuted": false
+      },
+      "pageErrors": []
+    },
+    {
+      "id": "audit-search",
+      "status": "PASS",
+      "safe": true,
+      "observed": {
+        "rows": 20,
+        "pager": "Showing 1–20 of 25"
+      },
+      "pageErrors": []
+    },
+    {
+      "id": "purchase-sort",
+      "status": "PASS",
+      "safe": true,
+      "observed": {
+        "firstBill": "P-1",
+        "sortableHeaders": 7
+      },
+      "pageErrors": []
+    },
+    {
+      "id": "party-transactions-tab",
+      "status": "PASS",
+      "safe": true,
+      "observed": {
+        "transactionContentVisible": true
+      },
+      "pageErrors": []
+    },
+    {
+      "id": "cancelled-payment-ledger",
+      "status": "PASS",
+      "safe": true,
+      "expected": "Retain actual cash 20; exclude the cancelled invoice from active receivables",
+      "observed": {
+        "cancelledInvoicePaymentEntries": 1,
+        "retainedCash": 20,
+        "activeInvoiceDue": 80
+      },
+      "policy": "https://github.com/nileshkchaubey-glitch/Xl-billing/pull/9#issuecomment-6128013121",
+      "pageErrors": []
+    }
+  ],
+  "summary": {
+    "pass": 27,
+    "fail": 0,
+    "harnessErrors": 0
+  }
+}

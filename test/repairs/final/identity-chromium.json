@@ -1,0 +1,188 @@
+{
+  "tested_commit": "817b7224675870711faf88f8e3b795a84af6229a",
+  "source_sha256": "0b59624aa83af362c884c0bc32d214b10d7df5bd203e55cab55507861601c0df",
+  "runner_sha256": "286950f232c2f73c58cd3a7805e0652a60d6c1935ee338bfe414bde0b9f96a58",
+  "browser": "chromium",
+  "synthetic_only": true,
+  "summary": {
+    "pass": 10,
+    "fail": 0,
+    "harness_errors": 0
+  },
+  "results": [
+    {
+      "id": "settlement-same-name-party-0",
+      "status": "PASS",
+      "pass": true,
+      "expectMutation": true,
+      "expected": "Only listed p1 invoice s1 receives cash/discount; same-name p3 invoice s0 stays byte-equivalent",
+      "observed": {
+        "listed": [
+          {
+            "id": "s1",
+            "partyId": "p1"
+          }
+        ],
+        "paid": [
+          {
+            "id": "s0",
+            "partyId": "p3",
+            "paid": 20,
+            "balance": 80
+          },
+          {
+            "id": "s1",
+            "partyId": "p1",
+            "paid": 30,
+            "balance": 70
+          }
+        ],
+        "other_record_preserved": true
+      },
+      "bytes_preserved": false
+    },
+    {
+      "id": "settlement-same-name-party-15",
+      "status": "PASS",
+      "pass": true,
+      "expectMutation": true,
+      "expected": "Only listed p1 invoice s1 receives cash/discount; same-name p3 invoice s0 stays byte-equivalent",
+      "observed": {
+        "listed": [
+          {
+            "id": "s1",
+            "partyId": "p1"
+          }
+        ],
+        "paid": [
+          {
+            "id": "s0",
+            "partyId": "p3",
+            "paid": 20,
+            "balance": 80
+          },
+          {
+            "id": "s1",
+            "partyId": "p1",
+            "paid": 45,
+            "balance": 55
+          }
+        ],
+        "other_record_preserved": true
+      },
+      "bytes_preserved": false
+    },
+    {
+      "id": "settlement-stale-party",
+      "status": "PASS",
+      "pass": true,
+      "expectMutation": true,
+      "expected": "Reassignment or receipt changes invalidate modal evidence; no settlement or audit writes",
+      "observed": {
+        "preserved": true,
+        "error": "The selected party or financial records changed. Reopen the payment review before saving. No payment was changed."
+      },
+      "bytes_preserved": false
+    },
+    {
+      "id": "settlement-stale-history",
+      "status": "PASS",
+      "pass": true,
+      "expectMutation": true,
+      "expected": "Reassignment or receipt changes invalidate modal evidence; no settlement or audit writes",
+      "observed": {
+        "preserved": true,
+        "error": "The selected party or financial records changed. Reopen the payment review before saving. No payment was changed."
+      },
+      "bytes_preserved": false
+    },
+    {
+      "id": "settlement-stale-modal-context",
+      "status": "PASS",
+      "pass": true,
+      "expected": "A new same-party modal opened between Save dispatch and transaction execution invalidates the captured review token",
+      "observed": {
+        "preserved": true,
+        "error": "The selected party or financial records changed. Reopen the payment review before saving. No payment was changed."
+      },
+      "note": "Controlled same-event-loop interleaving using real application button dispatch and modal function, not an older-writer isolation claim.",
+      "bytes_preserved": true
+    },
+    {
+      "id": "payment-out-same-name-supplier",
+      "status": "PASS",
+      "pass": true,
+      "expectMutation": true,
+      "expected": "Selected p2 receives 10; older same-name p3 bill never enters allocation or changes",
+      "observed": {
+        "listed": [
+          {
+            "id": "u1",
+            "partyId": "p2"
+          }
+        ],
+        "paid": [
+          {
+            "id": "u1",
+            "partyId": "p2",
+            "paid": 30
+          },
+          {
+            "id": "u2",
+            "partyId": "p3",
+            "paid": 20
+          }
+        ],
+        "other_record_preserved": true
+      },
+      "bytes_preserved": false
+    },
+    {
+      "id": "payment-out-edited-party-input",
+      "status": "PASS",
+      "pass": true,
+      "expected": "Editing supplier text invalidates the selected ID and bill review; no stale allocations persist",
+      "observed": {
+        "preserved": true,
+        "error": "Select a supplier and review its bills before saving."
+      },
+      "bytes_preserved": true
+    },
+    {
+      "id": "payment-out-stale-party",
+      "status": "PASS",
+      "pass": true,
+      "expectMutation": true,
+      "expected": "Current stable supplier ID and reviewed bill bytes must match before allocations are applied",
+      "observed": {
+        "preserved": true,
+        "error": "The selected party or financial records changed. Reopen the payment review before saving. No payment was changed."
+      },
+      "bytes_preserved": false
+    },
+    {
+      "id": "payment-out-stale-history",
+      "status": "PASS",
+      "pass": true,
+      "expectMutation": true,
+      "expected": "Current stable supplier ID and reviewed bill bytes must match before allocations are applied",
+      "observed": {
+        "preserved": true,
+        "error": "The selected party or financial records changed. Reopen the payment review before saving. No payment was changed."
+      },
+      "bytes_preserved": false
+    },
+    {
+      "id": "payment-out-stale-modal-context",
+      "status": "PASS",
+      "pass": true,
+      "expected": "A new supplier bill review after Save dispatch invalidates the captured review token",
+      "observed": {
+        "preserved": true,
+        "error": "The selected party or financial records changed. Reopen the payment review before saving. No payment was changed."
+      },
+      "note": "Controlled application event interleaving, not a claim of isolation from unsupported older clients.",
+      "bytes_preserved": true
+    }
+  ]
+}

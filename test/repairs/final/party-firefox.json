@@ -1,0 +1,118 @@
+{
+  "tested_commit": "1aa78248586f87dd31935306f8898b824c87238a",
+  "source_sha256": "0b59624aa83af362c884c0bc32d214b10d7df5bd203e55cab55507861601c0df",
+  "runner_sha256": "f3113047f6d12324c13949860fec23e07bd75d5e9e7f37118b1bd2f00038183c",
+  "browser": "firefox",
+  "synthetic_only": true,
+  "summary": {
+    "pass": 5,
+    "fail": 0,
+    "harness_errors": 0
+  },
+  "results": [
+    {
+      "id": "detail-pointer-held-across-navigation-timer",
+      "status": "PASS",
+      "pass": true,
+      "expected": "One synchronous Settle action; Detail coordinates remain fixed across80ms callback; pointerdown/up opens Detail once; invoice due80 + openingcredit-200 = -120",
+      "observed": {
+        "events": [
+          {
+            "type": "pointerdown",
+            "target": "BUTTON",
+            "text": "Detail",
+            "onclick": "openPartyDetail('p1')"
+          },
+          {
+            "type": "pointerup",
+            "target": "BUTTON",
+            "text": "Detail",
+            "onclick": "openPartyDetail('p1')"
+          },
+          {
+            "type": "click",
+            "target": "BUTTON",
+            "text": "Detail",
+            "onclick": "openPartyDetail('p1')"
+          }
+        ],
+        "shown": true,
+        "stats": [
+          "₹100.00",
+          "₹20.00",
+          "₹-120.00",
+          "2"
+        ],
+        "before": {
+          "x": 1126.0333251953125,
+          "y": 265.98333740234375,
+          "width": 44.8499755859375,
+          "height": 20
+        },
+        "after": {
+          "x": 1126.0333251953125,
+          "y": 265.98333740234375,
+          "width": 44.8499755859375,
+          "height": 20
+        },
+        "settleInitially": 1,
+        "stable": true
+      },
+      "bytes_preserved": true
+    },
+    {
+      "id": "settle-action-uses-invoice-due-not-net-credit",
+      "status": "PASS",
+      "pass": true,
+      "expected": "Unpaid invoice80 remains selectable with net opening credit -120; preview states opening balances are unchanged",
+      "observed": {
+        "present": 1,
+        "summary": "Opening receivable / credit: ₹-200.00; receivable outstanding: ₹-120.00. Positive is receivable; negative is credit. Enter payments only against the listed invoices; opening balances are unchanged. Opening credits are not automatically consumed or added to receipts. ",
+        "modalText": "\n    \n      \n        🧾 Invoice-wise Settlement — Synthetic Customer\n        ✕\n      \n      \n        \n          Synthetic Customer — Invoice Pending: ₹80.00\n          Opening receivable / credit: ₹-200.00; receivable outstanding: ₹-120.00. Positive is receivable; negative is credit. Enter payments only against the listed invoices; opening balances are unchanged. Opening credits are not automatically consumed or added to receipts. \n        \n\n        \n        \n          \n            Total Amount Received (₹)\n            \n          \n          \n            Pay Mode\n            \n              CashUPIChequeNEFTCard\n            \n          \n        \n        ↓ Or manually enter per invoice:\n\n        \n        \n          \n            \n              \n                INV-1001\n                09/10/2026 · Credit\n              \n              \n                Total: ₹100.00\n                Due: ₹80.00\n              \n              \n            \n        \n\n        \n        \n          \n            Total Allocating:\n            ₹0.00\n          \n          \n            Unallocated:\n            ₹0.00\n          \n        \n\n        \n        \n          \n            Settlement Discount (₹) (optional)\n            \n          \n          \n            Date\n            \n          \n        \n\n        \n          ⚠️ Amounts are applied FIFO (oldest first) when using \"Total Received\" field.\n        \n      \n      \n        Cancel\n        ✓ Save Settlement\n      \n    "
+      },
+      "bytes_preserved": true
+    },
+    {
+      "id": "stored-party-phone-remains-literal",
+      "status": "PASS",
+      "pass": true,
+      "expected": "Stored phone text is literal, never an executable element; original bytes remain unchanged",
+      "observed": {
+        "executed": false,
+        "images": 0,
+        "text": "\n    \n      #NamePhoneAreaType\n      Total SaleOutstandingLast Invoice\n      Actions\n    \n    \n        1\n        Synthetic SupplierNo Phone\n        —\n        -\n        <span class=\"badge bb\">Supplier</span>\n        ₹0.00\n        ₹0.00Invoice due ₹0.00 · opening ₹0.00\n        -\n        \n          Detail\n          Edit\n          Del\n        \n      \n        2\n        Synthetic Customer\n        <img src=\"synthetic-phone-image\" onerror=\"window.syntheticPhoneExecuted=true\">\n        -\n        <span class=\"badge bo\">Both</span>\n        ₹100.00\n        ₹80.00Invoice due ₹80.00 · opening ₹0.00\n        09/10/2026 · ₹100.00\n        \n          Detail\n          Edit\n          Del\n        🧾 Settle\n      \n    Total 2 parties\n  \n  Showing 1–2 of 2\n    Rows 2050100\n    Sort Last updatedNameType\n    DescendingAscending\n    ← Prev\n    1\n    Next →"
+      },
+      "bytes_preserved": true
+    },
+    {
+      "id": "opening-only-has-no-invoice-settlement-action",
+      "status": "PASS",
+      "pass": true,
+      "expected": "Opening receivable25 without an unpaid invoice does not fabricate an invoice settlement target",
+      "observed": {
+        "before": 0,
+        "after": 0
+      },
+      "bytes_preserved": true
+    },
+    {
+      "id": "payment-out-amount-focus-survives-opening-timer",
+      "status": "PASS",
+      "pass": true,
+      "expected": "Amount retains focus across the opening timer; typing 12.34 changes only its allocation, preserving selected supplier p2 and billing bytes",
+      "observed": {
+        "focus_before_timer": "pout-amount",
+        "focus_after_timer": "pout-amount",
+        "party": "Synthetic Supplier",
+        "partyId": "p2",
+        "amount": "12.34",
+        "allocation": "12.34",
+        "mode": "UPI",
+        "reviewBills": [
+          "u1"
+        ]
+      },
+      "bytes_preserved": true
+    }
+  ]
+}
