@@ -52,7 +52,15 @@ const ctx={
   fc:x=>'₹'+Number(x||0).toFixed(2),
   nextTotals:{sub:100,disc:0,tax:0,tPct:0,total:100,paid:25,bal:75},
   calcSaleTotal:()=>ctx.nextTotals,
-  auditLog:(...args)=>events.audit.push(args)
+  auditLog:(...args)=>events.audit.push(args),
+  savePurPayment:()=>{
+    const amount=Number(elements['pur-pay-amt'].value)||0;
+    if(amount<=0)return;
+    const purchases=read('purchases');
+    purchases[0].payments.push({date:'2026-10-13',amt:amount});
+    purchases[0].paid+=amount;
+    save('purchases',purchases);
+  }
 };
 ctx.window=ctx;
 const c=vm.createContext(ctx);
@@ -163,18 +171,6 @@ assert.equal(saved(),w);
 assert.equal(beforeAudit(),a);
 
 // Purchase audit must describe confirmed records, never a rejected submit.
-ctx.savePurPayment=function(){
-  const amount=Number(elements['pur-pay-amt'].value)||0;
-  if(amount<=0)return;
-  const purchases=read('purchases');
-  purchases[0].payments.push({date:'2026-10-13',amt:amount});
-  purchases[0].paid+=amount;
-  save('purchases',purchases);
-};
-// The source wrapper calls _origSavePurPaymentV15 defined at evaluation time.
-// Rebind by evaluating only the existing actual wrapper code with a fresh function.
-const purchaseAudit=extract('const _origSavePurPaymentV15 = window.savePurPayment;','// INVOICE-WISE SETTLEMENT PAYMENT MODAL');
-vm.runInContext(purchaseAudit,c);
 elements['pur-pay-amt'].value='0';
 a=beforeAudit();ctx.savePurPayment();
 assert.equal(beforeAudit(),a);
