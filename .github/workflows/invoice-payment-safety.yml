@@ -1,0 +1,35 @@
+name: Invoice and Payment Safety
+
+on:
+  pull_request:
+    paths:
+      - index.html
+      - qa/verify-invoice-payment-safety.cjs
+      - .github/workflows/invoice-payment-safety.yml
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  safety:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Check test syntax
+        run: node --check qa/verify-invoice-payment-safety.cjs
+      - name: Synthetic invoice and payment safety checks
+        run: node qa/verify-invoice-payment-safety.cjs
+      - name: Existing invoice entry behavior
+        run: node qa/verify-invoice-entry.cjs
+      - name: Payment ledger pagination behavior
+        run: node qa/verify-payment-ledger-pagination.cjs
+      - name: Other list pagination behavior
+        run: node qa/verify-pagination.cjs
+      - name: Verify backup import and export
+        run: |
+          node qa/verify-backup-import.cjs
+          node qa/verify-complete-backup.cjs
