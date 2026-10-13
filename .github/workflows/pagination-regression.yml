@@ -1,0 +1,29 @@
+name: List pagination regression
+
+on:
+  pull_request:
+    paths:
+      - index.html
+      - qa/verify-pagination.cjs
+      - .github/workflows/pagination-regression.yml
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  pagination:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Verify pagination test syntax
+        run: node --check qa/verify-pagination.cjs
+      - name: Test actual list pagination with synthetic data
+        run: node qa/verify-pagination.cjs
+      - name: Confirm V4 backup guard remains unchanged
+        run: node qa/verify-backup-import.cjs
+      - name: Confirm signed backup compatibility
+        run: node qa/verify-complete-backup.cjs
