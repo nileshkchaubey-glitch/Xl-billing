@@ -1,0 +1,58 @@
+{
+  "owner_instruction": "https://github.com/nileshkchaubey-glitch/Xl-billing/pull/8#issuecomment-6126054996",
+  "tested_application_commit": "e32d6ef30ca0e9349450a71f295a7bc34c0e6277",
+  "tested_commit": "e32d6ef30ca0e9349450a71f295a7bc34c0e6277",
+  "source_sha256": "0b59624aa83af362c884c0bc32d214b10d7df5bd203e55cab55507861601c0df",
+  "baseline_commit": "29aeb20225bccfc653b192651de608491185096c",
+  "runner_sha256": "370841d79be0dc5ce946cc6bcad195db6d87b60e4a599607822db9e5a6d3dde6",
+  "browser": "chromium",
+  "synthetic_only": true,
+  "summary": {
+    "pass": 1,
+    "fail": 0,
+    "harness_errors": 0
+  },
+  "results": [
+    {
+      "id": "real-payment-out",
+      "title": "Real UPI payment-out allocation reconciles supplier history and paise",
+      "browser": "chromium",
+      "width": 1366,
+      "classification": "BLOCKER",
+      "status": "PASS",
+      "duration_ms": 2354,
+      "pass": true,
+      "expected": "Original cash 20 + UPI 12.34 = paid 32.34; remaining 467.66",
+      "observed": {
+        "id": "u1",
+        "date": "2026-10-09",
+        "partyId": "p2",
+        "partyName": "Synthetic Supplier",
+        "billNo": "P-1",
+        "mode": "amount",
+        "total": 500,
+        "paid": 32.34,
+        "balance": 467.66,
+        "items": [],
+        "notes": "",
+        "payments": [
+          {
+            "date": "2026-10-09",
+            "amt": 20,
+            "mode": "Cash",
+            "note": ""
+          },
+          {
+            "date": "2026-10-13",
+            "amt": 12.34,
+            "mode": "UPI",
+            "note": "Payment Out"
+          }
+        ],
+        "createdAt": "2026-10-09T08:00:00Z",
+        "openingPaid": 0,
+        "updatedAt": "2026-10-13T00:47:42.088Z"
+      }
+    }
+  ]
+}
