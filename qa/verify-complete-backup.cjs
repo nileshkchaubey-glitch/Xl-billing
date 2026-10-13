@@ -60,7 +60,7 @@ async function main(){
   const decoded=await core.decode(JSON.stringify(archive));
   assert.equal(decoded.counts.invoices,2);
   assert.equal(decoded.counts.audit,1);
-  assert.equal(decoded.rows.length,10,'All 10 current XL Billing raw keys are preserved');
+  assert.equal(decoded.rows.length,11,'All 11 current XL Billing raw keys are preserved');
   assert.equal(decoded.rows.find(r=>r[0]==='shop4_future_field')[1],src.getItem('shop4_future_field'));
   assert.equal(decoded.rows.find(r=>r[0]==='v8_compact')[1],'1');
   assert.ok(!decoded.rows.some(r=>r[0]==='unrelated_storage'));
