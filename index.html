@@ -1350,6 +1350,7 @@ function cancelEdit() {
 // ═══════════════════════════════════
 function setSLPill(p) {
   slPill=p;
+  if (window.pgState) window.pgState.sales = 1;
   document.querySelectorAll('[data-slpill]').forEach(el=>el.classList.toggle('active',el.dataset.slpill===p));
   renderSalesList();
 }
@@ -1721,7 +1722,7 @@ function savePurchase(){
   const purs=getPurchases(); purs.push(pur); DB.set('purchases',purs);
   toast('Purchase saved! ✓'); nav('purchase-list');
 }
-function clearPLFilter(){['pl-from','pl-to','pl-srch'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});renderPurchaseList();}
+function clearPLFilter(){['pl-from','pl-to','pl-srch'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});if(window.pgState)window.pgState.purchases=1;renderPurchaseList();}
 function renderPurchaseList(){
   const purs=getPurchases();
   const from=document.getElementById('pl-from')?.value;
@@ -6610,6 +6611,12 @@ function renderPageBtns(totalItems, currentPage, onNav, containerId) {
     </div>`;
 }
 
+// Later V14/V16 list renderers need the same live pagination state and controls.
+// These were previously trapped inside the V13 closure, hiding the page buttons.
+window.pgState = pgState;
+window.PAGE_SIZE = PAGE_SIZE;
+window.renderPageBtns = renderPageBtns;
+
 // ════════════════════════════════════════════════════════
 // 1. CANCEL INVOICE
 // ════════════════════════════════════════════════════════
@@ -7339,18 +7346,24 @@ window.quickDispatch = function(id) {
 // ════════════════════════════════════════════════════════
 // 15. RESET PAGINATION on search / filter change
 // ════════════════════════════════════════════════════════
-['sl-from','sl-to','sl-srch'].forEach(id=>{
-  const el = document.getElementById(id);
-  if (el) el.addEventListener('input', ()=>{ pgState.sales=1; });
-});
-['pl-from','pl-to','pl-srch'].forEach(id=>{
-  const el = document.getElementById(id);
-  if (el) el.addEventListener('input', ()=>{ pgState.purchases=1; });
-});
-const itemSrch = document.getElementById('item-srch');
-if (itemSrch) itemSrch.addEventListener('input', ()=>{ pgState.items=1; });
-const partySrch = document.getElementById('party-srch');
-if (partySrch) partySrch.addEventListener('input', ()=>{ pgState.parties=1; });
+function resetListPageOnFilter(ids, kind, render) {
+  ids.forEach(id=>{
+    const el=document.getElementById(id);
+    if(!el)return;
+    const reset=()=>{
+      if(pgState[kind]!==1) {
+        pgState[kind]=1;
+        render();
+      }
+    };
+    el.addEventListener('input',reset);
+    el.addEventListener('change',reset);
+  });
+}
+resetListPageOnFilter(['sl-from','sl-to','sl-srch'],'sales',()=>renderSalesList());
+resetListPageOnFilter(['pl-from','pl-to','pl-srch'],'purchases',()=>renderPurchaseList());
+resetListPageOnFilter(['item-srch'],'items',()=>renderItems());
+resetListPageOnFilter(['party-srch'],'parties',()=>renderParties());
 
 // ════════════════════════════════════════════════════════
 // 16. MIGRATION — mark old invoices with no status field
@@ -8070,10 +8083,10 @@ window.renderPurchaseList = function() {
   if (!f.length) { c.innerHTML=`<div class="empty"><div class="ic">🛒</div>No purchases found</div>`; return; }
 
   const { pgState, PAGE_SIZE, renderPageBtns } = window;
-  const pageState = pgState || {};
-  const pgSize = PAGE_SIZE || 20;
-  const pg = pageState.purchases || 1;
+  const pgSize = PAGE_SIZE;
   const totalPages = Math.ceil(f.length/pgSize);
+  const pg = Math.min(Math.max(1, Number(pgState.purchases) || 1), totalPages);
+  pgState.purchases = pg;
   const pageRows = f.slice((pg-1)*pgSize, pg*pgSize);
 
   c.innerHTML = `<div class="tw"><table>
@@ -9311,7 +9324,8 @@ window.clearSLFilter = function() {
     const el = document.getElementById(id);
     if (el) el.value = '';
   });
-  window.slPill = 'all';
+  slPill = 'all';
+  window.pgState.sales = 1;
   document.querySelectorAll('[data-slpill]').forEach(el =>
     el.classList.toggle('active', el.dataset.slpill === 'all'));
   renderSalesList();
@@ -9321,7 +9335,8 @@ window.clearSLFilter = function() {
 // FIX 2: renderSalesList — restore 3-dot menu, fix status
 // ════════════════════════════════════════════════════════
 window.slNavPage = function(p) {
-  if (window.pgState) window.pgState.sales = p;
+  if (!Number.isInteger(p) || p < 1) return;
+  window.pgState.sales = p;
   renderSalesList();
 };
 
@@ -9330,7 +9345,7 @@ window.renderSalesList = function() {
   const from = document.getElementById('sl-from')?.value || '';
   const to   = document.getElementById('sl-to')?.value   || '';
   const srch = (document.getElementById('sl-srch')?.value||'').toLowerCase();
-  const pill = window.slPill || 'all';
+  const pill = slPill || 'all';
 
   let f = [...invs];
 
@@ -9378,11 +9393,11 @@ window.renderSalesList = function() {
   }
 
   // Pagination
-  const pgSt   = window.pgState || {};
-  const pgSize = window.PAGE_SIZE || 20;
-  const pg     = pgSt.sales || 1;
+  const pgSt   = window.pgState;
+  const pgSize = window.PAGE_SIZE;
   const totPg  = Math.ceil(f.length / pgSize);
-  if (pg > totPg && pgSt.sales) pgSt.sales = 1;
+  const pg     = Math.min(Math.max(1, Number(pgSt.sales) || 1), totPg);
+  pgSt.sales   = pg;
   const pageRows = f.slice((pg-1)*pgSize, pg*pgSize);
 
   // 3-dot menu builder
