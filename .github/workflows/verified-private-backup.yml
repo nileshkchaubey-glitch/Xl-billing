@@ -1,0 +1,29 @@
+name: Verified private backup
+on:
+  pull_request:
+    paths:
+      - index.html
+      - qa/verify-complete-backup.cjs
+      - qa/verify-backup-import.cjs
+      - .github/workflows/verified-private-backup.yml
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  backup-integrity:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Syntax check
+        run: |
+          node --check qa/verify-complete-backup.cjs
+          node --check qa/verify-backup-import.cjs
+      - name: Verify complete private backup and restore
+        run: node qa/verify-complete-backup.cjs
+      - name: Verify backward-compatible V4 safety gate
+        run: node qa/verify-backup-import.cjs
