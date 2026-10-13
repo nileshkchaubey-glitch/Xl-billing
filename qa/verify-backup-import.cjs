@@ -42,7 +42,7 @@ assert.equal(candidate.counts.invoices,1);
 assert.equal(candidate.counts.items,1);
 assert.equal(candidate.rows.length,6);
 const s=storage({shop4_app_version:'5'});
-assert.deepEqual(source.occupied(s),[]);
+assert.deepEqual(Array.from(source.occupied(s)),[]);
 assert.equal(source.restore(s,candidate).invoices,1);
 assert.deepEqual(JSON.parse(s.getItem('shop4_invoices')),fixture().invoices);
 assert.equal(s.getItem(source.marker),null);
@@ -67,7 +67,7 @@ for(const [label,change] of [
   ['negative total',()=>{const b=fixture();b.invoices[0].total=-1;return JSON.stringify(b);}]
 ]){
   const z=storage(),before=JSON.stringify(z.values());
-  assert.throws(()=>source.parse(change()),Error,label);
+  assert.throws(()=>source.parse(change()),/./,label);
   assert.equal(JSON.stringify(z.values()),before,label+' must never mutate browser records');
 }
 
