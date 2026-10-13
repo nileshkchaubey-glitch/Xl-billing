@@ -24,6 +24,28 @@ async function cases(){
  await probe('settle-action-uses-invoice-due-not-net-credit',data,async page=>{await page.locator('a.nl[data-pg="parties"]').click();const button=page.locator("#parties-table tbody tr").filter({has:page.locator(`[onclick="openPartyDetail('p1')"]`)}).locator(".settle-inline-btn");const present=await button.count();if(present)await button.click();const summary=await page.evaluate(()=>document.getElementById('settlement-opening-summary')?.textContent||''),modalText=await page.evaluate(()=>document.getElementById('settlement-modal')?.textContent||'');return {pass:present===1&&/80.00/.test(modalText)&&/-120.00/.test(summary)&&/opening balances are unchanged/.test(summary),expected:'Unpaid invoice80 remains selectable with net opening credit -120; preview states opening balances are unchanged',observed:{present,summary,modalText}};});
  await probe('stored-party-phone-remains-literal',(()=>{const d=shop(1);d.parties[0].phone='<img src="synthetic-phone-image" onerror="window.syntheticPhoneExecuted=true">';return d;})(),async page=>{await nav(page,'parties');await page.waitForLoadState('networkidle');const observed=await page.evaluate(()=>({executed:window.syntheticPhoneExecuted===true,images:document.querySelectorAll('#parties-table img').length,text:document.getElementById('parties-table').textContent}));return {pass:!observed.executed&&observed.images===0&&observed.text.includes('<img src="synthetic-phone-image"'),expected:'Stored phone text is literal, never an executable element; original bytes remain unchanged',observed};});
  await probe('opening-only-has-no-invoice-settlement-action',(()=>{const d=shop(0);d.parties[0].openingBal=25;return d;})(),async page=>{await page.locator('a.nl[data-pg="parties"]').click();const before=await page.locator('#parties-table .settle-inline-btn').count();await page.clock.runFor(300);const after=await page.locator('#parties-table .settle-inline-btn').count();return {pass:before===0&&after===0,expected:'Opening receivable25 without an unpaid invoice does not fabricate an invoice settlement target',observed:{before,after}};});
+ await probe('payment-out-amount-focus-survives-opening-timer',shop(2),async page=>{
+  // Hold real Amount focus across the former 80 ms callback, then enter text.
+  // This reproduces the actual owner failure without slowing or retrying input.
+  await page.locator('a.nl[data-pg="pay-out"]').click();
+  await page.locator('#pout-party').fill('Synthetic Supplier');
+  await page.locator('#ac-pout-party .ac-item').first().click();
+  await page.locator('#pout-mode').selectOption('UPI');
+  await page.locator('#pout-amount').click();
+  const before=await page.evaluate(()=>document.activeElement.id);
+  await page.clock.runFor(100);
+  const after=await page.evaluate(()=>document.activeElement.id);
+  await page.keyboard.insertText('12.34');
+  const observed=await page.evaluate(()=>({party:document.getElementById('pout-party').value,
+    partyId:document.getElementById('pout-party-id').value,amount:document.getElementById('pout-amount').value,
+    allocation:document.getElementById('pi-u1')?.value||'',mode:document.getElementById('pout-mode').value,
+    reviewBills:(window._poutBills||[]).map(b=>b.id)}));
+  return {pass:before==='pout-amount'&&after==='pout-amount'&&observed.party==='Synthetic Supplier'&&observed.partyId==='p2'&&
+    money(observed.amount)===12.34&&money(observed.allocation)===12.34&&observed.mode==='UPI'&&
+    observed.reviewBills.length===1&&observed.reviewBills[0]==='u1',
+    expected:'Amount retains focus across the opening timer; typing 12.34 changes only its allocation, preserving selected supplier p2 and billing bytes',
+    observed:{focus_before_timer:before,focus_after_timer:after,...observed}};
+ });
 }
 async function main(){server=http.createServer((req,res)=>{res.writeHead(200,{'Content-Type':'text/html'});res.end(source);});await new Promise(r=>server.listen(0,'127.0.0.1',r));origin='http://127.0.0.1:'+server.address().port;browser=await engines[browserName].launch({headless:true});await cases();}
 main().catch(e=>results.push({id:'runner',status:'HARNESS_ERROR',error:e.message})).finally(async()=>{await browser?.close();await new Promise(r=>server?server.close(r):r());const summary={pass:results.filter(x=>x.status==='PASS').length,fail:results.filter(x=>x.status==='FAIL').length,harness_errors:results.filter(x=>x.status==='HARNESS_ERROR').length};fs.mkdirSync(path.dirname(output),{recursive:true});fs.writeFileSync(output,JSON.stringify({tested_commit:cp.execFileSync('git',['rev-parse','HEAD'],{cwd:root,encoding:'utf8'}).trim(),source_sha256:crypto.createHash('sha256').update(source).digest('hex'),runner_sha256:crypto.createHash('sha256').update(fs.readFileSync(__filename)).digest('hex'),browser:browserName,synthetic_only:true,summary,results},null,2)+'\n');console.log('Party click: '+JSON.stringify(summary));process.exitCode=summary.harness_errors?2:summary.fail?1:0;});
