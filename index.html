@@ -10322,7 +10322,7 @@ window.openPayOutModal = function() {
   document.getElementById('pout-total-show').textContent = '₹0.00';
   window._poutBills=[];window._poutReview=null;
   document.getElementById('pay-out-modal').classList.add('show');
-  setTimeout(()=>document.getElementById('pout-party')?.focus(), 80);
+  document.getElementById('pout-party')?.focus();
 };
 
 // Add nav link for Payment Out
