@@ -1251,6 +1251,10 @@ function saveSaleInvoice(andPrint) {
   const validItems = saleItems.filter(i=>i.name&&i.qty>0);
   if(!validItems.length) { toast('Add at least one item!'); return; }
   const t = calcSaleTotal();
+  if(!Number.isFinite(t.total)||t.total<0||!Number.isFinite(t.paid)||t.paid<0||t.paid>t.total+0.009){
+    toast('Invoice amount or paid amount is invalid. Paid cannot exceed the invoice total.');
+    return;
+  }
   const s = getSettings();
   // Collect custom field values
   const cfVals = {};
@@ -1264,19 +1268,25 @@ function saveSaleInvoice(andPrint) {
     const idx  = invs.findIndex(i=>i.id===editingInvId);
     if(idx<0) { toast('Invoice not found!'); return; }
     const existing = invs[idx];
+    const alreadyPaid = Number(existing.paid)||0;
+    // Editing invoice details must never silently rewrite receipt history.
+    if(Math.abs(t.paid-alreadyPaid)>0.009){
+      toast('Paid amount cannot be edited here. Use Payment Ledger to update a receipt.');
+      return;
+    }
+    if(alreadyPaid>t.total+0.009){
+      toast('Invoice total cannot be less than payments already recorded.');
+      return;
+    }
     invs[idx] = {
       ...existing,
       date, due, partyId, partyName:partyName||existing.partyName,
       items:validItems, subtotal:t.sub, discount:t.disc,
       taxPct:t.tPct, taxAmt:t.tax, total:t.total,
-      paid:t.paid, balance:t.bal, notes, paymentType:payType,
+      paid:alreadyPaid, balance:Math.max(0,t.total-alreadyPaid), notes, paymentType:payType,
       dispatchStatus:dispStat, customFieldValues:cfVals,
       updatedAt:new Date().toISOString()
     };
-    // Adjust payments if paid amount changed
-    if(t.paid > 0 && !existing.payments?.length) {
-      invs[idx].payments = [{date,amt:t.paid,mode:payType,note:''}];
-    }
     DB.set('invoices', invs);
     editingInvId = null;
     toast(`Invoice ${existing.invoiceNo} updated! ✓`);
@@ -2629,9 +2639,15 @@ window.savePayment = function() {
   const discount = parseFloat(document.getElementById('pay-discount').value) || 0;
   const mode     = document.getElementById('pay-mode').value;
   const note     = document.getElementById('pay-note').value.trim();
-  if (amt <= 0 && discount <= 0) { toast('Enter amount or discount!'); return; }
+  if (!Number.isFinite(amt)||!Number.isFinite(discount)||amt<0||discount<0||amt+discount<=0){
+    toast('Enter a valid payment or discount.'); return;
+  }
   const invs = getInvoices();
   const inv  = invs.find(i => i.id === invId); if (!inv) return;
+  const remaining=Math.max(0,(inv.total||0)-(inv.paid||0));
+  if(inv.status==='cancelled'||inv.dispatchStatus==='cancelled'||amt+discount>remaining+0.009){
+    toast('Payment exceeds outstanding balance or invoice is cancelled. Nothing saved.'); return;
+  }
   if (!inv.payments) inv.payments = [];
   const totalDeducted = amt + discount;
   if (amt > 0)      inv.payments.push({ date: today(), amt, mode, note });
@@ -3595,9 +3611,15 @@ window.saveStandalonePayment = function(){
   const mode     = document.getElementById('spa-mode').value;
   const note     = document.getElementById('spa-note').value.trim();
   if(!id){toast('Select an invoice!');return;}
-  if(amt<=0&&discount<=0){toast('Enter amount or discount!');return;}
+  if(!Number.isFinite(amt)||!Number.isFinite(discount)||amt<0||discount<0||amt+discount<=0){
+    toast('Enter a valid payment or discount.');return;
+  }
   const invs = getInvoices();
   const inv  = invs.find(i=>i.id===id); if(!inv) return;
+  const remaining=Math.max(0,(inv.total||0)-(inv.paid||0));
+  if(inv.status==='cancelled'||inv.dispatchStatus==='cancelled'||amt+discount>remaining+0.009){
+    toast('Payment exceeds outstanding balance or invoice is cancelled. Nothing saved.');return;
+  }
   if(!inv.payments) inv.payments=[];
   if(amt>0)      inv.payments.push({date:today(),amt,mode,note});
   if(discount>0) inv.payments.push({date:today(),amt:discount,mode:'Discount',note:'Settlement discount'});
@@ -4113,9 +4135,13 @@ window.saveEditPayment = function(invId, payIdx){
   const mode = document.getElementById('ep-mode').value;
   const date = document.getElementById('ep-date').value;
   const note = document.getElementById('ep-note').value.trim();
-  if(amt<=0){ toast('Enter valid amount!'); return; }
+  if(!Number.isFinite(amt)||amt<=0){ toast('Enter valid amount!'); return; }
   const invs = getInvoices();
-  const inv  = invs.find(i=>i.id===invId); if(!inv) return;
+  const inv  = invs.find(i=>i.id===invId); if(!inv||!inv.payments?.[payIdx]) return;
+  const otherPayments=inv.payments.reduce((sum,p,index)=>sum+(index===payIdx?0:(Number(p.amt)||0)),0);
+  if(inv.status==='cancelled'||inv.dispatchStatus==='cancelled'||otherPayments+amt>(inv.total||0)+0.009){
+    toast('Payment update exceeds invoice total or invoice is cancelled. Nothing saved.');return;
+  }
   inv.payments[payIdx] = {date, amt, mode, note};
   inv.paid    = inv.payments.reduce((a,p)=>a+p.amt, 0);
   inv.balance = Math.max(0,(inv.total||0)-inv.paid);
@@ -8591,14 +8617,18 @@ window.delItem = function(id) {
 // ════════════════════════════════════════════════════════
 const _origSaveSaleInvoiceV15 = window.saveSaleInvoice;
 window.saveSaleInvoice = function(andPrint) {
-  const isEdit = !!editingInvId;
+  const editedId=editingInvId;
+  const before=getInvoices();
+  const prior=editedId?before.find(i=>i.id===editedId):null;
+  const priorJson=prior?JSON.stringify(prior):null;
+  const previousIds=new Set(before.map(i=>i.id));
   _origSaveSaleInvoiceV15(andPrint);
-  // After save, log it (invoice was just saved)
-  setTimeout(()=>{
-    const invs = getInvoices();
-    const inv = isEdit ? invs.find(i=>i.id===editingInvId) : [...invs].reverse()[0];
-    if (inv) auditLog(isEdit?'edit':'create','invoice',inv.id,`${inv.invoiceNo} — ${inv.partyName}`,`Total: ${fc(inv.total)}, Pay: ${inv.paymentType}`);
-  }, 200);
+  // Only audit a confirmed mutation, not a failed form validation or a rejected edit.
+  const after=getInvoices();
+  const inv=editedId?after.find(i=>i.id===editedId):after.find(i=>!previousIds.has(i.id));
+  if(!inv)return;
+  if(editedId&&JSON.stringify(inv)===priorJson)return;
+  auditLog(editedId?'edit':'create','invoice',inv.id,`${inv.invoiceNo} — ${inv.partyName}`,`Total: ${fc(inv.total)}, Pay: ${inv.paymentType}`);
 };
 
 // ════════════════════════════════════════════════════════
@@ -8606,20 +8636,30 @@ window.saveSaleInvoice = function(andPrint) {
 // ════════════════════════════════════════════════════════
 const _origSavePaymentV15 = window.savePayment;
 window.savePayment = function() {
-  const invId = document.getElementById('pay-inv-id')?.value;
-  const amt   = parseFloat(document.getElementById('pay-amount')?.value)||0;
-  const inv   = getInvoices().find(i=>i.id===invId);
+  const invId=document.getElementById('pay-inv-id')?.value;
+  const previous=getInvoices().find(i=>i.id===invId);
+  const count=previous?.payments?.length||0;
   _origSavePaymentV15();
-  if(inv && amt>0) auditLog('payment','invoice',invId,`${inv.invoiceNo} — ${inv.partyName}`,`Paid: ${fc(amt)}`);
+  const saved=getInvoices().find(i=>i.id===invId);
+  if(!saved||saved.payments?.length<=count)return;
+  const added=saved.payments.slice(count);
+  const received=added.filter(p=>p.mode!=='Discount').reduce((sum,p)=>sum+(Number(p.amt)||0),0);
+  const discount=added.filter(p=>p.mode==='Discount').reduce((sum,p)=>sum+(Number(p.amt)||0),0);
+  auditLog('payment','invoice',invId,`${saved.invoiceNo} — ${saved.partyName}`,
+    `Paid: ${fc(received)}${discount>0?', Discount: '+fc(discount):''}`);
 };
 
 const _origSavePurPaymentV15 = window.savePurPayment;
 window.savePurPayment = function() {
-  const purId = document.getElementById('pur-pay-bill-id')?.value;
-  const amt   = parseFloat(document.getElementById('pur-pay-amt')?.value)||0;
-  const pur   = getPurchases().find(p=>p.id===purId);
+  const purId=document.getElementById('pur-pay-bill-id')?.value;
+  const previous=getPurchases().find(p=>p.id===purId);
+  const count=previous?.payments?.length||0;
   _origSavePurPaymentV15();
-  if(pur && amt>0) auditLog('payment','purchase',purId,`${pur.billNo||'-'} — ${pur.partyName}`,`Paid: ${fc(amt)}`);
+  const saved=getPurchases().find(p=>p.id===purId);
+  if(!saved||saved.payments?.length<=count)return;
+  const added=saved.payments.slice(count);
+  const paid=added.reduce((sum,p)=>sum+(Number(p.amt)||0),0);
+  auditLog('payment','purchase',purId,`${saved.billNo||'-'} — ${saved.partyName}`,`Paid: ${fc(paid)}`);
 };
 
 // ════════════════════════════════════════════════════════
