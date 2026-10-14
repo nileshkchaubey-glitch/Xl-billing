@@ -1,0 +1,79 @@
+name: Plan A A1b isolated diagnostics
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - storage-diagnostics.html
+      - qa/plan-a/**
+      - .github/workflows/plan-a-diagnostics.yml
+      - docs/PLAN_A_A1B_VERIFICATION.md
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  synthetic:
+    name: A1b synthetic safety and baseline
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      A1B_HEAD: ${{ github.event.pull_request.head.sha || github.sha }}
+    steps:
+      - name: Check out actual proposed head
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Set up official Node 22
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1
+        with:
+          node-version: '22.23.3'
+      - name: Verify exact commit
+        run: test "$(git rev-parse HEAD)" = "$A1B_HEAD"
+      - name: A1b VM read-only and privacy checks
+        run: node qa/plan-a/verify-readonly-diagnostics.cjs
+      - name: A1a historical fixtures
+        run: node qa/plan-a/verify-historical-fixtures.cjs
+      - name: A1a evidence runner controls
+        run: node qa/plan-a/verify-evidence-runner.cjs
+      - name: Six original QA scripts and immutable-source evidence
+        run: >-
+          node qa/plan-a/verify-baseline.cjs
+          --evidence-dir "${RUNNER_TEMP}/plan-a-a1b-baseline"
+          --expected-head "${A1B_HEAD}"
+      - name: Retain non-sensitive A1a baseline evidence
+        if: ${{ always() }}
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9
+        with:
+          name: a1b-baseline-${{ github.event.pull_request.head.sha || github.sha }}
+          path: ${{ runner.temp }}/plan-a-a1b-baseline
+          if-no-files-found: warn
+          retention-days: 14
+  browser:
+    name: A1b browser read-only behavior
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      A1B_HEAD: ${{ github.event.pull_request.head.sha || github.sha }}
+    steps:
+      - name: Check out actual proposed head
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Set up official Node 22
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1
+        with:
+          node-version: '22.23.3'
+      - name: Verify exact commit
+        run: test "$(git rev-parse HEAD)" = "$A1B_HEAD"
+      - name: Install isolated test-only browser tooling
+        run: |
+          npm install --no-save --no-package-lock playwright@1.56.1
+          npx playwright install --with-deps chromium firefox webkit
+      - name: Browser diagnostics-only visit, reload and reinspection
+        run: node qa/plan-a/verify-diagnostics-browser.cjs
