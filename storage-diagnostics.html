@@ -1,0 +1,227 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="referrer" content="no-referrer">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline'; base-uri 'none'; form-action 'none'; connect-src 'none'; img-src 'none'; frame-src 'none'; object-src 'none'">
+<title>XL Billing | Read-only Storage Diagnostics</title>
+<style>
+:root{color-scheme:light;font:16px system-ui,-apple-system,Segoe UI,sans-serif;background:#f5f7fb;color:#142234}
+*{box-sizing:border-box}body{margin:0}main{max-width:880px;margin:0 auto;padding:24px 16px 60px}
+header{padding:25px 24px;background:#133e35;color:white;border-radius:16px}
+h1{font-size:clamp(1.35rem,3vw,1.9rem);margin:0 0 8px}h2{font-size:1.1rem;margin:0 0 16px}
+p{margin:8px 0;line-height:1.55}header p{color:#d6ede6}
+section{background:white;border:1px solid #e0e6ec;border-radius:14px;margin-top:16px;padding:20px}
+.status{padding:14px 16px;border:2px solid #bdc9d4;border-radius:10px;background:#f5f7f9;font-weight:750}
+.status.warn{background:#fff3e4;border-color:#e6a23e;color:#703900}
+.status.stop{background:#fff0f0;border-color:#d55a62;color:#8c1424}
+table{border-collapse:collapse;width:100%;font-size:.94rem}
+th,td{text-align:left;padding:10px 8px;border-bottom:1px solid #edf0f2;vertical-align:top}
+th:last-child,td:last-child{text-align:right}
+.small,.muted{color:#4b5d6c;font-size:.87rem}
+button{border:0;border-radius:9px;background:#155949;color:#fff;font:inherit;font-weight:600;padding:10px 16px;cursor:pointer}
+button:focus-visible{outline:3px solid #2c94e3;outline-offset:3px}
+ul{padding-left:22px;line-height:1.65}
+.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.metric{border:1px solid #e1e6ed;padding:13px;border-radius:10px}
+.metric strong{display:block;margin-top:5px;font-variant-numeric:tabular-nums;overflow-wrap:anywhere}
+.sr-only{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0,0,0,0)}
+@media(max-width:550px){.grid{grid-template-columns:1fr}section{padding:16px}th,td{padding:9px 4px}}
+</style>
+</head>
+<body>
+<main>
+<header>
+  <h1>XL Billing — Storage Diagnostics</h1>
+  <p>Read-only inspection. This page does not run the billing app, migrate data, create backups, restore, or contact any provider.</p>
+</header>
+<section aria-labelledby="assessment-title">
+  <h2 id="assessment-title">Assessment</h2>
+  <div id="assessment" role="status" class="status warn" aria-live="polite">Waiting for inspection. No backup has been verified.</div>
+  <p id="coverage" class="small">Storage coverage: unknown.</p>
+  <button id="inspect" type="button">Inspect again (read only)</button>
+</section>
+<section aria-labelledby="collections-title">
+  <h2 id="collections-title">Stored collections</h2>
+  <table><thead><tr><th>Collection</th><th>Observation</th><th>Records</th></tr></thead><tbody id="collections"></tbody></table>
+  <p class="small">Absent, present-empty, invalid, and inaccessible records are different states. An absent collection does not prove this is an empty billing profile.</p>
+</section>
+<section aria-labelledby="footprint-title">
+  <h2 id="footprint-title">Observed storage footprint</h2>
+  <div class="grid">
+    <div class="metric">Readable XL keys<strong id="key-count">Unknown</strong></div>
+    <div class="metric">Raw values (UTF-8)<strong id="value-utf8">Unknown</strong></div>
+    <div class="metric">Keys + raw values (UTF-8)<strong id="total-utf8">Unknown</strong></div>
+    <div class="metric">Keys + raw values (UTF-16 code units)<strong id="total-utf16">Unknown</strong></div>
+  </div>
+  <p class="small">Exact sizes of the readable strings only, not physical disk occupancy, quota remaining, or guaranteed storage capacity. Partial coverage makes these lower bounds.</p>
+</section>
+<section aria-labelledby="backup-title">
+  <h2 id="backup-title">Backup and cloud status</h2>
+  <p><strong>Independent verified backup:</strong> Unknown. This page cannot inspect your Google Drive files or prove a download completed.</p>
+  <p><strong>Google Drive upload:</strong> Unknown — no connection or network check is performed.</p>
+  <p><strong>Legacy JSONBin:</strong> <span id="provider">Configuration not inspected.</span> This is not a successful-sync indicator.</p>
+  <p><strong>Recovery marker:</strong> <span id="recovery">Unknown</span></p>
+</section>
+<section aria-labelledby="warnings-title">
+  <h2 id="warnings-title">Important safety instructions</h2>
+  <ul>
+    <li>Avoid private/incognito windows for permanent billing; this tool cannot detect private mode.</li>
+    <li>Do not clear browser/site data or change profile, computer or origin without an independently verified private backup and a restore rehearsal.</li>
+    <li>Use one billing tab and one master device. Simultaneous editors or older app copies can overwrite changes.</li>
+    <li>A checksum or requested download does not prove external backup possession, correct accounting, or disk durability.</li>
+    <li>If evidence is corrupt, denied, partial or unexplained: stop creating entries in that profile, preserve the raw state, and seek recovery advice. Do not clear data.</li>
+  </ul>
+</section>
+<p class="muted">A1b diagnostic-only tool. No payments, invoice totals, business names, IDs, private configuration values, or raw errors are displayed.</p>
+</main>
+<script id="xl-a1b-diagnostics">
+(function () {
+  'use strict';
+  // Separate entrypoint: do not load or invoke index.html, DB getters, or migrations.
+  var collections = [
+    ['items', 'Items'], ['parties', 'Parties'], ['invoices', 'Invoices'],
+    ['purchases', 'Purchases'], ['retail', 'Retail'], ['audit', 'Audit']
+  ];
+  var textEncoder = typeof TextEncoder === 'function' ? new TextEncoder() : null;
+  var limit = 10000;
+  function node(id) { return document.getElementById(id); }
+  function set(id, value) { node(id).textContent = String(value); }
+  function child(parent, tag, value) {
+    var el = document.createElement(tag);
+    el.textContent = String(value);
+    parent.appendChild(el);
+    return el;
+  }
+  function classify(raw, kind) {
+    if (raw === null) return {state: 'Absent', count: '—', health: 'missing'};
+    var data;
+    try { data = JSON.parse(raw); } catch (_) {
+      return {state: 'Unreadable JSON', count: '—', health: 'invalid'};
+    }
+    if (data === null) return {state: 'JSON null', count: '—', health: 'invalid'};
+    if (kind === 'settings') {
+      return data && typeof data === 'object' && !Array.isArray(data)
+        ? {state: 'Present object', count: '—', health: 'valid', object: data}
+        : {state: 'Wrong data type', count: '—', health: 'invalid'};
+    }
+    if (!Array.isArray(data)) return {state: 'Wrong data type', count: '—', health: 'invalid'};
+    if (data.length > 200000) return {state: 'Unsupported size for inspection', count: '—', health: 'invalid'};
+    var seen = new Set();
+    for (var i = 0; i < data.length; i++) {
+      var row = data[i];
+      if (!row || typeof row !== 'object' || Array.isArray(row) ||
+          typeof row.id !== 'string' || !row.id || seen.has(row.id)) {
+        return {state: 'Invalid or duplicate record IDs', count: '—', health: 'invalid'};
+      }
+      seen.add(row.id);
+    }
+    return {state: data.length === 0 ? 'Present empty' : 'Present', count: data.length, health: 'valid'};
+  }
+  function accepted(key) {
+    return /^shop4_[A-Za-z0-9_-]{1,154}$/.test(key) || key === 'v8_slcols' || key === 'v8_compact';
+  }
+  function inspect() {
+    var body = node('collections');
+    body.replaceChildren();
+    var rows = Object.create(null);
+    var problems = 0;
+    var partial = false;
+    var totalKeys = 0;
+    var valueBytes = 0;
+    var totalBytes = 0;
+    var totalUnits = 0;
+    var marker = false;
+    var provider = 'Unknown — settings are not readable or absent.';
+    var storage;
+    // file:// origins have undefined and browser-dependent persistence semantics.
+    var protocol = window.location && window.location.protocol;
+    if (protocol !== 'https:' && protocol !== 'http:') {
+      partial = true;
+      set('coverage', 'Unsupported origin. Open this tool at the SAME HTTPS billing site and Chrome profile.');
+    } else {
+      try { storage = window.localStorage; } catch (_) { partial = true; }
+    }
+    if (storage) {
+      var names = [];
+      var n;
+      try { n = storage.length; } catch (_) { partial = true; }
+      if (typeof n === 'number' && n >= 0 && n <= limit) {
+        for (var i = 0; i < n; i++) {
+          try {
+            var name = storage.key(i);
+            if (typeof name !== 'string') { partial = true; continue; }
+            if (name === 'shop4_import_pending') marker = true;
+            if (accepted(name)) names.push(name);
+            else if (name.indexOf('shop4_') === 0) problems++;
+          } catch (_) { partial = true; }
+        }
+      } else { partial = true; }
+      if (!partial) {
+        for (var k = 0; k < names.length; k++) {
+          var key = names[k], raw;
+          try {
+            raw = storage.getItem(key);
+            if (raw === null || typeof raw !== 'string') { partial = true; continue; }
+            rows[key] = raw;
+            totalKeys++;
+            if (textEncoder) {
+              var valueSize = textEncoder.encode(raw).length;
+              valueBytes += valueSize;
+              totalBytes += textEncoder.encode(key).length + valueSize;
+            }
+            totalUnits += key.length + raw.length;
+          } catch (_) { partial = true; }
+        }
+      }
+    }
+    for (var c = 0; c < collections.length; c++) {
+      var nameKey = 'shop4_' + collections[c][0];
+      var verdict = partial ? {state:'Not verified',count:'—',health:'unknown'} :
+        classify(Object.prototype.hasOwnProperty.call(rows,nameKey) ? rows[nameKey] : null, 'collection');
+      if (verdict.health === 'invalid') problems++;
+      var tr = document.createElement('tr');
+      child(tr,'td',collections[c][1]);
+      child(tr,'td',verdict.state);
+      child(tr,'td',verdict.count);
+      body.appendChild(tr);
+    }
+    var settings = partial ? {health:'unknown'} : classify(Object.prototype.hasOwnProperty.call(rows,'shop4_settings') ? rows.shop4_settings : null,'settings');
+    if (settings.health === 'invalid') problems++;
+    if (settings.health === 'valid') {
+      var config = settings.object;
+      provider = config.jsonbinKey || config.jsonbinId
+        ? 'Legacy configuration present (unverified). Do not assume uploads or restores are safe.'
+        : 'No legacy configuration observed (provider status unverified).';
+    }
+    if (partial) set('recovery','Unknown — incomplete storage inspection.');
+    else if (marker) {
+      set('recovery','Import/recovery marker present. Stop billing and preserve existing browser data.');
+      problems++;
+    } else set('recovery','No known pending-import marker observed. This does not establish database integrity.');
+    set('provider', provider);
+    var metric = function (v) { return v.toLocaleString('en-IN'); };
+    set('key-count',partial ? 'Incomplete: ' + metric(totalKeys) + ' readable' : metric(totalKeys));
+    set('value-utf8',textEncoder ? metric(valueBytes) + ' bytes' : 'Unavailable');
+    set('total-utf8',textEncoder ? metric(totalBytes) + ' bytes' : 'Unavailable');
+    set('total-utf16',metric(totalUnits) + ' code units');
+    if (partial) {
+      set('coverage','INCOMPLETE — storage may be inaccessible or changed during inspection. Counts and sizes are partial.');
+    } else {
+      set('coverage', totalKeys === 0 ?
+        'No recognized stored keys observed. This can be a new/wrong profile or origin, not proof of no business data.' :
+        'Readable XL key inventory collected. No backup or financial validation has been performed.');
+    }
+    var panel = node('assessment');
+    panel.className = 'status ' + (partial || problems ? 'stop' : 'warn');
+    panel.textContent = partial ? 'INCOMPLETE INSPECTION — do not treat missing records as empty.' :
+      problems ? 'ATTENTION — invalid, unfamiliar, or recovery state needs review. Do not repair here.' :
+      'OBSERVATIONS ONLY — local data was read; backup and accounting safety are NOT verified.';
+  }
+  node('inspect').addEventListener('click', inspect);
+  inspect();
+}());
+</script>
+</body>
+</html>
