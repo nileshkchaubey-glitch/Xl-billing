@@ -78,7 +78,7 @@ async function runCase(browser, origin, name, initial, task) {
     if (env.observation) { outcome.status = 'OBSERVED_UNSAFE_STARTUP'; outcome.startupWrites = env.startupWrites; }
   }
   catch (error) { outcome.status = 'FAIL'; outcome.failure = error.gate || 'harness-or-application-error'; outcome.stage = env.stage || 'scenario'; outcome.errorType = error.name; }
-  finally { if (env.rawSettingsReserialized !== undefined) outcome.rawSettingsReserialized = env.rawSettingsReserialized; outcome.externalAttempts = env.external.length; outcome.pageErrorCount = env.pageErrors.length; cases.push(outcome); await env.context.close(); }
+  finally { if (env.rawSettingsReserialized !== undefined) outcome.rawSettingsReserialized = env.rawSettingsReserialized; if (env.restoreReloadsVerified !== undefined) outcome.restoreReloadsVerified = env.restoreReloadsVerified; outcome.externalAttempts = env.external.length; outcome.pageErrorCount = env.pageErrors.length; cases.push(outcome); await env.context.close(); }
 }
 async function blockedActions(env) {
   const {page} = env;
@@ -156,11 +156,12 @@ async function backupCompatibility(env, browser, origin) {
   try {
     env.stage = 'empty-target-settings'; await settingsPage(target.page);
     await target.page.evaluate(() => { window.confirm = () => true; });
+    const reloaded = target.page.waitForEvent('load').then(() => true, () => false);
     env.stage = 'actual-V1-import-input'; await target.page.locator('#import-file').setInputFiles({name: 'SYNTHETIC-private.json', mimeType: 'application/json', buffer: Buffer.from(archive)});
     env.stage = 'wait-for-V1-restore';
     await target.page.waitForFunction(() => !!localStorage.getItem('shop4_invoices'));
     demand(same(await snapshot(target.page), Object.fromEntries(Object.entries(before).filter(([key]) => key !== 'unrelated_synthetic'))), 'V1-UI-restore-raw-mismatch');
-    env.stage = 'V1-reload'; await target.page.waitForTimeout(1500); // Actual guarded restore's scheduled reload.
+    env.stage = 'V1-reload'; demand(await reloaded, 'V1-scheduled-reload-not-observed'); await target.page.waitForTimeout(350);
     demand(same(await snapshot(target.page), Object.fromEntries(Object.entries(before).filter(([key]) => key !== 'unrelated_synthetic'))), 'V1-post-reload-mismatch');
     const restored = await snapshot(target.page);
     env.stage = 'occupied-import-input'; await target.page.locator('#import-file').setInputFiles({name: 'SYNTHETIC-repeat.json', mimeType: 'application/json', buffer: Buffer.from(archive)});
@@ -173,6 +174,7 @@ async function backupCompatibility(env, browser, origin) {
   env.stage = 'legacy-target-bootstrap'; const empty = await environment(browser, origin, {});
   try {
     await empty.page.evaluate(() => { window.confirm = () => true; });
+    const reloaded = empty.page.waitForEvent('load').then(() => true, () => false);
     env.stage = 'actual-V4-import-input';
     await empty.page.locator('#import-file').setInputFiles({name: 'SYNTHETIC-v4.json', mimeType: 'application/json', buffer: Buffer.from(JSON.stringify(legacy))});
     await empty.page.waitForFunction(() => !!localStorage.getItem('shop4_invoices'));
@@ -180,9 +182,10 @@ async function backupCompatibility(env, browser, origin) {
     for (const key of ['settings', 'items', 'parties', 'invoices', 'purchases', 'retail', 'audit']) {
       demand(same(JSON.parse(restored['shop4_' + key]), legacy[key]), 'V4-section-semantic-mismatch');
     }
-    env.stage = 'V4-scheduled-reload'; await empty.page.waitForTimeout(1500);
+    env.stage = 'V4-scheduled-reload'; demand(await reloaded, 'V4-scheduled-reload-not-observed'); await empty.page.waitForTimeout(350);
     demand(same(await snapshot(empty.page), restored), 'V4-post-reload-mismatch');
     demand(empty.external.length === 0 && empty.pageErrors.length === 0, 'V4-errors-or-network');
+    env.restoreReloadsVerified = 2;
   } finally { await empty.context.close(); }
 }
 async function noncanonicalAndStartup(env) {
