@@ -1,0 +1,303 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="referrer" content="no-referrer">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; connect-src 'none'; img-src 'none'; frame-src 'none'; font-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline'">
+<title>XL Billing | Verified Private Backup</title>
+<style>
+:root{font:16px system-ui,-apple-system,'Segoe UI',sans-serif;color:#142234;background:#f4f7fb}
+*{box-sizing:border-box}body{margin:0}main{margin:0 auto;max-width:820px;padding:24px 15px 70px}
+header{background:#123e35;color:white;padding:26px;border-radius:16px}
+h1{font-size:clamp(1.4rem,3.4vw,1.9rem);margin:0 0 8px}header p{color:#e0f1e8}
+p,li{line-height:1.6}section{margin-top:16px;padding:20px;background:white;border:1px solid #e0e6ef;border-radius:13px}
+h2{font-size:1.13rem;margin:0 0 8px}button{font:inherit;border:0;border-radius:9px;padding:12px 16px;cursor:pointer;font-weight:650;color:white;background:#12604e}
+button:disabled{opacity:.6;cursor:not-allowed}button.secondary{color:#17382d;background:#e1f3eb}
+button:focus-visible{outline:3px solid #1f94e5;outline-offset:3px}
+.actions{display:flex;flex-wrap:wrap;gap:10px;margin:15px 0}
+.status{border:2px solid #d59b39;background:#fff5df;color:#633b0b;border-radius:10px;padding:14px}
+.status.error{border-color:#b84b58;background:#fff0f1;color:#811622}
+.status.local{border-color:#258268;background:#e7f6ed;color:#164f3b}
+.small{font-size:.88rem;color:#516171}
+ul{padding-left:21px}
+a{color:#225eaf}
+</style>
+</head>
+<body>
+<main>
+<header><h1>XL Billing — Verified Private Backup</h1>
+<p>Save a separate private backup file without running the billing application or changing any stored invoices.</p></header>
+<section>
+<h2>Save a new backup generation</h2>
+<p>On Windows, install and sign in to Google Drive for desktop, then select a <strong>private, Drive-synced folder</strong> when Chrome asks. Every successful save creates a uniquely named file. Previous backups are retained.</p>
+<div class="actions">
+<button type="button" id="folder-save">Choose folder &amp; save verified backup</button>
+<button type="button" id="manual-download" class="secondary">Download private backup (fallback)</button>
+</div>
+<div id="backup-status" role="status" aria-live="polite" class="status">Not started. No backup or cloud upload has been verified.</div>
+<p class="small">Local file verification is not Google Drive upload verification. Check Drive for desktop sync separately. This tool never logs in to Drive, uploads data, or requests permission in the background.</p>
+</section>
+<section><h2>Privacy and recovery</h2>
+<ul>
+<li>These files may include financial/customer data, full audit history and saved legacy credentials. Keep your Google account and backup folder private. SHA-256 protects file integrity; the file is <strong>not encrypted</strong>.</li>
+<li>Keep at least one additional independent copy. Do not delete browser data or old backups before a separate empty-profile restore test.</li>
+<li>Use one active billing computer/profile. Simultaneous tabs can change records during a backup. If data changes, repeat the backup.</li>
+<li>This tool does not automatically run while Chrome is closed, and does not promise offline availability if this page has not already been loaded.</li>
+<li>For unsupported browsers, use <strong>Download private backup</strong> and move the downloaded file manually to a Google Drive-synced folder; downloaded file persistence is not verified here.</li>
+</ul>
+<p class="small">Use the <a href="./storage-diagnostics.html">read-only diagnostics</a> page to inspect storage problems. Restore only with the existing empty-profile-only import guard; never overwrite your live billing profile.</p>
+</section>
+</main>
+<script id="xl-backup-a3a">
+(function () {
+'use strict';
+// Exact original V1 codec copied from index.html at Plan A3a base.
+// qa/plan-a3a/verify-backup-source.cjs rejects codec drift. No billing bootstrap.
+function createXLCompleteBackup(options){
+  'use strict';
+  options=options||{};
+  const maxBytes=20*1024*1024;
+  const marker='shop4_import_pending';
+  const groups=['items','parties','invoices','purchases','retail','audit'];
+  const requiredKinds=['settings','items','parties','invoices','purchases','retail'];
+  const plain=v=>v!==null&&typeof v==='object'&&!Array.isArray(v);
+  const canStore=key=>typeof key==='string'&&key.length<=160&&
+    ((/^shop4_[A-Za-z0-9_-]+$/.test(key)&&key!==marker)||['v8_slcols','v8_compact'].includes(key));
+  const size=value=>new TextEncoder().encode(value).length;
+  const signed=b=>JSON.stringify({format:b.format,version:b.version,createdAt:b.createdAt,payload:b.payload});
+  async function sha256(value){
+    if(!options.crypto?.subtle)throw new Error('Verified backup requires SHA-256 browser cryptography. Use current Chrome/Edge.');
+    const bytes=new Uint8Array(await options.crypto.subtle.digest('SHA-256',new TextEncoder().encode(value)));
+    return Array.from(bytes,b=>b.toString(16).padStart(2,'0')).join('');
+  }
+  function collect(storage){
+    if(storage.getItem(marker)!==null)throw new Error('A previous import is unfinished. Stop and recover that profile first.');
+    const data=Object.create(null);
+    for(let i=0;i<storage.length;i++){
+      const key=storage.key(i);
+      if(canStore(key)){const raw=storage.getItem(key);if(raw!==null)data[key]=raw;}
+    }
+    return data;
+  }
+  function validate(rows){
+    if(!Array.isArray(rows)||rows.length>10000)throw new Error('Backup records are invalid.');
+    const seen=new Set(),data=Object.create(null);
+    for(const item of rows){
+      if(!plain(item)||Object.keys(item).length!==2||!canStore(item.key)||typeof item.value!=='string'||seen.has(item.key))
+        throw new Error('Backup has invalid, duplicate, or unsupported storage keys.');
+      seen.add(item.key);data[item.key]=item.value;
+    }
+    for(const [key,raw] of Object.entries(data)){
+      const group=key.startsWith('shop4_')?key.slice(6):'';
+      if(group!=='settings'&&!groups.includes(group))continue;
+      let value;try{value=JSON.parse(raw);}catch{throw new Error('Backup '+group+' contains unreadable JSON.');}
+      if(group==='settings'){if(!plain(value))throw new Error('Backup settings must be an object.');continue;}
+      if(!Array.isArray(value))throw new Error('Backup '+group+' is not a collection.');
+      const ids=new Set();
+      for(const row of value){
+        if(!plain(row)||typeof row.id!=='string'||!row.id||ids.has(row.id))
+          throw new Error('Backup '+group+' has invalid or duplicate row IDs.');
+        ids.add(row.id);
+      }
+    }
+    if(!requiredKinds.some(k=>Object.hasOwn(data,'shop4_'+k)))throw new Error('No XL Billing records were found.');
+    const counts=Object.fromEntries(groups.map(k=>[k,data['shop4_'+k]?JSON.parse(data['shop4_'+k]).length:0]));
+    return {rows:rows.map(r=>[r.key,r.value]),counts};
+  }
+  function occupied(storage){
+    const keys=[];
+    for(let i=0;i<storage.length;i++){
+      const key=storage.key(i);
+      if((canStore(key)&&key!=='shop4_app_version')||key===marker)keys.push(key);
+    }
+    return keys;
+  }
+  async function encode(storage){
+    const initial=collect(storage),snapshot=JSON.stringify(initial);
+    const rows=Object.keys(initial).sort().map(key=>({key,value:initial[key]}));
+    validate(rows);
+    const backup={format:'xl-billing-private',version:1,createdAt:new Date().toISOString(),payload:{records:rows}};
+    const raw=signed(backup);
+    if(size(raw)>maxBytes)throw new Error('Backup exceeds 20 MiB. Keep all original data and request a larger-file recovery export.');
+    backup.checksum={algorithm:'SHA-256',value:await sha256(raw)};
+    if(size(JSON.stringify(backup))>maxBytes)throw new Error('Backup exceeds 20 MiB.');
+    if(snapshot!==JSON.stringify(collect(storage)))throw new Error('Records changed during backup. Close other billing tabs and retry.');
+    return backup;
+  }
+  async function decode(text){
+    if(typeof text!=='string'||size(text)>maxBytes)throw new Error('Backup exceeds 20 MiB.');
+    let backup;try{backup=JSON.parse(text);}catch{throw new Error('Backup JSON is invalid.');}
+    if(!plain(backup)||backup.format!=='xl-billing-private'||backup.version!==1||
+      typeof backup.createdAt!=='string'||!Number.isFinite(Date.parse(backup.createdAt))||
+      Object.keys(backup).some(k=>!['format','version','createdAt','payload','checksum'].includes(k))||
+      !plain(backup.payload)||Object.keys(backup.payload).length!==1||!Array.isArray(backup.payload.records)||
+      !plain(backup.checksum)||backup.checksum.algorithm!=='SHA-256'||!/^[a-f0-9]{64}$/.test(backup.checksum.value))
+      throw new Error('Unsupported or incomplete verified backup.');
+    if(await sha256(signed(backup))!==backup.checksum.value)throw new Error('Backup checksum mismatch. No records were changed.');
+    return {...validate(backup.payload.records),verified:true,date:backup.createdAt};
+  }
+  function restore(storage,parsed){
+    if(!parsed||parsed.verified!==true||!Array.isArray(parsed.rows))throw new Error('Select a verified private backup.');
+    if(occupied(storage).length)throw new Error('Existing billing data detected. Restore only into an isolated EMPTY browser profile.');
+    // A blank browser may contain a harmless app-version marker initialized on startup.
+    const previous=new Map(parsed.rows.map(([key])=>[key,storage.getItem(key)]));
+    const originalVersion=storage.getItem('shop4_app_version');
+    storage.setItem(marker,JSON.stringify({v:1,kind:'verified',startedAt:new Date().toISOString(),expectedKeys:parsed.rows.map(r=>r[0])}));
+    try{
+      for(const [key,value] of parsed.rows){
+        if(storage.getItem(key)!==previous.get(key))throw new Error('Browser storage changed during restore.');
+        storage.setItem(key,value);
+        if(storage.getItem(key)!==value)throw new Error('Restore readback failed.');
+      }
+      for(const [key,value] of parsed.rows)if(storage.getItem(key)!==value)throw new Error('Restore verification failed.');
+      if(originalVersion!==null&&!previous.has('shop4_app_version')&&storage.getItem('shop4_app_version')!==originalVersion)
+        throw new Error('Application version was changed during restore.');
+      storage.removeItem(marker);
+      if(storage.getItem(marker)!==null)throw new Error('Restore marker still exists.');
+      return parsed.counts;
+    }catch(error){
+      const failures=[];
+      for(const [key,original] of previous){
+        try{
+          const expected=parsed.rows.find(row=>row[0]===key)?.[1],now=storage.getItem(key);
+          if(now!==original&&now!==expected){failures.push(key);continue;}
+          if(original===null)storage.removeItem(key);else storage.setItem(key,original);
+          if(storage.getItem(key)!==original)failures.push(key);
+        }catch{failures.push(key);}
+      }
+      if(!failures.length){
+        try{storage.removeItem(marker);if(storage.getItem(marker)!==null)failures.push(marker);}catch{failures.push(marker);}
+      }
+      if(failures.length)throw new Error('RESTORE INTERRUPTED: partial bytes remain. Stop using this browser profile and keep the original backup. '+error.message);
+      throw new Error('Restore failed and prior empty-profile bytes were verified. '+error.message);
+    }
+  }
+  return {encode,decode,restore,collect,occupied,validate,signed};
+}
+
+const codec = createXLCompleteBackup({crypto: window.crypto});
+const panel = document.getElementById('backup-status');
+const folderButton = document.getElementById('folder-save');
+const manualButton = document.getElementById('manual-download');
+let busy = false;
+const msg = {
+  start: 'Not started. No backup or cloud upload has been verified.',
+  verifying: 'Preparing and verifying private backup. Do not change billing entries in other tabs.',
+  picker: 'Choose a private folder synchronized by Google Drive for desktop.',
+  cancelled: 'Folder selection was cancelled or denied. No verified local backup was created.',
+  unsupported: 'Direct folder writing is unsupported here. Use current Windows Chrome/Edge on the same HTTPS billing origin, or download manually.',
+  failed: 'Backup FAILED or UNVERIFIED. Do not rely on this generation; an incomplete NEW file may remain. Existing backup files were not intentionally changed.',
+  collision: 'Backup filename already exists or cannot be confirmed absent. Nothing was overwritten; retry.',
+  local: 'LOCAL FILE VERIFIED on this computer. Google Drive cloud upload UNKNOWN. Verify the file in Google Drive separately before treating it as an independent backup.',
+  download: 'Download requested. Browser file saving and Google Drive upload are NOT verified here.'
+};
+function status(type, value) {
+  panel.className = 'status' + (type === 'error' ? ' error' : type === 'local' ? ' local' : '');
+  panel.textContent = value;
+}
+function buttons(disabled) { folderButton.disabled = disabled; manualButton.disabled = disabled; }
+function serializeRows(rows) { return JSON.stringify(rows); }
+function filename() {
+  if (!window.crypto || typeof window.crypto.getRandomValues !== 'function') throw new Error('No secure randomness.');
+  const id = new Uint8Array(16);
+  window.crypto.getRandomValues(id);
+  const token = Array.from(id, n => n.toString(16).padStart(2, '0')).join('');
+  const utc = new Date().toISOString().replace(/[-:.]/g, '').replace('Z','Z');
+  return 'xl-billing-private-' + utc + '-' + token + '.json';
+}
+async function verifyV1(text, expected) {
+  const parsed = await codec.decode(text);
+  const sourceRows = expected.payload.records.map(row => [row.key, row.value]);
+  if (serializeRows(parsed.rows) !== serializeRows(sourceRows)) throw new Error('Raw record mismatch.');
+  return parsed;
+}
+async function capture() {
+  const encoded = await codec.encode(window.localStorage);
+  const text = JSON.stringify(encoded);
+  await verifyV1(text, encoded);
+  return {encoded, text};
+}
+async function sourceStillMatches(rows) {
+  const raw = codec.collect(window.localStorage);
+  const current = Object.keys(raw).sort().map(key => [key, raw[key]]);
+  return serializeRows(current) === serializeRows(rows);
+}
+async function createNewFile(dir, name) {
+  // File System Access lacks an atomic create-if-absent flag; random name
+  // and explicit preflight reduce but cannot eliminate external writer races.
+  try {
+    await dir.getFileHandle(name); // Must not create.
+    throw new Error('Existing filename collision.');
+  } catch (err) {
+    if (!err || err.name !== 'NotFoundError') throw err;
+  }
+  return dir.getFileHandle(name, {create:true});
+}
+async function writeAndVerify(dir, data) {
+  const name = filename();
+  const fh = await createNewFile(dir, name);
+  const stream = await fh.createWritable({keepExistingData:false});
+  await stream.write(data.text);
+  await stream.close();
+  const file = await fh.getFile();
+  const onDisk = await file.text();
+  if (onDisk !== data.text) throw new Error('Readback mismatch.');
+  await verifyV1(onDisk, data.encoded);
+  const rows = data.encoded.payload.records.map(row => [row.key, row.value]);
+  if (!(await sourceStillMatches(rows))) {
+    throw new Error('Source changed after backup snapshot. Repeat to include latest entries.');
+  }
+  return name;
+}
+async function folderSave() {
+  if (busy) return false;
+  if (!window.isSecureContext || (location.protocol !== 'https:' && location.hostname !== 'localhost' && location.hostname !== '127.0.0.1') || typeof window.showDirectoryPicker !== 'function') {
+    status('error', msg.unsupported); return false;
+  }
+  busy=true; buttons(true); status('', msg.picker);
+  let dir;
+  try {
+    // User activation must be consumed immediately before any await.
+    dir = await window.showDirectoryPicker({mode:'readwrite',id:'xl-billing-private-backups'});
+  } catch (_) {
+    status('error', msg.cancelled); busy=false; buttons(false); return false;
+  }
+  try {
+    status('', msg.verifying);
+    const data = await capture();
+    await writeAndVerify(dir, data);
+    status('local', msg.local); return true;
+  } catch (err) {
+    // Never render browser/vendor errors that might expose file or record data.
+    status('error', err && err.message === 'Existing filename collision.' ? msg.collision : msg.failed);
+    return false;
+  } finally { busy=false;buttons(false); }
+}
+async function manualDownload() {
+  if (busy) return false;
+  busy=true;buttons(true);status('',msg.verifying);
+  try {
+    const data=await capture();
+    const name=filename();
+    const url=URL.createObjectURL(new Blob([data.text],{type:'application/json'}));
+    try {
+      const a=document.createElement('a');
+      a.href=url;a.download=name;
+      document.body.appendChild(a);a.click();a.remove();
+    } finally { setTimeout(() => URL.revokeObjectURL(url),30000); }
+    status('',msg.download);
+    return true;
+  } catch (_) {status('error',msg.failed);return false;}
+  finally {busy=false;buttons(false);}
+}
+folderButton.addEventListener('click',folderSave);
+manualButton.addEventListener('click',manualDownload);
+if (!window.isSecureContext || typeof window.showDirectoryPicker !== 'function') {
+  folderButton.disabled=true;
+  status('error',msg.unsupported);
+}
+})();
+</script>
+</body>
+</html>
