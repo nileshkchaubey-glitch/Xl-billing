@@ -158,6 +158,40 @@ function summarizeFixture(fixture) {
     caseCounts: Object.fromEntries(fixture.cases.map(c => [c.id, c.occurrences]))};
 }
 
+// Independent positive format input, built from fresh literals. Never filter or
+// normalize the mixed historical fixture to make an otherwise rejected V4 pass.
+function generateCompatibleFormatFixture() {
+  const data = {
+    settings: {shopName: 'SYNTHETIC compatible QA', prefix: 'SYNTHETIC-COMPATIBLE-INV-', invNo: 1004, fy: '2026-27', modules: {packing: true, retail: true}},
+    items: [{id: 'SYNTHETIC-COMPATIBLE-ITEM', name: 'SYNTHETIC item café', unit: 'Pcs', saleRate: 100, purchaseRate: 80, gst: 0}],
+    parties: [
+      {id: 'SYNTHETIC-COMPATIBLE-CUSTOMER-POS', name: 'SYNTHETIC customer receivable', type: 'customer', openingBal: 25},
+      {id: 'SYNTHETIC-COMPATIBLE-CUSTOMER-CREDIT', name: 'SYNTHETIC customer credit', type: 'customer', openingBal: -25},
+      {id: 'SYNTHETIC-COMPATIBLE-CUSTOMER-CREDIT200', name: 'SYNTHETIC customer credit200', type: 'customer', openingBal: -200},
+      {id: 'SYNTHETIC-COMPATIBLE-SUPPLIER-POS', name: 'SYNTHETIC supplier receivable', type: 'supplier', openingBal: 25},
+      {id: 'SYNTHETIC-COMPATIBLE-SUPPLIER-CREDIT', name: 'SYNTHETIC supplier credit', type: 'supplier', openingBal: -25},
+      {id: 'SYNTHETIC-COMPATIBLE-SUPPLIER-CREDIT200', name: 'SYNTHETIC supplier credit200', type: 'supplier', openingBal: -200},
+      {id: 'SYNTHETIC-COMPATIBLE-BOTH-POS', name: 'SYNTHETIC both receivable', type: 'both', openingBal: 25},
+      {id: 'SYNTHETIC-COMPATIBLE-BOTH-CREDIT', name: 'SYNTHETIC both credit', type: 'both', openingBal: -25},
+      {id: 'SYNTHETIC-COMPATIBLE-BOTH-CREDIT200', name: 'SYNTHETIC both credit200', type: 'both', openingBal: -200}
+    ],
+    invoices: [
+      {id: 'SYNTHETIC-COMPATIBLE-ABSENT', invoiceNo: 'SYNTHETIC-COMPATIBLE-INV-1001', date: '2026-04-01', partyId: 'SYNTHETIC-COMPATIBLE-CUSTOMER-POS', partyName: 'SYNTHETIC customer receivable', items: [], subtotal: 100, total: 100, paid: 20, balance: 80, paymentType: 'Cash', dispatchStatus: 'pending', createdAt: CREATED_AT},
+      {id: 'SYNTHETIC-COMPATIBLE-EMPTY', invoiceNo: 'SYNTHETIC-COMPATIBLE-INV-1002', date: '2026-04-01', partyId: 'SYNTHETIC-COMPATIBLE-BOTH-POS', partyName: 'SYNTHETIC both receivable', items: [], subtotal: 120, total: 120, paid: 20, balance: 100, payments: [], paymentType: 'Cash', dispatchStatus: 'pending', createdAt: CREATED_AT},
+      {id: 'SYNTHETIC-COMPATIBLE-MATCHING', invoiceNo: 'SYNTHETIC-COMPATIBLE-INV-1003', date: '2026-04-01', partyId: 'SYNTHETIC-COMPATIBLE-CUSTOMER-POS', partyName: 'SYNTHETIC customer receivable', items: [{id: 'SYNTHETIC-COMPATIBLE-LINE', itemId: 'SYNTHETIC-COMPATIBLE-ITEM', name: 'SYNTHETIC item café', unit: 'Pcs', qty: 1, rate: 2719.4895, amt: 2719.4895, packType: 'Box', packCount: 2}], subtotal: 2719.4895, total: 2719.4895, paid: 20, balance: 2699.4895, payments: [{date: '2026-03-31', amt: 20, mode: 'Cash', note: 'SYNTHETIC compatible receipt'}], paymentType: 'Cash', dispatchStatus: 'pending', createdAt: CREATED_AT}
+    ],
+    purchases: [{id: 'SYNTHETIC-COMPATIBLE-PURCHASE', billNo: 'SYNTHETIC-COMPATIBLE-PB-1', date: '2026-04-01', partyId: 'SYNTHETIC-COMPATIBLE-SUPPLIER-POS', partyName: 'SYNTHETIC supplier receivable', mode: 'amount', items: [], total: 500, paid: 20, balance: 480, payType: 'Cash', payments: [{date: '2026-03-31', amt: 20, mode: 'Cash', note: 'SYNTHETIC compatible receipt'}], createdAt: CREATED_AT}],
+    retail: [{id: 'SYNTHETIC-COMPATIBLE-RETAIL', date: '2026-04-01', amount: 12.3456, notes: 'SYNTHETIC retail café 🧾', createdAt: CREATED_AT}],
+    audit: [{id: 'SYNTHETIC-COMPATIBLE-AUDIT', type: 'create', entityType: 'invoice', entityId: 'SYNTHETIC-COMPATIBLE-ABSENT', label: 'SYNTHETIC compatible audit', details: 'SYNTHETIC metadata', ts: CREATED_AT, user: 'SYNTHETIC owner'}]
+  };
+  const fixture = {kind: 'code-defined-compatible-format-input', scale: 3, seed: DEFAULT_SEED, largePayloadChars: 0, storageShape: 'present',
+    snapshot: [{key: 'shop4_settings', value: JSON.stringify(data.settings, null, 2) + '\n'}, ...GROUPS.map(group => ({key: 'shop4_' + group, value: collectionRaw(data[group])})),
+      {key: 'v8_compact', value: '1'}, {key: 'v8_slcols', value: '{ "total": true }\n'}, {key: 'shop4_synthetic_extra', value: '{ "unused": null, "unicode": "\\u00e9 🧾" }\n'}],
+    absentKeys: [...ABSENT_KEYS, 'shop4_app_version'], cases: ['compatible-history-absent', 'compatible-history-empty', 'compatible-history-matching'].map((id, firstIndex) => ({id, collection: 'invoices', firstIndex, occurrences: 1, classification: 'format-input-only', provenance: 'current-source'}))};
+  fixture.summary = summarizeFixture(fixture);
+  return fixture;
+}
+
 // Format wrappers are synthetic input artifacts, not successful restore evidence.
 // V1 retains exact raw source values; V4 is a semantic view and necessarily omits
 // unknown/preference/unrelated storage. Some histories are intentionally rejected
@@ -175,7 +209,7 @@ function buildLegacyV4(fixture) {
   return backup;
 }
 
-module.exports = {SCALES, DEFAULT_SEED, INVOICE_CASES, PURCHASE_CASES, generateFixture, summarizeFixture, buildPrivateV1, buildLegacyV4};
+module.exports = {SCALES, DEFAULT_SEED, INVOICE_CASES, PURCHASE_CASES, generateFixture, generateCompatibleFormatFixture, summarizeFixture, buildPrivateV1, buildLegacyV4};
 if (require.main === module) {
   const requested = process.argv[2];
   if (process.argv.length > 3 || (requested !== undefined && !/^(0|86|500|2000|5000)$/.test(requested))) {

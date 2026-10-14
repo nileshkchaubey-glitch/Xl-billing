@@ -2,11 +2,14 @@
 
 // Tests code-defined fixture integrity, not application correctness or restore
 // acceptance. Future runtime gates are in the outside reviewed test/risk docs
-// referenced by historical-fixtures.cjs. No source runtime is loaded here.
-const {createHash} = require('node:crypto');
+// referenced by historical-fixtures.cjs. Only hash-pinned codec factories are
+// executed for the final parse/decode smoke; no bootstrap or restore is run.
+const {createHash, webcrypto} = require('node:crypto');
 const {spawnSync} = require('node:child_process');
+const fs = require('node:fs');
 const path = require('node:path');
-const {SCALES, INVOICE_CASES, PURCHASE_CASES, generateFixture, summarizeFixture, buildPrivateV1, buildLegacyV4} = require('./historical-fixtures.cjs');
+const vm = require('node:vm');
+const {SCALES, INVOICE_CASES, PURCHASE_CASES, generateFixture, generateCompatibleFormatFixture, summarizeFixture, buildPrivateV1, buildLegacyV4} = require('./historical-fixtures.cjs');
 
 const failures = [];
 let checks = 0;
@@ -20,6 +23,10 @@ function verify(condition, reason) {
 function check(label, fn) {
   checks++;
   try { fn(); } catch (error) { failures.push({check: label, reason: error.fixtureReason || 'Unexpected verifier error; details omitted to avoid record logs.'}); }
+}
+async function checkAsync(label, fn) {
+  checks++;
+  try { await fn(); } catch (error) { failures.push({check: label, reason: error.fixtureReason || 'Unexpected verifier error; details omitted to avoid record logs.'}); }
 }
 const raw = (fixture, key) => fixture.snapshot.find(row => row.key === key)?.value ?? null;
 const rows = (fixture, group) => JSON.parse(raw(fixture, 'shop4_' + group));
@@ -206,5 +213,50 @@ check('invalid generator options fail without accidental coercion', () => {
   }
 });
 
-process.stdout.write(JSON.stringify({scope: 'synthetic-fixture-integrity-only', fixtureIntegrity: failures.length ? 'FAIL' : 'PASS', productionSafety: 'UNVERIFIED', restoreAcceptance: 'NOT_TESTED', checks, failures}, null, 2) + '\n');
-if (failures.length) process.exitCode = 1;
+check('independent nonempty compatible format input', () => {
+  const compatible = generateCompatibleFormatFixture();
+  verify(JSON.stringify(compatible) === JSON.stringify(generateCompatibleFormatFixture()), 'Fresh literal positive input must be deterministic.');
+  const compatibleInvoices = rows(compatible, 'invoices');
+  verify(compatibleInvoices.length === 3 && !Object.hasOwn(compatibleInvoices[0], 'payments') && compatibleInvoices[1].payments.length === 0 && compatibleInvoices[2].payments[0].amt === 20, 'Positive input must independently preserve absent, empty and matching histories.');
+  verify(compatibleInvoices.every(inv => inv.paid === 20) && compatibleInvoices[2].total === 2719.4895, 'Positive format input must retain valid legacy paid aggregates and precision.');
+  verify(compatibleInvoices.every(inv => !invoices.some(mixed => mixed.id === inv.id)), 'Positive input identities must be independent of the mixed generator.');
+  verify(rows(compatible, 'purchases').length === 1 && rows(compatible, 'purchases')[0].balance === 480 && rows(compatible, 'retail')[0].amount === 12.3456, 'Positive input must include nonempty independent purchase and retail sections.');
+  for (const role of ['customer', 'supplier', 'both']) {
+    verify(JSON.stringify(rows(compatible, 'parties').filter(p => p.type === role).map(p => p.openingBal)) === '[25,-25,-200]', 'Compatible signed masters must preserve all approved role-independent opening signs.');
+  }
+  verify(compatible.summary.productionSafety === 'unverified', 'Compatible input integrity must not become a runtime safety verdict.');
+});
+
+let codecInputSmoke = 'FAIL';
+checkAsync('hash-pinned isolated V4 parse and V1 decode of compatible input', async () => {
+  const source = fs.readFileSync(path.resolve(__dirname, '../../index.html'));
+  verify(createHash('sha256').update(source).digest('hex') === 'd5fbcd1a47a5bf6e8d2ec735b561f46108e3c905878ba301acd322040b52b70a', 'Codec source bytes must match the approved baseline before any VM execution.');
+  const html = source.toString('utf8');
+  let forbiddenAccesses = 0;
+  const reject = () => { forbiddenAccesses++; throw new Error('Forbidden codec environment access.'); };
+  const forbidden = new Proxy(Object.create(null), {get: reject, set: reject});
+  function loadFactory(scriptId, globalName, invocation) {
+    const match = html.match(new RegExp('<script id="' + scriptId + '">([\\s\\S]*?)<\\/script>'));
+    verify(Boolean(match), 'A named standalone codec script must exist.');
+    const boundary = match[1].indexOf('\nwindow.' + globalName + '=');
+    verify(boundary > 0, 'Codec extraction must stop before browser initialization.');
+    // Each factory gets a fresh VM and blocked browser/storage/network ports.
+    return new vm.Script(match[1].slice(0, boundary) + '\n' + invocation, {filename: 'synthetic-codec-input-smoke.js'}).runInNewContext({TextEncoder, fixtureCrypto: webcrypto, window: forbidden, document: forbidden, localStorage: forbidden, fetch: reject, console: forbidden}, {timeout: 1000});
+  }
+  const compatible = generateCompatibleFormatFixture();
+  const before = JSON.stringify(compatible.snapshot);
+  const complete = loadFactory('xl-complete-backup', 'XLCompleteBackup', 'createXLCompleteBackup({crypto:fixtureCrypto});');
+  const legacy = loadFactory('xl-backup-import-guard', 'XLLegacyImportGuard', 'createXLLegacyImportGuard();');
+  const v4 = legacy.parse(JSON.stringify(buildLegacyV4(compatible)));
+  const v1 = await complete.decode(JSON.stringify(buildPrivateV1(compatible)));
+  verify(v4.counts.invoices === 3 && v4.counts.parties === 9 && v4.counts.purchases === 1 && v4.counts.retail === 1, 'Current V4 parser must accept the independent nonempty input counts.');
+  verify(v1.verified === true && v1.counts.invoices === 3 && v1.counts.audit === 1, 'Current V1 decoder must accept this structural checksum-bound input.');
+  const v4Invoices = JSON.parse(v4.rows.find(row => row[0] === 'shop4_invoices')[1]);
+  verify(!Object.hasOwn(v4Invoices[0], 'payments') && v4Invoices[0].paid === 20 && v4Invoices[1].payments.length === 0 && v4Invoices[1].paid === 20, 'V4 parse must not normalize absent/empty paid20 histories.');
+  verify(v1.rows.every(([key, value]) => value === raw(compatible, key)), 'V1 decode must return exact positive source strings.');
+  verify(forbiddenAccesses === 0 && JSON.stringify(compatible.snapshot) === before, 'Parse/decode smoke must perform no browser/storage/network access or source mutation.');
+  codecInputSmoke = 'PASS'; // Structural input acceptance, never full restore acceptance.
+}).then(() => {
+  process.stdout.write(JSON.stringify({scope: 'synthetic-fixture-integrity-only', fixtureIntegrity: failures.length ? 'FAIL' : 'PASS', codecInputSmoke, productionSafety: 'UNVERIFIED', restoreAcceptance: 'NOT_TESTED', checks, failures}, null, 2) + '\n');
+  if (failures.length) process.exitCode = 1;
+});
