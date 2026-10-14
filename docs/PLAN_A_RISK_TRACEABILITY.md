@@ -1,6 +1,6 @@
 # Plan A — compatibility, risk traceability and source inventory
 
-Status: limited A1a documentation/source characterization approved and in progress; all later implementation/release gates remain approval-pending. Based on main `3855c6ab21de64fdc9e28116fcd0f770304eef66`. Main runtime SHA-256: `d5fbcd1a47a5bf6e8d2ec735b561f46108e3c905878ba301acd322040b52b70a`.
+Status: limited A1a documentation/source characterization complete; all later implementation/release gates remain approval-pending. Based on main `3855c6ab21de64fdc9e28116fcd0f770304eef66`. Main runtime SHA-256: `d5fbcd1a47a5bf6e8d2ec735b561f46108e3c905878ba301acd322040b52b70a`.
 
 Evidence classes: **VERIFIED QA** refers only to an explicitly recorded passing isolated VM script; the planning review recorded six such passes. **SOURCE-CONFIRMED** means the code path/ordering is present, not that its runtime behavior is safe. **HISTORICAL REPRODUCTION** belongs to an earlier pinned audit, not a current-main browser run. **NOT VERIFIED** means the runtime/device test has not been executed. Candidate commands/outcomes are in [A1a verification](PLAN_A_A1A_VERIFICATION.md), with hashes in the [baseline manifest](../qa/plan-a/baseline-source.json). No complete current-main browser, real-data or provider test is established by this document.
 

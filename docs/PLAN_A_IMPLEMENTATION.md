@@ -1,6 +1,6 @@
 # XL Billing Plan A — implementation backlog and A1a authorization
 
-Date: 2026-10-14 (owner timezone: Asia/Kolkata). Status: **limited A1a development approved; A1a work in progress; later phases and merge/deployment approval pending**.
+Date: 2026-10-14 (owner timezone: Asia/Kolkata). Status: **limited A1a development complete; candidate evidence in the verification report; later phases and merge/deployment approval pending**.
 
 This repository document adapts the complete English planning review of `XL_Billing_Plan_A_Work_Codex_Implementation_2026-10-14.md`. The owner subsequently approved only A1a source inventory, documentation, synthetic characterization and narrowly scoped read-only CI. Work is on `codex/xl-plan-a-a1a` against the pinned baseline below. This authorization does not approve A1b diagnostics, runtime/storage/provider changes, later phases, merge or deployment. Candidate results belong in [A1a verification](PLAN_A_A1A_VERIFICATION.md); approval here is a scope statement, not a safety result.
 

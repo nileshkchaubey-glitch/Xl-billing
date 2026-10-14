@@ -1,6 +1,6 @@
 # Plan A — acceptance matrix and verification evidence
 
-Status: **limited A1a development approved and in progress; later tests remain proposed and their feature scopes approval-pending**. The six planning-review executions below are historical observations. Actual candidate A1a results must be recorded in [A1a verification](PLAN_A_A1A_VERIFICATION.md); no pending feature acceptance is implied by an existing VM pass. Baseline: main `3855c6ab21de64fdc9e28116fcd0f770304eef66`; runtime SHA-256 `d5fbcd1a47a5bf6e8d2ec735b561f46108e3c905878ba301acd322040b52b70a`.
+Status: **limited A1a development complete; later tests remain proposed and their feature scopes approval-pending**. The six planning-review executions below are historical observations. Actual candidate A1a results are recorded in [A1a verification](PLAN_A_A1A_VERIFICATION.md); no pending feature acceptance is implied by an existing VM pass. Baseline: main `3855c6ab21de64fdc9e28116fcd0f770304eef66`; runtime SHA-256 `d5fbcd1a47a5bf6e8d2ec735b561f46108e3c905878ba301acd322040b52b70a`.
 
 ## Planning-review observations and current candidate evidence
 
