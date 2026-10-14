@@ -1,0 +1,67 @@
+{
+  "schemaVersion": 1,
+  "sourceCommit": "3855c6ab21de64fdc9e28116fcd0f770304eef66",
+  "algorithm": "sha256",
+  "files": [
+    {
+      "path": ".github/workflows/invoice-payment-safety.yml",
+      "sha256": "5a84d1b3c3786af41d4980c1b5504e80331b7c89c435071b0f6d493ceca0a7e7"
+    },
+    {
+      "path": ".github/workflows/legacy-backup-import.yml",
+      "sha256": "d3d1c2751d2ad13151bdb5ef9741e851f0c95ef94cb77195b0085d89a777360c"
+    },
+    {
+      "path": ".github/workflows/pagination-regression.yml",
+      "sha256": "fd6c6437158ad1c8140c90750af8e4678bd5c748a3d3b4fddcfcdd5c934b790d"
+    },
+    {
+      "path": ".github/workflows/payment-ledger-pagination.yml",
+      "sha256": "ea3f55e3d89ec25e64eb3cd431784fbd5bf7cab4dc2af2948299961ace2b6312"
+    },
+    {
+      "path": ".github/workflows/verified-private-backup.yml",
+      "sha256": "494253f9da94df9884b087172a69c749b60193231bfbe710d86dd8b61be50e22"
+    },
+    {
+      "path": "index.html",
+      "sha256": "d5fbcd1a47a5bf6e8d2ec735b561f46108e3c905878ba301acd322040b52b70a"
+    },
+    {
+      "path": "qa/SAFE_V4_RESTORE_README.md",
+      "sha256": "9c1c1d2f0d328f02451f3594e3214fc3b21f1a87206fe34ea55d93bcd9628c78"
+    },
+    {
+      "path": "qa/STEP2_BACKUP_RESTORE.md",
+      "sha256": "8772a2f84b84d448c92605cb433ed83585857b56f5f4f5183d0602a6b586a6e9"
+    },
+    {
+      "path": "qa/mobile.html",
+      "sha256": "248eaa5c6d76eed8ef8f42a17c24342a12af403f28daf655bdacb04907a20744"
+    },
+    {
+      "path": "qa/verify-backup-import.cjs",
+      "sha256": "b2b748d09636ad89681a2a04ae163faa2475696a164f56a2091aa9658d58e085"
+    },
+    {
+      "path": "qa/verify-complete-backup.cjs",
+      "sha256": "3a43eb23dacac93a39190545b07fc666e0b35f988361271e460e67614a3d50c7"
+    },
+    {
+      "path": "qa/verify-invoice-entry.cjs",
+      "sha256": "22d2edbdc50b293f447214fe9e52206ee786404c21b3e665c1b0c4ea3d3c5f12"
+    },
+    {
+      "path": "qa/verify-invoice-payment-safety.cjs",
+      "sha256": "9087982c7ec03cb4c68b573be45b4ca932cf02fecf7e7de761e8b53631026837"
+    },
+    {
+      "path": "qa/verify-pagination.cjs",
+      "sha256": "d69abbcb7b5cec80765481c06798595c38d056466c08efb08afcd4771ed14172"
+    },
+    {
+      "path": "qa/verify-payment-ledger-pagination.cjs",
+      "sha256": "cc500dada970194c77bf019c53fe3a560d2c15ee26c7c2cdb701b6e0f7c3081f"
+    }
+  ]
+}
