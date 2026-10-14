@@ -51,7 +51,7 @@ Ordinary Save can legitimately serialize noncanonical settings JSON; the complet
 
 ## Independent review and reproducibility
 
-Three independent read-only agents reviewed the winning source chains, security/privacy and QA. They reran the relevant Node gates and found no unresolved A2 application blocker at implementation/test commit `479bb8f77292ab3845489f50ca12c686feb0dce7`. Their recommendations for global browser error/network failure gates, actual V4 UI reload verification and tool-version evidence were implemented. Final exact-head review is explicitly bound to the later documentation commit in the PR report; no earlier review is presented as that result.
+Three independent read-only agents reviewed the winning source chains, security/privacy and QA. They reran the relevant Node gates and found no unresolved A2 application blocker at implementation/test commit `479bb8f77292ab3845489f50ca12c686feb0dce7`. Their recommendations for global browser error/network failure gates, actual V4 UI reload verification and tool-version evidence were implemented. Final exact-head review is explicitly bound to the final proposed commit in the PR report; no earlier review is presented as that result.
 
 Relevant implementation: [guarded globals](../index.html#L2669), [disabled Settings card](../index.html#L2777), [revision guard](../qa/plan-a2/verify-runtime-revision.cjs), [full-script browser gates](../qa/plan-a2/verify-jsonbin-browser.cjs), [real billing UI smoke](../qa/plan-a2/verify-billing-browser.cjs) and [actual-head CI](../.github/workflows/plan-a-jsonbin.yml).
 
