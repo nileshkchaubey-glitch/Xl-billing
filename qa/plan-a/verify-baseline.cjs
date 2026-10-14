@@ -42,6 +42,14 @@ const NEW_FILES = [
   'qa/plan-a/historical-fixtures.cjs',
   'qa/plan-a/verify-historical-fixtures.cjs'
 ].sort();
+const A2_FILES = [
+  '.github/workflows/plan-a-diagnostics.yml', '.github/workflows/plan-a-jsonbin.yml',
+  'storage-diagnostics.html', 'qa/plan-a/verify-readonly-diagnostics.cjs', 'qa/plan-a/verify-diagnostics-browser.cjs',
+  'docs/PLAN_A_A2_VERIFICATION.md', 'qa/plan-a2/runtime-revision.json',
+  'qa/plan-a2/verify-runtime-revision.cjs', 'qa/plan-a2/verify-runtime-revision-tests.cjs',
+  'qa/plan-a2/verify-jsonbin-quarantine.cjs', 'qa/plan-a2/verify-jsonbin-browser.cjs',
+  'qa/plan-a2/verify-billing-browser.cjs'
+];
 // Only these fixed messages from the byte-pinned original scripts may appear
 // in logs. Assertion diagnostics, stack traces and fixture values are omitted.
 const PASS_LINES = [
@@ -84,9 +92,9 @@ function provenance(root) {
   };
 }
 
-function hashes(root) {
+function hashes(root, files = [...ORIGINAL_FILES, ...NEW_FILES]) {
   const result = {};
-  for (const file of [...ORIGINAL_FILES, ...NEW_FILES]) {
+  for (const file of files) {
     try {
       const full = path.join(root, file);
       if (!fs.lstatSync(full).isFile() || inside(root, fs.realpathSync(full)) === false) {
@@ -212,6 +220,7 @@ async function runBaseline(options = {}, sourceCommit = SOURCE_COMMIT) {
   const timeoutMs = options.timeoutMs === undefined ? 30000 : options.timeoutMs;
   if (!Number.isInteger(timeoutMs) || timeoutMs < 50 || timeoutMs > 120000) throw new Error('invalid-timeout-ms');
   const directory = options.stdout ? null : evidenceDirectory(root, options.evidenceDir);
+  const sourceFiles = [...ORIGINAL_FILES, ...NEW_FILES, ...(options.runtimeRevision !== undefined ? A2_FILES : [])];
   const report = {
     schemaVersion: 1, scope: 'A1a synthetic baseline; no browser or native runtime validation',
     sourceCommit: SHA.test(sourceCommit) ? sourceCommit : null, startedAt: new Date().toISOString(),
@@ -220,7 +229,8 @@ async function runBaseline(options = {}, sourceCommit = SOURCE_COMMIT) {
       githubSha: SHA.test(options.githubSha || '') ? options.githubSha : null,
       expectedHeadProvided: options.expectedHead !== undefined, githubShaProvided: options.githubSha !== undefined,
       allowDirty: options.allowDirty === true, before: null, after: null },
-    hashes: { before: null, after: null }, failures: [],
+    hashes: { before: null, after: null }, failures: [], runtimeRevision: null,
+    originalBaseline: {manifestRetained: true, indexBytesPreserved: null, other14FilesPreserved: null},
     tests: QA.map(file => ({ path: file, status: 'notrun', reason: 'preflight-not-complete' })),
     fixtureCharacterization: { status: 'notrun', summaries: [] },
     knownRisks: [
@@ -241,10 +251,11 @@ async function runBaseline(options = {}, sourceCommit = SOURCE_COMMIT) {
     ]
   };
   const fail = (code, file) => report.failures.push(file ? { code, path: file } : { code });
-  let manifest;
+  let manifest, revision;
+  const expectedHash = file => file.path === 'index.html' && revision ? revision.candidateIndexSha256 : file.sha256;
   try {
     report.provenance.before = provenance(root);
-    report.hashes.before = hashes(root);
+    report.hashes.before = hashes(root, sourceFiles);
     if (Number(process.versions.node.split('.')[0]) < 22) fail('node-22-or-newer-required');
     if (!SHA.test(sourceCommit)) fail('invalid-source-commit');
     if (options.expectedHead !== undefined && options.expectedHead !== null &&
@@ -260,19 +271,29 @@ async function runBaseline(options = {}, sourceCommit = SOURCE_COMMIT) {
       if (report.hashes.before['qa/plan-a/baseline-source.json'].status !== 'present') throw new Error('source-unavailable');
       manifest = baselineManifest(root, sourceCommit);
     } catch { fail('invalid-baseline-manifest'); }
+    if (options.runtimeRevision !== undefined) {
+      try {
+        if (options.runtimeRevision !== 'qa/plan-a2/runtime-revision.json' || sourceCommit !== SOURCE_COMMIT) throw new Error('unapproved-runtime-revision');
+        revision = require('../plan-a2/verify-runtime-revision.cjs').verifyRuntimeRevision(root);
+        report.runtimeRevision = revision;
+        report.scope = 'A1a synthetic QA on explicitly authorized A2 runtime; no browser/native checks in this runner';
+      } catch { fail('invalid-authorized-runtime-revision'); }
+    }
     if (manifest) {
+      report.originalBaseline.indexBytesPreserved = report.hashes.before['index.html'].sha256 === manifest.files.find(file => file.path === 'index.html').sha256;
+      report.originalBaseline.other14FilesPreserved = manifest.files.filter(file => file.path !== 'index.html').every(file => report.hashes.before[file.path].sha256 === file.sha256);
       for (const file of manifest.files) {
-        if (report.hashes.before[file.path].sha256 !== file.sha256) fail('baseline-hash-mismatch', file.path);
+        if (report.hashes.before[file.path].sha256 !== expectedHash(file)) fail('baseline-hash-mismatch', file.path);
       }
     }
-    for (const file of NEW_FILES) {
+    for (const file of [...NEW_FILES, ...(options.runtimeRevision !== undefined ? A2_FILES : [])]) {
       if (report.hashes.before[file].status !== 'present') fail('source-unavailable', file);
     }
     if (report.failures.length === 0) {
       report.fixtureCharacterization = { status: 'characterized', summaries: characterizeFixtures(root) };
       for (let index = 0; index < QA.length; index++) {
-        const current = hashes(root);
-        const changed = manifest.files.filter(file => current[file.path].sha256 !== file.sha256);
+        const current = hashes(root, sourceFiles);
+        const changed = manifest.files.filter(file => current[file.path].sha256 !== expectedHash(file));
         if (changed.length) {
           for (const file of changed) fail('baseline-hash-mismatch-before-test', file.path);
           for (let pending = index; pending < QA.length; pending++) report.tests[pending].reason = 'baseline-changed';
@@ -286,17 +307,17 @@ async function runBaseline(options = {}, sourceCommit = SOURCE_COMMIT) {
   // Preserve evidence even if a test fails or provenance does not match.
   try {
     report.provenance.after = provenance(root);
-    report.hashes.after = hashes(root);
+    report.hashes.after = hashes(root, sourceFiles);
     if (report.provenance.before && report.provenance.after.actualHead !== report.provenance.before.actualHead) fail('head-changed-during-run');
     if (report.provenance.after.dirty && !options.allowDirty && !report.failures.some(row => row.code === 'dirty-working-tree')) fail('dirty-working-tree-after-run');
     if (report.hashes.before) {
-      for (const file of [...ORIGINAL_FILES, ...NEW_FILES]) {
+      for (const file of sourceFiles) {
         if (JSON.stringify(report.hashes.before[file]) !== JSON.stringify(report.hashes.after[file])) fail('source-changed-during-run', file);
       }
     }
     if (manifest) {
       for (const file of manifest.files) {
-        if (report.hashes.after[file.path].sha256 !== file.sha256) fail('baseline-hash-mismatch-after-run', file.path);
+        if (report.hashes.after[file.path].sha256 !== expectedHash(file)) fail('baseline-hash-mismatch-after-run', file.path);
       }
     }
   } catch { fail('postflight-unavailable'); }
@@ -318,12 +339,13 @@ function parseArgs(args) {
   for (let index = 0; index < args.length; index++) {
     const arg = args[index];
     if (arg === '--allow-dirty' || arg === '--stdout') options[arg === '--stdout' ? 'stdout' : 'allowDirty'] = true;
-    else if (['--evidence-dir', '--expected-head', '--timeout-ms'].includes(arg)) {
+    else if (['--evidence-dir', '--expected-head', '--timeout-ms', '--runtime-revision'].includes(arg)) {
       const value = args[++index];
       if (value === undefined) throw new Error('missing-argument-value');
       if (arg === '--evidence-dir') options.evidenceDir = value;
       if (arg === '--expected-head') options.expectedHead = value;
       if (arg === '--timeout-ms') options.timeoutMs = Number(value);
+      if (arg === '--runtime-revision') options.runtimeRevision = value;
     } else throw new Error('unknown-argument');
   }
   if (options.stdout && options.evidenceDir) throw new Error('choose-evidence-dir-or-stdout');
