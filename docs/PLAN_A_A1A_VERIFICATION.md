@@ -14,7 +14,7 @@ The production contract is exact preservation of all 15 baseline files, includin
 | Existing GitHub connector and Git CLI | Read latest main, prepare isolated branch and publish the authorized Draft PR | No merge, deployment or main update is authorized. |
 | Node 22.23.3 | Official [Linux x64 archive](https://nodejs.org/dist/v22.23.3/node-v22.23.3-linux-x64.tar.xz), verified against official [SHA-256 list](https://nodejs.org/dist/v22.23.3/SHASUMS256.txt) | Archive SHA-256 `df450af89261115ef9f9e3830c3eeb2cc9213b63c720b1af623cb5dcbe2e02de`; 31,001,304 bytes. Installed only under a temporary tool directory, with no global replacement. Same version pinned in new CI. |
 | Built-in Node modules | Assertions, crypto, filesystem and subprocesses for development verification | No npm dependency, backend, paid service or additional plugin installation. |
-| Existing GitHub Actions | Checkout `11d5960a326750d5838078e36cf38b85af677262`; setup-node `49933ea5288caeca8642d1e84afbd3f7d6820020`; upload-artifact `ea165f8d65b6e75b540449e92b4886f43607fa02` | Public official tag SHAs checked before pinning. New workflow uses contents-read permission and actual proposed head, with persisted checkout credentials disabled. |
+| Official GitHub Actions v7 | Checkout `3d3c42e5aac5ba805825da76410c181273ba90b1`; setup-node `949feb2413d6458794dcd2491c4babbbce0c15c1`; upload-artifact `cf430e030ddbb5b0abf93d22962f4752f3646cd9` | Public official tag SHAs, action metadata and runtime requirements checked before pinning; actions use Node 24 on the hosted runner while QA uses Node 22.23.3. Contents-read permission and actual proposed head, with persisted checkout credentials disabled. |
 
 ## Before evidence
 
@@ -56,6 +56,7 @@ Local precommit verification explicitly used `--allow-dirty`; it passed with dir
 | Dirty, missing or changing evidence source | Default dirty tree, unavailable baseline, changed original/new source and changed HEAD are failed outcomes. Explicit local dirty mode remains labelled; it is not clean CI evidence. |
 | Production CLI refusal | Actual CLI exit 1 and persisted failed summary for wrong expected head/unavailable baseline. Not-run checks remain notrun. A local invocation with a stale expected SHA was also refused before any QA, then rerun successfully against the actual head. |
 | Privacy and child environment | Raw sentinel diagnostics omitted; only byte counts/digests and reviewed fixed PASS text retained. Node preload flags and inherited test-secret values do not reach child QA. |
+| Initial hosted CI action-runtime warning | PR #17 run [38573321688](https://github.com/nileshkchaubey-glitch/Xl-billing/actions/runs/38573321688) passed all checks on `e430247`, but the original v4 action pins targeted deprecated Node 20 and GitHub forced Node 24. Updated only the new A1a workflow to checked official v7/Node 24 pins; the subsequent proposed head needs its own hosted result. All five original workflows remain unchanged. |
 
 These controls verify development evidence tooling. They do not reproduce or fix the current production financial/storage defects. No old-writer failure was rerun or converted into a passing safety test here.
 
