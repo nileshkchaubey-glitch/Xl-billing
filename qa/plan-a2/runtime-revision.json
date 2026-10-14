@@ -1,0 +1,24 @@
+{
+  "schemaVersion": 1,
+  "authorization": "https://github.com/nileshkchaubey-glitch/Xl-billing/issues/19",
+  "baseCommit": "ed583b697ea1ebdb6041c30f76fa4984c972f713",
+  "originalIndexSha256": "d5fbcd1a47a5bf6e8d2ec735b561f46108e3c905878ba301acd322040b52b70a",
+  "candidateIndexSha256": "4e1e6bdb46d8a42a51e4c60da107514c2b3de7146ad4d3f862840af6e9e52d7d",
+  "unchangedOutsideRegionsSha256": "b158526bf3df782911f8330f0e6cd881c4f60e35b620b5592cad1f045e1876a8",
+  "beforeRegions": {
+    "jsonbin-entry-functions": "6abc22ae096f80534db7dc4832a9e5d466a3bf44b5957f0ae342f02091c62720",
+    "jsonbin-settings-card-and-wrapper": "ee4a897c94ff163580c2c645c000a0ae370a851e19df44db765d267d49336d82",
+    "github-storage-note": "48d9150aec6c97d0bace34fc976e741f522e5cfed63f51ad13b49369a67854cc",
+    "github-sync-guide": "4f83413a6d94b08606ae6c92511feb2b69c478cd1ce5d68f15544a7f27aa2edb"
+  },
+  "afterRegions": {
+    "jsonbin-entry-functions": "3bcec9593ea7a6a1a5ef81fbe73f4d9375777831e983ab8dfe319d1269f47949",
+    "jsonbin-settings-card-and-wrapper": "a0e649b0fcb65e5621044f44c7bf7a2b6a265c69a51d7ca10280a054a8559274",
+    "github-storage-note": "e244b76df01cba4aaf9f755e9714213432524bdb822d243cb7f29f25dc3962d4",
+    "github-sync-guide": "8cb3588830ab92cdea8a3b7639107cd85388815df2d838c53023dd212a7dd275"
+  },
+  "unchangedBackupCodecs": {
+    "xl-complete-backup": "6551007aa6ee88efb844bb585bbc8398d2b04a11c5685449a295eee6be884add",
+    "xl-backup-import-guard": "033f60f35d1962095761f315fca90566cbdfe4b0eac4ddef5a4ec09244adbdbc"
+  }
+}

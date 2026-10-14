@@ -5,7 +5,9 @@ on:
     branches: [main]
     paths:
       - storage-diagnostics.html
+      - index.html
       - qa/plan-a/**
+      - qa/plan-a2/**
       - .github/workflows/plan-a-diagnostics.yml
       - docs/PLAN_A_A1B_VERIFICATION.md
   workflow_dispatch:
@@ -34,9 +36,9 @@ jobs:
       - name: Verify exact commit
         run: test "$(git rev-parse HEAD)" = "$A1B_HEAD"
       - name: A1b VM read-only and privacy checks
-        run: node qa/plan-a/verify-readonly-diagnostics.cjs
+        run: node qa/plan-a/verify-readonly-diagnostics.cjs --runtime-revision qa/plan-a2/runtime-revision.json
       - name: A1a historical fixtures
-        run: node qa/plan-a/verify-historical-fixtures.cjs
+        run: node qa/plan-a/verify-historical-fixtures.cjs --runtime-revision qa/plan-a2/runtime-revision.json
       - name: A1a evidence runner controls
         run: node qa/plan-a/verify-evidence-runner.cjs
       - name: Six original QA scripts and immutable-source evidence
@@ -44,6 +46,7 @@ jobs:
           node qa/plan-a/verify-baseline.cjs
           --evidence-dir "${RUNNER_TEMP}/plan-a-a1b-baseline"
           --expected-head "${A1B_HEAD}"
+          --runtime-revision qa/plan-a2/runtime-revision.json
       - name: Retain non-sensitive A1a baseline evidence
         if: ${{ always() }}
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9

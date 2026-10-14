@@ -2663,78 +2663,22 @@ window.savePayment = function() {
 };
 
 // ═══════════════════════════════════════════════════════
-// FEATURE 6: Cloud Sync via JSONBin.io (Free, No server)
+// FEATURE 6: Legacy JSONBin quarantine (Plan A2)
+// No credentials, records, confirmation, network or storage are consulted.
 // ═══════════════════════════════════════════════════════
-window.cloudPush = async function() {
-  const s = getSettings();
-  if (!s.jsonbinKey || !s.jsonbinId) { toast('Set JSONBin API Key & Bin ID in Settings → Cloud Sync!'); return; }
-  const data = { v:5, ts:new Date().toISOString(), settings:getSettings(), items:getItems(), parties:getParties(), invoices:getInvoices(), purchases:getPurchases(), retail:getRetail() };
-  document.getElementById('sync-status').textContent = '⏳ Uploading...';
+function legacyJsonbinDisabled() {
+  const message = 'Legacy JSONBin cloud sync is disabled for data safety';
   try {
-    const res = await fetch(`https://api.jsonbin.io/v3/b/${s.jsonbinId}`, {
-      method: 'PUT',
-      headers: { 'Content-Type':'application/json', 'X-Master-Key': s.jsonbinKey },
-      body: JSON.stringify(data)
-    });
-    if (res.ok) {
-      document.getElementById('sync-status').textContent = '✅ Uploaded at ' + new Date().toLocaleTimeString();
-      toast('Cloud sync uploaded! ✓');
-    } else {
-      const err = await res.json();
-      document.getElementById('sync-status').textContent = '❌ Error: ' + (err.message || res.status);
-    }
-  } catch(e) { document.getElementById('sync-status').textContent = '❌ Network error'; }
-};
-
-window.cloudPull = async function() {
-  const s = getSettings();
-  if (!s.jsonbinKey || !s.jsonbinId) { toast('Set JSONBin API Key & Bin ID in Settings → Cloud Sync!'); return; }
-  if (!confirm('Pull data from cloud? This will OVERWRITE your local data!')) return;
-  document.getElementById('sync-status').textContent = '⏳ Downloading...';
-  try {
-    const res = await fetch(`https://api.jsonbin.io/v3/b/${s.jsonbinId}/latest`, {
-      headers: { 'X-Master-Key': s.jsonbinKey }
-    });
-    if (res.ok) {
-      const json = await res.json();
-      const d = json.record;
-      if (d.settings)  DB.set('settings',  d.settings);
-      if (d.items)     DB.set('items',      d.items);
-      if (d.parties)   DB.set('parties',    d.parties);
-      if (d.invoices)  DB.set('invoices',   d.invoices);
-      if (d.purchases) DB.set('purchases',  d.purchases);
-      if (d.retail)    DB.set('retail',     d.retail);
-      document.getElementById('sync-status').textContent = '✅ Downloaded at ' + new Date().toLocaleTimeString();
-      toast('Cloud data loaded! Reloading...'); setTimeout(()=>location.reload(),1500);
-    } else {
-      const err = await res.json();
-      document.getElementById('sync-status').textContent = '❌ Error: ' + (err.message || res.status);
-    }
-  } catch(e) { document.getElementById('sync-status').textContent = '❌ Network error'; }
-};
-
-window.createNewBin = async function() {
-  const key = document.getElementById('s-jsonbin-key').value.trim();
-  if (!key) { toast('Enter your JSONBin Master API Key first!'); return; }
-  document.getElementById('sync-status').textContent = '⏳ Creating new bin...';
-  try {
-    const res = await fetch('https://api.jsonbin.io/v3/b', {
-      method: 'POST',
-      headers: { 'Content-Type':'application/json', 'X-Master-Key': key, 'X-Bin-Name': 'MyShop-Data', 'X-Bin-Private': 'true' },
-      body: JSON.stringify({ init: true, created: new Date().toISOString() })
-    });
-    if (res.ok) {
-      const json = await res.json();
-      const binId = json.metadata.id;
-      document.getElementById('s-jsonbin-id').value = binId;
-      document.getElementById('sync-status').textContent = '✅ Bin created! ID: ' + binId + ' — Save Settings!';
-      toast('New Bin created: ' + binId + ' — Save Settings!', 5000);
-    } else {
-      const err = await res.json();
-      document.getElementById('sync-status').textContent = '❌ ' + (err.message || 'Check your API key');
-    }
-  } catch(e) { document.getElementById('sync-status').textContent = '❌ Network error. Check internet.'; }
-};
+    const status = document.getElementById('sync-status');
+    if (status) status.textContent = message;
+  } catch (_) { /* A missing or inaccessible status must not enable syncing. */ }
+  try { if (typeof toast === 'function') toast(message); }
+  catch (_) { /* Refusal also works when normal notification UI is missing. */ }
+  return false;
+}
+window.cloudPush = async function() { return legacyJsonbinDisabled(); };
+window.cloudPull = async function() { return legacyJsonbinDisabled(); };
+window.createNewBin = async function() { return legacyJsonbinDisabled(); };
 
 // ═══════════════════════════════════════════════════════
 // DOM INJECTION — Add new UI elements
@@ -2833,26 +2777,17 @@ document.addEventListener('DOMContentLoaded', () => {}, false);
       const cloudCard = document.createElement('div');
       cloudCard.className = 'card';
       cloudCard.innerHTML = `
-        <div style="font-weight:700;font-size:14px;margin-bottom:8px;color:var(--c)">☁️ Cloud Sync — Mobile ↔ PC (via JSONBin.io)</div>
-        <div style="background:var(--cl);border-radius:8px;padding:12px;margin-bottom:14px;font-size:13px;color:#164e63;line-height:1.8">
-          <strong>How to setup (Free, 3 steps):</strong><br>
-          1. Go to <a href="https://jsonbin.io" target="_blank" style="color:var(--b)">jsonbin.io</a> → Sign up free<br>
-          2. Get your <strong>Master API Key</strong> from dashboard<br>
-          3. Paste key below → Click "Create New Bin" → Save Settings<br>
-          Then use <strong>Push ↑</strong> to upload, <strong>Pull ↓</strong> to download on any device!
+        <div style="font-weight:700;font-size:14px;margin-bottom:8px;color:var(--c)">Legacy JSONBin cloud sync</div>
+        <div id="sync-status" role="status" aria-live="polite" style="font-size:13px;padding:12px;background:var(--gray-50);border-radius:6px">
+          Legacy JSONBin cloud sync is disabled for data safety
         </div>
-        <div class="fr2">
-          <div class="fg"><label class="fl">JSONBin Master API Key</label><input class="fc" id="s-jsonbin-key" placeholder="$2a$10$...paste key here..."></div>
-          <div class="fg"><label class="fl">Bin ID (auto-filled after create)</label><input class="fc" id="s-jsonbin-id" placeholder="Will be filled automatically"></div>
+        <p style="font-size:13px;line-height:1.7">Existing JSONBin credentials are preserved in your settings and private backups. They are not displayed or edited here. Keep private backup files private.</p>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px">
+          <button class="btn btn-c btn-sm" disabled aria-describedby="sync-status" onclick="createNewBin()">Create Bin (disabled)</button>
+          <button class="btn btn-g btn-sm" disabled aria-describedby="sync-status" onclick="cloudPush()">Push (disabled)</button>
+          <button class="btn btn-b btn-sm" disabled aria-describedby="sync-status" onclick="cloudPull()">Pull (disabled)</button>
         </div>
-        <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:10px">
-          <button class="btn btn-c btn-sm" onclick="createNewBin()">🆕 Create New Bin</button>
-          <button class="btn btn-g btn-sm" onclick="cloudPush()">☁️ Push ↑ Upload to Cloud</button>
-          <button class="btn btn-b btn-sm" onclick="cloudPull()">☁️ Pull ↓ Download from Cloud</button>
-        </div>
-        <div id="sync-status" style="font-size:13px;color:var(--gray-600);padding:8px;background:var(--gray-50);border-radius:6px;min-height:32px">
-          Not synced yet. Setup above to enable cloud sync.
-        </div>`;
+        <p style="font-size:13px;line-height:1.7">Google Apps Script sync remains active: its Push can upload stored settings, and its Pull can change local master records. This is not a verified independent backup.</p>`;
       // Insert before the last Save button
       const saveBtn = pb.querySelector('button.btn-g:last-child');
       if (saveBtn) pb.insertBefore(cloudCard, saveBtn);
@@ -2860,27 +2795,8 @@ document.addEventListener('DOMContentLoaded', () => {}, false);
     }
   }
 
-  // 7. Add JSONBin fields to loadSettings and saveSettings
-  const _origLoadSettings = window.loadSettings;
-  window.loadSettings = function() {
-    _origLoadSettings();
-    const s = getSettings();
-    const jk = document.getElementById('s-jsonbin-key');
-    const ji = document.getElementById('s-jsonbin-id');
-    if (jk) jk.value = s.jsonbinKey || '';
-    if (ji) ji.value = s.jsonbinId  || '';
-  };
-
-  const _origSaveSettings = window.saveSettings;
-  window.saveSettings = function() {
-    _origSaveSettings();
-    const s = getSettings();
-    const jk = document.getElementById('s-jsonbin-key');
-    const ji = document.getElementById('s-jsonbin-id');
-    if (jk) s.jsonbinKey = jk.value.trim();
-    if (ji) s.jsonbinId  = ji.value.trim();
-    DB.set('settings', s);
-  };
+  // Legacy JSONBin fields have no load/save wrapper. Existing settings are
+  // retained by the normal settings chain, including absent or unknown fields.
 
   // 8. Run migrations
   runMigrations();
@@ -5931,7 +5847,7 @@ window.renderGitHubGuide = function(){
         <p style="font-size:13px;color:var(--gray-600);line-height:1.8">
           Your billing app will be available at <strong>https://yourusername.github.io/myshop/</strong>.<br>
           Open it on a PC, phone or tablet. <strong>Free hosting.</strong><br>
-          ⚠️ Data remains in browser localStorage. Use Cloud Sync (JSONBin) to sync your phone and PC.
+          Billing data stays in this browser and profile. Legacy JSONBin cloud sync is disabled for data safety.
         </p>
       </div>
 
@@ -6003,13 +5919,12 @@ window.renderGitHubGuide = function(){
 
       <!-- Data sync -->
       <div class="card" style="border-left:4px solid var(--c)">
-        <div style="font-weight:700;font-size:14px;margin-bottom:8px;color:var(--c)">☁️ Mobile ↔ PC Data Sync</div>
+        <div style="font-weight:700;font-size:14px;margin-bottom:8px;color:var(--c)">Legacy JSONBin sync disabled</div>
         <div style="font-size:13px;color:var(--gray-600);line-height:1.9">
           GitHub Pages hosts the app file. It does not share billing data between devices.<br>
-          <strong>Solution:</strong> Configure Settings → Cloud Sync (JSONBin.io), then use Push/Pull to sync your data.<br>
-          <br>
-          <strong>Best workflow:</strong><br>
-          🖥️ Work on your PC → Select "Push ↑" → 📱 Select "Pull ↓" on your phone
+          <strong>Legacy JSONBin cloud sync is disabled for data safety.</strong><br>
+          Use one desktop billing profile and keep private backup files outside the browser.<br>
+          Google Apps Script sync remains active and can upload settings or change master records; it is not a verified independent backup.
         </div>
       </div>
 

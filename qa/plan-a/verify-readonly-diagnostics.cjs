@@ -11,7 +11,13 @@ const root = path.resolve(__dirname, '../..');
 const html = fs.readFileSync(path.join(root, 'storage-diagnostics.html'), 'utf8');
 const main = fs.readFileSync(path.join(root, 'index.html'));
 const expectedMainHash = 'd5fbcd1a47a5bf6e8d2ec735b561f46108e3c905878ba301acd322040b52b70a';
-assert.equal(crypto.createHash('sha256').update(main).digest('hex'), expectedMainHash, 'production index.html must be byte-identical');
+if (process.argv.slice(2).join(' ') === '--runtime-revision qa/plan-a2/runtime-revision.json') {
+  // Issue 19 explicitly authorizes this separate runtime revision. Preserve
+  // the original default pin and all standalone diagnostics assertions.
+  require('../plan-a2/verify-runtime-revision.cjs').verifyRuntimeRevision(root);
+} else {
+  assert.equal(crypto.createHash('sha256').update(main).digest('hex'), expectedMainHash, 'production index.html must be byte-identical');
+}
 assert.equal((html.match(/<script(?:\s|>)/gi) || []).length, 1, 'exactly one self-contained script');
 assert.equal((html.match(/<link\b/gi) || []).length, 0, 'no linked resources');
 assert.equal((html.match(/<iframe\b/gi) || []).length, 0, 'no frames');

@@ -230,7 +230,13 @@ check('independent nonempty compatible format input', () => {
 let codecInputSmoke = 'FAIL';
 checkAsync('hash-pinned isolated V4 parse and V1 decode of compatible input', async () => {
   const source = fs.readFileSync(path.resolve(__dirname, '../../index.html'));
-  verify(createHash('sha256').update(source).digest('hex') === 'd5fbcd1a47a5bf6e8d2ec735b561f46108e3c905878ba301acd322040b52b70a', 'Codec source bytes must match the approved baseline before any VM execution.');
+  const originalBytes = createHash('sha256').update(source).digest('hex') === 'd5fbcd1a47a5bf6e8d2ec735b561f46108e3c905878ba301acd322040b52b70a';
+  let authorizedRevision = false;
+  if (JSON.stringify(process.argv.slice(2)) === JSON.stringify(['--runtime-revision', 'qa/plan-a2/runtime-revision.json'])) {
+    const revision = require('../plan-a2/verify-runtime-revision.cjs').verifyRuntimeRevision(path.resolve(__dirname, '../..'));
+    authorizedRevision = revision.status === 'verified-authorized-A2-revision';
+  }
+  verify(originalBytes || authorizedRevision, 'Original full index bytes or explicitly approved A2 scope and unchanged codecs required before VM execution.');
   const html = source.toString('utf8');
   let forbiddenAccesses = 0;
   const reject = () => { forbiddenAccesses++; throw new Error('Forbidden codec environment access.'); };
