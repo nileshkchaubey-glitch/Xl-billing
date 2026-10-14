@@ -94,7 +94,7 @@ function makeContext(seed,opts={}){
   const snapshot=()=>JSON.stringify([...raw.entries()]);
   const before=snapshot();
   return {nodes,raw,counts,directory,window,document,check(){
-    assert.equal(snapshot(),before,'original localStorage exact bytes/keys unchanged');
+    if (!opts.allowExternalChange) assert.equal(snapshot(),before,'original localStorage exact bytes/keys unchanged');
     assert.equal(counts.writes,0);assert.equal(counts.network,0);
     assert.doesNotMatch(nodes['backup-status'].textContent,/PRIVATE SHOP|SECRET-MASTER|SECRET-BIN|विवरण/);
   },async save(){const answer=await nodes['folder-save'].listeners.click();this.check();return answer;},
@@ -159,11 +159,11 @@ async function test(label,fn){await fn();checks++;console.log('PASS '+label);}
   });
   await test('concurrent invoice modification invalidates latest-data confirmation',async()=>{
     const data=fixture(1);
-    const x=makeContext(data,{dir:createDir({onWrite(){x.raw.set('shop4_invoices','[]');}})});
+    const x=makeContext(data,{allowExternalChange:true,dir:createDir({onWrite(){x.raw.set('shop4_invoices','[]');}})});
     assert.equal(await x.save(),false);
     assert.equal(x.directory.files.size,1);
     assert.doesNotMatch(x.nodes['backup-status'].textContent,/LOCAL FILE VERIFIED/);
-  }).catch(e=>{ if(e.code==='ERR_ASSERTION'&&/unchanged/.test(e.message))return;throw e;});
+  });
   await test('synthetic scales 0/86/500/2000/5000 remain complete',async()=>{
     for(const n of [0,86,500,2000,5000]){
       const x=makeContext(fixture(n));assert.equal(await x.save(),true);assert.equal(x.directory.files.size,1);
