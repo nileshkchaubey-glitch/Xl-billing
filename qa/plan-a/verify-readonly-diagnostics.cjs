@@ -76,7 +76,7 @@ check('empty origin is not interpreted as verified empty billing profile',()=>{
   const x=run();
   assert.match(x.nodes.coverage.textContent,/wrong profile or origin/);
   assert.match(x.nodes.assessment.textContent,/NOT verified/);
-  assert.equal(x.nodes.key-count.textContent,'0');
+  assert.equal(x.nodes['key-count'].textContent,'0');
   x.rerun();
 });
 check('valid synthetic present and empty collections are distinguished',()=>{
