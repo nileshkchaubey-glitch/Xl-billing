@@ -20,15 +20,21 @@ function demand(ok,label){if(!ok){const e=new Error(label);e.gate=label;throw e;
   await page.goto(origin+'/seed');await page.evaluate(data=>{for(const [k,v]of Object.entries(data))localStorage.setItem(k,v);},seed);
   await page.goto(origin+'/'+version+'.html',{waitUntil:'load'});await page.waitForTimeout(350);
   const outcome={engine:type.name(),browserVersion:browser.version(),version,sourceSha256:hash(versions[version]),steps:[],externalRequests:0,pageErrors:[]};
-  async function stage(name,task){try{await task();outcome.steps.push({name,status:'PASS'});}catch(e){outcome.steps.push({name,status:'FAIL',gate:e.gate||'harness-or-application-error',errorName:e.name,messageSha256:hash(e.message)});}}
+  let checkpoint='bootstrap';
+  async function stage(name,task){try{await task();outcome.steps.push({name,status:'PASS'});}catch(e){outcome.steps.push({name,status:'FAIL',checkpoint,gate:e.gate||'harness-or-application-error',errorName:e.name,messageSha256:hash(e.message)});}}
   let createdId;
   await stage('real-new-invoice-save',async()=>{
-   await page.locator('a[data-pg="new-sale"]').click();await page.waitForTimeout(200);
-   await page.locator('#inv-party').fill('SYNTHETIC CUSTOMER');await page.locator('#ac-inv-party .ac-item').first().click();
-   await page.locator('[id^="sn-"]').fill('SYNTHETIC PAPER');await page.locator('[id^="ac-sn-"] .ac-item').first().click();await page.waitForTimeout(200);
+   checkpoint='new-invoice-navigation';await page.locator('a[data-pg="new-sale"]').click();await page.waitForTimeout(200);
+   checkpoint='party-input';await page.locator('#inv-party').fill('SYNTHETIC CUSTOMER');checkpoint='party-autocomplete-selection';await page.locator('#ac-inv-party .ac-item').first().click();
+   // The missing-phone fixture triggers the real V13 quick-phone prompt and
+   // its delayed focus. Observe that callback before typing into the item;
+   // no forced clicks, function replacement, input retry or billing fix.
+   checkpoint='quick-phone-focus';await page.waitForFunction(()=>document.activeElement?.id==='quick-phone-inp');
+   checkpoint='item-input';await page.locator('[id^="sn-"]').fill('SYNTHETIC PAPER');checkpoint='item-autocomplete-selection';await page.locator('[id^="ac-sn-"] .ac-item').first().click();await page.waitForTimeout(200);
+   checkpoint='invoice-amount-inputs';
    await page.locator('[id^="spc-"]').fill('3');await page.locator('[id^="sqt-"]').fill('2');await page.locator('[id^="srt-"]').fill('25');
    await page.locator('#inv-date').fill('2026-10-14');await page.locator('#inv-paid').fill('20');
-   await page.locator('#save-inv-btn').click();
+   checkpoint='invoice-save-button';await page.locator('#save-inv-btn').click();
    const got=await page.evaluate(()=>({invoices:JSON.parse(localStorage.getItem('shop4_invoices')),settings:JSON.parse(localStorage.getItem('shop4_settings')),audit:JSON.parse(localStorage.getItem('shop4_audit'))}));
    demand(got.invoices.length===2,'invoice-not-created');const inv=got.invoices.find(i=>i.id!=='SYNTHETIC-HISTORICAL');createdId=inv.id;
    outcome.invoiceObserved={total:inv.total,paid:inv.paid,balance:inv.balance,qty:inv.items[0].qty,packCount:inv.items[0].packCount};demand(inv.total===150&&inv.paid===20&&inv.balance===130&&inv.items[0].qty===6,'invoice-packs-totals-regressed');
@@ -37,6 +43,7 @@ function demand(ok,label){if(!ok){const e=new Error(label);e.gate=label;throw e;
    demand(got.audit.some(a=>a.type==='create'&&a.entityId===createdId),'create-audit-missing');
   });
   if(createdId)await stage('real-payment-modal-save',async()=>{
+   checkpoint='payment-modal';
    // Installed global opens the actual current modal; Save uses its real button handler.
    await page.evaluate(id=>window.openPayModal(id),createdId);await page.waitForTimeout(200);
    await page.locator('#pay-amount').fill('10');await page.locator('#pay-discount').fill('5');await page.locator('#pay-note').fill('SYNTHETIC QA RECEIPT');
@@ -47,6 +54,7 @@ function demand(ok,label){if(!ok){const e=new Error(label);e.gate=label;throw e;
    demand(got.audit.some(a=>a.type==='payment'&&a.entityId===createdId),'payment-audit-missing');
   });
   if(createdId)await stage('real-print-popup-content',async()=>{
+   checkpoint='print-popup';
    await page.evaluate(id=>window.viewInvoice(id),createdId);
    const popupPromise=page.waitForEvent('popup',{timeout:3000});await page.locator('#inv-view-modal button[onclick="printInvoice()"]').click();const popup=await popupPromise;
    await popup.waitForLoadState('domcontentloaded');const body=await popup.locator('body').innerText();
