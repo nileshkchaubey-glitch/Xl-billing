@@ -156,7 +156,7 @@ check('hostile row fields never become HTML or visible record data',()=>{
 check('fixture scales avoid mutation and are measured without claiming capacity',()=>{
   for(const n of [0,86,500,2000,5000]){
     const x=run({shop4_invoices:validRows(n)});
-    assert.equal(x.nodes.collections.children[2].children[2].textContent,n);
+    assert.equal(x.nodes.collections.children[2].children[2].textContent,String(n));
     assert.match(x.nodes.assessment.textContent,/NOT verified/);
   }
 });
