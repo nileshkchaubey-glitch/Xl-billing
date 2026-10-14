@@ -144,8 +144,8 @@ check('UTF-8 multibyte sizes are measured separately from UTF-16',()=>{
   const raw=JSON.stringify([{id:'é😀'}]);
   const x=run({shop4_invoices:raw});
   const utf8=Buffer.byteLength('shop4_invoices'+raw,'utf8');
-  assert.equal(x.nodes.total-utf8.textContent,utf8.toLocaleString('en-IN')+' bytes');
-  assert.equal(x.nodes.total-utf16.textContent,('shop4_invoices'+raw).length.toLocaleString('en-IN')+' code units');
+  assert.equal(x.nodes['total-utf8'].textContent,utf8.toLocaleString('en-IN')+' bytes');
+  assert.equal(x.nodes['total-utf16'].textContent,('shop4_invoices'+raw).length.toLocaleString('en-IN')+' code units');
 });
 check('hostile row fields never become HTML or visible record data',()=>{
   const hostile='<img src=x onerror="alert(1)">'; const raw=JSON.stringify([{id:'id',name:hostile,notes:'CUSTOMER-SECRET'}]);
