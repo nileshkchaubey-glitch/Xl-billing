@@ -91,7 +91,7 @@ check('valid synthetic present and empty collections are distinguished',()=>{
   x.rerun();
 });
 check('invalid JSON fails closed with no raw text',()=>{
-  const x=run({shop4_invoices:'{"name":"SENTINEL-PRIVATE-NAME"'},
+  const x=run({shop4_invoices:'{"name":"SENTINEL-PRIVATE-NAME"',
     shop4_settings:settings});
   assert.match(x.nodes.assessment.textContent,/ATTENTION/);
   assert.equal(x.nodes.collections.children[2].children[1].textContent,'Unreadable JSON');
