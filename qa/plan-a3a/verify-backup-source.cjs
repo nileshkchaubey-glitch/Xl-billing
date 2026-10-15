@@ -6,7 +6,10 @@ const root=path.resolve(__dirname,'../..');
 const origin=fs.readFileSync(path.join(root,'index.html'),'utf8');
 const page=fs.readFileSync(path.join(root,'verified-backup.html'),'utf8');
 const originalSourceHash='4e1e6bdb46d8a42a51e4c60da107514c2b3de7146ad4d3f862840af6e9e52d7d';
-assert.equal(createHash('sha256').update(origin).digest('hex'),originalSourceHash,'original production source must remain unchanged');
+if (createHash('sha256').update(origin).digest('hex') !== originalSourceHash) {
+  const revision = require('../plan-a2/verify-runtime-revision.cjs').verifyRuntimeRevision(root);
+  assert.equal(revision.additionalRevision, 'delete-pin-dialog-only', 'only exact requested PIN dialog fix is allowed');
+}
 const codecFrom=origin.indexOf('function createXLCompleteBackup(options)');
 const codecTo=origin.indexOf('window.XLCompleteBackup=createXLCompleteBackup(',codecFrom);
 assert(codecFrom>=0&&codecTo>codecFrom,'V1 backup codec boundaries required');

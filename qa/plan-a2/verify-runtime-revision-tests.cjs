@@ -6,7 +6,10 @@ const {execFileSync} = require('node:child_process');
 const revision = require('./verify-runtime-revision.cjs');
 const root = path.resolve(__dirname, '../..');
 const original = execFileSync('git', ['--no-replace-objects', '-C', root, 'cat-file', 'blob', revision.BASE + ':index.html']);
-const candidate = fs.readFileSync(path.join(root, 'index.html'));
+const actual = fs.readFileSync(path.join(root, 'index.html'));
+const candidate = revision.normalizePinFix(root, actual);
+assert.equal(revision.verifyRuntimeRevision(root).candidateIndexSha256, revision.hash(actual));
+assert.throws(() => revision.normalizePinFix(root, Buffer.from(actual.toString() + '\n')), /unapproved-delete-pin-revision/);
 const manifest = JSON.parse(fs.readFileSync(path.join(root, revision.MANIFEST)));
 assert.equal(revision.validate(original, candidate, manifest).status, 'verified-authorized-A2-revision');
 const cloned = () => JSON.parse(JSON.stringify(manifest));
@@ -25,4 +28,4 @@ for (const changed of [candidate.toString().replace("let currentPage = 'dashboar
 }
 assert.throws(() => revision.validate(Buffer.from(original.toString() + '\n'), candidate, manifest), /unapproved-runtime-revision/);
 assert.equal(fs.readFileSync(path.join(root, 'qa/plan-a/baseline-source.json'), 'utf8'), execFileSync('git', ['--no-replace-objects', '-C', root, 'cat-file', 'blob', revision.BASE + ':qa/plan-a/baseline-source.json'], {encoding: 'utf8'}));
-console.log('PASS: 11 A2 revision controls; immutable original pins retained, unauthorized source/digest/codec changes refused.');
+console.log('PASS: 11 A2 revision controls plus exact delete-PIN provenance; immutable original pins retained, unauthorized source/digest/codec changes refused.');
