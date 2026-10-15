@@ -1,0 +1,39 @@
+name: Invoice edit and Recycle Bin
+on:
+  pull_request:
+    paths:
+      - index.html
+      - qa/invoice-recovery/**
+      - qa/verify-delete-pin.cjs
+      - .github/workflows/invoice-recovery.yml
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  recovery:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    env:
+      RECOVERY_HEAD: ${{ github.event.pull_request.head.sha || github.sha }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1
+        with:
+          node-version: '22.23.3'
+      - name: Install test-only DOM and browser tooling
+        run: |
+          npm install --prefix "$RUNNER_TEMP/recovery-tools" --no-save --no-package-lock jsdom@26.1.0 playwright@1.64.0
+          echo "NODE_PATH=$RUNNER_TEMP/recovery-tools/node_modules" >> "$GITHUB_ENV"
+      - name: Exact head and full-app recovery, backup and failure checks
+        run: |
+          test "$(git rev-parse HEAD)" = "$RECOVERY_HEAD"
+          node qa/invoice-recovery/verify-app.cjs
+          node qa/plan-a2/verify-runtime-revision-tests.cjs
+      - name: Install browser binaries
+        run: '"$RUNNER_TEMP/recovery-tools/node_modules/.bin/playwright" install --with-deps chromium firefox webkit'
+      - name: Real browser edit, print, PIN delete, restore and failure checks
+        run: node qa/invoice-recovery/verify-browser.cjs
