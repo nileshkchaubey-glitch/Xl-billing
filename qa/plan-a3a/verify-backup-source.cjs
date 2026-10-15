@@ -8,7 +8,7 @@ const page=fs.readFileSync(path.join(root,'verified-backup.html'),'utf8');
 const originalSourceHash='4e1e6bdb46d8a42a51e4c60da107514c2b3de7146ad4d3f862840af6e9e52d7d';
 if (createHash('sha256').update(origin).digest('hex') !== originalSourceHash) {
   const revision = require('../plan-a2/verify-runtime-revision.cjs').verifyRuntimeRevision(root);
-  assert.equal(revision.additionalRevision, 'delete-pin-dialog-only', 'only exact requested PIN dialog fix is allowed');
+  assert.ok(['delete-pin-dialog-only','invoice-edit-and-recycle-bin'].includes(revision.additionalRevision), 'only exact separately requested revisions are allowed');
 }
 const codecFrom=origin.indexOf('function createXLCompleteBackup(options)');
 const codecTo=origin.indexOf('window.XLCompleteBackup=createXLCompleteBackup(',codecFrom);

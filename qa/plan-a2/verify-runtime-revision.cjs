@@ -50,6 +50,8 @@ function validate(base, candidate, manifest) {
 const PIN_FIX_BASE = 'beb42cfbb02069e818340ebecdef6b14499ddab5';
 const PIN_FIX_HASH = 'f0cd7b156d5302362be3d22f66170aa8d026070b83947c39a51a31d5842e94b8';
 function normalizePinFix(root, candidate) {
+  const recovery = require('../invoice-recovery/verify-source.cjs');
+  if (hash(candidate) === recovery.CANDIDATE_HASH) candidate = recovery.normalize(root, candidate);
   if (hash(candidate) === '4e1e6bdb46d8a42a51e4c60da107514c2b3de7146ad4d3f862840af6e9e52d7d') return candidate;
   if (hash(candidate) !== PIN_FIX_HASH) throw new Error('unapproved-delete-pin-revision');
   const prior = execFileSync('git', ['--no-replace-objects', '-C', root, 'cat-file', 'blob', PIN_FIX_BASE + ':index.html'], {maxBuffer: 1024 * 1024}).toString('utf8');
@@ -72,7 +74,7 @@ function verifyRuntimeRevision(root) {
   const normalized = normalizePinFix(root, candidate);
   const result = validate(base, normalized, manifest);
   return {...result, candidateIndexSha256: hash(candidate),
-    ...(hash(normalized) !== hash(candidate) ? {additionalRevision: 'delete-pin-dialog-only'} : {})};
+    ...(hash(normalized) !== hash(candidate) ? {additionalRevision: hash(candidate) === require('../invoice-recovery/verify-source.cjs').CANDIDATE_HASH ? 'invoice-edit-and-recycle-bin' : 'delete-pin-dialog-only'} : {})};
 }
 module.exports = {verifyRuntimeRevision, normalizePinFix, validate, split, codecHashes, hash, BASE, ORIGINAL, AUTHORIZATION, MANIFEST};
 if (require.main === module) {

@@ -191,8 +191,9 @@ input[type=number]::-webkit-inner-spin-button,input[type=number]::-webkit-outer-
   <div class="nav-sec">
     <a class="nl active" onclick="nav('dashboard')" data-pg="dashboard"><span class="nl-ic">📊</span>Dashboard</a>
     <div class="nav-lbl">Sales</div>
-    <a class="nl" onclick="nav('new-sale')" data-pg="new-sale"><span class="nl-ic">➕</span>New Invoice</a>
+    <a class="nl" onclick="startNewInvoice()" data-pg="new-sale"><span class="nl-ic">➕</span>New Invoice</a>
     <a class="nl" onclick="nav('sales-list')" data-pg="sales-list"><span class="nl-ic">📋</span>Sale List</a>
+    <a class="nl" onclick="nav('invoice-recycle')" data-pg="invoice-recycle"><span class="nl-ic">♻️</span>Invoice Recycle Bin</a>
     <a class="nl" id="nl-retail" onclick="nav('retail-entry')" data-pg="retail-entry"><span class="nl-ic">🏷️</span>Retail Entry</a>
     <div class="nav-lbl">Purchase</div>
     <a class="nl" onclick="nav('new-purchase')" data-pg="new-purchase"><span class="nl-ic">🛒</span>New Purchase</a>
@@ -212,7 +213,7 @@ input[type=number]::-webkit-inner-spin-button,input[type=number]::-webkit-outer-
 <!-- MOBILE NAV -->
 <nav class="mnav">
   <div class="mn-item active" onclick="nav('dashboard')" data-mpg="dashboard"><div class="ic">📊</div>Home</div>
-  <div class="mn-item" onclick="nav('new-sale')" data-mpg="new-sale"><div class="ic">➕</div>Invoice</div>
+  <div class="mn-item" onclick="startNewInvoice()" data-mpg="new-sale"><div class="ic">➕</div>Invoice</div>
   <div class="mn-item" onclick="nav('retail-entry')" data-mpg="retail-entry"><div class="ic">🏷️</div>Retail</div>
   <div class="mn-item" onclick="nav('reports')" data-mpg="reports"><div class="ic">📈</div>Reports</div>
   <div class="mn-item" onclick="nav('settings')" data-mpg="settings"><div class="ic">⚙️</div>Settings</div>
@@ -224,7 +225,7 @@ input[type=number]::-webkit-inner-spin-button,input[type=number]::-webkit-outer-
 <div id="page-dashboard" class="page">
   <div class="ph"><h1>📊 Dashboard</h1>
     <div class="ph-right">
-      <button class="btn btn-g btn-sm" onclick="nav('new-sale')">➕ New Invoice</button>
+      <button class="btn btn-g btn-sm" onclick="startNewInvoice()">➕ New Invoice</button>
       <button class="btn btn-out btn-sm" onclick="nav('retail-entry')">🏷️ Retail Entry</button>
     </div>
   </div>
@@ -343,7 +344,7 @@ input[type=number]::-webkit-inner-spin-button,input[type=number]::-webkit-outer-
 <!-- ═══ SALES LIST ═══ -->
 <div id="page-sales-list" class="page" style="display:none">
   <div class="ph"><h1>📋 Sale List</h1>
-    <button class="btn btn-g btn-sm" onclick="nav('new-sale')">➕ New Invoice</button>
+<div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn btn-out btn-sm" onclick="nav('invoice-recycle')">♻️ Recycle Bin</button><button class="btn btn-g btn-sm" onclick="startNewInvoice()">➕ New Invoice</button></div>
   </div>
   <div class="pb">
     <div class="card" style="padding:12px;margin-bottom:10px">
@@ -365,6 +366,15 @@ input[type=number]::-webkit-inner-spin-button,input[type=number]::-webkit-outer-
     </div>
     <div id="sl-summary" style="margin-bottom:10px"></div>
     <div class="tw" id="sales-table"></div>
+  </div>
+</div>
+
+<!-- Invoice-only recovery; active reports continue reading the original invoices collection. -->
+<div id="page-invoice-recycle" class="page" style="display:none">
+  <div class="ph"><h1>♻️ Invoice Recycle Bin</h1><button class="btn btn-out btn-sm" onclick="nav('sales-list')">← Sale List</button></div>
+  <div class="pb"><p>Deleted invoices stay here with their payment history. Restore returns the same invoice to reports and outstanding balances. No automatic deletion.</p>
+    <p class="small">Only invoices deleted after this feature was added can appear here. Use Private Backup to keep the Recycle Bin in your backup.</p>
+    <div class="tw" id="invoice-recycle-list"></div>
   </div>
 </div>
 
@@ -948,6 +958,7 @@ function nav(pg) {
   const map = {
     dashboard:renderDashboard,
     'sales-list':renderSalesList,
+    'invoice-recycle':() => window.renderInvoiceRecycle(),
     'purchase-list':renderPurchaseList,
     'retail-entry':renderRetailEntry,
     items:renderItems, parties:renderParties,
@@ -1288,7 +1299,7 @@ function saveSaleInvoice(andPrint) {
       updatedAt:new Date().toISOString()
     };
     DB.set('invoices', invs);
-    editingInvId = null;
+    markInvoiceSaved(invs[idx]);
     toast(`Invoice ${existing.invoiceNo} updated! ✓`);
     if(andPrint) { viewInvoice(invs[idx].id); setTimeout(()=>printInvoice(),400); }
     else nav('sales-list');
@@ -1306,12 +1317,24 @@ function saveSaleInvoice(andPrint) {
     if(t.paid>0) inv.payments.push({date,amt:t.paid,mode:payType,note:''});
     const invs = getInvoices(); invs.push(inv); DB.set('invoices',invs);
     const ns=getSettings(); ns.invNo=(ns.invNo||1001)+1; DB.set('settings',ns);
+    markInvoiceSaved(inv);
     toast(`Invoice ${inv.invoiceNo} saved! ✓`);
     if(andPrint) { viewInvoice(inv.id); setTimeout(()=>printInvoice(),400); }
     else nav('sales-list');
   }
 }
 
+// Keep the saved form attached to its invoice until the owner explicitly starts a new one.
+function markInvoiceSaved(inv) {
+  editingInvId = inv.id;
+  if (!document.getElementById('inv-no')) return;
+  document.getElementById('inv-no').value = inv.invoiceNo;
+  document.getElementById('edit-banner').style.display = 'flex';
+  document.getElementById('sale-cancel-edit-btn').style.display = 'flex';
+  document.getElementById('sale-page-title').textContent = '✏️ Edit Invoice';
+  document.getElementById('save-inv-btn').textContent = '✓ Update Invoice';
+}
+function startNewInvoice() { editingInvId = null; nav('new-sale'); }
 function resetSaleForm() { if(editingInvId) cancelEdit(); else initNewSale(); }
 
 function editInvoice() {
@@ -2236,8 +2259,8 @@ function importData(input){
 }
 function clearAllData(){
   if(!confirm('⚠️ WARNING: ALL data will be permanently deleted!\n\nExport a backup first!\n\nAre you absolutely sure?')) return;
-  if(!confirm('Final confirmation — delete ALL data?')) return;
-  ['settings','items','parties','invoices','purchases','retail'].forEach(k=>DB.del(k));
+  if(!confirm('Final confirmation — delete ALL data, including invoices in Recycle Bin?')) return;
+  ['settings','items','parties','invoices','invoice_recycle','purchases','retail'].forEach(k=>DB.del(k));
   toast('All data deleted!'); setTimeout(()=>location.reload(),1000);
 }
 
@@ -2271,7 +2294,7 @@ window.addEventListener('load',()=>{
 });
 document.addEventListener('keydown',e=>{
   if(e.ctrlKey||e.metaKey){
-    if(e.key==='n'){e.preventDefault();nav('new-sale');}
+    if(e.key==='n'){e.preventDefault();startNewInvoice();}
     if(e.key==='p'&&currentPage==='new-sale'){e.preventDefault();saveSaleInvoice(true);}
   }
   if(e.key==='Escape') document.querySelectorAll('.mo.show').forEach(m=>m.classList.remove('show'));
@@ -7029,7 +7052,7 @@ window.openPartyDetail = function(partyId) {
           ${p.area?`<span style="font-size:12px;color:var(--gray-400);margin-left:8px">📍 ${p.area}</span>`:''}
         </div>
         <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap">
-          <button class="btn btn-g btn-sm" onclick="nav('new-sale');closeModal('party-detail-modal');setTimeout(()=>{document.getElementById('inv-party').value='${p.name}';document.getElementById('inv-party-id').value='${p.id}';showLastRate('${p.id}');},200)">+ New Invoice</button>
+          <button class="btn btn-g btn-sm" onclick="startNewInvoice();closeModal('party-detail-modal');setTimeout(()=>{document.getElementById('inv-party').value='${p.name}';document.getElementById('inv-party-id').value='${p.id}';showLastRate('${p.id}');},200)">+ New Invoice</button>
           <button class="btn btn-out btn-sm" onclick="openPartyModal('${p.id}');closeModal('party-detail-modal')">Edit Party</button>
           <button class="mc" onclick="closeModal('party-detail-modal')">✕</button>
         </div>
@@ -8437,7 +8460,7 @@ function getDeletePin() {
 
 window.withDeletePin = (function() {
   let closeActive = null;
-  return function(label, onConfirm) {
+  return function(label, onConfirm, options = {}) {
     if (closeActive) closeActive();
     const pin = String(getDeletePin());
     const previousFocus = document.activeElement;
@@ -8448,7 +8471,7 @@ window.withDeletePin = (function() {
       <div class="pwd-box" role="dialog" aria-modal="true" aria-labelledby="del-pin-title">
         <div class="pwd-icon">🔐</div>
         <div class="pwd-title" id="del-pin-title">Confirm Delete</div>
-        <div class="pwd-sub"><span id="del-pin-label"></span><br><span style="color:var(--r);font-size:11.5px">This action cannot be undone after confirmation.</span></div>
+        <div class="pwd-sub"><span id="del-pin-label"></span><br><span id="del-pin-warning" style="color:var(--r);font-size:11.5px">This action cannot be undone after confirmation.</span></div>
         <input class="pwd-input" id="del-pin-inp" type="password" maxlength="10"
           aria-label="Delete PIN" placeholder="••••" autocomplete="off">
         <div style="display:flex;gap:8px;margin-top:14px">
@@ -8460,6 +8483,9 @@ window.withDeletePin = (function() {
     overlay.querySelector('#del-pin-label').textContent = label;
     const input = overlay.querySelector('#del-pin-inp');
     const button = overlay.querySelector('#del-pin-ok');
+    if (options.title) overlay.querySelector('#del-pin-title').textContent = options.title;
+    if (options.action) button.textContent = options.action;
+    if (options.notice) overlay.querySelector('#del-pin-warning').textContent = options.notice;
     let closed = false;
     function close() {
       if (closed) return;
@@ -8494,13 +8520,104 @@ window.withDeletePin = (function() {
 // ════════════════════════════════════════════════════════
 // OVERRIDE: delInvoice — add audit + pin
 // ════════════════════════════════════════════════════════
+// A separate archive avoids changing every report, ledger and payment reader.
+function invoiceStore(key) {
+  const raw = localStorage.getItem(K(key));
+  const rows = raw === null ? [] : JSON.parse(raw);
+  if (!Array.isArray(rows)) throw new Error('Invalid invoice collection.');
+  const ids = new Set();
+  for (const row of rows) {
+    if (!row || typeof row.id !== 'string' || !row.id || ids.has(row.id)) throw new Error('Invalid invoice ID.');
+    if (key === 'invoice_recycle' && (!row.invoice || row.invoice.id !== row.id || typeof row.deletedAt !== 'string')) throw new Error('Invalid archived invoice.');
+    ids.add(row.id);
+  }
+  return {key, raw, rows};
+}
+function moveInvoice(id, toBin, expected) {
+  let source, target, auditRaw, snapshots;
+  try {
+    if (localStorage.getItem('shop4_import_pending') !== null) throw new Error('Import recovery is pending.');
+    source = invoiceStore(toBin ? 'invoices' : 'invoice_recycle');
+    target = invoiceStore(toBin ? 'invoice_recycle' : 'invoices');
+    auditRaw = localStorage.getItem(K('audit'));
+    if (auditRaw !== null && !Array.isArray(JSON.parse(auditRaw))) throw new Error('Invalid audit collection.');
+    const row = source.rows.find(r => r.id === id);
+    if (!row || JSON.stringify(row) !== expected) { toast('Invoice changed or is no longer available. Reopen and check it.'); return false; }
+    const invoice = toBin ? row : row.invoice;
+    const duplicate = target.rows.find(r => r.id === id);
+    // A destination-first interrupted move can leave two identical copies. It is safe to finish only when both agree.
+    if (duplicate && JSON.stringify(toBin ? duplicate.invoice : duplicate) !== JSON.stringify(invoice)) throw new Error('Conflicting invoice ID.');
+    if (!toBin && target.rows.some(r => r.id !== id && String(r.invoiceNo||'').trim().toLowerCase() === String(invoice.invoiceNo||'').trim().toLowerCase())) throw new Error('Invoice number conflict.');
+    const added = toBin ? {id, deletedAt:new Date().toISOString(), invoice} : invoice;
+    const destination = duplicate ? target.rows : [...target.rows, added];
+    const remaining = source.rows.filter(r => r.id !== id);
+    snapshots = [[source.key,source.raw],[target.key,target.raw],['audit',auditRaw]];
+    // No source removal until its full destination copy has been read back.
+    DB.set(target.key, destination);
+    if (localStorage.getItem(K(target.key)) !== JSON.stringify(destination)) throw new Error('Destination readback failed.');
+    DB.set(source.key, remaining);
+    if (localStorage.getItem(K(source.key)) !== JSON.stringify(remaining)) throw new Error('Source readback failed.');
+    auditLog(toBin?'delete':'restore','invoice',id,`${invoice.invoiceNo} — ${invoice.partyName||'Cash'}`,toBin?'Moved to Invoice Recycle Bin':'Restored from Invoice Recycle Bin');
+    const audit = JSON.parse(localStorage.getItem(K('audit')));
+    if (!Array.isArray(audit) || audit.at(-1)?.entityId !== id || audit.at(-1)?.type !== (toBin?'delete':'restore')) throw new Error('Audit readback failed.');
+  } catch (_) {
+    let recovered = true;
+    if (snapshots) for (const [key,raw] of snapshots) {
+      try {
+        if (localStorage.getItem(K(key)) !== raw) {
+          if (raw === null) localStorage.removeItem(K(key)); else localStorage.setItem(K(key),raw);
+        }
+        if (localStorage.getItem(K(key)) !== raw) { recovered = false; break; }
+      } catch (_) { recovered = false; break; }
+    }
+    toast(recovered ? 'Invoice move failed. Original records were kept. Check storage and take a Private Backup.' : 'RECOVERY REQUIRED: stop editing and keep all backups. Invoice copies could not be fully verified.', 7000);
+    return false;
+  }
+  if (toBin && editingInvId === id) initNewSale();
+  renderSalesList();
+  if (currentPage === 'prev-bills' && typeof renderPrevBillsTable === 'function') renderPrevBillsTable();
+  if (currentPage === 'invoice-recycle') renderInvoiceRecycle();
+  toast(toBin ? 'Invoice moved to Recycle Bin' : 'Invoice restored');
+  return true;
+}
 window.delInvoice = function(id) {
   const inv = getInvoices().find(i=>i.id===id); if(!inv) return;
-  withDeletePin(`Delete invoice ${inv.invoiceNo} — ${inv.partyName||'Cash'} (${fc(inv.total)})?`, () => {
-    auditLog('delete','invoice',id,`${inv.invoiceNo} — ${inv.partyName}`,`Total: ${fc(inv.total)}, Paid: ${fc(inv.paid||0)}`);
-    DB.set('invoices', getInvoices().filter(i=>i.id!==id));
-    renderSalesList(); toast('Invoice deleted');
+  const expected = JSON.stringify(inv);
+  withDeletePin(`Move invoice ${inv.invoiceNo} — ${inv.partyName||'Cash'} (${fc(inv.total)}) to Recycle Bin?`, () => moveInvoice(id,true,expected), {
+    title:'Move invoice to Recycle Bin', action:'Move to Recycle Bin', notice:'You can restore this invoice and its payments from the Recycle Bin.'
   });
+};
+window.restoreRecycledInvoice = function(id) {
+  let entry;
+  try { entry = invoiceStore('invoice_recycle').rows.find(r=>r.id===id); }
+  catch (_) { toast('Recycle Bin cannot be read. Keep your backups and check storage.'); return; }
+  if (!entry) return;
+  const expected = JSON.stringify(entry);
+  withDeletePin(`Restore invoice ${entry.invoice.invoiceNo} — ${entry.invoice.partyName||'Cash'}?`, () => moveInvoice(id,false,expected), {
+    title:'Restore invoice', action:'Restore', notice:'This invoice and its original payment history will return to reports and outstanding balances.'
+  });
+};
+window.renderInvoiceRecycle = function() {
+  const box = document.getElementById('invoice-recycle-list'); if (!box) return;
+  box.replaceChildren();
+  let rows;
+  try { rows = invoiceStore('invoice_recycle').rows; }
+  catch (_) { box.textContent = 'Recycle Bin cannot be read. No records were changed. Keep your Private Backup.'; return; }
+  if (!rows.length) { box.textContent = 'No invoices in Recycle Bin.'; return; }
+  const table = document.createElement('table');
+  table.innerHTML = '<thead><tr><th>Invoice</th><th>Customer</th><th>Total</th><th>Paid</th><th>Balance</th><th>Deleted</th><th>Action</th></tr></thead>';
+  const body = document.createElement('tbody');
+  for (const entry of rows.slice().reverse()) {
+    const inv = entry.invoice, row = document.createElement('tr');
+    for (const text of [inv.invoiceNo,inv.partyName||'Cash',fc(inv.total),fc(inv.paid),fc(inv.balance),new Date(entry.deletedAt).toLocaleString()]) {
+      const cell = document.createElement('td'); cell.textContent = text; row.appendChild(cell);
+    }
+    const cell = document.createElement('td'), button = document.createElement('button');
+    button.type = 'button'; button.className = 'btn btn-g btn-sm'; button.textContent = 'Restore';
+    button.addEventListener('click',()=>restoreRecycledInvoice(entry.id));
+    cell.appendChild(button); row.appendChild(cell); body.appendChild(row);
+  }
+  table.appendChild(body); box.appendChild(table);
 };
 
 window.delInvoiceSafe = function(id) { window.delInvoice(id); };
