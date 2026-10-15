@@ -8435,47 +8435,61 @@ function getDeletePin() {
   return getSettings().deletePin || '1234';
 }
 
-window.withDeletePin = function(label, onConfirm) {
-  // Inject overlay
-  const overlay = document.createElement('div');
-  overlay.className = 'pwd-overlay';
-  overlay.id = 'del-pin-overlay';
-  overlay.innerHTML = `
-    <div class="pwd-box">
-      <div class="pwd-icon">🔐</div>
-      <div class="pwd-title">Confirm Delete</div>
-      <div class="pwd-sub">${label}<br><span style="color:var(--r);font-size:11.5px">This action cannot be undone after confirmation.</span></div>
-      <input class="pwd-input" id="del-pin-inp" type="password" maxlength="10"
-        placeholder="••••" autocomplete="off"
-        oninput="v15CheckPin(this,${JSON.stringify(getDeletePin())})">
-      <div style="display:flex;gap:8px;margin-top:14px">
-        <button class="btn btn-out" style="flex:1" onclick="document.getElementById('del-pin-overlay').remove()">Cancel</button>
-        <button class="btn btn-r" id="del-pin-ok" style="flex:1" disabled onclick="v15PinConfirm(${JSON.stringify(getDeletePin())})">🗑 Delete</button>
-      </div>
-      <div style="margin-top:10px;font-size:11px;color:var(--gray-400)">Default PIN: 1234 — Change in Settings</div>
-    </div>`;
-  document.body.appendChild(overlay);
-  overlay.addEventListener('click', e=>{ if(e.target===overlay) overlay.remove(); });
-  setTimeout(()=>document.getElementById('del-pin-inp')?.focus(), 80);
-
-  // Store callback
-  window._delPinCb = () => { overlay.remove(); onConfirm(); };
-};
-
-window.v15CheckPin = function(input, pin) {
-  const ok = document.getElementById('del-pin-ok');
-  if (ok) ok.disabled = input.value !== pin;
-  if (input.value.length > 0 && input.value !== pin.slice(0, input.value.length)) {
-    input.classList.add('wrong');
-    setTimeout(()=>input.classList.remove('wrong'), 300);
-  }
-};
-
-window.v15PinConfirm = function(pin) {
-  const val = document.getElementById('del-pin-inp')?.value;
-  if (val !== pin) { toast('Wrong PIN!'); return; }
-  if (typeof window._delPinCb === 'function') window._delPinCb();
-};
+window.withDeletePin = (function() {
+  let closeActive = null;
+  return function(label, onConfirm) {
+    if (closeActive) closeActive();
+    const pin = String(getDeletePin());
+    const previousFocus = document.activeElement;
+    const overlay = document.createElement('div');
+    overlay.className = 'pwd-overlay';
+    overlay.id = 'del-pin-overlay';
+    overlay.innerHTML = `
+      <div class="pwd-box" role="dialog" aria-modal="true" aria-labelledby="del-pin-title">
+        <div class="pwd-icon">🔐</div>
+        <div class="pwd-title" id="del-pin-title">Confirm Delete</div>
+        <div class="pwd-sub"><span id="del-pin-label"></span><br><span style="color:var(--r);font-size:11.5px">This action cannot be undone after confirmation.</span></div>
+        <input class="pwd-input" id="del-pin-inp" type="password" maxlength="10"
+          aria-label="Delete PIN" placeholder="••••" autocomplete="off">
+        <div style="display:flex;gap:8px;margin-top:14px">
+          <button type="button" class="btn btn-out" id="del-pin-cancel" style="flex:1">Cancel</button>
+          <button type="button" class="btn btn-r" id="del-pin-ok" style="flex:1" disabled>🗑 Delete</button>
+        </div>
+        <div style="margin-top:10px;font-size:11px;color:var(--gray-400)">Default PIN: 1234 — Change in Settings</div>
+      </div>`;
+    overlay.querySelector('#del-pin-label').textContent = label;
+    const input = overlay.querySelector('#del-pin-inp');
+    const button = overlay.querySelector('#del-pin-ok');
+    let closed = false;
+    function close() {
+      if (closed) return;
+      closed = true;
+      overlay.remove();
+      if (closeActive === close) closeActive = null;
+      if (previousFocus && previousFocus.isConnected) previousFocus.focus();
+    }
+    function confirm() {
+      if (closed) return;
+      if (input.value !== pin) { toast('Wrong PIN!'); return; }
+      close();
+      onConfirm();
+    }
+    input.addEventListener('input', () => {
+      button.disabled = input.value !== pin;
+      input.classList.toggle('wrong', input.value.length > 0 && !pin.startsWith(input.value));
+    });
+    overlay.addEventListener('keydown', event => {
+      if (event.key === 'Escape') { event.preventDefault(); close(); }
+      else if (event.key === 'Enter' && event.target === input) { event.preventDefault(); confirm(); }
+    });
+    overlay.querySelector('#del-pin-cancel').addEventListener('click', close);
+    button.addEventListener('click', confirm);
+    overlay.addEventListener('click', event => { if (event.target === overlay) close(); });
+    closeActive = close;
+    document.body.appendChild(overlay);
+    setTimeout(() => { if (!closed) input.focus(); }, 80);
+  };
+})();
 
 // ════════════════════════════════════════════════════════
 // OVERRIDE: delInvoice — add audit + pin

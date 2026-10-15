@@ -1,0 +1,26 @@
+name: Delete PIN regression
+on:
+  pull_request:
+    paths:
+      - index.html
+      - qa/verify-delete-pin.cjs
+      - .github/workflows/delete-pin.yml
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  delete-pin:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          persist-credentials: false
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1
+        with:
+          node-version: '22.23.3'
+      - name: Install development-only DOM test dependency
+        run: npm install --prefix "$RUNNER_TEMP/delete-pin-tools" --no-save --no-package-lock linkedom@0.18.12
+      - name: Correct and wrong PIN, keyboard, cancellation and invoice deletion
+        run: NODE_PATH="$RUNNER_TEMP/delete-pin-tools/node_modules" node qa/verify-delete-pin.cjs

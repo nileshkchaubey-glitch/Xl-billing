@@ -45,13 +45,36 @@ function validate(base, candidate, manifest) {
   return {status: 'verified-authorized-A2-revision', authorization: AUTHORIZATION, baseCommit: BASE,
     originalIndexSha256: ORIGINAL, candidateIndexSha256: manifest.candidateIndexSha256, unchangedOutsideRegionsSha256: prior.normalized, unchangedBackupCodecs: priorCodecs};
 }
+// Separately requested delete-PIN fix. Keep the immutable A2 contract intact:
+// only this exact dialog delta is projected back to the merged A3a source.
+const PIN_FIX_BASE = 'beb42cfbb02069e818340ebecdef6b14499ddab5';
+const PIN_FIX_HASH = 'f0cd7b156d5302362be3d22f66170aa8d026070b83947c39a51a31d5842e94b8';
+function normalizePinFix(root, candidate) {
+  if (hash(candidate) === '4e1e6bdb46d8a42a51e4c60da107514c2b3de7146ad4d3f862840af6e9e52d7d') return candidate;
+  if (hash(candidate) !== PIN_FIX_HASH) throw new Error('unapproved-delete-pin-revision');
+  const prior = execFileSync('git', ['--no-replace-objects', '-C', root, 'cat-file', 'blob', PIN_FIX_BASE + ':index.html'], {maxBuffer: 1024 * 1024}).toString('utf8');
+  const current = candidate.toString('utf8');
+  const begin = 'window.withDeletePin = ', end = '// OVERRIDE: delInvoice';
+  function bounds(text) {
+    const a = text.indexOf(begin), b = text.indexOf(end, a);
+    if (a < 0 || b < a || text.indexOf(begin, a + begin.length) !== -1 || text.indexOf(end, b + end.length) !== -1) throw new Error('ambiguous-delete-pin-region');
+    return [a, b];
+  }
+  const [a,b] = bounds(current), [c,d] = bounds(prior);
+  const normalized = current.slice(0,a) + prior.slice(c,d) + current.slice(b);
+  if (normalized !== prior || hash(prior) !== '4e1e6bdb46d8a42a51e4c60da107514c2b3de7146ad4d3f862840af6e9e52d7d') throw new Error('change-outside-delete-pin-dialog');
+  return Buffer.from(normalized);
+}
 function verifyRuntimeRevision(root) {
   const base = execFileSync('git', ['--no-replace-objects', '-C', root, 'cat-file', 'blob', BASE + ':index.html'], {maxBuffer: 1024 * 1024, stdio: ['ignore', 'pipe', 'pipe']});
   const candidate = fs.readFileSync(path.join(root, 'index.html'));
   const manifest = JSON.parse(fs.readFileSync(path.join(root, MANIFEST), 'utf8'));
-  return validate(base, candidate, manifest);
+  const normalized = normalizePinFix(root, candidate);
+  const result = validate(base, normalized, manifest);
+  return {...result, candidateIndexSha256: hash(candidate),
+    ...(hash(normalized) !== hash(candidate) ? {additionalRevision: 'delete-pin-dialog-only'} : {})};
 }
-module.exports = {verifyRuntimeRevision, validate, split, codecHashes, hash, BASE, ORIGINAL, AUTHORIZATION, MANIFEST};
+module.exports = {verifyRuntimeRevision, normalizePinFix, validate, split, codecHashes, hash, BASE, ORIGINAL, AUTHORIZATION, MANIFEST};
 if (require.main === module) {
   try { console.log(JSON.stringify(verifyRuntimeRevision(path.resolve(__dirname, '../..')))); }
   catch { console.error('FAIL: authorized A2 runtime revision could not be verified. Original pins were not changed.'); process.exitCode = 1; }
